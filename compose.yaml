@@ -25,6 +25,7 @@ services:
             - pgsql
             - redis
             - mailpit
+            - garage
     pgsql:
         image: 'postgres:18-alpine'
         ports:
@@ -72,6 +73,41 @@ services:
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
         networks:
             - sail
+    garage:
+        image: 'dxflrs/garage:v2.2.0'
+        restart: unless-stopped
+        ports:
+            - '${FORWARD_GARAGE_S3_PORT:-3900}:3900'
+            - '${FORWARD_GARAGE_RPC_PORT:-3901}:3901'
+            - '${FORWARD_GARAGE_ADMIN_PORT:-3903}:3903'
+        volumes:
+            - './contrib/garage.toml:/etc/garage.toml'
+            - 'garage-meta:/var/lib/garage/meta'
+            - 'garage-data:/var/lib/garage/data'
+        networks:
+            - sail
+        healthcheck:
+            test:
+                - CMD
+                - /garage
+                - status
+            interval: 10s
+            retries: 3
+            timeout: 5s
+    garage-webui:
+        image: 'khairul169/garage-webui:latest'
+        restart: unless-stopped
+        ports:
+            - '${FORWARD_GARAGE_WEBUI_PORT:-3909}:3909'
+        environment:
+            API_BASE_URL: 'http://garage:3903'
+            S3_ENDPOINT_URL: 'http://garage:3900'
+        volumes:
+            - './contrib/garage.toml:/etc/garage.toml:ro'
+        networks:
+            - sail
+        depends_on:
+            - garage
 networks:
     sail:
         driver: bridge
@@ -79,4 +115,8 @@ volumes:
     sail-pgsql:
         driver: local
     sail-redis:
+        driver: local
+    garage-meta:
+        driver: local
+    garage-data:
         driver: local
