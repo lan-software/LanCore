@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, FolderGit2, LayoutGrid, Users } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -9,13 +10,24 @@ import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as usersIndex } from '@/routes/users';
 import type { NavItem } from '@/types';
+
+const page = usePage();
+
+const isAdmin = computed(() => {
+    const roles: { name: string }[] = page.props.auth?.user?.roles ?? [];
+    return roles.some((role) => role.name === 'admin' || role.name === 'superadmin');
+});
 
 const mainNavItems: NavItem[] = [
     {
@@ -55,6 +67,22 @@ const footerNavItems: NavItem[] = [
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
+
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Administration</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="usersIndex()">
+                                    <Users />
+                                    <span>Users</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
         </SidebarContent>
 
         <SidebarFooter>

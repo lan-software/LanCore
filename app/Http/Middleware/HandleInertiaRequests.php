@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\RoleName;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,11 +36,23 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
+        if ($user) {
+            $user->loadMissing('roles');
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user ? array_merge($user->toArray(), [
+                    'roles' => $user->roles->map(fn ($role) => [
+                        'id' => $role->id,
+                        'name' => $role->name instanceof RoleName ? $role->name->value : $role->name,
+                        'label' => $role->label,
+                    ])->values()->all(),
+                ]) : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

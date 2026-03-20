@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleName;
+use App\Models\Role;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,11 +14,38 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->seedRoles();
+        $this->seedUsers();
+    }
 
-        User::factory()->create([
+    private function seedRoles(): void
+    {
+        $roles = [
+            ['name' => RoleName::User->value, 'label' => 'User'],
+            ['name' => RoleName::Admin->value, 'label' => 'Admin'],
+            ['name' => RoleName::Superadmin->value, 'label' => 'Superadmin'],
+        ];
+
+        foreach ($roles as $role) {
+            Role::updateOrCreate(['name' => $role['name']], $role);
+        }
+    }
+
+    private function seedUsers(): void
+    {
+        User::factory()->withRole(RoleName::User)->create([
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => 'user@example.com',
+        ]);
+
+        User::factory()->withRole(RoleName::Admin)->create([
+            'name' => 'Test Admin',
+            'email' => 'admin@example.com',
+        ]);
+
+        User::factory()->withRole(RoleName::Superadmin)->create([
+            'name' => 'Test Superadmin',
+            'email' => 'superadmin@example.com',
         ]);
     }
 }

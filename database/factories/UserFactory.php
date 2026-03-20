@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\RoleName;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -56,5 +58,19 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1'])),
             'two_factor_confirmed_at' => now(),
         ]);
+    }
+
+    /**
+     * Attach a role after user creation.
+     */
+    public function withRole(RoleName $role): static
+    {
+        return $this->afterCreating(function (User $user) use ($role): void {
+            $roleModel = Role::where('name', $role->value)->first();
+
+            if ($roleModel) {
+                $user->roles()->attach($roleModel);
+            }
+        });
     }
 }
