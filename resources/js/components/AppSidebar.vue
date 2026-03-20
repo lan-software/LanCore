@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Calendar, FolderGit2, LayoutGrid, MapPin, Users } from 'lucide-vue-next';
+import { BookOpen, Calendar, ClipboardList, FolderGit2, LayoutGrid, MapPin, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as eventsIndex } from '@/routes/events';
+import { index as programsIndex } from '@/routes/programs';
 import { index as usersIndex } from '@/routes/users';
 import { index as venuesIndex } from '@/routes/venues';
 import type { NavItem } from '@/types';
@@ -87,6 +88,14 @@ const footerNavItems: NavItem[] = [
                                 <Link :href="eventsIndex()">
                                     <Calendar />
                                     <span>Events</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="programsIndex()">
+                                    <ClipboardList />
+                                    <span>Programs</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

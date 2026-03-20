@@ -42,6 +42,33 @@ export type Event = {
     status: 'draft' | 'published'
     venue_id: number | null
     venue: Venue | null
+    primary_program_id: number | null
+    programs: Program[]
     created_at: string
     updated_at: string
+}
+
+export type Program = {
+    id: number
+    name: string
+    description: string | null
+    visibility: 'public' | 'internal' | 'private'
+    event_id: number
+    event?: { id: number; name: string }
+    sort_order: number
+    time_slots: TimeSlot[]
+    created_at: string
+    updated_at: string
+}
+
+export type TimeSlot = {
+    id?: number
+    name: string
+    description: string | null
+    starts_at: string
+    visibility: 'public' | 'internal' | 'private'
+    program_id?: number
+    sort_order: number
+    created_at?: string
+    updated_at?: string
 }
