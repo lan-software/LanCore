@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid, Users } from 'lucide-vue-next';
+import { BookOpen, Calendar, FolderGit2, LayoutGrid, MapPin, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -19,7 +19,9 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as eventsIndex } from '@/routes/events';
 import { index as usersIndex } from '@/routes/users';
+import { index as venuesIndex } from '@/routes/venues';
 import type { NavItem } from '@/types';
 
 const page = usePage();
@@ -77,6 +79,22 @@ const footerNavItems: NavItem[] = [
                                 <Link :href="usersIndex()">
                                     <Users />
                                     <span>Users</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="eventsIndex()">
+                                    <Calendar />
+                                    <span>Events</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="venuesIndex()">
+                                    <MapPin />
+                                    <span>Venues</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

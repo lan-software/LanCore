@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Domain\Event\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreEventRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after:start_date'],
+            'banner_image' => ['nullable', 'string', 'max:500'],
+            'venue_id' => ['nullable', 'integer', 'exists:venues,id'],
+        ];
+    }
+}

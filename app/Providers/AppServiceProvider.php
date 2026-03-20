@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Domain\Event\Models\Event;
+use App\Domain\Event\Policies\EventPolicy;
+use App\Domain\Venue\Models\Venue;
+use App\Domain\Venue\Policies\VenuePolicy;
 use App\Models\User;
 use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
@@ -36,6 +40,8 @@ class AppServiceProvider extends ServiceProvider
     protected function configurePolicies(): void
     {
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Venue::class, VenuePolicy::class);
+        Gate::policy(Event::class, EventPolicy::class);
     }
 
     /**
