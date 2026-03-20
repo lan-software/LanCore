@@ -22,7 +22,7 @@ class StoreVenueRequest extends FormRequest
             'state' => ['nullable', 'string', 'max:255'],
             'country' => ['required', 'string', 'max:255'],
             'images' => ['sometimes', 'array'],
-            'images.*.path' => ['required', 'string', 'max:500'],
+            'images.*.file' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
             'images.*.alt_text' => ['nullable', 'string', 'max:255'],
         ];
     }

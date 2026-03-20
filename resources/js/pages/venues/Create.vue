@@ -10,7 +10,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as venuesRoute } from '@/routes/venues'
 import type { BreadcrumbItem } from '@/types'
 import { Form, Head, Link } from '@inertiajs/vue3'
-import { Plus, Trash2 } from 'lucide-vue-next'
+import { ImagePlus, Plus, Trash2 } from 'lucide-vue-next'
 import { ref } from 'vue'
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -19,14 +19,22 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Create', href: VenueController.create().url },
 ]
 
-const images = ref<{ path: string; alt_text: string }[]>([])
+const images = ref<{ file: File | null; alt_text: string; preview: string | null }[]>([])
 
 function addImage() {
-    images.value.push({ path: '', alt_text: '' })
+    images.value.push({ file: null, alt_text: '', preview: null })
 }
 
 function removeImage(index: number) {
     images.value.splice(index, 1)
+}
+
+function onFileSelected(index: number, event: globalThis.Event) {
+    const file = (event.target as HTMLInputElement).files?.[0]
+    if (file) {
+        images.value[index].file = file
+        images.value[index].preview = URL.createObjectURL(file)
+    }
 }
 </script>
 
@@ -153,19 +161,37 @@ function removeImage(index: number) {
                     <Heading
                         variant="small"
                         title="Images"
-                        description="Add image paths for this venue"
+                        description="Upload images for this venue"
                     />
 
                     <div
                         v-for="(image, index) in images"
                         :key="index"
-                        class="flex items-start gap-2"
+                        class="flex items-start gap-2 rounded-md border p-3"
                     >
                         <div class="grid flex-1 gap-2">
-                            <Input
-                                v-model="image.path"
-                                :name="`images[${index}][path]`"
-                                placeholder="Image path (e.g. images/venues/photo.jpg)"
+                            <div class="flex items-center gap-2">
+                                <label
+                                    :for="`image_file_${index}`"
+                                    class="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground"
+                                >
+                                    <ImagePlus class="size-4" />
+                                    {{ image.file ? image.file.name : 'Choose Image' }}
+                                </label>
+                                <input
+                                    :id="`image_file_${index}`"
+                                    type="file"
+                                    :name="`images[${index}][file]`"
+                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                    class="sr-only"
+                                    @change="onFileSelected(index, $event)"
+                                />
+                            </div>
+                            <img
+                                v-if="image.preview"
+                                :src="image.preview"
+                                alt="Preview"
+                                class="max-h-32 rounded-md border object-cover"
                             />
                             <Input
                                 v-model="image.alt_text"
@@ -193,6 +219,7 @@ function removeImage(index: number) {
                         <Plus class="size-4" />
                         Add Image
                     </Button>
+                    <p class="text-xs text-muted-foreground">Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB each.</p>
                     <InputError :message="errors.images" />
                 </div>
 

@@ -11,6 +11,8 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as eventsRoute } from '@/routes/events'
 import type { BreadcrumbItem } from '@/types'
 import { Form, Head, Link } from '@inertiajs/vue3'
+import { ImagePlus } from 'lucide-vue-next'
+import { ref } from 'vue'
 
 const props = defineProps<{
     venues: { id: number; name: string }[]
@@ -21,6 +23,17 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Events', href: eventsRoute().url },
     { title: 'Create', href: EventController.create().url },
 ]
+
+const bannerPreview = ref<string | null>(null)
+
+function onBannerSelected(event: globalThis.Event) {
+    const file = (event.target as HTMLInputElement).files?.[0]
+    if (file) {
+        bannerPreview.value = URL.createObjectURL(file)
+    } else {
+        bannerPreview.value = null
+    }
+}
 </script>
 
 <template>
@@ -136,11 +149,30 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                     <div class="grid gap-2">
                         <Label for="banner_image">Banner Image</Label>
-                        <Input
-                            id="banner_image"
-                            name="banner_image"
-                            placeholder="Image path or URL (optional)"
+                        <div class="flex items-center gap-4">
+                            <label
+                                for="banner_image"
+                                class="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground"
+                            >
+                                <ImagePlus class="size-4" />
+                                Choose Image
+                            </label>
+                            <input
+                                id="banner_image"
+                                type="file"
+                                name="banner_image"
+                                accept="image/jpeg,image/png,image/gif,image/webp"
+                                class="sr-only"
+                                @change="onBannerSelected"
+                            />
+                        </div>
+                        <img
+                            v-if="bannerPreview"
+                            :src="bannerPreview"
+                            alt="Banner preview"
+                            class="mt-2 max-h-48 rounded-md border object-cover"
                         />
+                        <p class="text-xs text-muted-foreground">Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB.</p>
                         <InputError :message="errors.banner_image" />
                     </div>
                 </div>

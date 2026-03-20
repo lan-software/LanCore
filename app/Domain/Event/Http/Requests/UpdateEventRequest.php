@@ -18,7 +18,8 @@ class UpdateEventRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],
-            'banner_image' => ['nullable', 'string', 'max:500'],
+            'banner_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
+            'remove_banner_image' => ['sometimes', 'boolean'],
             'venue_id' => ['nullable', 'integer', 'exists:venues,id'],
         ];
     }

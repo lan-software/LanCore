@@ -5,6 +5,8 @@ use App\Domain\Venue\Models\Venue;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     Role::updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
@@ -116,4 +118,94 @@ it('forbids users from creating events', function () {
             'end_date' => '2026-07-03 18:00:00',
         ])
         ->assertForbidden();
+});
+
+it('stores a banner image file when creating an event', function () {
+    Storage::fake();
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->post('/events', [
+            'name' => 'Event With Banner',
+            'start_date' => '2026-07-01 10:00:00',
+            'end_date' => '2026-07-03 18:00:00',
+            'banner_image' => UploadedFile::fake()->image('banner.jpg', 1200, 600),
+        ])
+        ->assertRedirect('/events');
+
+    $event = Event::where('name', 'Event With Banner')->first();
+    expect($event->banner_image)->not->toBeNull();
+    Storage::assertExists($event->banner_image);
+});
+
+it('replaces banner image when updating an event', function () {
+    Storage::fake();
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $oldFile = UploadedFile::fake()->image('old.jpg');
+    $oldPath = $oldFile->store('events/banners');
+    $event = Event::factory()->create(['banner_image' => $oldPath]);
+
+    $this->actingAs($admin)
+        ->patch("/events/{$event->id}", [
+            'name' => $event->name,
+            'start_date' => $event->start_date->format('Y-m-d H:i:s'),
+            'end_date' => $event->end_date->format('Y-m-d H:i:s'),
+            'banner_image' => UploadedFile::fake()->image('new.jpg', 800, 400),
+        ])
+        ->assertRedirect();
+
+    $event->refresh();
+    Storage::assertExists($event->banner_image);
+    Storage::assertMissing($oldPath);
+});
+
+it('removes banner image when remove flag is set', function () {
+    Storage::fake();
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $file = UploadedFile::fake()->image('banner.jpg');
+    $path = $file->store('events/banners');
+    $event = Event::factory()->create(['banner_image' => $path]);
+
+    $this->actingAs($admin)
+        ->patch("/events/{$event->id}", [
+            'name' => $event->name,
+            'start_date' => $event->start_date->format('Y-m-d H:i:s'),
+            'end_date' => $event->end_date->format('Y-m-d H:i:s'),
+            'remove_banner_image' => true,
+        ])
+        ->assertRedirect();
+
+    $event->refresh();
+    expect($event->banner_image)->toBeNull();
+    Storage::assertMissing($path);
+});
+
+it('deletes banner image from storage when deleting an event', function () {
+    Storage::fake();
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $file = UploadedFile::fake()->image('banner.jpg');
+    $path = $file->store('events/banners');
+    $event = Event::factory()->create(['banner_image' => $path]);
+
+    $this->actingAs($admin)
+        ->delete("/events/{$event->id}")
+        ->assertRedirect('/events');
+
+    Storage::assertMissing($path);
+});
+
+it('rejects non-image files for banner image', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->post('/events', [
+            'name' => 'Bad Upload',
+            'start_date' => '2026-07-01 10:00:00',
+            'end_date' => '2026-07-03 18:00:00',
+            'banner_image' => UploadedFile::fake()->create('document.pdf', 100, 'application/pdf'),
+        ])
+        ->assertSessionHasErrors(['banner_image']);
 });

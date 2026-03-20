@@ -14,6 +14,7 @@ use App\Domain\Event\Models\Event;
 use App\Domain\Venue\Models\Venue;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -66,7 +67,12 @@ class EventController extends Controller
     {
         $this->authorize('create', Event::class);
 
-        $this->createEvent->execute($request->validated());
+        $data = $request->validated();
+        if ($request->hasFile('banner_image')) {
+            $data['banner_image'] = $request->file('banner_image')->store('events/banners');
+        }
+
+        $this->createEvent->execute($data);
 
         return redirect()->route('events.index');
     }
@@ -75,8 +81,11 @@ class EventController extends Controller
     {
         $this->authorize('update', $event);
 
+        $eventData = $event->load('venue')->toArray();
+        $eventData['banner_image_url'] = $event->banner_image ? Storage::url($event->banner_image) : null;
+
         return Inertia::render('events/Edit', [
-            'event' => $event->load('venue'),
+            'event' => $eventData,
             'venues' => Venue::orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -85,7 +94,21 @@ class EventController extends Controller
     {
         $this->authorize('update', $event);
 
-        $this->updateEvent->execute($event, $request->validated());
+        $data = $request->safe()->except(['banner_image', 'remove_banner_image']);
+
+        if ($request->hasFile('banner_image')) {
+            if ($event->banner_image) {
+                Storage::delete($event->banner_image);
+            }
+            $data['banner_image'] = $request->file('banner_image')->store('events/banners');
+        } elseif ($request->boolean('remove_banner_image')) {
+            if ($event->banner_image) {
+                Storage::delete($event->banner_image);
+            }
+            $data['banner_image'] = null;
+        }
+
+        $this->updateEvent->execute($event, $data);
 
         return back();
     }

@@ -13,6 +13,7 @@ export type VenueImage = {
     id: number
     venue_id: number
     path: string
+    url: string
     alt_text: string | null
     sort_order: number
     created_at: string
@@ -37,6 +38,7 @@ export type Event = {
     start_date: string
     end_date: string
     banner_image: string | null
+    banner_image_url: string | null
     status: 'draft' | 'published'
     venue_id: number | null
     venue: Venue | null

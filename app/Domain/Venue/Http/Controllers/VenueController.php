@@ -11,6 +11,7 @@ use App\Domain\Venue\Http\Requests\VenueIndexRequest;
 use App\Domain\Venue\Models\Venue;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -55,9 +56,18 @@ class VenueController extends Controller
     {
         $this->authorize('create', Venue::class);
 
+        $images = [];
+        foreach ($request->validated('images', []) as $imageData) {
+            $path = $imageData['file']->store('venues/images');
+            $images[] = [
+                'path' => $path,
+                'alt_text' => $imageData['alt_text'] ?? null,
+            ];
+        }
+
         $this->createVenue->execute(
             $request->safe()->only(['name', 'description', 'street', 'city', 'zip_code', 'state', 'country']),
-            $request->validated('images', []),
+            $images,
         );
 
         return redirect()->route('venues.index');
@@ -67,8 +77,15 @@ class VenueController extends Controller
     {
         $this->authorize('update', $venue);
 
+        $venueData = $venue->load(['address', 'images'])->toArray();
+        $venueData['images'] = collect($venueData['images'])->map(function (array $image) {
+            $image['url'] = Storage::url($image['path']);
+
+            return $image;
+        })->all();
+
         return Inertia::render('venues/Edit', [
-            'venue' => $venue->load(['address', 'images']),
+            'venue' => $venueData,
         ]);
     }
 
@@ -76,10 +93,22 @@ class VenueController extends Controller
     {
         $this->authorize('update', $venue);
 
+        $existingImages = $request->validated('existing_images', []);
+        $newImages = [];
+
+        foreach ($request->validated('new_images', []) as $imageData) {
+            $path = $imageData['file']->store('venues/images');
+            $newImages[] = [
+                'path' => $path,
+                'alt_text' => $imageData['alt_text'] ?? null,
+            ];
+        }
+
         $this->updateVenue->execute(
             $venue,
             $request->safe()->only(['name', 'description', 'street', 'city', 'zip_code', 'state', 'country']),
-            $request->validated('images', []),
+            $existingImages,
+            $newImages,
         );
 
         return back();

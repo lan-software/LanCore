@@ -21,9 +21,12 @@ class UpdateVenueRequest extends FormRequest
             'zip_code' => ['required', 'string', 'max:20'],
             'state' => ['nullable', 'string', 'max:255'],
             'country' => ['required', 'string', 'max:255'],
-            'images' => ['sometimes', 'array'],
-            'images.*.path' => ['required', 'string', 'max:500'],
-            'images.*.alt_text' => ['nullable', 'string', 'max:255'],
+            'existing_images' => ['sometimes', 'array'],
+            'existing_images.*.id' => ['required', 'integer', 'exists:venue_images,id'],
+            'existing_images.*.alt_text' => ['nullable', 'string', 'max:255'],
+            'new_images' => ['sometimes', 'array'],
+            'new_images.*.file' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
+            'new_images.*.alt_text' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

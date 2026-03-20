@@ -12,7 +12,7 @@ import { index as venuesRoute } from '@/routes/venues'
 import type { BreadcrumbItem } from '@/types'
 import type { Venue } from '@/types/domain'
 import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { Plus, Trash2 } from 'lucide-vue-next'
+import { ImagePlus, Plus, Trash2 } from 'lucide-vue-next'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -25,19 +25,34 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: props.venue.name, href: VenueController.edit(props.venue.id).url },
 ]
 
-const images = ref(
+const existingImages = ref(
     (props.venue.images ?? []).map((img) => ({
-        path: img.path,
+        id: img.id,
+        url: img.url,
         alt_text: img.alt_text ?? '',
     })),
 )
 
-function addImage() {
-    images.value.push({ path: '', alt_text: '' })
+const newImages = ref<{ file: File | null; alt_text: string; preview: string | null }[]>([])
+
+function removeExistingImage(index: number) {
+    existingImages.value.splice(index, 1)
 }
 
-function removeImage(index: number) {
-    images.value.splice(index, 1)
+function addNewImage() {
+    newImages.value.push({ file: null, alt_text: '', preview: null })
+}
+
+function removeNewImage(index: number) {
+    newImages.value.splice(index, 1)
+}
+
+function onNewFileSelected(index: number, event: globalThis.Event) {
+    const file = (event.target as HTMLInputElement).files?.[0]
+    if (file) {
+        newImages.value[index].file = file
+        newImages.value[index].preview = URL.createObjectURL(file)
+    }
 }
 
 const showDeleteDialog = ref(false)
@@ -181,23 +196,29 @@ function executeDelete() {
                     <Heading
                         variant="small"
                         title="Images"
-                        description="Manage image paths for this venue"
+                        description="Manage images for this venue"
                     />
 
+                    <!-- Existing images -->
                     <div
-                        v-for="(image, index) in images"
-                        :key="index"
-                        class="flex items-start gap-2"
+                        v-for="(image, index) in existingImages"
+                        :key="`existing-${image.id}`"
+                        class="flex items-start gap-2 rounded-md border p-3"
                     >
+                        <input
+                            type="hidden"
+                            :name="`existing_images[${index}][id]`"
+                            :value="image.id"
+                        />
                         <div class="grid flex-1 gap-2">
-                            <Input
-                                v-model="image.path"
-                                :name="`images[${index}][path]`"
-                                placeholder="Image path (e.g. images/venues/photo.jpg)"
+                            <img
+                                :src="image.url"
+                                :alt="image.alt_text"
+                                class="max-h-32 rounded-md border object-cover"
                             />
                             <Input
                                 v-model="image.alt_text"
-                                :name="`images[${index}][alt_text]`"
+                                :name="`existing_images[${index}][alt_text]`"
                                 placeholder="Alt text (optional)"
                             />
                         </div>
@@ -206,7 +227,54 @@ function executeDelete() {
                             variant="ghost"
                             size="sm"
                             class="mt-1"
-                            @click="removeImage(index)"
+                            @click="removeExistingImage(index)"
+                        >
+                            <Trash2 class="size-4" />
+                        </Button>
+                    </div>
+
+                    <!-- New image uploads -->
+                    <div
+                        v-for="(image, index) in newImages"
+                        :key="`new-${index}`"
+                        class="flex items-start gap-2 rounded-md border border-dashed p-3"
+                    >
+                        <div class="grid flex-1 gap-2">
+                            <div class="flex items-center gap-2">
+                                <label
+                                    :for="`new_image_file_${index}`"
+                                    class="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground"
+                                >
+                                    <ImagePlus class="size-4" />
+                                    {{ image.file ? image.file.name : 'Choose Image' }}
+                                </label>
+                                <input
+                                    :id="`new_image_file_${index}`"
+                                    type="file"
+                                    :name="`new_images[${index}][file]`"
+                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                    class="sr-only"
+                                    @change="onNewFileSelected(index, $event)"
+                                />
+                            </div>
+                            <img
+                                v-if="image.preview"
+                                :src="image.preview"
+                                alt="Preview"
+                                class="max-h-32 rounded-md border object-cover"
+                            />
+                            <Input
+                                v-model="image.alt_text"
+                                :name="`new_images[${index}][alt_text]`"
+                                placeholder="Alt text (optional)"
+                            />
+                        </div>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            class="mt-1"
+                            @click="removeNewImage(index)"
                         >
                             <Trash2 class="size-4" />
                         </Button>
@@ -216,12 +284,13 @@ function executeDelete() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        @click="addImage"
+                        @click="addNewImage"
                     >
                         <Plus class="size-4" />
                         Add Image
                     </Button>
-                    <InputError :message="errors.images" />
+                    <p class="text-xs text-muted-foreground">Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB each.</p>
+                    <InputError :message="errors['existing_images'] || errors['new_images']" />
                 </div>
 
                 <!-- Actions -->
