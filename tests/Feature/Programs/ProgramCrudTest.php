@@ -3,6 +3,7 @@
 use App\Domain\Event\Models\Event;
 use App\Domain\Program\Models\Program;
 use App\Domain\Program\Models\TimeSlot;
+use App\Domain\Sponsoring\Models\Sponsor;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
@@ -192,4 +193,110 @@ it('forbids users from creating programs', function () {
             'event_id' => $event->id,
         ])
         ->assertForbidden();
+});
+
+it('allows admins to assign sponsors to a program', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $program = Program::factory()->create();
+    $sponsors = Sponsor::factory()->count(3)->create();
+
+    $this->actingAs($admin)
+        ->patch("/programs/{$program->id}", [
+            'name' => $program->name,
+            'visibility' => $program->visibility->value,
+            'sponsor_ids' => [$sponsors[0]->id, $sponsors[2]->id],
+        ])
+        ->assertRedirect();
+
+    expect($program->fresh()->sponsors->pluck('id')->sort()->values()->all())
+        ->toBe([$sponsors[0]->id, $sponsors[2]->id]);
+});
+
+it('allows admins to update sponsors on a program', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $program = Program::factory()->create();
+    $sponsors = Sponsor::factory()->count(3)->create();
+
+    $program->sponsors()->sync([$sponsors[0]->id, $sponsors[1]->id]);
+
+    $this->actingAs($admin)
+        ->patch("/programs/{$program->id}", [
+            'name' => $program->name,
+            'visibility' => $program->visibility->value,
+            'sponsor_ids' => [$sponsors[1]->id, $sponsors[2]->id],
+        ])
+        ->assertRedirect();
+
+    expect($program->fresh()->sponsors->pluck('id')->sort()->values()->all())
+        ->toBe([$sponsors[1]->id, $sponsors[2]->id]);
+});
+
+it('allows admins to assign sponsors to individual time slots', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $program = Program::factory()->create();
+    $slot = TimeSlot::factory()->for($program)->create();
+    $sponsors = Sponsor::factory()->count(2)->create();
+
+    $this->actingAs($admin)
+        ->patch("/programs/{$program->id}", [
+            'name' => $program->name,
+            'visibility' => $program->visibility->value,
+            'time_slots' => [
+                [
+                    'id' => $slot->id,
+                    'name' => $slot->name,
+                    'starts_at' => $slot->starts_at->format('Y-m-d H:i:s'),
+                    'visibility' => $slot->visibility->value,
+                    'sponsor_ids' => [$sponsors[0]->id, $sponsors[1]->id],
+                ],
+            ],
+        ])
+        ->assertRedirect();
+
+    expect($slot->fresh()->sponsors->pluck('id')->sort()->values()->all())
+        ->toBe([$sponsors[0]->id, $sponsors[1]->id]);
+});
+
+it('allows admins to assign sponsors to both program and time slots', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $program = Program::factory()->create();
+    $sponsors = Sponsor::factory()->count(3)->create();
+
+    $this->actingAs($admin)
+        ->patch("/programs/{$program->id}", [
+            'name' => $program->name,
+            'visibility' => $program->visibility->value,
+            'sponsor_ids' => [$sponsors[0]->id],
+            'time_slots' => [
+                [
+                    'name' => 'Opening',
+                    'starts_at' => '2026-07-01 09:00:00',
+                    'visibility' => 'public',
+                    'sponsor_ids' => [$sponsors[1]->id, $sponsors[2]->id],
+                ],
+            ],
+        ])
+        ->assertRedirect();
+
+    $program->refresh();
+    expect($program->sponsors->pluck('id')->all())->toBe([$sponsors[0]->id]);
+
+    $newSlot = $program->timeSlots->first();
+    expect($newSlot->sponsors->pluck('id')->sort()->values()->all())
+        ->toBe([$sponsors[1]->id, $sponsors[2]->id]);
+});
+
+it('passes sponsors to the edit page', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $program = Program::factory()->create();
+    Sponsor::factory()->count(2)->create();
+
+    $this->actingAs($admin)
+        ->get("/programs/{$program->id}")
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('programs/Edit')
+                ->has('sponsors', 2)
+        );
 });

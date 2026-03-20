@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Calendar, ClipboardList, FolderGit2, LayoutGrid, MapPin, Users } from 'lucide-vue-next';
+import { BookOpen, Calendar, ClipboardList, FolderGit2, Handshake, LayoutGrid, MapPin, Palette, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -21,6 +21,8 @@ import {
 import { dashboard } from '@/routes';
 import { index as eventsIndex } from '@/routes/events';
 import { index as programsIndex } from '@/routes/programs';
+import { index as sponsorLevelsIndex } from '@/routes/sponsor-levels';
+import { index as sponsorsIndex } from '@/routes/sponsors';
 import { index as usersIndex } from '@/routes/users';
 import { index as venuesIndex } from '@/routes/venues';
 import type { NavItem } from '@/types';
@@ -30,6 +32,11 @@ const page = usePage();
 const isAdmin = computed(() => {
     const roles: { name: string }[] = page.props.auth?.user?.roles ?? [];
     return roles.some((role) => role.name === 'admin' || role.name === 'superadmin');
+});
+
+const isSponsorManager = computed(() => {
+    const roles: { name: string }[] = page.props.auth?.user?.roles ?? [];
+    return roles.some((role) => role.name === 'sponsor_manager');
 });
 
 const mainNavItems: NavItem[] = [
@@ -104,6 +111,39 @@ const footerNavItems: NavItem[] = [
                                 <Link :href="venuesIndex()">
                                     <MapPin />
                                     <span>Venues</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="sponsorsIndex()">
+                                    <Handshake />
+                                    <span>Sponsors</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="sponsorLevelsIndex()">
+                                    <Palette />
+                                    <span>Sponsor Levels</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Sponsor Manager section -->
+            <SidebarGroup v-if="!isAdmin && isSponsorManager">
+                <SidebarGroupLabel>Sponsor Management</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="sponsorsIndex()">
+                                    <Handshake />
+                                    <span>My Sponsors</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as programsRoute } from '@/routes/programs'
 import type { BreadcrumbItem } from '@/types'
-import type { Program, TimeSlot } from '@/types/domain'
+import type { Program, Sponsor, TimeSlot } from '@/types/domain'
 import { Form, Head, Link, router } from '@inertiajs/vue3'
 import { Plus, Trash2 } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
@@ -21,6 +21,7 @@ const props = defineProps<{
     program: Program & { time_slots: TimeSlot[] }
     isPrimary: boolean
     events: { id: number; name: string; primary_program_id: number | null; primary_program: { id: number; name: string } | null }[]
+    sponsors: Sponsor[]
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -43,7 +44,8 @@ const currentEvent = computed(() =>
     props.events.find((e) => e.id === props.program.event_id),
 )
 
-function onPrimaryToggle(checked: boolean) {
+function onPrimaryToggle(checked: boolean | 'indeterminate') {
+    if (checked === 'indeterminate') return
     if (checked && currentEvent.value?.primary_program && currentEvent.value.primary_program.id !== props.program.id) {
         showPrimaryConfirmDialog.value = true
     } else {
@@ -68,7 +70,12 @@ interface EditableTimeSlot {
     starts_at: string
     visibility: 'public' | 'internal' | 'private'
     sort_order: number
+    sponsor_ids: number[]
 }
+
+const programSponsorIds = ref<number[]>(
+    props.program.sponsors?.map((s) => s.id) ?? [],
+)
 
 const timeSlots = ref<EditableTimeSlot[]>(
     props.program.time_slots.map((slot, i) => ({
@@ -78,6 +85,7 @@ const timeSlots = ref<EditableTimeSlot[]>(
         starts_at: formatDateTimeLocal(slot.starts_at),
         visibility: slot.visibility,
         sort_order: i,
+        sponsor_ids: slot.sponsors?.map((s) => s.id) ?? [],
     })),
 )
 
@@ -88,6 +96,7 @@ function addTimeSlot() {
         starts_at: '',
         visibility: 'public',
         sort_order: timeSlots.value.length,
+        sponsor_ids: [],
     })
 }
 
@@ -102,6 +111,23 @@ function executeDelete() {
             showDeleteDialog.value = false
         },
     })
+}
+
+function toggleProgramSponsor(sponsorId: number, checked: boolean | 'indeterminate') {
+    if (checked === true) {
+        programSponsorIds.value.push(sponsorId)
+    } else {
+        programSponsorIds.value = programSponsorIds.value.filter((id) => id !== sponsorId)
+    }
+}
+
+function toggleSlotSponsor(slotIndex: number, sponsorId: number, checked: boolean | 'indeterminate') {
+    const ids = timeSlots.value[slotIndex].sponsor_ids
+    if (checked === true) {
+        ids.push(sponsorId)
+    } else {
+        timeSlots.value[slotIndex].sponsor_ids = ids.filter((id) => id !== sponsorId)
+    }
 }
 </script>
 
@@ -132,6 +158,9 @@ function executeDelete() {
                         title="Program Information"
                         description="Update the basic details for this program"
                     />
+                    <p v-if="programSponsorIds.length > 0" class="text-sm italic text-muted-foreground">
+                        presented by {{ sponsors.filter((s) => programSponsorIds.includes(s.id)).map((s) => s.name).join(', ') }}
+                    </p>
 
                     <div class="grid gap-2">
                         <Label for="name">Name</Label>
@@ -184,6 +213,36 @@ function executeDelete() {
                     </div>
                 </div>
 
+                <!-- Program-Level Sponsors -->
+                <div v-if="sponsors.length > 0" class="space-y-4">
+                    <Heading
+                        variant="small"
+                        title="Program Sponsors"
+                        description="Select sponsors associated with this entire program"
+                    />
+
+                    <div class="grid gap-2">
+                        <div v-for="sponsor in sponsors" :key="sponsor.id" class="flex items-center gap-2">
+                            <Checkbox
+                                :id="`program_sponsor_${sponsor.id}`"
+                                :model-value="programSponsorIds.includes(sponsor.id)"
+                                @update:model-value="(checked: boolean | 'indeterminate') => toggleProgramSponsor(sponsor.id, checked)"
+                            />
+                            <input
+                                v-if="programSponsorIds.includes(sponsor.id)"
+                                type="hidden"
+                                name="sponsor_ids[]"
+                                :value="sponsor.id"
+                            />
+                            <Label :for="`program_sponsor_${sponsor.id}`" class="cursor-pointer">
+                                {{ sponsor.name }}
+                                <span v-if="sponsor.sponsor_level" class="text-xs text-muted-foreground">({{ sponsor.sponsor_level.name }})</span>
+                            </Label>
+                        </div>
+                    </div>
+                    <InputError :message="errors.sponsor_ids" />
+                </div>
+
                 <!-- Time Slots -->
                 <div class="space-y-4">
                     <Heading
@@ -194,7 +253,12 @@ function executeDelete() {
 
                     <div v-for="(slot, index) in timeSlots" :key="index" class="rounded-lg border p-4 space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="text-sm font-medium">Time Slot {{ index + 1 }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium">Time Slot {{ index + 1 }}</span>
+                                <span v-if="slot.sponsor_ids.length > 0" class="text-xs italic text-muted-foreground">
+                                    presented by {{ sponsors.filter((s) => slot.sponsor_ids.includes(s.id)).map((s) => s.name).join(', ') }}
+                                </span>
+                            </div>
                             <Button
                                 type="button"
                                 variant="ghost"
@@ -262,6 +326,31 @@ function executeDelete() {
                                 </Select>
                                 <InputError :message="errors[`time_slots.${index}.visibility`]" />
                             </div>
+                        </div>
+
+                        <!-- Time Slot Sponsors -->
+                        <div v-if="sponsors.length > 0" class="space-y-2">
+                            <Label>Sponsors</Label>
+                            <div class="flex flex-wrap gap-x-4 gap-y-2">
+                                <div v-for="sponsor in sponsors" :key="sponsor.id" class="flex items-center gap-2">
+                                    <Checkbox
+                                        :id="`time_slots_${index}_sponsor_${sponsor.id}`"
+                                        :model-value="slot.sponsor_ids.includes(sponsor.id)"
+                                        @update:model-value="(checked: boolean | 'indeterminate') => toggleSlotSponsor(index, sponsor.id, checked)"
+                                    />
+                                    <input
+                                        v-if="slot.sponsor_ids.includes(sponsor.id)"
+                                        type="hidden"
+                                        :name="`time_slots[${index}][sponsor_ids][]`"
+                                        :value="sponsor.id"
+                                    />
+                                    <Label :for="`time_slots_${index}_sponsor_${sponsor.id}`" class="cursor-pointer text-sm">
+                                        {{ sponsor.name }}
+                                        <span v-if="sponsor.sponsor_level" class="text-xs text-muted-foreground">({{ sponsor.sponsor_level.name }})</span>
+                                    </Label>
+                                </div>
+                            </div>
+                            <InputError :message="errors[`time_slots.${index}.sponsor_ids`]" />
                         </div>
                     </div>
 

@@ -44,6 +44,7 @@ export type Event = {
     venue: Venue | null
     primary_program_id: number | null
     programs: Program[]
+    sponsors: Sponsor[]
     created_at: string
     updated_at: string
 }
@@ -57,6 +58,7 @@ export type Program = {
     event?: { id: number; name: string }
     sort_order: number
     time_slots: TimeSlot[]
+    sponsors: Sponsor[]
     created_at: string
     updated_at: string
 }
@@ -69,6 +71,32 @@ export type TimeSlot = {
     visibility: 'public' | 'internal' | 'private'
     program_id?: number
     sort_order: number
+    sponsors: Sponsor[]
     created_at?: string
     updated_at?: string
+}
+
+export type SponsorLevel = {
+    id: number
+    name: string
+    color: string
+    sort_order: number
+    sponsors_count?: number
+    created_at: string
+    updated_at: string
+}
+
+export type Sponsor = {
+    id: number
+    name: string
+    description: string | null
+    link: string | null
+    logo: string | null
+    logo_url: string | null
+    sponsor_level_id: number | null
+    sponsor_level: SponsorLevel | null
+    events: { id: number; name: string }[]
+    managers: { id: number; name: string; email: string }[]
+    created_at: string
+    updated_at: string
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Domain\Sponsoring\Models\Sponsor;
 use App\Enums\RoleName;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -52,5 +53,15 @@ class User extends Authenticatable
     public function isSuperadmin(): bool
     {
         return $this->hasRole(RoleName::Superadmin);
+    }
+
+    public function managedSponsors(): BelongsToMany
+    {
+        return $this->belongsToMany(Sponsor::class)->withTimestamps();
+    }
+
+    public function isSponsorManager(): bool
+    {
+        return $this->hasRole(RoleName::SponsorManager);
     }
 }

@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Domain\Event\Models\Event;
+use App\Domain\Sponsoring\Models\Sponsor;
+use App\Domain\Sponsoring\Models\SponsorLevel;
 use App\Domain\Venue\Models\Address;
 use App\Domain\Venue\Models\Venue;
 use App\Domain\Venue\Models\VenueImage;
@@ -22,6 +24,7 @@ class DatabaseSeeder extends Seeder
         $this->seedUsers();
         $this->seedVenues();
         $this->seedEvents();
+        $this->seedSponsors();
     }
 
     private function seedRoles(): void
@@ -30,6 +33,7 @@ class DatabaseSeeder extends Seeder
             ['name' => RoleName::User->value, 'label' => 'User'],
             ['name' => RoleName::Admin->value, 'label' => 'Admin'],
             ['name' => RoleName::Superadmin->value, 'label' => 'Superadmin'],
+            ['name' => RoleName::SponsorManager->value, 'label' => 'Sponsor Manager'],
         ];
 
         foreach ($roles as $role) {
@@ -103,5 +107,46 @@ class DatabaseSeeder extends Seeder
             'end_date' => '2026-07-18 14:00:00',
             'venue_id' => $venue?->id,
         ]);
+    }
+
+    private function seedSponsors(): void
+    {
+        $gold = SponsorLevel::create(['name' => 'Gold', 'color' => '#FFD700', 'sort_order' => 0]);
+        $silver = SponsorLevel::create(['name' => 'Silver', 'color' => '#C0C0C0', 'sort_order' => 1]);
+        $bronze = SponsorLevel::create(['name' => 'Bronze', 'color' => '#CD7F32', 'sort_order' => 2]);
+
+        $publishedEvent = Event::where('name', 'Summer LAN 2026')->first();
+
+        $sponsor1 = Sponsor::factory()->create([
+            'name' => 'TechCorp Gaming',
+            'description' => 'Leading provider of gaming peripherals.',
+            'link' => 'https://example.com/techcorp',
+            'sponsor_level_id' => $gold->id,
+        ]);
+
+        $sponsor2 = Sponsor::factory()->create([
+            'name' => 'NetSpeed ISP',
+            'description' => 'High-speed internet for gamers.',
+            'link' => 'https://example.com/netspeed',
+            'sponsor_level_id' => $silver->id,
+        ]);
+
+        $sponsor3 = Sponsor::factory()->create([
+            'name' => 'PixelDrink Energy',
+            'description' => 'Energy drinks for late-night gaming sessions.',
+            'sponsor_level_id' => $bronze->id,
+        ]);
+
+        if ($publishedEvent) {
+            $publishedEvent->sponsors()->attach([$sponsor1->id, $sponsor2->id, $sponsor3->id]);
+        }
+
+        // Create a sponsor manager user
+        $sponsorManager = User::factory()->withRole(RoleName::SponsorManager)->create([
+            'name' => 'Sponsor Manager',
+            'email' => 'sponsor@example.com',
+        ]);
+
+        $sponsor1->managers()->attach($sponsorManager->id);
     }
 }

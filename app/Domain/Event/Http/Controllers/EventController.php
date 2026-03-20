@@ -82,7 +82,7 @@ class EventController extends Controller
         $this->authorize('update', $event);
 
         $eventData = $event->load('venue')->toArray();
-        $eventData['banner_image_url'] = $event->banner_image ? Storage::url($event->banner_image) : null;
+        $eventData['banner_image_url'] = $event->banner_image ? Storage::fileUrl($event->banner_image) : null;
 
         return Inertia::render('events/Edit', [
             'event' => $eventData,

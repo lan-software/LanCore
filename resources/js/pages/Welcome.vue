@@ -139,6 +139,9 @@ function formatDateTime(dateString: string): string {
                                     <h3 class="text-lg font-medium">{{ program.name }}</h3>
                                     <Badge v-if="nextEvent.primary_program_id === program.id" variant="default">Primary</Badge>
                                 </div>
+                                <p v-if="program.sponsors && program.sponsors.length > 0" class="text-sm italic text-muted-foreground">
+                                    presented by {{ program.sponsors.map((s: { name: string }) => s.name).join(', ') }}
+                                </p>
                                 <p v-if="program.description" class="text-sm text-muted-foreground">
                                     {{ program.description }}
                                 </p>
@@ -157,6 +160,9 @@ function formatDateTime(dateString: string): string {
                                                 <span class="text-sm font-medium">{{ slot.name }}</span>
                                                 <span class="text-xs text-muted-foreground">{{ formatDateTime(slot.starts_at) }}</span>
                                             </div>
+                                            <p v-if="slot.sponsors && slot.sponsors.length > 0" class="text-xs italic text-muted-foreground">
+                                                presented by {{ slot.sponsors.map((s: { name: string }) => s.name).join(', ') }}
+                                            </p>
                                             <p v-if="slot.description" class="mt-1 text-sm text-muted-foreground">
                                                 {{ slot.description }}
                                             </p>
@@ -177,6 +183,43 @@ function formatDateTime(dateString: string): string {
                                     :alt="image.alt_text ?? nextEvent.venue.name"
                                     class="rounded-lg border object-cover aspect-video w-full"
                                 />
+                            </div>
+                        </div>
+
+                        <!-- Sponsors -->
+                        <div v-if="nextEvent.sponsors && nextEvent.sponsors.length > 0" class="space-y-4">
+                            <h2 class="text-2xl font-semibold">Sponsors</h2>
+                            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                <a
+                                    v-for="sponsor in nextEvent.sponsors"
+                                    :key="sponsor.id"
+                                    :href="sponsor.link ?? undefined"
+                                    :target="sponsor.link ? '_blank' : undefined"
+                                    :rel="sponsor.link ? 'noopener noreferrer' : undefined"
+                                    class="flex flex-col items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                                    :class="{ 'cursor-default': !sponsor.link }"
+                                >
+                                    <img
+                                        v-if="sponsor.logo_url"
+                                        :src="sponsor.logo_url"
+                                        :alt="sponsor.name"
+                                        class="h-16 w-auto object-contain"
+                                    />
+                                    <div class="text-center">
+                                        <p class="text-sm font-medium">{{ sponsor.name }}</p>
+                                        <Badge
+                                            v-if="sponsor.sponsor_level"
+                                            variant="outline"
+                                            :style="{
+                                                borderColor: sponsor.sponsor_level.color,
+                                                color: sponsor.sponsor_level.color,
+                                            }"
+                                            class="mt-1"
+                                        >
+                                            {{ sponsor.sponsor_level.name }}
+                                        </Badge>
+                                    </div>
+                                </a>
                             </div>
                         </div>
                     </div>

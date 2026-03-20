@@ -6,6 +6,10 @@ use App\Domain\Event\Models\Event;
 use App\Domain\Event\Policies\EventPolicy;
 use App\Domain\Program\Models\Program;
 use App\Domain\Program\Policies\ProgramPolicy;
+use App\Domain\Sponsoring\Models\Sponsor;
+use App\Domain\Sponsoring\Models\SponsorLevel;
+use App\Domain\Sponsoring\Policies\SponsorLevelPolicy;
+use App\Domain\Sponsoring\Policies\SponsorPolicy;
 use App\Domain\Venue\Models\Venue;
 use App\Domain\Venue\Policies\VenuePolicy;
 use App\Models\User;
@@ -14,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -34,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configurePolicies();
+        $this->configureStorageMacros();
     }
 
     /**
@@ -45,6 +51,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Venue::class, VenuePolicy::class);
         Gate::policy(Event::class, EventPolicy::class);
         Gate::policy(Program::class, ProgramPolicy::class);
+        Gate::policy(Sponsor::class, SponsorPolicy::class);
+        Gate::policy(SponsorLevel::class, SponsorLevelPolicy::class);
     }
 
     /**
@@ -67,5 +75,22 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    /**
+     * Register a Storage macro for generating public file URLs.
+     *
+     * When anonymous bucket access is disabled, returns a proxy URL
+     * through this application. Otherwise, returns the direct S3 URL.
+     */
+    protected function configureStorageMacros(): void
+    {
+        Storage::macro('fileUrl', function (string $path): string {
+            if (config('filesystems.disks.s3.anonymous_bucket_access')) {
+                return Storage::url($path);
+            }
+
+            return route('storage.file', ['path' => $path]);
+        });
     }
 }

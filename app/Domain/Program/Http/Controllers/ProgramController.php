@@ -10,6 +10,7 @@ use App\Domain\Program\Http\Requests\ProgramIndexRequest;
 use App\Domain\Program\Http\Requests\StoreProgramRequest;
 use App\Domain\Program\Http\Requests\UpdateProgramRequest;
 use App\Domain\Program\Models\Program;
+use App\Domain\Sponsoring\Models\Sponsor;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -83,7 +84,7 @@ class ProgramController extends Controller
     {
         $this->authorize('update', $program);
 
-        $program->load(['event', 'timeSlots']);
+        $program->load(['event', 'timeSlots.sponsors', 'sponsors']);
         $isPrimary = $program->event->primary_program_id === $program->id;
 
         return Inertia::render('programs/Edit', [
@@ -92,6 +93,9 @@ class ProgramController extends Controller
             'events' => Event::with('primaryProgram:id,name')
                 ->orderBy('name')
                 ->get(['id', 'name', 'primary_program_id']),
+            'sponsors' => Sponsor::with('sponsorLevel')
+                ->orderBy('name')
+                ->get(['id', 'name', 'sponsor_level_id']),
         ]);
     }
 
@@ -103,6 +107,7 @@ class ProgramController extends Controller
             $program,
             $request->safe()->only(['name', 'description', 'visibility']),
             $request->validated('time_slots', []),
+            $request->validated('sponsor_ids'),
         );
 
         $event = $program->event;
