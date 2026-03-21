@@ -11,8 +11,9 @@
     "packages": [
         "laravel/fortify"
     ],
-    "sail": false,
+    "sail": true,
     "skills": [
+        "cashier-stripe-development",
         "wayfinder-development",
         "pest-testing",
         "inertia-vue-development",

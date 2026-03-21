@@ -1,10 +1,9 @@
 {
     "mcpServers": {
         "laravel-boost": {
-            "command": "wsl.exe",
+            "command": "vendor/bin/sail",
             "args": [
-                "/home/mkohn/.config/herd-lite/bin/php",
-                "/home/mkohn/git/lan-software/LanCore/artisan",
+                "artisan",
                 "boost:mcp"
             ]
         }
