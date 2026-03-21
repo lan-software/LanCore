@@ -24,3 +24,5 @@ require __DIR__.'/venues.php';
 require __DIR__.'/events.php';
 require __DIR__.'/programs.php';
 require __DIR__.'/sponsors.php';
+require __DIR__.'/ticketing.php';
+require __DIR__.'/shop.php';

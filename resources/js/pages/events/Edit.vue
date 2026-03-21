@@ -196,12 +196,12 @@ function unpublishEvent() {
                     </div>
                 </div>
 
-                <!-- Venue & Media -->
+                <!-- Venue & Capacity -->
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Venue & Media"
-                        description="Optionally assign a venue and banner image"
+                        title="Venue & Capacity"
+                        description="Update the venue and seating capacity"
                     />
 
                     <div class="grid gap-2">
@@ -225,6 +225,28 @@ function unpublishEvent() {
                         </Select>
                         <InputError :message="errors.venue_id" />
                     </div>
+
+                    <div class="grid gap-2">
+                        <Label for="seat_capacity">Seating Capacity</Label>
+                        <Input
+                            id="seat_capacity"
+                            type="number"
+                            name="seat_capacity"
+                            :default-value="event.seat_capacity ? String(event.seat_capacity) : ''"
+                            min="0"
+                            placeholder="Leave empty for unlimited"
+                        />
+                        <InputError :message="errors.seat_capacity" />
+                    </div>
+                </div>
+
+                <!-- Media -->
+                <div class="space-y-4">
+                    <Heading
+                        variant="small"
+                        title="Media"
+                        description="Update the banner image"
+                    />
 
                     <div class="grid gap-2">
                         <Label for="banner_image">Banner Image</Label>

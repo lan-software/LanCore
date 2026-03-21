@@ -40,6 +40,7 @@ export type Event = {
     banner_image: string | null
     banner_image_url: string | null
     status: 'draft' | 'published'
+    seat_capacity: number | null
     venue_id: number | null
     venue: Venue | null
     primary_program_id: number | null
@@ -97,6 +98,139 @@ export type Sponsor = {
     sponsor_level: SponsorLevel | null
     events: { id: number; name: string }[]
     managers: { id: number; name: string; email: string }[]
+    created_at: string
+    updated_at: string
+}
+
+// Ticketing Domain
+
+export type TicketCategory = {
+    id: number
+    name: string
+    description: string | null
+    sort_order: number
+    event_id: number | null
+    event?: Event | null
+    ticket_types_count?: number
+    created_at: string
+    updated_at: string
+}
+
+export type TicketGroup = {
+    id: number
+    name: string
+    description: string | null
+    event_id: number
+    event?: { id: number; name: string }
+    created_at: string
+    updated_at: string
+}
+
+export type TicketType = {
+    id: number
+    name: string
+    description: string | null
+    price: number
+    quota: number
+    max_per_user: number | null
+    seats_per_ticket: number
+    is_row_ticket: boolean
+    is_seatable: boolean
+    is_hidden: boolean
+    purchase_from: string | null
+    purchase_until: string | null
+    is_locked: boolean
+    event_id: number
+    event?: { id: number; name: string }
+    ticket_category_id: number | null
+    ticket_category?: TicketCategory | null
+    ticket_group_id: number | null
+    ticket_group?: TicketGroup | null
+    tickets_count?: number
+    remaining_quota?: number
+    created_at: string
+    updated_at: string
+}
+
+export type TicketAddon = {
+    id: number
+    name: string
+    description: string | null
+    price: number
+    quota: number | null
+    seats_consumed: number
+    requires_ticket: boolean
+    is_hidden: boolean
+    event_id: number
+    event?: { id: number; name: string }
+    tickets_count?: number
+    remaining_quota?: number
+    created_at: string
+    updated_at: string
+}
+
+export type VoucherType = 'fixed_amount' | 'percentage'
+
+export type Voucher = {
+    id: number
+    code: string
+    type: VoucherType
+    discount_amount: number | null
+    discount_percent: number | null
+    max_uses: number | null
+    times_used: number
+    valid_from: string | null
+    valid_until: string | null
+    is_active: boolean
+    event_id: number | null
+    event?: { id: number; name: string } | null
+    created_at: string
+    updated_at: string
+}
+
+export type OrderStatus = 'Pending' | 'Completed' | 'Failed' | 'Refunded'
+
+export type PaymentMethod = 'stripe' | 'on_site'
+
+export type Order = {
+    id: number
+    payment_method: PaymentMethod
+    provider_session_id: string | null
+    provider_transaction_id: string | null
+    status: OrderStatus
+    subtotal: number
+    discount: number
+    total: number
+    user_id: number
+    event_id: number
+    voucher_id: number | null
+    user?: { id: number; name: string; email: string }
+    event?: { id: number; name: string }
+    voucher?: Voucher | null
+    tickets?: Ticket[]
+    created_at: string
+    updated_at: string
+}
+
+export type TicketStatus = 'Active' | 'CheckedIn' | 'Cancelled'
+
+export type Ticket = {
+    id: number
+    status: TicketStatus
+    checked_in_at: string | null
+    ticket_type_id: number
+    event_id: number
+    order_id: number
+    owner_id: number
+    manager_id: number | null
+    user_id: number | null
+    ticket_type?: TicketType
+    event?: { id: number; name: string }
+    order?: Order
+    owner?: { id: number; name: string; email: string }
+    manager?: { id: number; name: string; email: string } | null
+    ticket_user?: { id: number; name: string; email: string } | null
+    addons?: TicketAddon[]
     created_at: string
     updated_at: string
 }

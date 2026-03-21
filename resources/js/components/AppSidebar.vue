@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Calendar, ClipboardList, FolderGit2, Handshake, LayoutGrid, MapPin, Palette, Users } from 'lucide-vue-next';
+import { BookOpen, Calendar, ClipboardList, FolderGit2, Gift, Handshake, LayoutGrid, MapPin, Palette, Puzzle, Rows3, Tag, Ticket, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -25,6 +25,11 @@ import { index as sponsorLevelsIndex } from '@/routes/sponsor-levels';
 import { index as sponsorsIndex } from '@/routes/sponsors';
 import { index as usersIndex } from '@/routes/users';
 import { index as venuesIndex } from '@/routes/venues';
+import { index as ticketTypesIndex } from '@/routes/ticket-types';
+import { index as ticketCategoriesIndex } from '@/routes/ticket-categories';
+import { index as ticketAddonsIndex } from '@/routes/ticket-addons';
+import { index as vouchersIndex } from '@/routes/vouchers';
+import { index as ticketsIndex } from '@/routes/tickets';
 import type { NavItem } from '@/types';
 
 const page = usePage();
@@ -44,6 +49,11 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'My Tickets',
+        href: ticketsIndex(),
+        icon: Ticket,
     },
 ];
 
@@ -127,6 +137,38 @@ const footerNavItems: NavItem[] = [
                                 <Link :href="sponsorLevelsIndex()">
                                     <Palette />
                                     <span>Sponsor Levels</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="ticketTypesIndex()">
+                                    <Rows3 />
+                                    <span>Ticket Types</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="ticketCategoriesIndex()">
+                                    <Tag />
+                                    <span>Ticket Categories</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="ticketAddonsIndex()">
+                                    <Puzzle />
+                                    <span>Ticket Addons</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="vouchersIndex()">
+                                    <Gift />
+                                    <span>Vouchers</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

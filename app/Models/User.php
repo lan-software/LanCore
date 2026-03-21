@@ -4,14 +4,17 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Domain\Sponsoring\Models\Sponsor;
+use App\Domain\Ticketing\Models\Ticket;
 use App\Enums\RoleName;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 #[Fillable(['name', 'email', 'password'])]
@@ -19,7 +22,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use Billable, HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * Get the attributes that should be cast.
@@ -63,5 +66,20 @@ class User extends Authenticatable
     public function isSponsorManager(): bool
     {
         return $this->hasRole(RoleName::SponsorManager);
+    }
+
+    public function ownedTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'owner_id');
+    }
+
+    public function managedTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'manager_id');
+    }
+
+    public function usableTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'user_id');
     }
 }

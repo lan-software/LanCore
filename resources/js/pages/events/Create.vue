@@ -120,12 +120,12 @@ function onBannerSelected(event: globalThis.Event) {
                     </div>
                 </div>
 
-                <!-- Venue & Media -->
+                <!-- Venue & Capacity -->
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Venue & Media"
-                        description="Optionally assign a venue and banner image"
+                        title="Venue & Capacity"
+                        description="Optionally assign a venue and set the seating capacity"
                     />
 
                     <div class="grid gap-2">
@@ -146,6 +146,27 @@ function onBannerSelected(event: globalThis.Event) {
                         </Select>
                         <InputError :message="errors.venue_id" />
                     </div>
+
+                    <div class="grid gap-2">
+                        <Label for="seat_capacity">Seating Capacity</Label>
+                        <Input
+                            id="seat_capacity"
+                            type="number"
+                            name="seat_capacity"
+                            min="0"
+                            placeholder="Leave empty for unlimited"
+                        />
+                        <InputError :message="errors.seat_capacity" />
+                    </div>
+                </div>
+
+                <!-- Media -->
+                <div class="space-y-4">
+                    <Heading
+                        variant="small"
+                        title="Media"
+                        description="Optionally add a banner image"
+                    />
 
                     <div class="grid gap-2">
                         <Label for="banner_image">Banner Image</Label>

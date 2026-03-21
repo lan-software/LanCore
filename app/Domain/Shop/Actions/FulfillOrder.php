@@ -1,0 +1,65 @@
+<?php
+
+namespace App\Domain\Shop\Actions;
+
+use App\Domain\Shop\Enums\OrderStatus;
+use App\Domain\Shop\Models\Order;
+use App\Domain\Ticketing\Enums\TicketStatus;
+use App\Domain\Ticketing\Models\Addon;
+use App\Domain\Ticketing\Models\Ticket;
+use App\Domain\Ticketing\Models\TicketType;
+use Illuminate\Support\Facades\DB;
+
+class FulfillOrder
+{
+    public function execute(Order $order): void
+    {
+        if ($order->status === OrderStatus::Completed) {
+            return;
+        }
+
+        DB::transaction(function () use ($order): void {
+            $order->update([
+                'status' => OrderStatus::Completed,
+            ]);
+
+            $items = json_decode($order->metadata ?? '[]', true);
+
+            if (empty($items)) {
+                return;
+            }
+
+            foreach ($items as $item) {
+                $ticketType = TicketType::findOrFail($item['ticket_type_id']);
+
+                if (! $ticketType->is_locked) {
+                    $ticketType->update(['is_locked' => true]);
+                }
+
+                for ($i = 0; $i < $item['quantity']; $i++) {
+                    $ticket = Ticket::create([
+                        'status' => TicketStatus::Active,
+                        'ticket_type_id' => $ticketType->id,
+                        'event_id' => $order->event_id,
+                        'order_id' => $order->id,
+                        'owner_id' => $order->user_id,
+                        'manager_id' => $order->user_id,
+                        'user_id' => $order->user_id,
+                    ]);
+
+                    foreach ($item['addon_ids'] ?? [] as $addonId) {
+                        $addon = Addon::findOrFail($addonId);
+                        $ticket->addons()->attach($addonId, [
+                            'price_paid' => $addon->price,
+                            'order_id' => $order->id,
+                        ]);
+                    }
+                }
+            }
+
+            if ($order->voucher_id) {
+                $order->voucher->increment('times_used');
+            }
+        });
+    }
+}

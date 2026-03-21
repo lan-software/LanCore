@@ -2,7 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3'
 import { dashboard, login, register } from '@/routes'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Clock, MapPin } from 'lucide-vue-next'
+import { Calendar, Clock, MapPin, ShoppingCart } from 'lucide-vue-next'
+import { index as shopIndex } from '@/routes/shop'
 import type { Event } from '@/types/domain'
 
 withDefaults(
@@ -50,6 +51,13 @@ function formatDateTime(dateString: string): string {
             <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
                 <span class="text-lg font-semibold">LanCore</span>
                 <nav class="flex items-center gap-4">
+                    <Link
+                        :href="shopIndex().url"
+                        class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        <ShoppingCart class="size-4" />
+                        Shop
+                    </Link>
                     <Link
                         v-if="$page.props.auth.user"
                         :href="dashboard()"

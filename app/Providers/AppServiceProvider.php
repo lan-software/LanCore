@@ -6,10 +6,23 @@ use App\Domain\Event\Models\Event;
 use App\Domain\Event\Policies\EventPolicy;
 use App\Domain\Program\Models\Program;
 use App\Domain\Program\Policies\ProgramPolicy;
+use App\Domain\Shop\Models\Voucher;
+use App\Domain\Shop\PaymentProviders\OnSitePaymentProvider;
+use App\Domain\Shop\PaymentProviders\PaymentProviderManager;
+use App\Domain\Shop\PaymentProviders\StripePaymentProvider;
+use App\Domain\Shop\Policies\VoucherPolicy;
 use App\Domain\Sponsoring\Models\Sponsor;
 use App\Domain\Sponsoring\Models\SponsorLevel;
 use App\Domain\Sponsoring\Policies\SponsorLevelPolicy;
 use App\Domain\Sponsoring\Policies\SponsorPolicy;
+use App\Domain\Ticketing\Models\Addon;
+use App\Domain\Ticketing\Models\Ticket;
+use App\Domain\Ticketing\Models\TicketCategory;
+use App\Domain\Ticketing\Models\TicketType;
+use App\Domain\Ticketing\Policies\AddonPolicy;
+use App\Domain\Ticketing\Policies\TicketCategoryPolicy;
+use App\Domain\Ticketing\Policies\TicketPolicy;
+use App\Domain\Ticketing\Policies\TicketTypePolicy;
 use App\Domain\Venue\Models\Venue;
 use App\Domain\Venue\Policies\VenuePolicy;
 use App\Models\User;
@@ -29,7 +42,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(PaymentProviderManager::class, function ($app): PaymentProviderManager {
+            $manager = new PaymentProviderManager;
+            $manager->register($app->make(StripePaymentProvider::class));
+            $manager->register($app->make(OnSitePaymentProvider::class));
+
+            return $manager;
+        });
     }
 
     /**
@@ -53,6 +72,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Program::class, ProgramPolicy::class);
         Gate::policy(Sponsor::class, SponsorPolicy::class);
         Gate::policy(SponsorLevel::class, SponsorLevelPolicy::class);
+        Gate::policy(Ticket::class, TicketPolicy::class);
+        Gate::policy(TicketType::class, TicketTypePolicy::class);
+        Gate::policy(TicketCategory::class, TicketCategoryPolicy::class);
+        Gate::policy(Addon::class, AddonPolicy::class);
+        Gate::policy(Voucher::class, VoucherPolicy::class);
     }
 
     /**
