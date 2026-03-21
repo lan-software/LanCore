@@ -187,7 +187,7 @@ function executeDelete() {
                                             size="sm"
                                             as-child
                                         >
-                                            <Link :href="GameModeController.edit(game.id, mode.id).url">
+                                            <Link :href="GameModeController.edit({ game: game.id, mode: mode.id }).url">
                                                 <Pencil class="size-4" />
                                             </Link>
                                         </Button>

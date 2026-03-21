@@ -26,13 +26,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: gamesRoute().url },
     { title: 'Games', href: gamesRoute().url },
     { title: props.game.name, href: GameController.edit(props.game.id).url },
-    { title: props.gameMode.name, href: GameModeController.edit(props.game.id, props.gameMode.id).url },
+    { title: props.gameMode.name, href: GameModeController.edit({ game: props.game.id, mode: props.gameMode.id }).url },
 ]
 
 const showDeleteDialog = ref(false)
 
 function executeDelete() {
-    router.delete(GameModeController.destroy(props.game.id, props.gameMode.id).url, {
+    router.delete(GameModeController.destroy({ game: props.game.id, mode: props.gameMode.id }).url, {
         onSuccess: () => {
             showDeleteDialog.value = false
         },
@@ -58,7 +58,7 @@ const parametersJson = props.gameMode.parameters ? JSON.stringify(props.gameMode
             </div>
 
             <Form
-                v-bind="GameModeController.update.form(game.id, gameMode.id)"
+                v-bind="GameModeController.update.form({ game: game.id, mode: gameMode.id })"
                 class="space-y-8"
                 v-slot="{ errors, processing, recentlySuccessful }"
             >

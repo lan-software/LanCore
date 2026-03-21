@@ -89,6 +89,7 @@ const footerNavItems: NavItem[] = [
         <SidebarContent>
             <NavMain :items="mainNavItems" />
 
+            <!-- Administration -->
             <SidebarGroup v-if="isAdmin">
                 <SidebarGroupLabel>Administration</SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -101,6 +102,15 @@ const footerNavItems: NavItem[] = [
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Event Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Event</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="eventsIndex()">
@@ -109,6 +119,15 @@ const footerNavItems: NavItem[] = [
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Program Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Program</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="programsIndex()">
@@ -117,6 +136,15 @@ const footerNavItems: NavItem[] = [
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Venue Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Venue</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="venuesIndex()">
@@ -125,6 +153,15 @@ const footerNavItems: NavItem[] = [
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Games Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Games</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="gamesIndex()">
@@ -133,7 +170,16 @@ const footerNavItems: NavItem[] = [
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                        <SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Sponsoring Domain -->
+            <SidebarGroup v-if="isAdmin || isSponsorManager">
+                <SidebarGroupLabel>Sponsoring</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem v-if="isAdmin">
                             <SidebarMenuButton as-child>
                                 <Link :href="sponsorsIndex()">
                                     <Handshake />
@@ -141,7 +187,15 @@ const footerNavItems: NavItem[] = [
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                        <SidebarMenuItem>
+                        <SidebarMenuItem v-if="!isAdmin && isSponsorManager">
+                            <SidebarMenuButton as-child>
+                                <Link :href="sponsorsIndex()">
+                                    <Handshake />
+                                    <span>My Sponsors</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="isAdmin">
                             <SidebarMenuButton as-child>
                                 <Link :href="sponsorLevelsIndex()">
                                     <Palette />
@@ -149,6 +203,15 @@ const footerNavItems: NavItem[] = [
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Ticketing Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Ticketing</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="ticketTypesIndex()">
@@ -185,17 +248,56 @@ const footerNavItems: NavItem[] = [
                 </SidebarGroupContent>
             </SidebarGroup>
 
-            <!-- Sponsor Manager section -->
-            <SidebarGroup v-if="!isAdmin && isSponsorManager">
-                <SidebarGroupLabel>Sponsor Management</SidebarGroupLabel>
+            <!-- Competition Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Competition</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="sponsorsIndex()">
-                                    <Handshake />
-                                    <span>My Sponsors</span>
-                                </Link>
+                            <SidebarMenuButton class="text-sidebar-foreground/50 pointer-events-none">
+                                <span>Coming soon</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Orchestration Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Orchestration</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton class="text-sidebar-foreground/50 pointer-events-none">
+                                <span>Coming soon</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Seating Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Seating</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton class="text-sidebar-foreground/50 pointer-events-none">
+                                <span>Coming soon</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Shop Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Shop</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton class="text-sidebar-foreground/50 pointer-events-none">
+                                <span>Coming soon</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
