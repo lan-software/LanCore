@@ -1,3 +1,29 @@
+export type Game = {
+    id: number
+    name: string
+    slug: string
+    publisher: string | null
+    description: string | null
+    is_active: boolean
+    game_modes_count?: number
+    game_modes?: GameMode[]
+    created_at: string
+    updated_at: string
+}
+
+export type GameMode = {
+    id: number
+    game_id: number
+    name: string
+    slug: string
+    description: string | null
+    team_size: number
+    parameters: Record<string, unknown> | null
+    is_active: boolean
+    created_at: string
+    updated_at: string
+}
+
 export type Address = {
     id: number
     street: string

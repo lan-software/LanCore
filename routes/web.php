@@ -26,3 +26,4 @@ require __DIR__.'/programs.php';
 require __DIR__.'/sponsors.php';
 require __DIR__.'/ticketing.php';
 require __DIR__.'/shop.php';
+require __DIR__.'/games.php';

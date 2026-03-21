@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Calendar, ClipboardList, FolderGit2, Gift, Handshake, LayoutGrid, MapPin, Palette, Puzzle, Rows3, Tag, Ticket, Users } from 'lucide-vue-next';
+import { BookOpen, Calendar, ClipboardList, FolderGit2, Gamepad2, Gift, Handshake, LayoutGrid, MapPin, Palette, Puzzle, Rows3, Tag, Ticket, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as eventsIndex } from '@/routes/events';
+import { index as gamesIndex } from '@/routes/games';
 import { index as programsIndex } from '@/routes/programs';
 import { index as sponsorLevelsIndex } from '@/routes/sponsor-levels';
 import { index as sponsorsIndex } from '@/routes/sponsors';
@@ -121,6 +122,14 @@ const footerNavItems: NavItem[] = [
                                 <Link :href="venuesIndex()">
                                     <MapPin />
                                     <span>Venues</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="gamesIndex()">
+                                    <Gamepad2 />
+                                    <span>Games</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

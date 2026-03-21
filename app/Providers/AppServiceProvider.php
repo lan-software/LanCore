@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use App\Domain\Event\Models\Event;
 use App\Domain\Event\Policies\EventPolicy;
+use App\Domain\Games\Models\Game;
+use App\Domain\Games\Models\GameMode;
+use App\Domain\Games\Policies\GameModePolicy;
+use App\Domain\Games\Policies\GamePolicy;
 use App\Domain\Program\Models\Program;
 use App\Domain\Program\Policies\ProgramPolicy;
 use App\Domain\Shop\Models\Voucher;
@@ -68,6 +72,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Venue::class, VenuePolicy::class);
+        Gate::policy(Game::class, GamePolicy::class);
+        Gate::policy(GameMode::class, GameModePolicy::class);
         Gate::policy(Event::class, EventPolicy::class);
         Gate::policy(Program::class, ProgramPolicy::class);
         Gate::policy(Sponsor::class, SponsorPolicy::class);

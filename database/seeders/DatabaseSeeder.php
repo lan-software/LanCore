@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Domain\Event\Models\Event;
+use App\Domain\Games\Models\Game;
+use App\Domain\Games\Models\GameMode;
 use App\Domain\Sponsoring\Models\Sponsor;
 use App\Domain\Sponsoring\Models\SponsorLevel;
 use App\Domain\Venue\Models\Address;
@@ -23,6 +25,7 @@ class DatabaseSeeder extends Seeder
         $this->seedRoles();
         $this->seedUsers();
         $this->seedVenues();
+        $this->seedGames();
         $this->seedEvents();
         $this->seedSponsors();
     }
@@ -85,6 +88,67 @@ class DatabaseSeeder extends Seeder
                 'state' => 'Bavaria',
                 'country' => 'Germany',
             ])->id,
+        ]);
+    }
+
+    private function seedGames(): void
+    {
+        $cs2 = Game::factory()->create([
+            'name' => 'Counter-Strike 2',
+            'slug' => 'counter-strike-2',
+            'publisher' => 'Valve',
+            'description' => 'Tactical first-person shooter.',
+        ]);
+
+        GameMode::factory()->create([
+            'game_id' => $cs2->id,
+            'name' => '5v5 Competitive',
+            'slug' => '5v5-competitive',
+            'team_size' => 5,
+            'parameters' => ['map_pool' => ['dust2', 'mirage', 'inferno', 'nuke', 'anubis', 'ancient', 'vertigo']],
+        ]);
+
+        GameMode::factory()->create([
+            'game_id' => $cs2->id,
+            'name' => '2v2 Wingman',
+            'slug' => '2v2-wingman',
+            'team_size' => 2,
+            'parameters' => ['map_pool' => ['inferno', 'nuke', 'overpass']],
+        ]);
+
+        $lol = Game::factory()->create([
+            'name' => 'League of Legends',
+            'slug' => 'league-of-legends',
+            'publisher' => 'Riot Games',
+            'description' => 'Multiplayer online battle arena.',
+        ]);
+
+        GameMode::factory()->create([
+            'game_id' => $lol->id,
+            'name' => '5v5 Summoner\'s Rift',
+            'slug' => '5v5-summoners-rift',
+            'team_size' => 5,
+        ]);
+
+        $tableTennis = Game::factory()->create([
+            'name' => 'Table Tennis',
+            'slug' => 'table-tennis',
+            'publisher' => null,
+            'description' => 'Classic table tennis.',
+        ]);
+
+        GameMode::factory()->create([
+            'game_id' => $tableTennis->id,
+            'name' => '1v1 Singles',
+            'slug' => '1v1-singles',
+            'team_size' => 1,
+        ]);
+
+        GameMode::factory()->create([
+            'game_id' => $tableTennis->id,
+            'name' => '2v2 Doubles',
+            'slug' => '2v2-doubles',
+            'team_size' => 2,
         ]);
     }
 
