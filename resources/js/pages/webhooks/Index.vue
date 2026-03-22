@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { FlexRender, getCoreRowModel, useVueTable, type SortingState } from '@tanstack/vue-table'
 import { router, Head, Link } from '@inertiajs/vue3'
-import { edit } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
+import { edit, show } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
 import { create as webhookCreate } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
 import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
@@ -118,7 +118,7 @@ const table = useVueTable({
                         v-for="row in table.getRowModel().rows"
                         :key="row.id"
                         class="cursor-pointer hover:bg-muted/50"
-                        @click="router.visit(edit({ webhook: row.original.id }).url)"
+                        @click="router.visit(show({ webhook: row.original.id }).url)"
                     >
                         <TableCell
                             v-for="cell in row.getVisibleCells()"
