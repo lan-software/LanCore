@@ -36,6 +36,10 @@ it('creates default preferences when visiting settings for the first time', func
     expect($preference->mail_on_events)->toBeTrue();
     expect($preference->mail_on_news_comments)->toBeTrue();
     expect($preference->mail_on_program_time_slots)->toBeTrue();
+    expect($preference->push_on_news)->toBeFalse();
+    expect($preference->push_on_events)->toBeFalse();
+    expect($preference->push_on_news_comments)->toBeFalse();
+    expect($preference->push_on_program_time_slots)->toBeFalse();
 });
 
 it('allows users to update their notification preferences', function () {
@@ -48,6 +52,10 @@ it('allows users to update their notification preferences', function () {
             'mail_on_events' => true,
             'mail_on_news_comments' => false,
             'mail_on_program_time_slots' => true,
+            'push_on_news' => false,
+            'push_on_events' => false,
+            'push_on_news_comments' => false,
+            'push_on_program_time_slots' => false,
         ])
         ->assertRedirect();
 
@@ -63,7 +71,10 @@ it('validates notification preference fields are required', function () {
 
     $this->actingAs($user)
         ->patch('/settings/notifications', [])
-        ->assertInvalid(['mail_on_news', 'mail_on_events', 'mail_on_news_comments', 'mail_on_program_time_slots']);
+        ->assertInvalid([
+            'mail_on_news', 'mail_on_events', 'mail_on_news_comments', 'mail_on_program_time_slots',
+            'push_on_news', 'push_on_events', 'push_on_news_comments', 'push_on_program_time_slots',
+        ]);
 });
 
 it('requires authentication to access notification settings', function () {

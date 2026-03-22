@@ -4,10 +4,13 @@ use App\Domain\News\Actions\CreateNewsArticle;
 use App\Domain\News\Actions\UpdateNewsArticle;
 use App\Domain\News\Events\NewsArticlePublished;
 use App\Domain\News\Models\NewsArticle;
+use App\Domain\Notification\Models\NotificationPreference;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\NewsPublishedNotification;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 
 beforeEach(function () {
     Role::updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
@@ -120,4 +123,41 @@ it('allows admins to store a new article with notify_users flag', function () {
     $article = NewsArticle::where('title', 'Notify Users Article')->first();
     expect($article)->not->toBeNull();
     expect($article->notify_users)->toBeTrue();
+});
+
+it('sends notification to users with mail_on_news enabled', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+    NotificationPreference::factory()->for($user)->create(['mail_on_news' => true]);
+
+    $article = NewsArticle::factory()->published()->create(['notify_users' => true]);
+
+    $user->notify(new NewsPublishedNotification($article));
+
+    Notification::assertSentTo($user, NewsPublishedNotification::class);
+});
+
+it('does not send notification when user has mail_on_news disabled via shouldSend', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+    NotificationPreference::factory()->for($user)->create(['mail_on_news' => false]);
+
+    $article = NewsArticle::factory()->published()->create(['notify_users' => true]);
+
+    $notification = new NewsPublishedNotification($article);
+
+    expect($notification->shouldSend($user, 'mail'))->toBeFalse();
+});
+
+it('sends notification when user has no preferences yet via shouldSend', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+    $article = NewsArticle::factory()->published()->create(['notify_users' => true]);
+
+    $notification = new NewsPublishedNotification($article);
+
+    expect($notification->shouldSend($user, 'mail'))->toBeTrue();
 });

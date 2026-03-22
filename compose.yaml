@@ -26,6 +26,26 @@ services:
             - redis
             - mailpit
             - garage
+    queue:
+        build:
+            context: './vendor/laravel/sail/runtimes/8.5'
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+        image: 'sail-8.5/app'
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            - laravel.test
+            - pgsql
+            - redis
+        command: 'php artisan queue:work --sleep=3 --tries=3 --max-time=3600'
+        restart: unless-stopped
     pgsql:
         image: 'postgres:18-alpine'
         ports:

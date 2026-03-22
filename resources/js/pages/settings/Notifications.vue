@@ -15,6 +15,10 @@ type NotificationPreferences = {
     mail_on_events: boolean;
     mail_on_news_comments: boolean;
     mail_on_program_time_slots: boolean;
+    push_on_news: boolean;
+    push_on_events: boolean;
+    push_on_news_comments: boolean;
+    push_on_program_time_slots: boolean;
 };
 
 const props = defineProps<{
@@ -33,11 +37,49 @@ const form = useForm({
     mail_on_events: props.preferences.mail_on_events,
     mail_on_news_comments: props.preferences.mail_on_news_comments,
     mail_on_program_time_slots: props.preferences.mail_on_program_time_slots,
+    push_on_news: props.preferences.push_on_news,
+    push_on_events: props.preferences.push_on_events,
+    push_on_news_comments: props.preferences.push_on_news_comments,
+    push_on_program_time_slots: props.preferences.push_on_program_time_slots,
 });
 
 function submit() {
     form.patch(update().url);
 }
+
+type NotificationRow = {
+    label: string;
+    description: string;
+    mailKey: keyof typeof form;
+    pushKey: keyof typeof form;
+};
+
+const notificationRows: NotificationRow[] = [
+    {
+        label: 'News articles',
+        description: 'When a new article is published',
+        mailKey: 'mail_on_news',
+        pushKey: 'push_on_news',
+    },
+    {
+        label: 'Events',
+        description: 'When a new event is published',
+        mailKey: 'mail_on_events',
+        pushKey: 'push_on_events',
+    },
+    {
+        label: 'News comments',
+        description: 'When someone comments on a news article',
+        mailKey: 'mail_on_news_comments',
+        pushKey: 'push_on_news_comments',
+    },
+    {
+        label: 'Program time slots',
+        description: 'When a program time slot is about to start',
+        mailKey: 'mail_on_program_time_slots',
+        pushKey: 'push_on_program_time_slots',
+    },
+];
 </script>
 
 <template>
@@ -50,35 +92,51 @@ function submit() {
             <div class="flex flex-col space-y-6">
                 <Heading
                     variant="small"
-                    title="Email notifications"
-                    description="Choose which email notifications you want to receive"
+                    title="Notifications"
+                    description="Choose how you want to be notified"
                 />
 
                 <form @submit.prevent="submit" class="space-y-6">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-2">
-                            <Checkbox id="mail_on_news" v-model:checked="form.mail_on_news" />
-                            <Label for="mail_on_news" class="text-sm font-normal">News articles</Label>
-                        </div>
-                        <p class="text-xs text-muted-foreground ml-6">Receive an email when a new article is published</p>
-
-                        <div class="flex items-center gap-2">
-                            <Checkbox id="mail_on_events" v-model:checked="form.mail_on_events" />
-                            <Label for="mail_on_events" class="text-sm font-normal">Events</Label>
-                        </div>
-                        <p class="text-xs text-muted-foreground ml-6">Receive an email when a new event is published</p>
-
-                        <div class="flex items-center gap-2">
-                            <Checkbox id="mail_on_news_comments" v-model:checked="form.mail_on_news_comments" />
-                            <Label for="mail_on_news_comments" class="text-sm font-normal">News comments</Label>
-                        </div>
-                        <p class="text-xs text-muted-foreground ml-6">Receive an email when someone comments on a news article</p>
-
-                        <div class="flex items-center gap-2">
-                            <Checkbox id="mail_on_program_time_slots" v-model:checked="form.mail_on_program_time_slots" />
-                            <Label for="mail_on_program_time_slots" class="text-sm font-normal">Program time slots</Label>
-                        </div>
-                        <p class="text-xs text-muted-foreground ml-6">Receive an email when a program time slot is about to start (requires a ticket for the event)</p>
+                    <div class="overflow-hidden rounded-lg border">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b bg-muted/50">
+                                    <th class="px-4 py-3 text-left font-medium">Notification</th>
+                                    <th class="w-20 px-4 py-3 text-center font-medium">Email</th>
+                                    <th class="w-20 px-4 py-3 text-center font-medium">
+                                        <div class="flex flex-col items-center gap-0.5">
+                                            <span>Push</span>
+                                            <span class="text-[10px] font-normal text-muted-foreground">coming soon</span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="row in notificationRows" :key="row.mailKey" class="border-b last:border-b-0">
+                                    <td class="px-4 py-3">
+                                        <div class="font-medium">{{ row.label }}</div>
+                                        <p class="text-xs text-muted-foreground">{{ row.description }}</p>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <div class="flex justify-center">
+                                            <Checkbox
+                                                :id="row.mailKey"
+                                                v-model:checked="(form[row.mailKey] as boolean)"
+                                            />
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <div class="flex justify-center opacity-40">
+                                            <Checkbox
+                                                :id="row.pushKey"
+                                                :checked="false"
+                                                disabled
+                                            />
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
 
                     <div class="flex items-center gap-4">

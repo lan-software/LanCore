@@ -24,6 +24,10 @@ class NotificationPreferenceFactory extends Factory
             'mail_on_events' => true,
             'mail_on_news_comments' => true,
             'mail_on_program_time_slots' => true,
+            'push_on_news' => false,
+            'push_on_events' => false,
+            'push_on_news_comments' => false,
+            'push_on_program_time_slots' => false,
         ];
     }
 
@@ -34,6 +38,10 @@ class NotificationPreferenceFactory extends Factory
             'mail_on_events' => false,
             'mail_on_news_comments' => false,
             'mail_on_program_time_slots' => false,
+            'push_on_news' => false,
+            'push_on_events' => false,
+            'push_on_news_comments' => false,
+            'push_on_program_time_slots' => false,
         ]);
     }
 }

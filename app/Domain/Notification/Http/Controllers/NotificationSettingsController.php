@@ -21,11 +21,24 @@ class NotificationSettingsController extends Controller
                 'mail_on_events' => true,
                 'mail_on_news_comments' => true,
                 'mail_on_program_time_slots' => true,
+                'push_on_news' => false,
+                'push_on_events' => false,
+                'push_on_news_comments' => false,
+                'push_on_program_time_slots' => false,
             ],
         );
 
         return Inertia::render('settings/Notifications', [
-            'preferences' => $preferences,
+            'preferences' => [
+                'mail_on_news' => $preferences->mail_on_news,
+                'mail_on_events' => $preferences->mail_on_events,
+                'mail_on_news_comments' => $preferences->mail_on_news_comments,
+                'mail_on_program_time_slots' => $preferences->mail_on_program_time_slots,
+                'push_on_news' => $preferences->push_on_news,
+                'push_on_events' => $preferences->push_on_events,
+                'push_on_news_comments' => $preferences->push_on_news_comments,
+                'push_on_program_time_slots' => $preferences->push_on_program_time_slots,
+            ],
         ]);
     }
 

@@ -15,6 +15,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'mail_on_events',
     'mail_on_news_comments',
     'mail_on_program_time_slots',
+    'push_on_news',
+    'push_on_events',
+    'push_on_news_comments',
+    'push_on_program_time_slots',
 ])]
 class NotificationPreference extends Model
 {
@@ -36,6 +40,10 @@ class NotificationPreference extends Model
             'mail_on_events' => 'boolean',
             'mail_on_news_comments' => 'boolean',
             'mail_on_program_time_slots' => 'boolean',
+            'push_on_news' => 'boolean',
+            'push_on_events' => 'boolean',
+            'push_on_news_comments' => 'boolean',
+            'push_on_program_time_slots' => 'boolean',
         ];
     }
 

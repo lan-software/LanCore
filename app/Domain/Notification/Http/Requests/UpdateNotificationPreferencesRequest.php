@@ -21,6 +21,10 @@ class UpdateNotificationPreferencesRequest extends FormRequest
             'mail_on_events' => ['required', 'boolean'],
             'mail_on_news_comments' => ['required', 'boolean'],
             'mail_on_program_time_slots' => ['required', 'boolean'],
+            'push_on_news' => ['required', 'boolean'],
+            'push_on_events' => ['required', 'boolean'],
+            'push_on_news_comments' => ['required', 'boolean'],
+            'push_on_program_time_slots' => ['required', 'boolean'],
         ];
     }
 }
