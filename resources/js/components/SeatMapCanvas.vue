@@ -1,6 +1,36 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
-import type { SeatPlanData } from '@/types/domain'
+import type { SeatPlanBlock, SeatPlanData } from '@/types/domain'
+
+interface ZoneSeat {
+    seat_number?: string
+    seat_guid: string
+    position: { x: number; y: number }
+    category: string
+}
+
+interface ZoneRow {
+    position: { x: number; y: number }
+    row_number: string
+    row_number_position?: string
+    seats: ZoneSeat[]
+}
+
+interface Zone {
+    name: string
+    position: { x: number; y: number }
+    rows: ZoneRow[]
+}
+
+interface ZoneCategory {
+    name: string
+    color: string
+}
+
+interface ZoneFormat {
+    categories?: ZoneCategory[]
+    zones: Zone[]
+}
 
 const props = withDefaults(
     defineProps<{
@@ -19,7 +49,7 @@ defineEmits<{
 const containerRef = ref<HTMLDivElement | null>(null)
 let seatmapInstance: InstanceType<typeof import('@alisaitteke/seatmap-canvas').SeatMapCanvas> | null = null
 
-function isPretixFormat(data: SeatPlanData): boolean {
+function isZoneFormat(data: SeatPlanData): data is SeatPlanData & ZoneFormat {
     return 'zones' in data && Array.isArray((data as Record<string, unknown>).zones)
 }
 
@@ -27,11 +57,74 @@ function hasBlocks(data: SeatPlanData): boolean {
     return 'blocks' in data && Array.isArray(data.blocks) && data.blocks.length > 0
 }
 
+/**
+ * Convert zones/rows/seats format to native seatmap-canvas blocks format.
+ * The library's built-in pretix parser has a bug that accumulates row positions,
+ * so we handle the conversion ourselves.
+ */
+function convertZonesToBlocks(data: ZoneFormat): SeatPlanBlock[] {
+    const categoryColors = new Map<string, string>()
+    if (data.categories) {
+        for (const cat of data.categories) {
+            categoryColors.set(cat.name, cat.color)
+        }
+    }
+
+    const blockMap = new Map<string, SeatPlanBlock>()
+
+    for (const zone of data.zones) {
+        const zoneX = zone.position.x
+        const zoneY = zone.position.y
+
+        for (const row of zone.rows) {
+            const rowX = zoneX + row.position.x
+            const rowY = zoneY + row.position.y
+
+            for (const seat of row.seats) {
+                const blockId = `${seat.category}-${row.row_number}-${row.row_number_position ?? 'start'}`
+
+                if (!blockMap.has(blockId)) {
+                    blockMap.set(blockId, {
+                        id: blockId,
+                        title: seat.category,
+                        color: categoryColors.get(seat.category) ?? '#2c2828',
+                        seats: [],
+                        labels: [],
+                    })
+                }
+
+                const block = blockMap.get(blockId)!
+                block.seats.push({
+                    id: seat.seat_guid,
+                    x: rowX + seat.position.x,
+                    y: rowY + seat.position.y,
+                    title: seat.seat_guid,
+                    salable: true,
+                })
+            }
+        }
+    }
+
+    const blocks = Array.from(blockMap.values())
+    for (const block of blocks) {
+        block.seats.sort((a, b) => a.x === b.x ? a.y - b.y : a.x - b.x)
+    }
+
+    return blocks
+}
+
+function getBlocks(): SeatPlanBlock[] {
+    if (isZoneFormat(props.data)) {
+        return convertZonesToBlocks(props.data)
+    }
+    return props.data.blocks ?? []
+}
+
 async function initSeatmap(): Promise<void> {
     if (!containerRef.value) return
 
-    const isPretix = isPretixFormat(props.data)
-    if (!isPretix && !hasBlocks(props.data)) return
+    const blocks = getBlocks()
+    if (blocks.length === 0) return
 
     destroySeatmap()
 
@@ -39,7 +132,6 @@ async function initSeatmap(): Promise<void> {
 
     const defaultOptions = {
         legend: true,
-        json_model: isPretix ? 'pretix' : 'seatmap',
         style: {
             seat: {
                 radius: 12,
@@ -71,12 +163,7 @@ async function initSeatmap(): Promise<void> {
     }
 
     seatmapInstance = new SeatMapCanvas(containerRef.value, mergedOptions)
-
-    if (isPretix) {
-        seatmapInstance.data.addBulkBlock(props.data as unknown as Record<string, unknown>[])
-    } else {
-        seatmapInstance.data.addBulkBlock(props.data.blocks as unknown as Record<string, unknown>[])
-    }
+    seatmapInstance.data.replaceData(blocks as unknown as Record<string, unknown>[])
 }
 
 function destroySeatmap(): void {
