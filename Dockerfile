@@ -48,6 +48,10 @@ COPY . .
 COPY --from=deps /app/resources/js/actions ./resources/js/actions
 COPY --from=deps /app/resources/js/routes ./resources/js/routes
 
+# Vite plugin calls `php artisan wayfinder:generate --with-form` at startup.
+# Types are already present above; stub php so the plugin call exits cleanly.
+RUN printf '#!/bin/sh\nexit 0\n' > /usr/local/bin/php && chmod +x /usr/local/bin/php
+
 RUN npm run build
 
 # ============================
