@@ -260,3 +260,43 @@ export type Ticket = {
     created_at: string
     updated_at: string
 }
+
+export type SeatPlanBlock = {
+    id: string
+    title: string
+    color: string
+    seats: SeatPlanSeat[]
+    labels: SeatPlanLabel[]
+}
+
+export type SeatPlanSeat = {
+    id: number | string
+    title: string
+    x: number
+    y: number
+    salable: boolean
+    selected?: boolean
+    note?: string
+    color?: string
+    custom_data?: Record<string, unknown>
+}
+
+export type SeatPlanLabel = {
+    title: string
+    x: number
+    y: number
+}
+
+export type SeatPlanData = {
+    blocks: SeatPlanBlock[]
+}
+
+export type SeatPlan = {
+    id: number
+    name: string
+    event_id: number
+    data: SeatPlanData
+    event?: { id: number; name: string }
+    created_at: string
+    updated_at: string
+}

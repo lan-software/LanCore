@@ -4,6 +4,7 @@ namespace App\Domain\Event\Models;
 
 use App\Domain\Event\Enums\EventStatus;
 use App\Domain\Program\Models\Program;
+use App\Domain\Seating\Models\SeatPlan;
 use App\Domain\Sponsoring\Models\Sponsor;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
@@ -75,6 +76,11 @@ class Event extends Model
     public function addons(): HasMany
     {
         return $this->hasMany(Addon::class);
+    }
+
+    public function seatPlans(): HasMany
+    {
+        return $this->hasMany(SeatPlan::class);
     }
 
     public function remainingSeatCapacity(): int

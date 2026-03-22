@@ -10,6 +10,8 @@ use App\Domain\Games\Policies\GameModePolicy;
 use App\Domain\Games\Policies\GamePolicy;
 use App\Domain\Program\Models\Program;
 use App\Domain\Program\Policies\ProgramPolicy;
+use App\Domain\Seating\Models\SeatPlan;
+use App\Domain\Seating\Policies\SeatPlanPolicy;
 use App\Domain\Shop\Models\Voucher;
 use App\Domain\Shop\PaymentProviders\OnSitePaymentProvider;
 use App\Domain\Shop\PaymentProviders\PaymentProviderManager;
@@ -83,6 +85,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(TicketCategory::class, TicketCategoryPolicy::class);
         Gate::policy(Addon::class, AddonPolicy::class);
         Gate::policy(Voucher::class, VoucherPolicy::class);
+        Gate::policy(SeatPlan::class, SeatPlanPolicy::class);
     }
 
     /**

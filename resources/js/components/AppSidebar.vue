@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Calendar, ClipboardList, FolderGit2, Gamepad2, Gift, Handshake, LayoutGrid, MapPin, Palette, Puzzle, Rows3, Tag, Ticket, Users } from 'lucide-vue-next';
+import { BookOpen, Calendar, ClipboardList, FolderGit2, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Palette, Puzzle, Rows3, Tag, Ticket, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -31,6 +31,7 @@ import { index as ticketCategoriesIndex } from '@/routes/ticket-categories';
 import { index as ticketAddonsIndex } from '@/routes/ticket-addons';
 import { index as vouchersIndex } from '@/routes/vouchers';
 import { index as ticketsIndex } from '@/routes/tickets';
+import { index as seatPlansIndex } from '@/routes/seat-plans';
 import type { NavItem } from '@/types';
 
 const page = usePage();
@@ -282,8 +283,11 @@ const footerNavItems: NavItem[] = [
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <SidebarMenuButton class="text-sidebar-foreground/50 pointer-events-none">
-                                <span>Coming soon</span>
+                            <SidebarMenuButton as-child>
+                                <Link :href="seatPlansIndex()">
+                                    <Grid2x2 />
+                                    <span>Seat Plans</span>
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
