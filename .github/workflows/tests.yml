@@ -53,4 +53,11 @@ jobs:
         run: npm run build
 
       - name: Tests
-        run: ./vendor/bin/pest
+        run: ./vendor/bin/pest --coverage-clover coverage.xml
+
+      - name: Upload coverage to Codecov
+        if: matrix.php-version == '8.5'
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false

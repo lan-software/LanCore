@@ -1,19 +1,126 @@
-# Lan-Softwares LanCore
-The way to organize Lan-Partys or BYOD Parties.
+# LanCore
+
+> LAN party & BYOD event management platform — the modern successor to eventula-manager. Inspired by Byceps and 10 years of Lan-Party experience at (sxlan.de)[sxlan.de]
+
+[![Tests](https://github.com/lan-software/LanCore/actions/workflows/tests.yml/badge.svg)](https://github.com/lan-software/LanCore/actions/workflows/tests.yml)
+[![Linter](https://github.com/lan-software/LanCore/actions/workflows/lint.yml/badge.svg)](https://github.com/lan-software/LanCore/actions/workflows/lint.yml)
+[![Docker](https://github.com/lan-software/LanCore/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/lan-software/LanCore/actions/workflows/docker-publish.yml)
+[![Coverage](https://codecov.io/gh/lan-software/LanCore/graph/badge.svg)](https://codecov.io/gh/lan-software/LanCore)
+
+---
+
+## About
+
+LanCore is a fresh-start rewrite built on **Laravel 13 + Inertia.js + Vue 3**. It organizes LAN parties and BYOD events with a clean domain-driven architecture, replacing the old eventula-manager with a maintainable, extensible foundation.
+
+The initial goal was just tech-demo for "What could be done in 3 Days". To be honest, it escalated quickly into a full fledged frenzy.
+
+> **Status:** Proof of Concept — core domains are functional, some areas are still in progress.  
+
+**DO NOT USE THIS UNTIL RELEASE OF 1.0**
+
+---
 
 ## Features
-See this Feature Comparisson
-| Feature | LanCore | BYCEPS | Eventula Manager | 
-| --- | --- | --- | --- |
-| Mobile and Desktop Friendly UI | ✅
-| Flexible Seating Maps |
-| Suffisticated Ticketing |
-| Addons for Tickets |
-| Sponsor Integration | ✅
-| Program Plans | ✅
-| Tournament Management |
-| Stripe and Paddle Integration |
-| OIDC for other Applications |
-| Eco System integration with LanShout, LanVote |
-| Pelican Integration |
-| Gameserver Management |
+
+| Feature | Status |
+|---|---|
+| Mobile & Desktop Friendly UI | ✅ |
+| User Authentication & Roles | (✅)* |
+| Event Management | ✅ |
+| Venue Management | ✅ |
+| Ticketing (types, assignment) | ✅ |
+| Canvas-Based Seating Plans | ✅ |
+| Sponsor Integration | ✅ |
+| Program Plans | ✅ |
+| Announcements & News | ✅ |
+| Notifications System with Web Push, Mail | ⚖️ In Testing |
+| Shop | 🚧 In Progress |
+| Tournament Management | 🚧 In Progress |
+| Stripe Integration | 🚧 In Progress |
+| Game Server Management with Pelican Panel | Planned |
+| Tournament Match Management with TMT2 | Planned |
+| OIDC / SSO | Planned |
+| Eco-System with other App | Planned |
+
+*Action and Policy based architecture implemented, currently no focus on any reasonable checks as roles and permissions are not in the scope of the poc see (poc.md)[/docs/poc/poc.md]
+
+Beyond LanCore there is already a bigger ecosystem of apps planned, partially developed. Soon following apps will join the lan-software team:
+| | | |
+| --- | --- | --- |
+| LanBrackets | Basically a replacement for Challonge with its own laravel-package, framework agnostic bracket and tournament builder | Requirments Ready, Architecture WIP |
+| LanShout | Shoutbox tailored for Lan-Events | Demo Ready since SX30 |
+| LanEntrance | Entrance Client, for orgas to validate, checkin and guide arriving guests | Requirements Ready, Architecture layed out | 
+| LanHelp | Minified HelpDesk for Issues, FAQ and knowledge base across your lan events | Requirements Ready | 
+| LanVote | Minified Voting Site | Requierements Ready |
+| LanOrder | Ordering Takeaway Food as groups in the name of the organizer | Open |
+| LanDisplay | Minified Application to show Webpages that can be used as OBS Websource | Open |
+  
+---
+
+## Local Development
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) & Docker Compose
+
+### Getting Started
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/lan-software/LanCore.git
+cd LanCore
+
+# 2. Install PHP dependencies (using Sail's PHP container)
+docker run --rm -v "$(pwd)":/opt -w /opt laravelsail/php85-composer:latest composer install --ignore-platform-reqs
+
+# 3. Copy environment file and generate app key
+cp .env.example .env
+vendor/bin/sail artisan key:generate
+
+# 4. Start containers
+vendor/bin/sail up -d
+
+# 5. Run database migrations
+vendor/bin/sail artisan migrate --seed
+
+# 6. Install JS dependencies and start Vite dev server
+vendor/bin/sail npm install
+vendor/bin/sail npm run dev
+```
+
+The app will be available at **http://localhost**.
+
+### Useful Commands
+
+```bash
+# Run tests
+vendor/bin/sail artisan test --compact
+
+# Format PHP (Pint)
+vendor/bin/sail bin pint
+
+# Format & lint JS
+vendor/bin/sail npm run format
+vendor/bin/sail npm run lint
+
+# Build frontend assets
+vendor/bin/sail npm run build
+
+# Tail application logs
+vendor/bin/sail artisan pail
+
+# Open in browser
+vendor/bin/sail open
+```
+
+---
+
+## Tech Stack
+
+- **Backend:** PHP 8.5, Laravel 13, Laravel Octane (FrankenPHP)
+- **Frontend:** Vue 3, Inertia.js v2, Tailwind CSS v4
+- **Auth:** Laravel Fortify
+- **Payments:** Laravel Cashier (Stripe)
+- **Testing:** Pest v4
+- **Containers:** Docker / Laravel Sail
