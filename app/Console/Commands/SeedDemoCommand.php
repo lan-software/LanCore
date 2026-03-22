@@ -188,10 +188,16 @@ class SeedDemoCommand extends Command
                 ])->id,
             ]);
         });
+
+        return true;
     }
 
-    private function seedGames(): void
+    private function seedGames(): bool
     {
+        if (Game::query()->where('slug', 'counter-strike-2')->exists()) {
+            return false;
+        }
+
         $this->components->task('Seeding games', function (): void {
             $cs2 = Game::factory()->create([
                 'name' => 'Counter-Strike 2',
@@ -286,13 +292,19 @@ class SeedDemoCommand extends Command
                 'team_size' => 2,
             ]);
         });
+
+        return true;
     }
 
     /**
-     * @return array{published: Event, draft: Event, past: Event}
+     * @return array{published: Event, draft: Event, past: Event}|false
      */
-    private function seedEvents(): array
+    private function seedEvents(): array|false
     {
+        if (Event::query()->where('name', 'Summer LAN 2026')->exists()) {
+            return false;
+        }
+
         $events = [];
 
         $this->components->task('Seeding events', function () use (&$events): void {
@@ -327,10 +339,30 @@ class SeedDemoCommand extends Command
     }
 
     /**
+     * @return array{published: Event, draft: Event, past: Event}|null
+     */
+    private function loadExistingEvents(): ?array
+    {
+        $published = Event::query()->where('name', 'Summer LAN 2026')->first();
+        $draft = Event::query()->where('name', 'Spring LAN 2026')->first();
+        $past = Event::query()->where('name', 'Winter LAN 2025')->first();
+
+        if ($published === null || $draft === null || $past === null) {
+            return null;
+        }
+
+        return compact('published', 'draft', 'past');
+    }
+
+    /**
      * @param  array{published: Event, draft: Event, past: Event}  $events
      */
-    private function seedTicketing(array $events): void
+    private function seedTicketing(array $events): bool
     {
+        if (TicketCategory::query()->where('event_id', $events['published']->id)->exists()) {
+            return false;
+        }
+
         $this->components->task('Seeding ticket types & addons', function () use ($events): void {
             foreach ([$events['published'], $events['draft']] as $event) {
                 $category = TicketCategory::factory()->create([
