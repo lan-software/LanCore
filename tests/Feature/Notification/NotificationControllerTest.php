@@ -134,6 +134,59 @@ it('prevents users from archiving other users\' notifications', function () {
         ->assertNotFound();
 });
 
+it('allows archiving all notifications', function () {
+    foreach (range(1, 3) as $_) {
+        DatabaseNotification::create([
+            'id' => (string) Str::uuid(),
+            'type' => 'App\Notifications\UserAttributesUpdatedNotification',
+            'notifiable_type' => User::class,
+            'notifiable_id' => $this->user->id,
+            'data' => json_encode(['changed_attributes' => ['name']]),
+        ]);
+    }
+
+    $this->actingAs($this->user)
+        ->patch('/notifications/archive-all')
+        ->assertRedirect();
+
+    expect($this->user->notifications()->whereNull('archived_at')->count())->toBe(0);
+});
+
+it('shows the archived notifications index page to authenticated users', function () {
+    $this->actingAs($this->user)
+        ->get('/notifications/archive')
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page
+            ->component('notifications/Archive')
+            ->has('notifications'));
+});
+
+it('only shows archived notifications on the archive page', function () {
+    DatabaseNotification::create([
+        'id' => (string) Str::uuid(),
+        'type' => 'App\Notifications\UserAttributesUpdatedNotification',
+        'notifiable_type' => User::class,
+        'notifiable_id' => $this->user->id,
+        'data' => json_encode(['changed_attributes' => ['name']]),
+        'archived_at' => now(),
+    ]);
+
+    DatabaseNotification::create([
+        'id' => (string) Str::uuid(),
+        'type' => 'App\Notifications\UserAttributesUpdatedNotification',
+        'notifiable_type' => User::class,
+        'notifiable_id' => $this->user->id,
+        'data' => json_encode(['changed_attributes' => ['email']]),
+    ]);
+
+    $this->actingAs($this->user)
+        ->get('/notifications/archive')
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page
+            ->component('notifications/Archive')
+            ->where('notifications.total', 1));
+});
+
 it('shares unread notifications count via inertia props', function () {
     DatabaseNotification::create([
         'id' => (string) Str::uuid(),
