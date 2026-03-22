@@ -444,13 +444,19 @@ class SeedDemoCommand extends Command
                 ]);
             }
         });
+
+        return true;
     }
 
     /**
      * @param  array{published: Event, draft: Event, past: Event}  $events
      */
-    private function seedPrograms(array $events): void
+    private function seedPrograms(array $events): bool
     {
+        if (Program::query()->where('event_id', $events['published']->id)->exists()) {
+            return false;
+        }
+
         $this->components->task('Seeding programs & time slots', function () use ($events): void {
             $publishedEvent = $events['published'];
 
@@ -541,13 +547,19 @@ class SeedDemoCommand extends Command
                 'sort_order' => 1,
             ]);
         });
+
+        return true;
     }
 
     /**
      * @param  array{published: Event, draft: Event, past: Event}  $events
      */
-    private function seedSponsors(array $events): void
+    private function seedSponsors(array $events): bool
     {
+        if (SponsorLevel::query()->where('name', 'Gold')->exists()) {
+            return false;
+        }
+
         $this->components->task('Seeding sponsors', function () use ($events): void {
             $gold = SponsorLevel::create(['name' => 'Gold', 'color' => '#FFD700', 'sort_order' => 0]);
             $silver = SponsorLevel::create(['name' => 'Silver', 'color' => '#C0C0C0', 'sort_order' => 1]);
@@ -594,10 +606,16 @@ class SeedDemoCommand extends Command
                 $sponsor4->managers()->attach($sponsorManager->id);
             }
         });
+
+        return true;
     }
 
-    private function seedNews(): void
+    private function seedNews(): bool
     {
+        if (NewsArticle::query()->where('title', 'Summer LAN 2026 Announced!')->exists()) {
+            return false;
+        }
+
         $this->components->task('Seeding news articles', function (): void {
             $admin = User::query()->where('email', 'admin@example.com')->first();
 
@@ -626,10 +644,16 @@ class SeedDemoCommand extends Command
                 'author_id' => $admin?->id ?? User::factory()->withRole(RoleName::Admin)->create()->id,
             ]);
         });
+
+        return true;
     }
 
-    private function seedWebhooks(): void
+    private function seedWebhooks(): bool
     {
+        if (Webhook::query()->where('url', 'http://mockserver:1080/webhooks/user-registered')->exists()) {
+            return false;
+        }
+
         $this->components->task('Seeding webhooks', function (): void {
             Webhook::factory()->create([
                 'name' => 'MockServer — User Registered',
@@ -640,5 +664,7 @@ class SeedDemoCommand extends Command
                 'is_active' => true,
             ]);
         });
+
+        return true;
     }
 }
