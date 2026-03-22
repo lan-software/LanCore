@@ -16,6 +16,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as announcementsRoute } from '@/routes/announcements'
 import type { BreadcrumbItem } from '@/types'
 import type { Announcement } from '@/types/domain'
+import { ref } from 'vue'
 
 const props = defineProps<{
     announcement: Announcement
@@ -36,11 +37,11 @@ const form = useForm({
     publish_now: false,
 })
 
+const publishNow = ref(false)
+
 function submit() {
-    form.transform((data) => ({
-        ...data,
-        publish_now: data.publish_now ? true : false,
-    })).patch(update({ announcement: props.announcement.id }).url, {
+    form.publish_now = publishNow.value
+    form.patch(update({ announcement: props.announcement.id }).url, {
         preserveScroll: true,
     })
 }
@@ -118,7 +119,7 @@ function deleteAnnouncement() {
                     <Heading variant="small" title="Publishing" description="Control when this announcement is visible" />
 
                     <div class="flex items-center gap-2">
-                        <Checkbox id="publish_now" v-model:checked="form.publish_now" />
+                        <Checkbox id="publish_now" v-model:checked="publishNow" />
                         <Label for="publish_now">Publish now</Label>
                     </div>
                 </div>

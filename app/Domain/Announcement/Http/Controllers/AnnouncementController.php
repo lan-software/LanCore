@@ -59,10 +59,11 @@ class AnnouncementController extends Controller
     {
         $this->authorize('create', Announcement::class);
 
-        $attributes = $request->safe()->except(['publish_now']);
+        $validated = $request->safe()->all();
+        $attributes = collect($validated)->except(['publish_now'])->all();
         $attributes['author_id'] = $request->user()->id;
 
-        if ($request->boolean('publish_now')) {
+        if (! empty($validated['publish_now'])) {
             $attributes['published_at'] = now();
         }
 
@@ -87,9 +88,10 @@ class AnnouncementController extends Controller
     {
         $this->authorize('update', $announcement);
 
-        $attributes = $request->safe()->except(['publish_now']);
+        $validated = $request->safe()->all();
+        $attributes = collect($validated)->except(['publish_now'])->all();
 
-        if ($request->boolean('publish_now') && $announcement->published_at === null) {
+        if (! empty($validated['publish_now']) && $announcement->published_at === null) {
             $attributes['published_at'] = now();
         }
 

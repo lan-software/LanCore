@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as announcementsRoute } from '@/routes/announcements'
 import type { BreadcrumbItem } from '@/types'
+import { ref } from 'vue'
 
 const props = defineProps<{
     events: { id: number; name: string }[]
@@ -24,6 +25,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Create', href: announcementCreate().url },
 ]
 
+const publishNow = ref(false)
+
 const form = useForm({
     title: '',
     description: '',
@@ -33,10 +36,8 @@ const form = useForm({
 })
 
 function submit() {
-    form.transform((data) => ({
-        ...data,
-        publish_now: data.publish_now ? true : false,
-    })).post(store().url)
+    form.publish_now = publishNow.value
+    form.post(store().url)
 }
 </script>
 
@@ -102,7 +103,7 @@ function submit() {
                     <Heading variant="small" title="Publishing" description="Control when this announcement is visible" />
 
                     <div class="flex items-center gap-2">
-                        <Checkbox id="publish_now" v-model:checked="form.publish_now" />
+                        <Checkbox id="publish_now" v-model:checked="publishNow" />
                         <Label for="publish_now">Publish immediately</Label>
                     </div>
                 </div>
