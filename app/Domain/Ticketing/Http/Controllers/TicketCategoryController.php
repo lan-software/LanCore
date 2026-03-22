@@ -29,6 +29,11 @@ class TicketCategoryController extends Controller
 
         $query = TicketCategory::withCount('ticketTypes');
 
+        $eventId = $request->validated('event_id') ?? $request->session()->get('selected_event_id');
+        if ($eventId) {
+            $query->where(fn ($q) => $q->where('event_id', $eventId)->orWhereNull('event_id'));
+        }
+
         if ($search = $request->validated('search')) {
             $query->where('name', 'ilike', "%{$search}%");
         }
@@ -41,7 +46,7 @@ class TicketCategoryController extends Controller
 
         return Inertia::render('ticket-categories/Index', [
             'ticketCategories' => $ticketCategories,
-            'filters' => $request->only(['search', 'sort', 'direction', 'per_page']),
+            'filters' => $request->only(['search', 'sort', 'direction', 'event_id', 'per_page']),
         ]);
     }
 
@@ -51,6 +56,7 @@ class TicketCategoryController extends Controller
 
         return Inertia::render('ticket-categories/Create', [
             'events' => Event::dropdownOptions(),
+            'selectedEventId' => session('selected_event_id'),
         ]);
     }
 

@@ -19,6 +19,7 @@ import { computed, ref } from 'vue'
 
 const props = defineProps<{
     events: { id: number; name: string; primary_program_id: number | null; primary_program: { id: number; name: string } | null }[]
+    selectedEventId?: number | null
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -27,7 +28,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Create', href: programCreate().url },
 ]
 
-const selectedEventId = ref<string>('')
+const selectedEventId = ref<string>(props.selectedEventId ? String(props.selectedEventId) : '')
 const isPrimary = ref(false)
 const showPrimaryConfirmDialog = ref(false)
 

@@ -18,22 +18,33 @@ class ModelCacheService
     /**
      * Cache a value under a named group. Uses cache tags when available,
      * falls back to a key-registry pattern for stores without tag support.
+     *
+     * If the cached value is a __PHP_Incomplete_Class (due to stale
+     * serialisation), the entry is evicted and recomputed transparently.
      */
     public function remember(string $group, string $key, Closure $callback, ?int $ttl = null): mixed
     {
         $cacheKey = "{$group}:{$key}";
 
         if ($this->supportsTags) {
-            return $ttl !== null
+            $value = $ttl !== null
                 ? Cache::tags([$group])->remember($cacheKey, $ttl, $callback)
                 : Cache::tags([$group])->rememberForever($cacheKey, $callback);
+        } else {
+            $this->registerKey($group, $cacheKey);
+
+            $value = $ttl !== null
+                ? Cache::remember($cacheKey, $ttl, $callback)
+                : Cache::rememberForever($cacheKey, $callback);
         }
 
-        $this->registerKey($group, $cacheKey);
+        if ($value instanceof \__PHP_Incomplete_Class) {
+            $this->forget($group, $key);
 
-        return $ttl !== null
-            ? Cache::remember($cacheKey, $ttl, $callback)
-            : Cache::rememberForever($cacheKey, $callback);
+            return $callback();
+        }
+
+        return $value;
     }
 
     /**

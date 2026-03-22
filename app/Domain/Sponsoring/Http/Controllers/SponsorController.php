@@ -37,6 +37,11 @@ class SponsorController extends Controller
             $query->whereHas('managers', fn ($q) => $q->where('user_id', $user->id));
         }
 
+        $eventId = $request->validated('event_id') ?? $request->session()->get('selected_event_id');
+        if ($eventId) {
+            $query->where(fn ($q) => $q->whereHas('events', fn ($eq) => $eq->where('events.id', $eventId))->orDoesntHave('events'));
+        }
+
         if ($search = $request->validated('search')) {
             $query->where('name', 'ilike', "%{$search}%");
         }
@@ -49,7 +54,7 @@ class SponsorController extends Controller
 
         return Inertia::render('sponsors/Index', [
             'sponsors' => $sponsors,
-            'filters' => $request->only(['search', 'sort', 'direction', 'per_page']),
+            'filters' => $request->only(['search', 'sort', 'direction', 'event_id', 'per_page']),
         ]);
     }
 

@@ -4,13 +4,21 @@ import {
     Calendar,
     CalendarCheck,
     CalendarClock,
+    CircleDollarSign,
     ClipboardList,
     Clock,
+    CreditCard,
+    Gamepad2,
+    Grid3x3,
     Handshake,
     MapPin,
     Palette,
+    Receipt,
     Shield,
     ShieldCheck,
+    Tag,
+    Ticket,
+    TicketCheck,
     Users,
 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -27,12 +35,32 @@ interface DashboardStats {
         venues: number;
         sponsors: number;
         sponsor_levels: number;
+        tickets: number;
+        ticket_types: number;
+        addons: number;
+        orders: number;
+        games: number;
+        game_modes: number;
+        seat_plans: number;
+        vouchers: number;
     };
     events: {
         upcoming: number;
         past: number;
         published: number;
         draft: number;
+    };
+    tickets: {
+        active: number;
+        checked_in: number;
+        cancelled: number;
+    };
+    orders: {
+        pending: number;
+        completed: number;
+        failed: number;
+        refunded: number;
+        total_revenue: number;
     };
     roles: Record<string, number>;
     lastActiveUsers: {
@@ -77,6 +105,10 @@ const roleLabels: Record<string, string> = {
     sponsor_manager: 'Sponsor Managers',
     user: 'Users',
 };
+
+function formatCents(cents: number): string {
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
+}
 </script>
 
 <template>
@@ -136,6 +168,36 @@ const roleLabels: Record<string, string> = {
                                 <p class="text-xs text-muted-foreground">{{ stats.counts.sponsor_levels }} levels</p>
                             </CardContent>
                         </Card>
+                        <Card>
+                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                                <CardDescription>Tickets</CardDescription>
+                                <Ticket class="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div class="text-2xl font-bold">{{ stats.counts.tickets }}</div>
+                                <p class="text-xs text-muted-foreground">{{ stats.counts.ticket_types }} types · {{ stats.counts.addons }} addons</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                                <CardDescription>Orders</CardDescription>
+                                <Receipt class="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div class="text-2xl font-bold">{{ stats.counts.orders }}</div>
+                                <p class="text-xs text-muted-foreground">{{ stats.counts.vouchers }} vouchers</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                                <CardDescription>Games</CardDescription>
+                                <Gamepad2 class="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div class="text-2xl font-bold">{{ stats.counts.games }}</div>
+                                <p class="text-xs text-muted-foreground">{{ stats.counts.game_modes }} game modes · {{ stats.counts.seat_plans }} seat plans</p>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
 
@@ -177,6 +239,89 @@ const roleLabels: Record<string, string> = {
                             </CardHeader>
                             <CardContent>
                                 <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ stats.events.draft }}</div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+                <!-- Ticketing & Orders -->
+                <div class="grid gap-6 lg:grid-cols-2">
+                    <!-- Tickets Breakdown -->
+                    <div>
+                        <h2 class="mb-3 text-lg font-semibold">Tickets</h2>
+                        <Card>
+                            <CardContent class="pt-6">
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <Ticket class="size-4 text-green-500" />
+                                            <span class="text-sm font-medium">Active</span>
+                                        </div>
+                                        <span class="text-sm font-bold">{{ stats.tickets.active }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <TicketCheck class="size-4 text-blue-500" />
+                                            <span class="text-sm font-medium">Checked In</span>
+                                        </div>
+                                        <span class="text-sm font-bold">{{ stats.tickets.checked_in }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <Ticket class="size-4 text-red-500" />
+                                            <span class="text-sm font-medium">Cancelled</span>
+                                        </div>
+                                        <span class="text-sm font-bold">{{ stats.tickets.cancelled }}</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <!-- Orders Breakdown -->
+                    <div>
+                        <h2 class="mb-3 text-lg font-semibold">Orders</h2>
+                        <Card>
+                            <CardContent class="pt-6">
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <CreditCard class="size-4 text-yellow-500" />
+                                            <span class="text-sm font-medium">Pending</span>
+                                        </div>
+                                        <span class="text-sm font-bold">{{ stats.orders.pending }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <CreditCard class="size-4 text-green-500" />
+                                            <span class="text-sm font-medium">Completed</span>
+                                        </div>
+                                        <span class="text-sm font-bold">{{ stats.orders.completed }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <CreditCard class="size-4 text-red-500" />
+                                            <span class="text-sm font-medium">Failed</span>
+                                        </div>
+                                        <span class="text-sm font-bold">{{ stats.orders.failed }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <CreditCard class="size-4 text-muted-foreground" />
+                                            <span class="text-sm font-medium">Refunded</span>
+                                        </div>
+                                        <span class="text-sm font-bold">{{ stats.orders.refunded }}</span>
+                                    </div>
+                                    <div class="border-t pt-4">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <CircleDollarSign class="size-4 text-green-600 dark:text-green-400" />
+                                                <span class="text-sm font-medium">Total Revenue</span>
+                                            </div>
+                                            <span class="text-sm font-bold text-green-600 dark:text-green-400">{{ formatCents(stats.orders.total_revenue) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     </div>

@@ -2,6 +2,7 @@
 
 use App\Domain\Event\Http\Controllers\PublicEventController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EventContextController;
 use App\Http\Controllers\StorageFileController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,9 @@ Route::get('files/{path}', StorageFileController::class)
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+
+    Route::post('event-context', [EventContextController::class, 'store'])->name('event-context.store');
+    Route::delete('event-context', [EventContextController::class, 'destroy'])->name('event-context.destroy');
 });
 
 require __DIR__.'/settings.php';

@@ -34,8 +34,9 @@ class AddonController extends Controller
             $query->where('name', 'ilike', "%{$search}%");
         }
 
-        if ($eventId = $request->validated('event_id')) {
-            $query->where('event_id', $eventId);
+        $eventId = $request->validated('event_id') ?? $request->session()->get('selected_event_id');
+        if ($eventId) {
+            $query->where(fn ($q) => $q->where('event_id', $eventId)->orWhereNull('event_id'));
         }
 
         $sortColumn = $request->validated('sort') ?? 'created_at';
@@ -57,6 +58,7 @@ class AddonController extends Controller
 
         return Inertia::render('ticket-addons/Create', [
             'events' => Event::dropdownOptions(),
+            'selectedEventId' => session('selected_event_id'),
         ]);
     }
 

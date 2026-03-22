@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { EventContext } from '@/types/event-context';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -19,6 +20,7 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
+            eventContext: EventContext | null;
             [key: string]: unknown;
         };
     }

@@ -20,6 +20,7 @@ class TicketCategoryIndexRequest extends FormRequest
             'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'in:name,sort_order,created_at'],
             'direction' => ['nullable', 'string', 'in:asc,desc'],
+            'event_id' => ['nullable', 'integer', 'exists:events,id'],
             'per_page' => ['nullable', 'integer', 'in:10,20,50,100'],
         ];
     }

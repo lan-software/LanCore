@@ -29,6 +29,11 @@ class VoucherController extends Controller
 
         $query = Voucher::with('event');
 
+        $eventId = $request->validated('event_id') ?? $request->session()->get('selected_event_id');
+        if ($eventId) {
+            $query->where(fn ($q) => $q->where('event_id', $eventId)->orWhereNull('event_id'));
+        }
+
         if ($search = $request->validated('search')) {
             $query->where('code', 'ilike', "%{$search}%");
         }
@@ -41,7 +46,7 @@ class VoucherController extends Controller
 
         return Inertia::render('vouchers/Index', [
             'vouchers' => $vouchers,
-            'filters' => $request->only(['search', 'sort', 'direction', 'per_page']),
+            'filters' => $request->only(['search', 'sort', 'direction', 'event_id', 'per_page']),
         ]);
     }
 
@@ -51,6 +56,7 @@ class VoucherController extends Controller
 
         return Inertia::render('vouchers/Create', [
             'events' => Event::dropdownOptions(),
+            'selectedEventId' => session('selected_event_id'),
         ]);
     }
 

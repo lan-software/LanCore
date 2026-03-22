@@ -29,6 +29,11 @@ class SeatPlanController extends Controller
 
         $query = SeatPlan::with('event:id,name');
 
+        $eventId = $request->validated('event_id') ?? $request->session()->get('selected_event_id');
+        if ($eventId) {
+            $query->where(fn ($q) => $q->where('event_id', $eventId)->orWhereNull('event_id'));
+        }
+
         if ($search = $request->validated('search')) {
             $query->where(function ($q) use ($search): void {
                 $q->where('name', 'ilike', "%{$search}%")
@@ -51,7 +56,7 @@ class SeatPlanController extends Controller
 
         return Inertia::render('seating/Index', [
             'seatPlans' => $seatPlans,
-            'filters' => $request->only(['search', 'sort', 'direction', 'per_page']),
+            'filters' => $request->only(['search', 'sort', 'direction', 'event_id', 'per_page']),
         ]);
     }
 
@@ -61,6 +66,7 @@ class SeatPlanController extends Controller
 
         return Inertia::render('seating/Create', [
             'events' => Event::dropdownOptions(),
+            'selectedEventId' => session('selected_event_id'),
         ]);
     }
 

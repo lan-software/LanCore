@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Domain\Event\Models\Event;
 use App\Enums\RoleName;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -55,6 +57,37 @@ class HandleInertiaRequests extends Middleware
                 ]) : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'eventContext' => fn () => $this->eventContext($request),
+        ];
+    }
+
+    /**
+     * @return array{selectedEventId: int|null, selectedEvent: array{id: int, name: string}|null, events: Collection}|null
+     */
+    private function eventContext(Request $request): ?array
+    {
+        $user = $request->user();
+
+        if (! $user || ! $user->isAdmin()) {
+            return null;
+        }
+
+        $selectedEventId = $request->session()->get('selected_event_id');
+        $selectedEvent = null;
+
+        if ($selectedEventId) {
+            $selectedEvent = Event::find($selectedEventId, ['id', 'name'])?->only(['id', 'name']);
+
+            if (! $selectedEvent) {
+                $request->session()->forget('selected_event_id');
+                $selectedEventId = null;
+            }
+        }
+
+        return [
+            'selectedEventId' => $selectedEventId,
+            'selectedEvent' => $selectedEvent,
+            'events' => Event::dropdownOptions(),
         ];
     }
 }

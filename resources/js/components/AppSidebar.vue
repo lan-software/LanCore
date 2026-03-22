@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Calendar, ClipboardList, FolderGit2, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Palette, Puzzle, Rows3, Tag, Ticket, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
+import EventSelector from '@/components/EventSelector.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -86,6 +87,8 @@ const footerNavItems: NavItem[] = [
                 </SidebarMenuItem>
             </SidebarMenu>
         </SidebarHeader>
+
+        <EventSelector />
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />

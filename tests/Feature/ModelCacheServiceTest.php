@@ -103,3 +103,16 @@ it('works with non-tag-supporting cache stores', function (): void {
     $refreshed = $service->remember('db_group', 'key', fn () => 'refreshed');
     expect($refreshed)->toBe('refreshed');
 });
+
+it('recovers from __PHP_Incomplete_Class in cache by evicting and recomputing', function (): void {
+    $cacheKey = 'incomplete_group:broken_key';
+
+    // Manually inject a __PHP_Incomplete_Class value into the cache
+    $serialized = 'O:22:"__PHP_Incomplete_Class":1:{s:1:"x";i:1;}';
+    $incompleteObject = unserialize($serialized);
+    Cache::put($cacheKey, $incompleteObject);
+
+    $result = $this->cacheService->remember('incomplete_group', 'broken_key', fn () => 'fresh_value');
+
+    expect($result)->toBe('fresh_value');
+});

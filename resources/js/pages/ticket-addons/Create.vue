@@ -15,6 +15,7 @@ import { Form, Head, Link } from '@inertiajs/vue3'
 
 defineProps<{
     events: { id: number; name: string }[]
+    selectedEventId?: number | null
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -96,7 +97,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                     <div class="grid gap-2">
                         <Label for="event_id">Event</Label>
-                        <Select name="event_id">
+                        <Select name="event_id" :default-value="selectedEventId ? String(selectedEventId) : undefined">
                             <SelectTrigger>
                                 <SelectValue placeholder="Select an event" />
                             </SelectTrigger>

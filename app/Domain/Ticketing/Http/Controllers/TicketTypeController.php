@@ -36,8 +36,9 @@ class TicketTypeController extends Controller
             $query->where('name', 'ilike', "%{$search}%");
         }
 
-        if ($eventId = $request->validated('event_id')) {
-            $query->where('event_id', $eventId);
+        $eventId = $request->validated('event_id') ?? $request->session()->get('selected_event_id');
+        if ($eventId) {
+            $query->where(fn ($q) => $q->where('event_id', $eventId)->orWhereNull('event_id'));
         }
 
         $sortColumn = $request->validated('sort') ?? 'created_at';
@@ -61,6 +62,7 @@ class TicketTypeController extends Controller
             'events' => Event::dropdownOptions(),
             'categories' => TicketCategory::dropdownOptions(),
             'groups' => TicketGroup::dropdownOptions(),
+            'selectedEventId' => session('selected_event_id'),
         ]);
     }
 
