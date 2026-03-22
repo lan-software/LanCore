@@ -33,7 +33,10 @@ const form = useForm({
 })
 
 function submit() {
-    form.post(store().url)
+    form.transform((data) => ({
+        ...data,
+        publish_now: data.publish_now ? true : false,
+    })).post(store().url)
 }
 </script>
 

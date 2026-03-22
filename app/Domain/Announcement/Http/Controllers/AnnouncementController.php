@@ -27,7 +27,8 @@ class AnnouncementController extends Controller
     {
         $this->authorize('viewAny', Announcement::class);
 
-        $query = Announcement::with(['author:id,name', 'event:id,name']);
+        $query = Announcement::with(['author:id,name', 'event:id,name'])
+            ->withCount('dismissedByUsers');
 
         if ($search = $request->input('search')) {
             $query->where('title', 'ilike', "%{$search}%");
@@ -74,7 +75,7 @@ class AnnouncementController extends Controller
     {
         $this->authorize('update', $announcement);
 
-        $announcement->load(['author:id,name', 'event:id,name']);
+        $announcement->load(['author:id,name', 'event:id,name', 'dismissedByUsers:id,name']);
 
         return Inertia::render('announcements/Edit', [
             'announcement' => $announcement,
@@ -104,5 +105,16 @@ class AnnouncementController extends Controller
         $this->deleteAnnouncement->execute($announcement);
 
         return redirect()->route('announcements.index');
+    }
+
+    public function publish(Announcement $announcement): RedirectResponse
+    {
+        $this->authorize('update', $announcement);
+
+        if ($announcement->published_at === null) {
+            $this->updateAnnouncement->execute($announcement, ['published_at' => now()]);
+        }
+
+        return back();
     }
 }

@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as announcementsRoute } from '@/routes/announcements'
@@ -36,7 +37,10 @@ const form = useForm({
 })
 
 function submit() {
-    form.patch(update({ announcement: props.announcement.id }).url, {
+    form.transform((data) => ({
+        ...data,
+        publish_now: data.publish_now ? true : false,
+    })).patch(update({ announcement: props.announcement.id }).url, {
         preserveScroll: true,
     })
 }
@@ -140,6 +144,28 @@ function deleteAnnouncement() {
                     </Button>
                 </div>
             </form>
+
+            <div v-if="announcement.dismissed_by_users && announcement.dismissed_by_users.length > 0" class="space-y-4">
+                <Heading variant="small" :title="`Acknowledged Users (${announcement.dismissed_by_users.length})`" description="Users who have acknowledged this announcement" />
+
+                <div class="overflow-hidden rounded-lg border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Name</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow v-for="user in announcement.dismissed_by_users" :key="user.id">
+                                <TableCell>{{ user.name }}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
+            <div v-else-if="announcement.published_at" class="space-y-4">
+                <Heading variant="small" title="Acknowledged Users (0)" description="No users have acknowledged this announcement yet" />
+            </div>
         </div>
     </AppLayout>
 </template>

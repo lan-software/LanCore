@@ -375,6 +375,8 @@ export type Announcement = {
     author_id: number
     author?: { id: number; name: string }
     published_at: string | null
+    dismissed_by_users_count?: number
+    dismissed_by_users?: { id: number; name: string }[]
     created_at: string
     updated_at: string
 }

@@ -18,5 +18,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('announcements-admin', [AnnouncementController::class, 'store'])->name('announcements.store');
     Route::get('announcements-admin/{announcement}', [AnnouncementController::class, 'edit'])->name('announcements.edit');
     Route::patch('announcements-admin/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
+    Route::post('announcements-admin/{announcement}/publish', [AnnouncementController::class, 'publish'])->name('announcements.publish');
     Route::delete('announcements-admin/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
 });
