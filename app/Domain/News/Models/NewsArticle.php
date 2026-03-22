@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable([
     'title', 'slug', 'summary', 'content', 'tags', 'image',
@@ -19,8 +21,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'meta_title', 'meta_description', 'og_title', 'og_description', 'og_image',
     'author_id', 'published_at',
 ])]
-class NewsArticle extends Model
+class NewsArticle extends Model implements AuditableContract
 {
+    use Auditable;
+
     /** @use HasFactory<NewsArticleFactory> */
     use HasFactory;
 

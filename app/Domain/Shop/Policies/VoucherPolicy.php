@@ -2,6 +2,7 @@
 
 namespace App\Domain\Shop\Policies;
 
+use App\Domain\Shop\Models\Voucher;
 use App\Models\User;
 
 class VoucherPolicy
@@ -36,6 +37,11 @@ class VoucherPolicy
     }
 
     public function delete(User $user): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function viewAudit(User $user, Voucher $voucher): bool
     {
         return $user->isAdmin();
     }

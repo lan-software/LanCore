@@ -43,4 +43,9 @@ class SeatPlanPolicy
     {
         return $user->isAdmin();
     }
+
+    public function viewAudit(User $user, SeatPlan $seatPlan): bool
+    {
+        return $user->isAdmin();
+    }
 }

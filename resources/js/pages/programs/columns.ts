@@ -1,8 +1,10 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
+import { router } from '@inertiajs/vue3'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import ProgramAuditController from '@/actions/App/Domain/Program/Http/Controllers/ProgramAuditController'
 import type { Program } from '@/types/domain'
 
 function sortableHeader(label: string) {
@@ -67,6 +69,23 @@ export const columns: ColumnDef<Program>[] = [
                     month: 'short',
                     day: 'numeric',
                 }),
+            ),
+    },
+    {
+        id: 'actions',
+        header: () => h('span'),
+        cell: ({ row }) =>
+            h(
+                Button,
+                {
+                    variant: 'outline',
+                    size: 'sm',
+                    onClick: (e: MouseEvent) => {
+                        e.stopPropagation()
+                        router.visit(ProgramAuditController(row.original.id).url)
+                    },
+                },
+                () => 'Audit',
             ),
     },
 ]

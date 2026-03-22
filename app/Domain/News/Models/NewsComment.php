@@ -9,10 +9,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable(['news_article_id', 'user_id', 'content', 'is_approved', 'edited_at'])]
-class NewsComment extends Model
+class NewsComment extends Model implements AuditableContract
 {
+    use Auditable;
+
     /** @use HasFactory<NewsCommentFactory> */
     use HasFactory;
 

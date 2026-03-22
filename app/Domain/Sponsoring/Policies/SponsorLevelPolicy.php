@@ -43,4 +43,9 @@ class SponsorLevelPolicy
     {
         return $user->isAdmin();
     }
+
+    public function viewAudit(User $user, SponsorLevel $sponsorLevel): bool
+    {
+        return $user->isAdmin();
+    }
 }

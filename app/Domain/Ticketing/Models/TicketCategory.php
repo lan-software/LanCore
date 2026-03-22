@@ -11,10 +11,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable(['name', 'description', 'sort_order', 'event_id'])]
-class TicketCategory extends Model
+class TicketCategory extends Model implements AuditableContract
 {
+    use Auditable;
+
     /** @use HasFactory<TicketCategoryFactory> */
     use HasFactory, HasModelCache;
 

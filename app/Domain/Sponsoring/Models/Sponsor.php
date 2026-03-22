@@ -12,10 +12,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable(['name', 'description', 'link', 'logo', 'sponsor_level_id'])]
-class Sponsor extends Model
+class Sponsor extends Model implements AuditableContract
 {
+    use Auditable;
+
     /** @use HasFactory<SponsorFactory> */
     use HasFactory;
 

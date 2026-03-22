@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable([
     'name', 'description', 'price', 'quota', 'max_per_user', 'seats_per_ticket',
@@ -18,8 +20,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'purchase_from', 'purchase_until', 'is_locked',
     'event_id', 'ticket_category_id', 'ticket_group_id',
 ])]
-class TicketType extends Model implements Purchasable
+class TicketType extends Model implements AuditableContract, Purchasable
 {
+    use Auditable;
+
     /** @use HasFactory<TicketTypeFactory> */
     use HasFactory;
 

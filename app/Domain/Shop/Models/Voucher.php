@@ -9,14 +9,18 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable([
     'code', 'type', 'discount_amount', 'discount_percent',
     'max_uses', 'times_used', 'valid_from', 'valid_until',
     'is_active', 'event_id',
 ])]
-class Voucher extends Model
+class Voucher extends Model implements AuditableContract
 {
+    use Auditable;
+
     /** @use HasFactory<VoucherFactory> */
     use HasFactory;
 

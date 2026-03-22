@@ -56,4 +56,9 @@ class SponsorPolicy
     {
         return $user->isAdmin();
     }
+
+    public function viewAudit(User $user, Sponsor $sponsor): bool
+    {
+        return $user->isAdmin();
+    }
 }

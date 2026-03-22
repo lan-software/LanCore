@@ -10,10 +10,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable(['name', 'description', 'starts_at', 'visibility', 'program_id', 'sort_order'])]
-class TimeSlot extends Model
+class TimeSlot extends Model implements AuditableContract
 {
+    use Auditable;
+
     /** @use HasFactory<TimeSlotFactory> */
     use HasFactory;
 

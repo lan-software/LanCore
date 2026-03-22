@@ -1,6 +1,8 @@
 <?php
 
+use App\Domain\News\Http\Controllers\NewsArticleAuditController;
 use App\Domain\News\Http\Controllers\NewsArticleController;
+use App\Domain\News\Http\Controllers\NewsCommentAuditController;
 use App\Domain\News\Http\Controllers\NewsCommentController;
 use App\Domain\News\Http\Controllers\PublicNewsController;
 use Illuminate\Support\Facades\Route;
@@ -21,10 +23,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('news-admin/comments', [NewsCommentController::class, 'index'])->name('news.comments.index');
     Route::post('news-admin', [NewsArticleController::class, 'store'])->name('news.store');
     Route::get('news-admin/{newsArticle}', [NewsArticleController::class, 'edit'])->name('news.edit');
+    Route::get('news-admin/{newsArticle}/audit', NewsArticleAuditController::class)->name('news.audit');
     Route::post('news-admin/{newsArticle}', [NewsArticleController::class, 'update'])->name('news.update');
     Route::delete('news-admin/{newsArticle}', [NewsArticleController::class, 'destroy'])->name('news.destroy');
 
     // Admin comment management
+    Route::get('news/comments/{newsComment}/audit', NewsCommentAuditController::class)->name('news.comments.audit');
     Route::patch('news/comments/{newsComment}', [NewsCommentController::class, 'update'])->name('news.comments.update');
     Route::delete('news/comments/{newsComment}', [NewsCommentController::class, 'destroy'])->name('news.comments.destroy');
     Route::post('news/comments/{newsComment}/approve', [NewsCommentController::class, 'approve'])->name('news.comments.approve');

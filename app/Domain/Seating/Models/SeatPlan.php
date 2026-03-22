@@ -8,10 +8,14 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable(['name', 'event_id', 'data'])]
-class SeatPlan extends Model
+class SeatPlan extends Model implements AuditableContract
 {
+    use Auditable;
+
     /** @use HasFactory<SeatPlanFactory> */
     use HasFactory;
 

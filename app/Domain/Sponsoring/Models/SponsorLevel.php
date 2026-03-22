@@ -9,10 +9,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable(['name', 'color', 'sort_order'])]
-class SponsorLevel extends Model
+class SponsorLevel extends Model implements AuditableContract
 {
+    use Auditable;
+
     /** @use HasFactory<SponsorLevelFactory> */
     use HasFactory, HasModelCache;
 

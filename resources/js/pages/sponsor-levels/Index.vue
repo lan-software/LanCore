@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { index as sponsorLevelsRoute, create as sponsorLevelCreate } from '@/routes/sponsor-levels'
 import { edit } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController'
+import SponsorLevelAuditController from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelAuditController'
 import Heading from '@/components/Heading.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -44,6 +45,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                             <TableHead>Name</TableHead>
                             <TableHead>Sponsors</TableHead>
                             <TableHead>Order</TableHead>
+                            <TableHead></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -64,9 +66,14 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 <Badge variant="secondary">{{ level.sponsors_count ?? 0 }}</Badge>
                             </TableCell>
                             <TableCell class="text-muted-foreground">{{ level.sort_order }}</TableCell>
+                            <TableCell>
+                                <Button variant="outline" size="sm" @click.stop="router.visit(SponsorLevelAuditController(level.id).url)">
+                                    Audit
+                                </Button>
+                            </TableCell>
                         </TableRow>
                         <TableRow v-if="sponsorLevels.length === 0">
-                            <TableCell :colspan="4" class="text-center text-muted-foreground py-8">
+                            <TableCell :colspan="5" class="text-center text-muted-foreground py-8">
                                 No sponsor levels yet.
                             </TableCell>
                         </TableRow>

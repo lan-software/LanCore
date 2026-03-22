@@ -43,4 +43,9 @@ class AddonPolicy
     {
         return $user->isAdmin();
     }
+
+    public function viewAudit(User $user, Addon $addon): bool
+    {
+        return $user->isAdmin();
+    }
 }

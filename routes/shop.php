@@ -2,6 +2,7 @@
 
 use App\Domain\Shop\Http\Controllers\CartController;
 use App\Domain\Shop\Http\Controllers\ShopController;
+use App\Domain\Shop\Http\Controllers\VoucherAuditController;
 use App\Domain\Shop\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('vouchers/create', [VoucherController::class, 'create'])->name('vouchers.create');
     Route::post('vouchers', [VoucherController::class, 'store'])->name('vouchers.store');
     Route::get('vouchers/{voucher}', [VoucherController::class, 'edit'])->name('vouchers.edit');
+    Route::get('vouchers/{voucher}/audit', VoucherAuditController::class)->name('vouchers.audit');
     Route::patch('vouchers/{voucher}', [VoucherController::class, 'update'])->name('vouchers.update');
     Route::delete('vouchers/{voucher}', [VoucherController::class, 'destroy'])->name('vouchers.destroy');
 });

@@ -44,14 +44,30 @@ const form = useForm({
 });
 
 function submit() {
-    form.patch(update().url);
+    form.patch(update().url, {
+        preserveScroll: true,
+        onSuccess: () => {
+            form.defaults({
+                mail_on_news: form.mail_on_news,
+                mail_on_events: form.mail_on_events,
+                mail_on_news_comments: form.mail_on_news_comments,
+                mail_on_program_time_slots: form.mail_on_program_time_slots,
+                push_on_news: form.push_on_news,
+                push_on_events: form.push_on_events,
+                push_on_news_comments: form.push_on_news_comments,
+                push_on_program_time_slots: form.push_on_program_time_slots,
+            });
+        },
+    });
 }
+
+type PreferenceKey = keyof NotificationPreferences;
 
 type NotificationRow = {
     label: string;
     description: string;
-    mailKey: keyof typeof form;
-    pushKey: keyof typeof form;
+    mailKey: PreferenceKey;
+    pushKey: PreferenceKey;
 };
 
 const notificationRows: NotificationRow[] = [
@@ -121,7 +137,8 @@ const notificationRows: NotificationRow[] = [
                                         <div class="flex justify-center">
                                             <Checkbox
                                                 :id="row.mailKey"
-                                                v-model:checked="(form[row.mailKey] as boolean)"
+                                                :model-value="form[row.mailKey] as boolean"
+                                                @update:model-value="(val: boolean) => { form[row.mailKey] = val; }"
                                             />
                                         </div>
                                     </td>
@@ -129,7 +146,7 @@ const notificationRows: NotificationRow[] = [
                                         <div class="flex justify-center opacity-40">
                                             <Checkbox
                                                 :id="row.pushKey"
-                                                :checked="false"
+                                                :model-value="false"
                                                 disabled
                                             />
                                         </div>

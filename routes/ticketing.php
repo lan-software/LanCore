@@ -1,8 +1,11 @@
 <?php
 
+use App\Domain\Ticketing\Http\Controllers\AddonAuditController;
 use App\Domain\Ticketing\Http\Controllers\AddonController;
+use App\Domain\Ticketing\Http\Controllers\TicketCategoryAuditController;
 use App\Domain\Ticketing\Http\Controllers\TicketCategoryController;
 use App\Domain\Ticketing\Http\Controllers\TicketController;
+use App\Domain\Ticketing\Http\Controllers\TicketTypeAuditController;
 use App\Domain\Ticketing\Http\Controllers\TicketTypeController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('ticket-types/create', [TicketTypeController::class, 'create'])->name('ticket-types.create');
     Route::post('ticket-types', [TicketTypeController::class, 'store'])->name('ticket-types.store');
     Route::get('ticket-types/{ticketType}', [TicketTypeController::class, 'edit'])->name('ticket-types.edit');
+    Route::get('ticket-types/{ticketType}/audit', TicketTypeAuditController::class)->name('ticket-types.audit');
     Route::patch('ticket-types/{ticketType}', [TicketTypeController::class, 'update'])->name('ticket-types.update');
     Route::delete('ticket-types/{ticketType}', [TicketTypeController::class, 'destroy'])->name('ticket-types.destroy');
 
@@ -26,6 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('ticket-categories/create', [TicketCategoryController::class, 'create'])->name('ticket-categories.create');
     Route::post('ticket-categories', [TicketCategoryController::class, 'store'])->name('ticket-categories.store');
     Route::get('ticket-categories/{ticketCategory}', [TicketCategoryController::class, 'edit'])->name('ticket-categories.edit');
+    Route::get('ticket-categories/{ticketCategory}/audit', TicketCategoryAuditController::class)->name('ticket-categories.audit');
     Route::patch('ticket-categories/{ticketCategory}', [TicketCategoryController::class, 'update'])->name('ticket-categories.update');
     Route::delete('ticket-categories/{ticketCategory}', [TicketCategoryController::class, 'destroy'])->name('ticket-categories.destroy');
 
@@ -34,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('ticket-addons/create', [AddonController::class, 'create'])->name('ticket-addons.create');
     Route::post('ticket-addons', [AddonController::class, 'store'])->name('ticket-addons.store');
     Route::get('ticket-addons/{ticketAddon}', [AddonController::class, 'edit'])->name('ticket-addons.edit');
+    Route::get('ticket-addons/{ticketAddon}/audit', AddonAuditController::class)->name('ticket-addons.audit');
     Route::patch('ticket-addons/{ticketAddon}', [AddonController::class, 'update'])->name('ticket-addons.update');
     Route::delete('ticket-addons/{ticketAddon}', [AddonController::class, 'destroy'])->name('ticket-addons.destroy');
 });

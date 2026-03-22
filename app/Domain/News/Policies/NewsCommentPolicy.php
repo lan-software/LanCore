@@ -38,4 +38,9 @@ class NewsCommentPolicy
     {
         return $user->isAdmin();
     }
+
+    public function viewAudit(User $user, NewsComment $comment): bool
+    {
+        return $user->isAdmin();
+    }
 }

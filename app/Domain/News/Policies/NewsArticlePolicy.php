@@ -43,4 +43,9 @@ class NewsArticlePolicy
     {
         return $user->isAdmin();
     }
+
+    public function viewAudit(User $user, NewsArticle $article): bool
+    {
+        return $user->isAdmin();
+    }
 }

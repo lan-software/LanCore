@@ -43,4 +43,9 @@ class TicketTypePolicy
     {
         return $user->isAdmin();
     }
+
+    public function viewAudit(User $user, TicketType $ticketType): bool
+    {
+        return $user->isAdmin();
+    }
 }

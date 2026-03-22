@@ -12,10 +12,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable(['name', 'description', 'visibility', 'event_id', 'sort_order'])]
-class Program extends Model
+class Program extends Model implements AuditableContract
 {
+    use Auditable;
+
     /** @use HasFactory<ProgramFactory> */
     use HasFactory;
 

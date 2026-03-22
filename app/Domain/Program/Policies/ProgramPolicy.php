@@ -43,4 +43,9 @@ class ProgramPolicy
     {
         return $user->isAdmin();
     }
+
+    public function viewAudit(User $user, Program $program): bool
+    {
+        return $user->isAdmin();
+    }
 }
