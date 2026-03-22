@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Calendar, ClipboardList, FolderGit2, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, MessageSquare, Newspaper, Palette, Puzzle, Rows3, Tag, Ticket, Users } from 'lucide-vue-next';
+import { BookOpen, Calendar, ClipboardList, FolderGit2, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Puzzle, Rows3, Tag, Ticket, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import EventSelector from '@/components/EventSelector.vue';
@@ -33,6 +33,7 @@ import { index as ticketAddonsIndex } from '@/routes/ticket-addons';
 import { index as vouchersIndex } from '@/routes/vouchers';
 import { index as ticketsIndex } from '@/routes/tickets';
 import { index as seatPlansIndex } from '@/routes/seat-plans';
+import { index as announcementsIndex } from '@/routes/announcements';
 import { index as newsIndex } from '@/routes/news';
 import { index as newsCommentsIndex } from '@/routes/news/comments';
 import type { NavItem } from '@/types';
@@ -130,6 +131,23 @@ const footerNavItems: NavItem[] = [
                                 <Link :href="newsCommentsIndex()">
                                     <MessageSquare />
                                     <span>Comments</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Announcement Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Announcement</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="announcementsIndex()">
+                                    <Megaphone />
+                                    <span>Announcements</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

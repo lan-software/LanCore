@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3'
-import { index as announcementsRoute } from '@/routes/announcements'
-import { create as announcementCreate } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
+import { FlexRender, getCoreRowModel, useVueTable, type SortingState } from '@tanstack/vue-table'
+import { router, Head, Link } from '@inertiajs/vue3'
 import { edit } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
-import { Plus, Search, Megaphone } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { create as announcementCreate } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
+import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useDataTable, type DataTableFilters } from '@/composables/useDataTable'
+import { index as announcementsRoute } from '@/routes/announcements'
 import type { BreadcrumbItem } from '@/types'
 import type { Announcement } from '@/types/domain'
+import { columns } from './columns'
 
 interface PaginatedAnnouncements {
     data: Announcement[]
@@ -25,7 +27,7 @@ interface PaginatedAnnouncements {
 
 const props = defineProps<{
     announcements: PaginatedAnnouncements
-    filters: Record<string, string | undefined>
+    filters: DataTableFilters
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -33,20 +35,43 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Announcements', href: announcementsRoute().url },
 ]
 
+const { filters, setSearch, toggleSort, setFilter, setPage } =
+    useDataTable(() => announcementsRoute().url, props.filters)
+
 const searchValue = ref(props.filters.search ?? '')
 
-watch(searchValue, (val) => {
-    router.get(announcementsRoute().url, { search: val || undefined }, { preserveState: true, replace: true })
-})
+watch(searchValue, (val) => setSearch(val))
 
-function priorityVariant(priority: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-    switch (priority) {
-        case 'emergency': return 'destructive'
-        case 'normal': return 'default'
-        case 'silent': return 'secondary'
-        default: return 'outline'
-    }
-}
+const sorting = computed<SortingState>(() =>
+    props.filters.sort ? [{ id: props.filters.sort, desc: props.filters.direction === 'desc' }] : [],
+)
+
+const table = useVueTable({
+    get data() {
+        return props.announcements.data
+    },
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    manualSorting: true,
+    manualFiltering: true,
+    manualPagination: true,
+    rowCount: props.announcements.total,
+    getRowId: (row) => String(row.id),
+    state: {
+        get sorting() {
+            return sorting.value
+        },
+    },
+    onSortingChange: (updater) => {
+        const newSorting = typeof updater === 'function' ? updater(sorting.value) : updater
+        if (newSorting.length > 0) {
+            toggleSort(newSorting[0].id)
+        } else {
+            setFilter('sort', undefined)
+            setFilter('direction', undefined)
+        }
+    },
+})
 </script>
 
 <template>
@@ -54,6 +79,7 @@ function priorityVariant(priority: string): 'default' | 'secondary' | 'destructi
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
+            <!-- Toolbar -->
             <div class="flex flex-wrap items-center gap-2">
                 <div class="relative flex-1 min-w-48">
                     <Search class="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
@@ -71,47 +97,69 @@ function priorityVariant(priority: string): 'default' | 'secondary' | 'destructi
                 </Link>
             </div>
 
-            <div class="overflow-hidden rounded-lg border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Title</TableHead>
-                            <TableHead>Priority</TableHead>
-                            <TableHead>Event</TableHead>
-                            <TableHead>Author</TableHead>
-                            <TableHead>Published</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableEmpty v-if="announcements.data.length === 0" :colspan="5">
-                            <div class="flex flex-col items-center gap-2 py-8">
-                                <Megaphone class="size-8 text-muted-foreground" />
-                                <p class="text-sm text-muted-foreground">No announcements yet</p>
-                            </div>
-                        </TableEmpty>
-                        <TableRow
-                            v-for="announcement in announcements.data"
-                            :key="announcement.id"
-                            class="cursor-pointer"
-                            @click="router.visit(edit({ announcement: announcement.id }).url)"
+            <!-- Table -->
+            <Table class="border">
+                <TableHeader>
+                    <TableRow>
+                        <TableHead
+                            v-for="header in table.getFlatHeaders()"
+                            :key="header.id"
+                            class="border-r last:border-r-0"
                         >
-                            <TableCell class="font-medium">{{ announcement.title }}</TableCell>
-                            <TableCell>
-                                <Badge :variant="priorityVariant(announcement.priority)">
-                                    {{ announcement.priority }}
-                                </Badge>
-                            </TableCell>
-                            <TableCell>{{ announcement.event?.name ?? '—' }}</TableCell>
-                            <TableCell>{{ announcement.author?.name ?? '—' }}</TableCell>
-                            <TableCell>
-                                <template v-if="announcement.published_at">
-                                    {{ new Date(announcement.published_at).toLocaleDateString() }}
-                                </template>
-                                <Badge v-else variant="outline">Draft</Badge>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
+                            <FlexRender
+                                :render="header.column.columnDef.header"
+                                :props="header.getContext()"
+                            />
+                        </TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    <TableRow
+                        v-for="row in table.getRowModel().rows"
+                        :key="row.id"
+                        class="cursor-pointer hover:bg-muted/50"
+                        @click="router.visit(edit({ announcement: row.original.id }).url)"
+                    >
+                        <TableCell
+                            v-for="cell in row.getVisibleCells()"
+                            :key="cell.id"
+                            class="border-r last:border-r-0"
+                        >
+                            <FlexRender
+                                :render="cell.column.columnDef.cell"
+                                :props="cell.getContext()"
+                            />
+                        </TableCell>
+                    </TableRow>
+                    <TableEmpty v-if="table.getRowModel().rows.length === 0" :columns-count="table.getAllColumns().length" />
+                </TableBody>
+            </Table>
+
+            <!-- Pagination -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-muted-foreground">
+                        {{ props.announcements.from }}-{{ props.announcements.to }} of {{ props.announcements.total }}
+                    </span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        :disabled="props.announcements.current_page === 1"
+                        @click="setPage(props.announcements.current_page - 1)"
+                    >
+                        <ChevronLeft class="size-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        :disabled="props.announcements.current_page === props.announcements.last_page"
+                        @click="setPage(props.announcements.current_page + 1)"
+                    >
+                        <ChevronRight class="size-4" />
+                    </Button>
+                </div>
             </div>
         </div>
     </AppLayout>
