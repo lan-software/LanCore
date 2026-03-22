@@ -18,7 +18,7 @@ import type { BreadcrumbItem } from '@/types'
 import type { NewsArticle, NewsComment } from '@/types/domain'
 import { Head, Link, router, useForm } from '@inertiajs/vue3'
 import { Check, ExternalLink, Trash2, X } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps<{
     article: NewsArticle
@@ -55,6 +55,13 @@ const tagInput = ref('')
 const imagePreview = ref<string | null>(props.article.image_url ?? null)
 const ogImagePreview = ref<string | null>(props.article.og_image_url ?? null)
 const showDeleteDialog = ref(false)
+const publishMode = ref<'none' | 'now' | 'schedule'>(props.article.published_at ? 'schedule' : 'none')
+
+watch(publishMode, (mode) => {
+    if (mode !== 'schedule') {
+        form.published_at = ''
+    }
+})
 
 function addTag() {
     const tag = tagInput.value.trim().toLowerCase()
@@ -105,7 +112,16 @@ function removeOgImage() {
     ogImagePreview.value = null
 }
 
+function currentDateTimeLocal(): string {
+    const now = new Date()
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
+    return now.toISOString().slice(0, 16)
+}
+
 function submit() {
+    if (publishMode.value === 'now') {
+        form.published_at = currentDateTimeLocal()
+    }
     form.post(update({ newsArticle: props.article.id }).url, {
         preserveScroll: true,
     })
@@ -220,8 +236,25 @@ function formatDate(dateString: string): string {
                     </div>
 
                     <div class="grid gap-2">
+                        <Label>Publishing Behavior</Label>
+                        <Select v-model="publishMode">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select publishing behavior" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">No publish date</SelectItem>
+                                <SelectItem value="now">Publish Now</SelectItem>
+                                <SelectItem value="schedule">Schedule for later</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p v-if="publishMode === 'now'" class="text-xs text-muted-foreground">The article will be published immediately with the current date and time.</p>
+                        <p v-if="publishMode === 'none'" class="text-xs text-muted-foreground">The article will not have a publish date. Set one later to publish.</p>
+                    </div>
+
+                    <div v-if="publishMode === 'schedule'" class="grid gap-2">
                         <Label for="published_at">Publish Date</Label>
                         <Input id="published_at" v-model="form.published_at" type="datetime-local" />
+                        <p class="text-xs text-muted-foreground">The article will become visible at this date and time.</p>
                         <InputError :message="form.errors.published_at" />
                     </div>
 
