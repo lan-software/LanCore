@@ -9,6 +9,7 @@ use App\Domain\Webhook\Enums\WebhookEvent;
 use App\Domain\Webhook\Http\Requests\StoreWebhookRequest;
 use App\Domain\Webhook\Http\Requests\UpdateWebhookRequest;
 use App\Domain\Webhook\Models\Webhook;
+use App\Domain\Webhook\Models\WebhookDelivery;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,7 +39,14 @@ class WebhookController extends Controller
         $sortDirection = $request->input('direction', 'desc');
         $query->orderBy($sortColumn, $sortDirection);
 
-        $webhooks = $query->paginate($request->input('per_page', 20))->withQueryString();
+        $query->addSelect([
+            'last_delivery_status_code' => WebhookDelivery::select('status_code')
+                ->whereColumn('webhook_id', 'webhooks.id')
+                ->orderByDesc('fired_at')
+                ->limit(1),
+        ]);
+
+        $webhooks = $query->withCount('deliveries')->paginate($request->input('per_page', 20))->withQueryString();
 
         return Inertia::render('webhooks/Index', [
             'webhooks' => $webhooks,

@@ -64,10 +64,24 @@ export const columns: ColumnDef<Webhook>[] = [
         },
     },
     {
-        accessorKey: 'sent_count',
-        header: sortableHeader('Sent'),
+        accessorKey: 'deliveries_count',
+        header: () => h('span', 'Sent'),
         cell: ({ row }) =>
-            h('span', { class: 'tabular-nums' }, (row.getValue('sent_count') as number).toLocaleString()),
+            h('span', { class: 'tabular-nums' }, (row.getValue('deliveries_count') as number).toLocaleString()),
+    },
+    {
+        id: 'health',
+        header: () => h('span', 'Health'),
+        cell: ({ row }) => {
+            const code = row.original.last_delivery_status_code
+            if (code === null) {
+                return h(Badge, { variant: 'secondary' }, () => 'Unknown')
+            }
+            if (code >= 200 && code < 300) {
+                return h(Badge, { class: 'bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20' }, () => 'Healthy')
+            }
+            return h(Badge, { class: 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/20' }, () => `Unhealthy ${code}`)
+        },
     },
     {
         accessorKey: 'created_at',

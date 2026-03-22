@@ -404,6 +404,8 @@ export type Webhook = {
     description: string | null
     is_active: boolean
     sent_count: number
+    deliveries_count: number
+    last_delivery_status_code: number | null
     created_at: string
     updated_at: string
 }

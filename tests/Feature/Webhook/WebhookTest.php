@@ -340,7 +340,8 @@ it('logs a successful delivery when webhook payload is sent', function () {
     expect($delivery->succeeded)->toBeTrue()
         ->and($delivery->status_code)->toBe(200)
         ->and($delivery->duration_ms)->not->toBeNull()
-        ->and($delivery->fired_at)->not->toBeNull();
+        ->and($delivery->fired_at)->not->toBeNull()
+        ->and($webhook->fresh()->sent_count)->toBe(1);
 });
 
 it('logs a failed delivery when the endpoint returns an error', function () {
@@ -354,7 +355,8 @@ it('logs a failed delivery when the endpoint returns an error', function () {
 
     $delivery = WebhookDelivery::where('webhook_id', $webhook->id)->sole();
     expect($delivery->succeeded)->toBeFalse()
-        ->and($delivery->status_code)->toBe(500);
+        ->and($delivery->status_code)->toBe(500)
+        ->and($webhook->fresh()->sent_count)->toBe(1);
 });
 
 it('allows admins to view webhook show page with delivery history', function () {

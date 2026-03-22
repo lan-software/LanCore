@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Bell, BellOff, Check, CheckCheck, ExternalLink, Trash2 } from 'lucide-vue-next';
+import { Archive, Bell, BellOff, Check, CheckCheck, ExternalLink } from 'lucide-vue-next';
 import { computed } from 'vue';
 import {
-    destroy as destroyNotification,
+    archive as archiveNotification,
     index as notificationsIndex,
     markAllAsRead,
     markAsRead,
@@ -57,7 +57,7 @@ function handleMarkAllAsRead() {
 }
 
 function handleArchive(notification: AppNotification) {
-    router.delete(destroyNotification(notification.id).url, { preserveScroll: true });
+    router.patch(archiveNotification(notification.id).url, {}, { preserveScroll: true });
 }
 </script>
 
@@ -100,9 +100,8 @@ function handleArchive(notification: AppNotification) {
                     v-for="notification in recentNotifications"
                     :key="notification.id"
                     class="group flex cursor-default flex-col items-start gap-1 px-3 py-2.5"
-                    as-child
+                    @select.prevent
                 >
-                    <div>
                         <div class="flex w-full items-start justify-between gap-2">
                             <div class="flex items-start gap-2">
                                 <span
@@ -127,18 +126,17 @@ function handleArchive(notification: AppNotification) {
                                     <Check class="size-3" />
                                 </button>
                                 <button
-                                    class="rounded p-0.5 hover:bg-destructive/10 hover:text-destructive"
+                                    class="rounded p-0.5 hover:bg-muted"
                                     title="Archive"
                                     @click.stop="handleArchive(notification)"
                                 >
-                                    <Trash2 class="size-3" />
+                                    <Archive class="size-3" />
                                 </button>
                             </div>
                         </div>
                         <p class="ml-4 text-xs text-muted-foreground">
                             {{ new Date(notification.created_at).toLocaleString() }}
                         </p>
-                    </div>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
 

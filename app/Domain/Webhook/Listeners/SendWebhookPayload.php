@@ -31,6 +31,7 @@ class SendWebhookPayload implements ShouldQueue
             $response = Http::withHeaders($headers)->timeout(10)->post($webhook->url, $event->payload);
             $statusCode = $response->status();
             $succeeded = $response->successful();
+            $webhook->increment('sent_count');
             $response->throw();
         } finally {
             WebhookDelivery::create([
@@ -41,7 +42,5 @@ class SendWebhookPayload implements ShouldQueue
                 'fired_at' => $firedAt,
             ]);
         }
-
-        $webhook->increment('sent_count');
     }
 }
