@@ -4,8 +4,6 @@
 
 # LanCore
 
-
-
 > LAN party & BYOD event management platform — the modern successor to eventula-manager. Inspired by Byceps and 10 years of Lan-Party experience at (sxlan.de)[sxlan.de]
 
 [![Tests](https://github.com/lan-software/LanCore/actions/workflows/tests.yml/badge.svg)](https://github.com/lan-software/LanCore/actions/workflows/tests.yml)
