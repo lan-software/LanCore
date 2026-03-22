@@ -2,17 +2,19 @@
 import { Head, Link } from '@inertiajs/vue3'
 import { dashboard, login, register } from '@/routes'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Clock, MapPin, ShoppingCart } from 'lucide-vue-next'
+import { Calendar, Clock, MapPin, Newspaper, ShoppingCart } from 'lucide-vue-next'
 import { index as shopIndex } from '@/routes/shop'
-import type { Event } from '@/types/domain'
+import type { Event, NewsArticle } from '@/types/domain'
 
 withDefaults(
     defineProps<{
         canRegister: boolean
         nextEvent: Event | null
+        latestNews: NewsArticle[]
     }>(),
     {
         canRegister: true,
+        latestNews: () => [],
     },
 )
 
@@ -247,6 +249,44 @@ function formatDateTime(dateString: string): string {
                 </div>
             </template>
         </main>
+
+        <!-- Latest News -->
+        <section v-if="latestNews.length > 0" class="border-t">
+            <div class="mx-auto max-w-5xl px-6 py-12">
+                <div class="space-y-6">
+                    <div class="flex items-center gap-2">
+                        <Newspaper class="size-5 text-muted-foreground" />
+                        <h2 class="text-2xl font-bold tracking-tight">Latest News</h2>
+                    </div>
+                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        <Link
+                            v-for="article in latestNews"
+                            :key="article.id"
+                            :href="`/news/${article.slug}`"
+                            class="group rounded-lg border transition-colors hover:border-foreground/20"
+                        >
+                            <img
+                                v-if="article.image_url"
+                                :src="article.image_url"
+                                :alt="article.title"
+                                class="h-40 w-full rounded-t-lg object-cover"
+                            />
+                            <div class="p-4 space-y-2">
+                                <h3 class="font-semibold group-hover:text-primary transition-colors line-clamp-2">{{ article.title }}</h3>
+                                <p v-if="article.summary" class="text-sm text-muted-foreground line-clamp-3">{{ article.summary }}</p>
+                                <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span v-if="article.published_at">{{ new Date(article.published_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
+                                    <span v-if="article.author">· {{ article.author.name }}</span>
+                                </div>
+                                <div v-if="article.tags && article.tags.length > 0" class="flex flex-wrap gap-1">
+                                    <Badge v-for="tag in article.tags.slice(0, 3)" :key="tag" variant="secondary" class="text-[10px]">{{ tag }}</Badge>
+                                </div>
+                            </div>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- Footer -->
         <footer class="border-t">

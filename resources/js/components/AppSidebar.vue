@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Calendar, ClipboardList, FolderGit2, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Palette, Puzzle, Rows3, Tag, Ticket, Users } from 'lucide-vue-next';
+import { BookOpen, Calendar, ClipboardList, FolderGit2, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, MessageSquare, Newspaper, Palette, Puzzle, Rows3, Tag, Ticket, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import EventSelector from '@/components/EventSelector.vue';
@@ -33,6 +33,8 @@ import { index as ticketAddonsIndex } from '@/routes/ticket-addons';
 import { index as vouchersIndex } from '@/routes/vouchers';
 import { index as ticketsIndex } from '@/routes/tickets';
 import { index as seatPlansIndex } from '@/routes/seat-plans';
+import { index as newsIndex } from '@/routes/news';
+import { index as newsCommentsIndex } from '@/routes/news/comments';
 import type { NavItem } from '@/types';
 
 const page = usePage();
@@ -103,6 +105,31 @@ const footerNavItems: NavItem[] = [
                                 <Link :href="usersIndex()">
                                     <Users />
                                     <span>Users</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- News Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>News</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="newsIndex()">
+                                    <Newspaper />
+                                    <span>Articles</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="newsCommentsIndex()">
+                                    <MessageSquare />
+                                    <span>Comments</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

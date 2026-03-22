@@ -8,6 +8,14 @@ use App\Domain\Games\Models\Game;
 use App\Domain\Games\Models\GameMode;
 use App\Domain\Games\Policies\GameModePolicy;
 use App\Domain\Games\Policies\GamePolicy;
+use App\Domain\News\Events\NewsArticlePublished;
+use App\Domain\News\Listeners\SendNewsNotification;
+use App\Domain\News\Models\NewsArticle;
+use App\Domain\News\Models\NewsComment;
+use App\Domain\News\Policies\NewsArticlePolicy;
+use App\Domain\News\Policies\NewsCommentPolicy;
+use App\Domain\Program\Events\ProgramTimeSlotApproaching;
+use App\Domain\Program\Listeners\SendProgramTimeSlotNotification;
 use App\Domain\Program\Models\Program;
 use App\Domain\Program\Policies\ProgramPolicy;
 use App\Domain\Seating\Models\SeatPlan;
@@ -37,6 +45,7 @@ use App\Services\ModelCacheService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
@@ -67,6 +76,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configurePolicies();
+        $this->configureEvents();
         $this->configureStorageMacros();
     }
 
@@ -89,6 +99,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Addon::class, AddonPolicy::class);
         Gate::policy(Voucher::class, VoucherPolicy::class);
         Gate::policy(SeatPlan::class, SeatPlanPolicy::class);
+        Gate::policy(NewsArticle::class, NewsArticlePolicy::class);
+        Gate::policy(NewsComment::class, NewsCommentPolicy::class);
     }
 
     /**
@@ -111,6 +123,15 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    /**
+     * Register event listeners.
+     */
+    protected function configureEvents(): void
+    {
+        EventFacade::listen(NewsArticlePublished::class, SendNewsNotification::class);
+        EventFacade::listen(ProgramTimeSlotApproaching::class, SendProgramTimeSlotNotification::class);
     }
 
     /**

@@ -315,3 +315,47 @@ export type Audit = {
     created_at: string
     user: { id: number; name: string; email: string } | null
 }
+
+// News Domain
+
+export type NewsArticle = {
+    id: number
+    title: string
+    slug: string
+    summary: string | null
+    content: string | null
+    tags: string[] | null
+    image: string | null
+    image_url: string | null
+    visibility: 'draft' | 'internal' | 'public'
+    is_archived: boolean
+    comments_enabled: boolean
+    comments_require_approval: boolean
+    notify_users: boolean
+    meta_title: string | null
+    meta_description: string | null
+    og_title: string | null
+    og_description: string | null
+    og_image: string | null
+    og_image_url: string | null
+    author_id: number
+    author?: { id: number; name: string }
+    published_at: string | null
+    comments?: NewsComment[]
+    created_at: string
+    updated_at: string
+}
+
+export type NewsComment = {
+    id: number
+    news_article_id: number
+    user_id: number
+    content: string
+    is_approved: boolean
+    edited_at: string | null
+    article?: { id: number; title: string; slug: string; visibility: string; tags: string[] | null }
+    user?: { id: number; name: string }
+    vote_score?: number
+    created_at: string
+    updated_at: string
+}

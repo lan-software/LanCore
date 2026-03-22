@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Event\Models\Event;
+use App\Domain\News\Models\NewsArticle;
 use App\Domain\Program\Enums\ProgramVisibility;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -53,6 +54,26 @@ class WelcomeController extends Controller
         return Inertia::render('Welcome', [
             'canRegister' => Features::enabled(Features::registration()),
             'nextEvent' => $nextEventData,
+            'latestNews' => $this->getLatestNews(),
         ]);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function getLatestNews(): array
+    {
+        $articles = NewsArticle::published()
+            ->with('author:id,name')
+            ->orderByDesc('published_at')
+            ->limit(3)
+            ->get();
+
+        return $articles->map(function (NewsArticle $article) {
+            $data = $article->toArray();
+            $data['image_url'] = $article->image ? Storage::fileUrl($article->image) : null;
+
+            return $data;
+        })->all();
     }
 }
