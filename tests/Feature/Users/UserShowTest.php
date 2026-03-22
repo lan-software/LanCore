@@ -78,11 +78,11 @@ it('allows admins to change a user password', function () {
     expect(Hash::check('new-password-123', $user->fresh()->password))->toBeTrue();
 });
 
-it('allows admins to sync user roles', function () {
-    $admin = User::factory()->withRole(RoleName::Admin)->create();
+it('allows superadmins to sync user roles', function () {
+    $superadmin = User::factory()->withRole(RoleName::Superadmin)->create();
     $user = User::factory()->withRole(RoleName::User)->create();
 
-    $this->actingAs($admin)
+    $this->actingAs($superadmin)
         ->patch("/users/{$user->id}", [
             'name' => $user->name,
             'email' => $user->email,
@@ -132,11 +132,11 @@ it('forbids users from updating another user', function () {
         ->assertForbidden();
 });
 
-it('allows admins to sync sponsor_manager role', function () {
-    $admin = User::factory()->withRole(RoleName::Admin)->create();
+it('allows superadmins to sync sponsor_manager role', function () {
+    $superadmin = User::factory()->withRole(RoleName::Superadmin)->create();
     $user = User::factory()->withRole(RoleName::User)->create();
 
-    $this->actingAs($admin)
+    $this->actingAs($superadmin)
         ->patch("/users/{$user->id}", [
             'name' => $user->name,
             'email' => $user->email,

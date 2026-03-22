@@ -56,8 +56,7 @@ class ChangeRoles
     public function sync(User $user, RoleName ...$roles): void
     {
         DB::transaction(function () use ($user, $roles) {
-            $previousRoles = $user->roles->pluck('name')
-                ->map(fn (RoleName $name) => $name)->all();
+            $previousRoles = $user->roles->pluck('name')->all();
 
             $roleIds = Role::whereIn(
                 'name',
@@ -67,8 +66,8 @@ class ChangeRoles
             $user->roles()->sync($roleIds);
             $user->unsetRelation('roles');
 
-            $added = array_values(array_diff($roles, $previousRoles));
-            $removed = array_values(array_diff($previousRoles, $roles));
+            $added = array_values(array_udiff($roles, $previousRoles, fn (RoleName $a, RoleName $b) => $a->value <=> $b->value));
+            $removed = array_values(array_udiff($previousRoles, $roles, fn (RoleName $a, RoleName $b) => $a->value <=> $b->value));
 
             if ($added || $removed) {
                 UserRolesChanged::dispatch($user, addedRoles: $added, removedRoles: $removed);
