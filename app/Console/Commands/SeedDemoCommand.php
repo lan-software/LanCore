@@ -663,6 +663,33 @@ class SeedDemoCommand extends Command
                 'secret' => null,
                 'is_active' => true,
             ]);
+
+            Webhook::factory()->create([
+                'name' => 'MockServer — Announcement Published',
+                'description' => 'Development webhook that forwards announcement published events to MockServer for inspection.',
+                'url' => 'http://mockserver:1080/webhooks/announcement-published',
+                'event' => WebhookEvent::AnnouncementPublished,
+                'secret' => null,
+                'is_active' => true,
+            ]);
+
+            Webhook::factory()->create([
+                'name' => 'MockServer — News Article Published',
+                'description' => 'Development webhook that forwards news article published events to MockServer for inspection.',
+                'url' => 'http://mockserver:1080/webhooks/news-article-published',
+                'event' => WebhookEvent::NewsArticlePublished,
+                'secret' => null,
+                'is_active' => true,
+            ]);
+
+            Webhook::factory()->create([
+                'name' => 'MockServer — Event Published',
+                'description' => 'Development webhook that forwards event published events to MockServer for inspection.',
+                'url' => 'http://mockserver:1080/webhooks/event-published',
+                'event' => WebhookEvent::EventPublished,
+                'secret' => null,
+                'is_active' => true,
+            ]);
         });
 
         return true;
