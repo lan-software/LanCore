@@ -3,6 +3,7 @@
 namespace App\Domain\Event\Models;
 
 use App\Concerns\HasModelCache;
+use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Event\Enums\EventStatus;
 use App\Domain\Program\Models\Program;
 use App\Domain\Seating\Models\SeatPlan;
@@ -86,6 +87,11 @@ class Event extends Model implements AuditableContract
     public function seatPlans(): HasMany
     {
         return $this->hasMany(SeatPlan::class);
+    }
+
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(Announcement::class);
     }
 
     public function remainingSeatCapacity(): int

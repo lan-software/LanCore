@@ -15,10 +15,12 @@ type NotificationPreferences = {
     mail_on_events: boolean;
     mail_on_news_comments: boolean;
     mail_on_program_time_slots: boolean;
+    mail_on_announcements: boolean;
     push_on_news: boolean;
     push_on_events: boolean;
     push_on_news_comments: boolean;
     push_on_program_time_slots: boolean;
+    push_on_announcements: boolean;
 };
 
 const props = defineProps<{
@@ -37,10 +39,12 @@ const form = useForm({
     mail_on_events: props.preferences.mail_on_events,
     mail_on_news_comments: props.preferences.mail_on_news_comments,
     mail_on_program_time_slots: props.preferences.mail_on_program_time_slots,
+    mail_on_announcements: props.preferences.mail_on_announcements,
     push_on_news: props.preferences.push_on_news,
     push_on_events: props.preferences.push_on_events,
     push_on_news_comments: props.preferences.push_on_news_comments,
     push_on_program_time_slots: props.preferences.push_on_program_time_slots,
+    push_on_announcements: props.preferences.push_on_announcements,
 });
 
 function submit() {
@@ -52,10 +56,12 @@ function submit() {
                 mail_on_events: form.mail_on_events,
                 mail_on_news_comments: form.mail_on_news_comments,
                 mail_on_program_time_slots: form.mail_on_program_time_slots,
+                mail_on_announcements: form.mail_on_announcements,
                 push_on_news: form.push_on_news,
                 push_on_events: form.push_on_events,
                 push_on_news_comments: form.push_on_news_comments,
                 push_on_program_time_slots: form.push_on_program_time_slots,
+                push_on_announcements: form.push_on_announcements,
             });
         },
     });
@@ -94,6 +100,12 @@ const notificationRows: NotificationRow[] = [
         description: 'When a program time slot is about to start',
         mailKey: 'mail_on_program_time_slots',
         pushKey: 'push_on_program_time_slots',
+    },
+    {
+        label: 'Announcements',
+        description: 'When organizers publish a new announcement (emergency announcements always send)',
+        mailKey: 'mail_on_announcements',
+        pushKey: 'push_on_announcements',
     },
 ];
 </script>

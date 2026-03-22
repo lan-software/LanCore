@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Domain\Announcement\Events\AnnouncementPublished;
+use App\Domain\Announcement\Listeners\SendAnnouncementNotification;
+use App\Domain\Announcement\Models\Announcement;
+use App\Domain\Announcement\Policies\AnnouncementPolicy;
 use App\Domain\Event\Models\Event;
 use App\Domain\Event\Policies\EventPolicy;
 use App\Domain\Games\Models\Game;
@@ -90,6 +94,7 @@ class AppServiceProvider extends ServiceProvider
     protected function configurePolicies(): void
     {
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Announcement::class, AnnouncementPolicy::class);
         Gate::policy(Venue::class, VenuePolicy::class);
         Gate::policy(Game::class, GamePolicy::class);
         Gate::policy(GameMode::class, GameModePolicy::class);
@@ -134,6 +139,7 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureEvents(): void
     {
+        EventFacade::listen(AnnouncementPublished::class, SendAnnouncementNotification::class);
         EventFacade::listen(NewsArticlePublished::class, SendNewsNotification::class);
         EventFacade::listen(ProgramTimeSlotApproaching::class, SendProgramTimeSlotNotification::class);
         EventFacade::listen(UserRolesChanged::class, SendUserRolesChangedNotification::class);

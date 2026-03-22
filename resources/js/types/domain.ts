@@ -360,3 +360,21 @@ export type NewsComment = {
     created_at: string
     updated_at: string
 }
+
+// Announcement Domain
+
+export type AnnouncementPriority = 'silent' | 'normal' | 'emergency'
+
+export type Announcement = {
+    id: number
+    title: string
+    description: string | null
+    priority: AnnouncementPriority
+    event_id: number
+    event?: { id: number; name: string }
+    author_id: number
+    author?: { id: number; name: string }
+    published_at: string | null
+    created_at: string
+    updated_at: string
+}

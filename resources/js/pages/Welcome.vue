@@ -1,22 +1,27 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import { computed } from 'vue'
 import { dashboard, login, register } from '@/routes'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Clock, MapPin, Newspaper, ShoppingCart } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
+import { Calendar, Clock, MapPin, Newspaper, ShoppingCart, Megaphone, AlertTriangle, X } from 'lucide-vue-next'
 import { index as shopIndex } from '@/routes/shop'
 import SeatMapCanvas from '@/components/SeatMapCanvas.vue'
-import type { Event, NewsArticle } from '@/types/domain'
+import type { Event, NewsArticle, Announcement } from '@/types/domain'
 
 const props = withDefaults(
     defineProps<{
         canRegister: boolean
         nextEvent: Event | null
         latestNews: NewsArticle[]
+        announcements: Announcement[]
+        dismissedAnnouncementIds: number[]
     }>(),
     {
         canRegister: true,
         latestNews: () => [],
+        announcements: () => [],
+        dismissedAnnouncementIds: () => [],
     },
 )
 
@@ -47,6 +52,10 @@ function formatDateTime(dateString: string): string {
         hour: '2-digit',
         minute: '2-digit',
     })
+}
+
+function dismissAnnouncement(announcementId: number) {
+    router.post(`/announcements/${announcementId}/dismiss`, {}, { preserveScroll: true })
 }
 </script>
 
@@ -102,6 +111,55 @@ function formatDateTime(dateString: string): string {
                         <div>
                             <p class="text-sm font-medium uppercase tracking-wider text-muted-foreground">Next Event</p>
                             <h1 class="mt-2 text-4xl font-bold tracking-tight">{{ nextEvent.name }}</h1>
+                        </div>
+
+                        <!-- Announcements -->
+                        <div v-if="$page.props.auth.user && announcements.length > 0" class="space-y-3">
+                            <div
+                                v-for="announcement in announcements"
+                                :key="announcement.id"
+                                class="flex items-start gap-3 rounded-lg border p-4"
+                                :class="{
+                                    'border-destructive/50 bg-destructive/5': announcement.priority === 'emergency',
+                                    'bg-muted/50': announcement.priority !== 'emergency',
+                                }"
+                            >
+                                <AlertTriangle v-if="announcement.priority === 'emergency'" class="mt-0.5 size-5 shrink-0 text-destructive" />
+                                <Megaphone v-else class="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold">{{ announcement.title }}</span>
+                                        <Badge v-if="announcement.priority === 'emergency'" variant="destructive" class="text-[10px]">Emergency</Badge>
+                                    </div>
+                                    <p v-if="announcement.description" class="mt-1 text-sm text-muted-foreground">
+                                        {{ announcement.description }}
+                                    </p>
+                                </div>
+                                <button
+                                    @click.prevent="dismissAnnouncement(announcement.id)"
+                                    class="shrink-0 rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                                    title="Dismiss"
+                                >
+                                    <X class="size-4" />
+                                </button>
+                            </div>
+                            <div class="flex justify-end">
+                                <Link
+                                    :href="`/events/${nextEvent.id}/announcements`"
+                                    class="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    View all announcements &rarr;
+                                </Link>
+                            </div>
+                        </div>
+                        <div v-else-if="$page.props.auth.user && dismissedAnnouncementIds.length > 0" class="flex justify-end">
+                            <Link
+                                :href="`/events/${nextEvent.id}/announcements`"
+                                class="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                                <Megaphone class="inline size-3 mr-1" />
+                                View announcements &rarr;
+                            </Link>
                         </div>
 
                         <!-- Banner Image -->

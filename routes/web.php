@@ -33,3 +33,4 @@ require __DIR__.'/shop.php';
 require __DIR__.'/games.php';
 require __DIR__.'/seating.php';
 require __DIR__.'/news.php';
+require __DIR__.'/announcements.php';

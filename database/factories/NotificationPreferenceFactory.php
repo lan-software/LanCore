@@ -24,10 +24,12 @@ class NotificationPreferenceFactory extends Factory
             'mail_on_events' => true,
             'mail_on_news_comments' => true,
             'mail_on_program_time_slots' => true,
+            'mail_on_announcements' => true,
             'push_on_news' => false,
             'push_on_events' => false,
             'push_on_news_comments' => false,
             'push_on_program_time_slots' => false,
+            'push_on_announcements' => false,
         ];
     }
 
@@ -38,10 +40,12 @@ class NotificationPreferenceFactory extends Factory
             'mail_on_events' => false,
             'mail_on_news_comments' => false,
             'mail_on_program_time_slots' => false,
+            'mail_on_announcements' => false,
             'push_on_news' => false,
             'push_on_events' => false,
             'push_on_news_comments' => false,
             'push_on_program_time_slots' => false,
+            'push_on_announcements' => false,
         ]);
     }
 }

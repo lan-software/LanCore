@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Event\Models\Event;
 use App\Domain\News\Models\NewsArticle;
 use App\Domain\Program\Enums\ProgramVisibility;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,7 +14,7 @@ use Laravel\Fortify\Features;
 
 class WelcomeController extends Controller
 {
-    public function __invoke(): Response
+    public function __invoke(Request $request): Response
     {
         $nextEvent = Event::published()
             ->upcoming()
@@ -56,6 +58,8 @@ class WelcomeController extends Controller
             'canRegister' => Features::enabled(Features::registration()),
             'nextEvent' => $nextEventData,
             'latestNews' => $this->getLatestNews(),
+            'announcements' => $nextEvent ? $this->getActiveAnnouncements($nextEvent, $request) : [],
+            'dismissedAnnouncementIds' => $nextEvent ? $this->getDismissedAnnouncementIds($nextEvent, $request) : [],
         ]);
     }
 
@@ -76,5 +80,39 @@ class WelcomeController extends Controller
 
             return $data;
         })->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function getActiveAnnouncements(Event $event, Request $request): array
+    {
+        $query = Announcement::query()
+            ->where('event_id', $event->id)
+            ->published()
+            ->with('author:id,name')
+            ->orderByDesc('published_at');
+
+        if ($request->user()) {
+            $query->notDismissedBy($request->user());
+        }
+
+        return $query->get()->toArray();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function getDismissedAnnouncementIds(Event $event, Request $request): array
+    {
+        if (! $request->user()) {
+            return [];
+        }
+
+        return $request->user()
+            ->dismissedAnnouncements()
+            ->where('event_id', $event->id)
+            ->pluck('announcements.id')
+            ->all();
     }
 }

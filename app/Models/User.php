@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Notification\Models\NotificationPreference;
 use App\Domain\Notification\Models\ProgramNotificationSubscription;
 use App\Domain\Sponsoring\Models\Sponsor;
@@ -94,5 +95,10 @@ class User extends Authenticatable
     public function programNotificationSubscriptions(): HasMany
     {
         return $this->hasMany(ProgramNotificationSubscription::class);
+    }
+
+    public function dismissedAnnouncements(): BelongsToMany
+    {
+        return $this->belongsToMany(Announcement::class, 'announcement_dismissals')->withTimestamps();
     }
 }
