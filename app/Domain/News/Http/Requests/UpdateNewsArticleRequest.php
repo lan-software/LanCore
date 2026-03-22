@@ -37,6 +37,7 @@ class UpdateNewsArticleRequest extends FormRequest
             'og_description' => ['nullable', 'string', 'max:200'],
             'og_image' => ['nullable', 'image', 'max:5120'],
             'remove_og_image' => ['sometimes', 'boolean'],
+            'publish_now' => ['sometimes', 'boolean'],
             'published_at' => ['nullable', 'date'],
         ];
     }

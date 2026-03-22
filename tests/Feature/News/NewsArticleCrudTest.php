@@ -182,3 +182,36 @@ it('sets the authenticated user as the author', function () {
     $article = NewsArticle::where('title', 'Authored Article')->first();
     expect($article->author_id)->toBe($admin->id);
 });
+
+it('sets published_at server-side when publish_now is true', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->freezeTime();
+
+    $this->actingAs($admin)
+        ->post('/news-admin', [
+            'title' => 'Publish Now Article',
+            'visibility' => 'public',
+            'publish_now' => true,
+        ])
+        ->assertRedirect('/news-admin');
+
+    $article = NewsArticle::where('title', 'Publish Now Article')->first();
+    expect($article->published_at)->not->toBeNull();
+    expect($article->published_at->toDateTimeString())->toBe(now()->toDateTimeString());
+});
+
+it('does not set published_at when publish_now is false', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->post('/news-admin', [
+            'title' => 'No Publish Date Article',
+            'visibility' => 'draft',
+            'publish_now' => false,
+        ])
+        ->assertRedirect('/news-admin');
+
+    $article = NewsArticle::where('title', 'No Publish Date Article')->first();
+    expect($article->published_at)->toBeNull();
+});

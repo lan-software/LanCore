@@ -42,6 +42,7 @@ const form = useForm({
     comments_enabled: props.article.comments_enabled,
     comments_require_approval: props.article.comments_require_approval,
     notify_users: props.article.notify_users,
+    publish_now: false,
     meta_title: props.article.meta_title ?? '',
     meta_description: props.article.meta_description ?? '',
     og_title: props.article.og_title ?? '',
@@ -112,16 +113,8 @@ function removeOgImage() {
     ogImagePreview.value = null
 }
 
-function currentDateTimeLocal(): string {
-    const now = new Date()
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
-    return now.toISOString().slice(0, 16)
-}
-
 function submit() {
-    if (publishMode.value === 'now') {
-        form.published_at = currentDateTimeLocal()
-    }
+    form.publish_now = publishMode.value === 'now'
     form.post(update({ newsArticle: props.article.id }).url, {
         preserveScroll: true,
     })

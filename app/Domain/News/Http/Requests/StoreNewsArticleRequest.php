@@ -35,6 +35,7 @@ class StoreNewsArticleRequest extends FormRequest
             'og_title' => ['nullable', 'string', 'max:70'],
             'og_description' => ['nullable', 'string', 'max:200'],
             'og_image' => ['nullable', 'image', 'max:5120'],
+            'publish_now' => ['sometimes', 'boolean'],
             'published_at' => ['nullable', 'date'],
         ];
     }

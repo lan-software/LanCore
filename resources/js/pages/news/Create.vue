@@ -34,6 +34,7 @@ const form = useForm({
     comments_enabled: true,
     comments_require_approval: false,
     notify_users: false,
+    publish_now: false,
     meta_title: '',
     meta_description: '',
     og_title: '',
@@ -88,16 +89,8 @@ function handleOgImageChange(e: Event) {
     }
 }
 
-function currentDateTimeLocal(): string {
-    const now = new Date()
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
-    return now.toISOString().slice(0, 16)
-}
-
 function submit() {
-    if (publishMode.value === 'now') {
-        form.published_at = currentDateTimeLocal()
-    }
+    form.publish_now = publishMode.value === 'now'
     form.post(store().url)
 }
 </script>

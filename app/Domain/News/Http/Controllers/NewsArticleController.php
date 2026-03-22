@@ -62,12 +62,16 @@ class NewsArticleController extends Controller
     {
         $this->authorize('create', NewsArticle::class);
 
-        $attributes = $request->safe()->except(['image', 'og_image']);
+        $attributes = $request->safe()->except(['image', 'og_image', 'publish_now']);
         $attributes['author_id'] = $request->user()->id;
         $attributes['is_archived'] = $request->boolean('is_archived');
         $attributes['comments_enabled'] = $request->boolean('comments_enabled');
         $attributes['comments_require_approval'] = $request->boolean('comments_require_approval');
         $attributes['notify_users'] = $request->boolean('notify_users');
+
+        if ($request->boolean('publish_now')) {
+            $attributes['published_at'] = now();
+        }
 
         $this->createNewsArticle->execute(
             $attributes,
@@ -97,11 +101,15 @@ class NewsArticleController extends Controller
     {
         $this->authorize('update', $newsArticle);
 
-        $attributes = $request->safe()->except(['image', 'og_image', 'remove_image', 'remove_og_image']);
+        $attributes = $request->safe()->except(['image', 'og_image', 'remove_image', 'remove_og_image', 'publish_now']);
         $attributes['is_archived'] = $request->boolean('is_archived');
         $attributes['comments_enabled'] = $request->boolean('comments_enabled');
         $attributes['comments_require_approval'] = $request->boolean('comments_require_approval');
         $attributes['notify_users'] = $request->boolean('notify_users');
+
+        if ($request->boolean('publish_now')) {
+            $attributes['published_at'] = now();
+        }
 
         $this->updateNewsArticle->execute(
             $newsArticle,
