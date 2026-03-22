@@ -2,21 +2,22 @@
 
 namespace App\Domain\Webhook\Listeners;
 
+use App\Domain\Webhook\Actions\DispatchWebhooks;
 use App\Domain\Webhook\Enums\WebhookEvent;
-use App\Domain\Webhook\Events\WebhookDispatched;
-use App\Domain\Webhook\Models\Webhook;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class HandleUserRegisteredWebhooks implements ShouldQueue
 {
+    public function __construct(private readonly DispatchWebhooks $dispatchWebhooks) {}
+
     public function handle(Registered $event): void
     {
         /** @var User $user */
         $user = $event->user;
 
-        $payload = [
+        $this->dispatchWebhooks->execute(WebhookEvent::UserRegistered, [
             'event' => WebhookEvent::UserRegistered->value,
             'user' => [
                 'id' => $user->id,
@@ -24,13 +25,6 @@ class HandleUserRegisteredWebhooks implements ShouldQueue
                 'email' => $user->email,
                 'created_at' => $user->created_at?->toIso8601String(),
             ],
-        ];
-
-        Webhook::query()
-            ->active()
-            ->forEvent(WebhookEvent::UserRegistered)
-            ->each(function (Webhook $webhook) use ($payload): void {
-                WebhookDispatched::dispatch($webhook, WebhookEvent::UserRegistered->value, $payload);
-            });
+        ]);
     }
 }

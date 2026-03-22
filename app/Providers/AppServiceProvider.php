@@ -3,9 +3,12 @@
 namespace App\Providers;
 
 use App\Domain\Announcement\Events\AnnouncementPublished;
+use App\Domain\Announcement\Listeners\HandleAnnouncementPublishedWebhooks;
 use App\Domain\Announcement\Listeners\SendAnnouncementNotification;
 use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Announcement\Policies\AnnouncementPolicy;
+use App\Domain\Event\Events\EventPublished;
+use App\Domain\Event\Listeners\HandleEventPublishedWebhooks;
 use App\Domain\Event\Models\Event;
 use App\Domain\Event\Policies\EventPolicy;
 use App\Domain\Games\Models\Game;
@@ -13,6 +16,7 @@ use App\Domain\Games\Models\GameMode;
 use App\Domain\Games\Policies\GameModePolicy;
 use App\Domain\Games\Policies\GamePolicy;
 use App\Domain\News\Events\NewsArticlePublished;
+use App\Domain\News\Listeners\HandleNewsArticlePublishedWebhooks;
 use App\Domain\News\Listeners\SendNewsNotification;
 use App\Domain\News\Models\NewsArticle;
 use App\Domain\News\Models\NewsComment;
@@ -152,6 +156,9 @@ class AppServiceProvider extends ServiceProvider
         EventFacade::listen(UserRolesChanged::class, SendUserRolesChangedNotification::class);
         EventFacade::listen(UserAttributesUpdated::class, SendUserAttributesUpdatedNotification::class);
         EventFacade::listen(Registered::class, HandleUserRegisteredWebhooks::class);
+        EventFacade::listen(AnnouncementPublished::class, HandleAnnouncementPublishedWebhooks::class);
+        EventFacade::listen(NewsArticlePublished::class, HandleNewsArticlePublishedWebhooks::class);
+        EventFacade::listen(EventPublished::class, HandleEventPublishedWebhooks::class);
         EventFacade::listen(WebhookDispatched::class, SendWebhookPayload::class);
     }
 

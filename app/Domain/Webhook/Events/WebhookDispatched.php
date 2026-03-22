@@ -13,7 +13,6 @@ class WebhookDispatched
 
     public function __construct(
         public readonly Webhook $webhook,
-        public readonly string $event,
         public readonly array $payload,
     ) {}
 }

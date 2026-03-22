@@ -1,5 +1,16 @@
 <?php
 
+use App\Domain\Announcement\Events\AnnouncementPublished;
+use App\Domain\Announcement\Listeners\HandleAnnouncementPublishedWebhooks;
+use App\Domain\Announcement\Models\Announcement;
+use App\Domain\Event\Actions\UpdateEvent;
+use App\Domain\Event\Enums\EventStatus;
+use App\Domain\Event\Events\EventPublished;
+use App\Domain\Event\Listeners\HandleEventPublishedWebhooks;
+use App\Domain\Event\Models\Event;
+use App\Domain\News\Events\NewsArticlePublished;
+use App\Domain\News\Listeners\HandleNewsArticlePublishedWebhooks;
+use App\Domain\News\Models\NewsArticle;
 use App\Domain\Webhook\Actions\CreateWebhook;
 use App\Domain\Webhook\Actions\UpdateWebhook;
 use App\Domain\Webhook\Enums\WebhookEvent;
@@ -95,6 +106,134 @@ it('does not dispatch WebhookDispatched when no active webhooks exist', function
     EventFacade::assertNotDispatched(WebhookDispatched::class);
 });
 
+it('dispatches WebhookDispatched for active webhooks when announcement is published', function () {
+    EventFacade::fake([WebhookDispatched::class]);
+
+    $activeWebhook = Webhook::factory()->create([
+        'event' => WebhookEvent::AnnouncementPublished->value,
+        'is_active' => true,
+    ]);
+    $inactiveWebhook = Webhook::factory()->inactive()->create([
+        'event' => WebhookEvent::AnnouncementPublished->value,
+    ]);
+
+    $announcement = Announcement::factory()->create();
+    $listener = app(HandleAnnouncementPublishedWebhooks::class);
+    $listener->handle(new AnnouncementPublished($announcement));
+
+    EventFacade::assertDispatched(WebhookDispatched::class, fn ($event) => $event->webhook->id === $activeWebhook->id);
+    EventFacade::assertNotDispatched(WebhookDispatched::class, fn ($event) => $event->webhook->id === $inactiveWebhook->id);
+});
+
+it('includes announcement data in webhook payload', function () {
+    EventFacade::fake([WebhookDispatched::class]);
+
+    Webhook::factory()->create([
+        'event' => WebhookEvent::AnnouncementPublished->value,
+        'is_active' => true,
+    ]);
+
+    $announcement = Announcement::factory()->create();
+    $listener = app(HandleAnnouncementPublishedWebhooks::class);
+    $listener->handle(new AnnouncementPublished($announcement));
+
+    EventFacade::assertDispatched(WebhookDispatched::class, function ($event) use ($announcement) {
+        return $event->payload['event'] === WebhookEvent::AnnouncementPublished->value
+            && $event->payload['announcement']['id'] === $announcement->id
+            && $event->payload['announcement']['title'] === $announcement->title;
+    });
+});
+
+it('dispatches WebhookDispatched for active webhooks when news article is published', function () {
+    EventFacade::fake([WebhookDispatched::class]);
+
+    $activeWebhook = Webhook::factory()->create([
+        'event' => WebhookEvent::NewsArticlePublished->value,
+        'is_active' => true,
+    ]);
+
+    $article = NewsArticle::factory()->create();
+    $listener = app(HandleNewsArticlePublishedWebhooks::class);
+    $listener->handle(new NewsArticlePublished($article));
+
+    EventFacade::assertDispatched(WebhookDispatched::class, fn ($event) => $event->webhook->id === $activeWebhook->id);
+});
+
+it('includes news article data in webhook payload', function () {
+    EventFacade::fake([WebhookDispatched::class]);
+
+    Webhook::factory()->create([
+        'event' => WebhookEvent::NewsArticlePublished->value,
+        'is_active' => true,
+    ]);
+
+    $article = NewsArticle::factory()->create();
+    $listener = app(HandleNewsArticlePublishedWebhooks::class);
+    $listener->handle(new NewsArticlePublished($article));
+
+    EventFacade::assertDispatched(WebhookDispatched::class, function ($event) use ($article) {
+        return $event->payload['event'] === WebhookEvent::NewsArticlePublished->value
+            && $event->payload['article']['id'] === $article->id
+            && $event->payload['article']['slug'] === $article->slug;
+    });
+});
+
+it('dispatches EventPublished when event status transitions to published', function () {
+    EventFacade::fake([EventPublished::class]);
+
+    $lanEvent = Event::factory()->create(['status' => EventStatus::Draft]);
+
+    $action = app(UpdateEvent::class);
+    $action->execute($lanEvent, ['status' => EventStatus::Published->value]);
+
+    EventFacade::assertDispatched(EventPublished::class, fn ($event) => $event->event->id === $lanEvent->id);
+});
+
+it('does not dispatch EventPublished when event is already published', function () {
+    EventFacade::fake([EventPublished::class]);
+
+    $lanEvent = Event::factory()->create(['status' => EventStatus::Published]);
+
+    $action = app(UpdateEvent::class);
+    $action->execute($lanEvent, ['name' => 'New Name']);
+
+    EventFacade::assertNotDispatched(EventPublished::class);
+});
+
+it('dispatches WebhookDispatched for active webhooks when event is published', function () {
+    EventFacade::fake([WebhookDispatched::class]);
+
+    $activeWebhook = Webhook::factory()->create([
+        'event' => WebhookEvent::EventPublished->value,
+        'is_active' => true,
+    ]);
+
+    $lanEvent = Event::factory()->create();
+    $listener = app(HandleEventPublishedWebhooks::class);
+    $listener->handle(new EventPublished($lanEvent));
+
+    EventFacade::assertDispatched(WebhookDispatched::class, fn ($event) => $event->webhook->id === $activeWebhook->id);
+});
+
+it('includes event data in webhook payload', function () {
+    EventFacade::fake([WebhookDispatched::class]);
+
+    Webhook::factory()->create([
+        'event' => WebhookEvent::EventPublished->value,
+        'is_active' => true,
+    ]);
+
+    $lanEvent = Event::factory()->create();
+    $listener = app(HandleEventPublishedWebhooks::class);
+    $listener->handle(new EventPublished($lanEvent));
+
+    EventFacade::assertDispatched(WebhookDispatched::class, function ($event) use ($lanEvent) {
+        return $event->payload['event'] === WebhookEvent::EventPublished->value
+            && $event->payload['lan_event']['id'] === $lanEvent->id
+            && $event->payload['lan_event']['name'] === $lanEvent->name;
+    });
+});
+
 // --- HTTP Admin CRUD Tests ---
 
 it('redirects unauthenticated users from webhooks index', function () {
@@ -181,9 +320,9 @@ it('sends HTTP POST to webhook URL when WebhookDispatched is handled', function 
     $payload = ['event' => 'user.registered', 'user' => ['id' => 1, 'name' => 'Test']];
 
     $listener = app(SendWebhookPayload::class);
-    $listener->handle(new WebhookDispatched($webhook, 'user.registered', $payload));
+    $listener->handle(new WebhookDispatched($webhook, $payload));
 
     Http::assertSent(fn ($request) => $request->url() === 'https://example.com/hook'
-        && $request->hasHeader('X-Webhook-Event', 'user.registered')
+        && $request->hasHeader('X-Webhook-Event', $webhook->event->value)
         && $request->hasHeader('X-Webhook-Signature'));
 });
