@@ -24,6 +24,7 @@ class WelcomeController extends Controller
                 'programs.timeSlots' => fn ($q) => $q->where('visibility', ProgramVisibility::Public)->orderBy('starts_at'),
                 'programs.timeSlots.sponsors',
                 'sponsors.sponsorLevel',
+                'seatPlans',
             ])
             ->orderBy('start_date')
             ->first();

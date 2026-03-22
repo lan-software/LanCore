@@ -3,6 +3,7 @@
 use App\Domain\Event\Models\Event;
 use App\Domain\Program\Models\Program;
 use App\Domain\Program\Models\TimeSlot;
+use App\Domain\Seating\Models\SeatPlan;
 
 it('shows the welcome page with no upcoming event', function () {
     $this->get('/')
@@ -78,5 +79,23 @@ it('does not show draft events', function () {
             fn ($page) => $page
                 ->component('Welcome')
                 ->where('nextEvent', null)
+        );
+});
+
+it('includes seat plans for the upcoming event', function () {
+    $event = Event::factory()->published()->create([
+        'start_date' => now()->addDays(7),
+        'end_date' => now()->addDays(8),
+    ]);
+
+    SeatPlan::factory()->for($event)->create();
+
+    $this->get('/')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('Welcome')
+                ->has('nextEvent.seat_plans', 1)
+                ->has('nextEvent.seat_plans.0.data.blocks', 1)
         );
 });

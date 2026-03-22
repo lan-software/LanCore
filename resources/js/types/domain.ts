@@ -72,6 +72,7 @@ export type Event = {
     primary_program_id: number | null
     programs: Program[]
     sponsors: Sponsor[]
+    seat_plans?: SeatPlan[]
     created_at: string
     updated_at: string
 }

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
+import { computed } from 'vue'
 import { dashboard, login, register } from '@/routes'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock, MapPin, Newspaper, ShoppingCart } from 'lucide-vue-next'
 import { index as shopIndex } from '@/routes/shop'
+import SeatMapCanvas from '@/components/SeatMapCanvas.vue'
 import type { Event, NewsArticle } from '@/types/domain'
 
-withDefaults(
+const props = withDefaults(
     defineProps<{
         canRegister: boolean
         nextEvent: Event | null
@@ -17,6 +19,11 @@ withDefaults(
         latestNews: () => [],
     },
 )
+
+const seatPlanBlocks = computed(() => {
+    const seatPlan = props.nextEvent?.seat_plans?.[0]
+    return seatPlan?.data?.blocks ?? []
+})
 
 function formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString(undefined, {
@@ -230,6 +237,26 @@ function formatDateTime(dateString: string): string {
                                         </Badge>
                                     </div>
                                 </a>
+                            </div>
+                        </div>
+
+                        <!-- Seat Map -->
+                        <div v-if="seatPlanBlocks.length > 0" class="space-y-4">
+                            <h2 class="text-2xl font-semibold">Seat Map</h2>
+                            <div class="rounded-xl border" style="height: 500px">
+                                <SeatMapCanvas
+                                    :blocks="seatPlanBlocks"
+                                    :options="{
+                                        legend: true,
+                                        style: {
+                                            seat: {
+                                                hover: '#8fe100',
+                                                color: '#6796ff',
+                                                not_salable: '#424747',
+                                            },
+                                        },
+                                    }"
+                                />
                             </div>
                         </div>
                     </div>
