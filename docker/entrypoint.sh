@@ -12,5 +12,5 @@ php artisan event:cache
 # Run migrations
 php artisan migrate --force
 
-# Start process manager
+# Start Supervisor — manages Octane (FrankenPHP), queue workers, and scheduler
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
