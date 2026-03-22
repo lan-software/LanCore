@@ -403,6 +403,16 @@ export type Webhook = {
     secret: string | null
     description: string | null
     is_active: boolean
+    sent_count: number
     created_at: string
     updated_at: string
+}
+
+export type WebhookDelivery = {
+    id: number
+    webhook_id: number
+    status_code: number | null
+    duration_ms: number | null
+    succeeded: boolean
+    fired_at: string
 }
