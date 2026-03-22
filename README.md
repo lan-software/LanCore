@@ -1,4 +1,10 @@
+<p align="center">
+  <img src="resources/images/logo-icon.png" alt="LanCore Logo" width="120" />
+</p>
+
 # LanCore
+
+
 
 > LAN party & BYOD event management platform — the modern successor to eventula-manager. Inspired by Byceps and 10 years of Lan-Party experience at (sxlan.de)[sxlan.de]
 
@@ -43,7 +49,7 @@ The initial goal was just tech-demo for "What could be done in 3 Days". To be ho
 | OIDC / SSO | Planned |
 | Eco-System with other App | Planned |
 
-*Action and Policy based architecture implemented, currently no focus on any reasonable checks as roles and permissions are not in the scope of the poc see (poc.md)[/docs/poc/poc.md]
+*Action and Policy based architecture implemented, currently no focus on any reasonable checks as roles and permissions are not in the scope of the poc see [PoC.md](docs/poc/PoC.md)
 
 Beyond LanCore there is already a bigger ecosystem of apps planned, partially developed. Soon following apps will join the lan-software team:
 | | | |
@@ -55,7 +61,7 @@ Beyond LanCore there is already a bigger ecosystem of apps planned, partially de
 | LanVote | Minified Voting Site | Requierements Ready |
 | LanOrder | Ordering Takeaway Food as groups in the name of the organizer | Open |
 | LanDisplay | Minified Application to show Webpages that can be used as OBS Websource | Open |
-  
+
 ---
 
 ## Local Development
