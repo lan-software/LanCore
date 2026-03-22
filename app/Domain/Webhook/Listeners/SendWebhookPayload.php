@@ -23,5 +23,7 @@ class SendWebhookPayload implements ShouldQueue
         }
 
         Http::withHeaders($headers)->timeout(10)->post($webhook->url, $event->payload)->throw();
+
+        $webhook->increment('sent_count');
     }
 }

@@ -28,6 +28,9 @@ function sortableHeader(label: string) {
 
 const eventLabels: Record<string, string> = {
     'user.registered': 'User Registered',
+    'announcement.published': 'Announcement Published',
+    'news_article.published': 'News Article Published',
+    'event.published': 'Event Published',
 }
 
 export const columns: ColumnDef<Webhook>[] = [
@@ -59,6 +62,12 @@ export const columns: ColumnDef<Webhook>[] = [
                 ? h(Badge, { variant: 'default' }, () => 'Active')
                 : h(Badge, { variant: 'outline' }, () => 'Inactive')
         },
+    },
+    {
+        accessorKey: 'sent_count',
+        header: sortableHeader('Sent'),
+        cell: ({ row }) =>
+            h('span', { class: 'tabular-nums' }, (row.getValue('sent_count') as number).toLocaleString()),
     },
     {
         accessorKey: 'created_at',

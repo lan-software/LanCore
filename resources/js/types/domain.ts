@@ -393,7 +393,7 @@ export type AppNotification = {
 
 // Webhook Domain
 
-export type WebhookEventType = 'user.registered'
+export type WebhookEventType = 'user.registered' | 'announcement.published' | 'news_article.published' | 'event.published'
 
 export type Webhook = {
     id: number
