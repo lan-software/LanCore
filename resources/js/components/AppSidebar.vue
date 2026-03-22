@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Calendar, ClipboardList, FolderGit2, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Puzzle, Rows3, Tag, Ticket, Users } from 'lucide-vue-next';
+import { BookOpen, Calendar, ClipboardList, FolderGit2, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Puzzle, Rows3, Tag, Ticket, Users, Webhook } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import EventSelector from '@/components/EventSelector.vue';
@@ -34,6 +34,7 @@ import { index as vouchersIndex } from '@/routes/vouchers';
 import { index as ticketsIndex } from '@/routes/tickets';
 import { index as seatPlansIndex } from '@/routes/seat-plans';
 import { index as announcementsIndex } from '@/routes/announcements';
+import { index as webhooksIndex } from '@/routes/webhooks';
 import { index as newsIndex } from '@/routes/news';
 import { index as newsCommentsIndex } from '@/routes/news/comments';
 import type { NavItem } from '@/types';
@@ -335,6 +336,23 @@ const footerNavItems: NavItem[] = [
                                 <Link :href="seatPlansIndex()">
                                     <Grid2x2 />
                                     <span>Seat Plans</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Webhook Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Webhooks</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="webhooksIndex()">
+                                    <Webhook />
+                                    <span>Webhooks</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

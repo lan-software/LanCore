@@ -47,7 +47,12 @@ class SeedDemoCommand extends Command
         $this->attempt('Games', $results, fn () => $this->seedGames());
 
         /** @var array{published: Event, draft: Event, past: Event}|null $events */
-        $events = $this->attempt('Events', $results, fn () => $this->seedEvents());
+        $events = $this->attempt(
+            'Events',
+            $results,
+            fn () => $this->seedEvents(),
+            fn () => $this->loadExistingEvents(),
+        );
 
         if ($events !== null) {
             $this->attempt('Ticketing', $results, fn () => $this->seedTicketing($events));
@@ -82,22 +87,33 @@ class SeedDemoCommand extends Command
     /**
      * @param  array<string, string>  $results
      */
-    private function attempt(string $label, array &$results, callable $callback): mixed
+    private function attempt(string $label, array &$results, callable $callback, ?callable $fallback = null): mixed
     {
         try {
             $value = $callback();
+
+            if ($value === false) {
+                $results[$label] = 'Already seeded, no changes made';
+
+                return $fallback !== null ? $fallback() : null;
+            }
+
             $results[$label] = 'ok';
 
             return $value;
-        } catch (Throwable) {
-            $results[$label] = 'Already seeded, no changes made';
+        } catch (Throwable $e) {
+            $results[$label] = 'Failed: '.$e->getMessage();
 
             return null;
         }
     }
 
-    private function seedUsers(): void
+    private function seedUsers(): bool
     {
+        if (User::query()->where('email', 'user@example.com')->exists()) {
+            return false;
+        }
+
         $this->components->task('Seeding users', function (): void {
             User::factory()->withRole(RoleName::User)->create([
                 'name' => 'Test User',
@@ -121,6 +137,8 @@ class SeedDemoCommand extends Command
 
             User::factory()->withRole(RoleName::User)->count(20)->create();
         });
+
+        return true;
     }
 
     private function seedVenues(): void
