@@ -34,6 +34,7 @@
         "vue-tsc": "^2.2.4"
     },
     "dependencies": {
+        "@alisaitteke/seatmap-canvas": "^2.7.1",
         "@inertiajs/vue3": "^2.3.7",
         "@tanstack/vue-table": "^8.21.3",
         "@tiptap/extension-image": "^3.20.4",

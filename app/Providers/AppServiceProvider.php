@@ -14,6 +14,10 @@ use App\Domain\News\Models\NewsArticle;
 use App\Domain\News\Models\NewsComment;
 use App\Domain\News\Policies\NewsArticlePolicy;
 use App\Domain\News\Policies\NewsCommentPolicy;
+use App\Domain\Notification\Events\UserAttributesUpdated;
+use App\Domain\Notification\Events\UserRolesChanged;
+use App\Domain\Notification\Listeners\SendUserAttributesUpdatedNotification;
+use App\Domain\Notification\Listeners\SendUserRolesChangedNotification;
 use App\Domain\Program\Events\ProgramTimeSlotApproaching;
 use App\Domain\Program\Listeners\SendProgramTimeSlotNotification;
 use App\Domain\Program\Models\Program;
@@ -132,6 +136,8 @@ class AppServiceProvider extends ServiceProvider
     {
         EventFacade::listen(NewsArticlePublished::class, SendNewsNotification::class);
         EventFacade::listen(ProgramTimeSlotApproaching::class, SendProgramTimeSlotNotification::class);
+        EventFacade::listen(UserRolesChanged::class, SendUserRolesChangedNotification::class);
+        EventFacade::listen(UserAttributesUpdated::class, SendUserAttributesUpdatedNotification::class);
     }
 
     /**

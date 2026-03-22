@@ -2,6 +2,7 @@
 
 namespace App\Actions\User;
 
+use App\Domain\Notification\Events\UserAttributesUpdated;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -15,7 +16,15 @@ class UpdateUserAttributes
     public function execute(User $user, array $attributes): void
     {
         DB::transaction(function () use ($user, $attributes) {
-            $user->fill($attributes)->save();
+            $user->fill($attributes);
+
+            $changedAttributes = $user->getDirty();
+
+            $user->save();
+
+            if ($changedAttributes) {
+                UserAttributesUpdated::dispatch($user, $changedAttributes);
+            }
         });
     }
 }

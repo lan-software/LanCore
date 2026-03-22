@@ -2,6 +2,7 @@
 
 namespace App\Actions\User;
 
+use App\Domain\Notification\Events\UserRolesChanged;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
@@ -22,6 +23,8 @@ class ChangeRoles
             if (! $user->hasRole($role)) {
                 $user->roles()->attach($roleModel);
                 $user->unsetRelation('roles');
+
+                UserRolesChanged::dispatch($user, addedRoles: [$role]);
             }
         });
     }
@@ -40,6 +43,8 @@ class ChangeRoles
                 if (! $user->hasRole($role)) {
                     $user->roles()->attach($roleModel);
                     $user->unsetRelation('roles');
+
+                    UserRolesChanged::dispatch($user, addedRoles: [$role]);
                 }
             });
         });
@@ -51,6 +56,9 @@ class ChangeRoles
     public function sync(User $user, RoleName ...$roles): void
     {
         DB::transaction(function () use ($user, $roles) {
+            $previousRoles = $user->roles->pluck('name')
+                ->map(fn (RoleName $name) => $name)->all();
+
             $roleIds = Role::whereIn(
                 'name',
                 array_map(fn (RoleName $r) => $r->value, $roles),
@@ -58,6 +66,13 @@ class ChangeRoles
 
             $user->roles()->sync($roleIds);
             $user->unsetRelation('roles');
+
+            $added = array_values(array_diff($roles, $previousRoles));
+            $removed = array_values(array_diff($previousRoles, $roles));
+
+            if ($added || $removed) {
+                UserRolesChanged::dispatch($user, addedRoles: $added, removedRoles: $removed);
+            }
         });
     }
 }

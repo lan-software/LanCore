@@ -17,7 +17,7 @@ class UserBulkRoleRequest extends FormRequest
         return [
             'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['integer'],
-            'role' => ['required', 'string', Rule::in(['user', 'admin', 'superadmin'])],
+            'role' => ['required', 'string', Rule::in(['user', 'admin', 'superadmin', 'sponsor_manager'])],
         ];
     }
 }

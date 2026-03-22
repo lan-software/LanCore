@@ -8,6 +8,7 @@ beforeEach(function () {
     Role::updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
     Role::updateOrCreate(['name' => RoleName::Admin->value], ['label' => 'Admin']);
     Role::updateOrCreate(['name' => RoleName::Superadmin->value], ['label' => 'Superadmin']);
+    Role::updateOrCreate(['name' => RoleName::SponsorManager->value], ['label' => 'Sponsor Manager']);
 });
 
 it('allows admins to view the user show page', function () {
@@ -129,4 +130,24 @@ it('forbids users from updating another user', function () {
             'email' => 'hacked@example.com',
         ])
         ->assertForbidden();
+});
+
+it('allows admins to sync sponsor_manager role', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $user = User::factory()->withRole(RoleName::User)->create();
+
+    $this->actingAs($admin)
+        ->patch("/users/{$user->id}", [
+            'name' => $user->name,
+            'email' => $user->email,
+            'role_names' => [RoleName::Admin->value, RoleName::SponsorManager->value],
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $roleNames = $user->fresh()->roles->pluck('name')->all();
+
+    expect($roleNames)
+        ->toContain(RoleName::Admin)
+        ->toContain(RoleName::SponsorManager);
 });
