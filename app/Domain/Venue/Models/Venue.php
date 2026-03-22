@@ -2,6 +2,7 @@
 
 namespace App\Domain\Venue\Models;
 
+use App\Concerns\HasModelCache;
 use Database\Factories\VenueFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Venue extends Model
 {
     /** @use HasFactory<VenueFactory> */
-    use HasFactory;
+    use HasFactory, HasModelCache;
 
     protected static function newFactory(): VenueFactory
     {

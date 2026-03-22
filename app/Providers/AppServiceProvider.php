@@ -33,6 +33,7 @@ use App\Domain\Venue\Models\Venue;
 use App\Domain\Venue\Policies\VenuePolicy;
 use App\Models\User;
 use App\Policies\UserPolicy;
+use App\Services\ModelCacheService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -48,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(ModelCacheService::class);
+
         $this->app->singleton(PaymentProviderManager::class, function ($app): PaymentProviderManager {
             $manager = new PaymentProviderManager;
             $manager->register($app->make(StripePaymentProvider::class));

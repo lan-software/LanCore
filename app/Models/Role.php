@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasModelCache;
 use App\Enums\RoleName;
 use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -13,7 +14,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Role extends Model
 {
     /** @use HasFactory<RoleFactory> */
-    use HasFactory;
+    use HasFactory, HasModelCache;
+
+    /**
+     * @return array<int, string>
+     */
+    protected static function dropdownColumns(): array
+    {
+        return ['*'];
+    }
 
     /**
      * @return array<string, string>

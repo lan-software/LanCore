@@ -59,10 +59,8 @@ class SeatPlanController extends Controller
     {
         $this->authorize('create', SeatPlan::class);
 
-        $events = Event::orderBy('name')->get(['id', 'name']);
-
         return Inertia::render('seating/Create', [
-            'events' => $events,
+            'events' => Event::dropdownOptions(),
         ]);
     }
 
@@ -86,11 +84,10 @@ class SeatPlanController extends Controller
         $this->authorize('update', $seatPlan);
 
         $seatPlan->load('event:id,name');
-        $events = Event::orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('seating/Edit', [
             'seatPlan' => $seatPlan,
-            'events' => $events,
+            'events' => Event::dropdownOptions(),
         ]);
     }
 

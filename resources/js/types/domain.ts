@@ -300,3 +300,18 @@ export type SeatPlan = {
     created_at: string
     updated_at: string
 }
+
+// Auditing
+
+export type Audit = {
+    id: number
+    event: string
+    old_values: Record<string, unknown>
+    new_values: Record<string, unknown>
+    url: string | null
+    ip_address: string | null
+    user_agent: string | null
+    tags: string | null
+    created_at: string
+    user: { id: number; name: string; email: string } | null
+}

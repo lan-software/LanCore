@@ -48,7 +48,7 @@ class TicketTypeController extends Controller
 
         return Inertia::render('ticket-types/Index', [
             'ticketTypes' => $ticketTypes,
-            'events' => Event::orderBy('name')->get(['id', 'name']),
+            'events' => Event::dropdownOptions(),
             'filters' => $request->only(['search', 'sort', 'direction', 'event_id', 'per_page']),
         ]);
     }
@@ -58,9 +58,9 @@ class TicketTypeController extends Controller
         $this->authorize('create', TicketType::class);
 
         return Inertia::render('ticket-types/Create', [
-            'events' => Event::orderBy('name')->get(['id', 'name']),
-            'categories' => TicketCategory::orderBy('sort_order')->get(['id', 'name']),
-            'groups' => TicketGroup::orderBy('name')->get(['id', 'name', 'event_id']),
+            'events' => Event::dropdownOptions(),
+            'categories' => TicketCategory::dropdownOptions(),
+            'groups' => TicketGroup::dropdownOptions(),
         ]);
     }
 
@@ -79,9 +79,9 @@ class TicketTypeController extends Controller
 
         return Inertia::render('ticket-types/Edit', [
             'ticketType' => $ticketType->load(['event', 'ticketCategory', 'ticketGroup'])->loadCount('tickets'),
-            'events' => Event::orderBy('name')->get(['id', 'name']),
-            'categories' => TicketCategory::orderBy('sort_order')->get(['id', 'name']),
-            'groups' => TicketGroup::orderBy('name')->get(['id', 'name', 'event_id']),
+            'events' => Event::dropdownOptions(),
+            'categories' => TicketCategory::dropdownOptions(),
+            'groups' => TicketGroup::dropdownOptions(),
         ]);
     }
 

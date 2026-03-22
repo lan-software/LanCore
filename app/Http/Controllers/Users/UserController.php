@@ -60,7 +60,7 @@ class UserController extends Controller
 
         return Inertia::render('users/Show', [
             'user' => $user->load('roles'),
-            'availableRoles' => Role::orderBy('name')->get(),
+            'availableRoles' => Role::dropdownOptions(),
         ]);
     }
 

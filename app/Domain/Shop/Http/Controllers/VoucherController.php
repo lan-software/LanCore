@@ -50,7 +50,7 @@ class VoucherController extends Controller
         $this->authorize('create', Voucher::class);
 
         return Inertia::render('vouchers/Create', [
-            'events' => Event::orderBy('name')->get(['id', 'name']),
+            'events' => Event::dropdownOptions(),
         ]);
     }
 
@@ -69,7 +69,7 @@ class VoucherController extends Controller
 
         return Inertia::render('vouchers/Edit', [
             'voucher' => $voucher->load('event'),
-            'events' => Event::orderBy('name')->get(['id', 'name']),
+            'events' => Event::dropdownOptions(),
         ]);
     }
 

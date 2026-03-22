@@ -2,6 +2,7 @@
 
 namespace App\Domain\Ticketing\Models;
 
+use App\Concerns\HasModelCache;
 use App\Domain\Event\Models\Event;
 use Database\Factories\TicketGroupFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -14,7 +15,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class TicketGroup extends Model
 {
     /** @use HasFactory<TicketGroupFactory> */
-    use HasFactory;
+    use HasFactory, HasModelCache;
+
+    /**
+     * @return array<int, string>
+     */
+    protected static function dropdownColumns(): array
+    {
+        return ['id', 'name', 'event_id'];
+    }
 
     protected static function newFactory(): TicketGroupFactory
     {

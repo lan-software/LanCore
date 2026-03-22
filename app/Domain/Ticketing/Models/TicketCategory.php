@@ -2,9 +2,11 @@
 
 namespace App\Domain\Ticketing\Models;
 
+use App\Concerns\HasModelCache;
 use App\Domain\Event\Models\Event;
 use Database\Factories\TicketCategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +16,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class TicketCategory extends Model
 {
     /** @use HasFactory<TicketCategoryFactory> */
-    use HasFactory;
+    use HasFactory, HasModelCache;
+
+    /**
+     * @return Builder<static>
+     */
+    protected static function dropdownQuery(): Builder
+    {
+        return static::query()->orderBy('sort_order');
+    }
 
     protected static function newFactory(): TicketCategoryFactory
     {

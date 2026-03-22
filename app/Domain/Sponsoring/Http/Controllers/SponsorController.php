@@ -58,8 +58,8 @@ class SponsorController extends Controller
         $this->authorize('create', Sponsor::class);
 
         return Inertia::render('sponsors/Create', [
-            'sponsorLevels' => SponsorLevel::orderBy('sort_order')->get(['id', 'name', 'color']),
-            'events' => Event::orderBy('name')->get(['id', 'name']),
+            'sponsorLevels' => SponsorLevel::dropdownOptions(),
+            'events' => Event::dropdownOptions(),
         ]);
     }
 
@@ -89,8 +89,8 @@ class SponsorController extends Controller
 
         return Inertia::render('sponsors/Edit', [
             'sponsor' => $sponsorData,
-            'sponsorLevels' => SponsorLevel::orderBy('sort_order')->get(['id', 'name', 'color']),
-            'events' => Event::orderBy('name')->get(['id', 'name']),
+            'sponsorLevels' => SponsorLevel::dropdownOptions(),
+            'events' => Event::dropdownOptions(),
             'users' => User::orderBy('name')->get(['id', 'name', 'email']),
         ]);
     }

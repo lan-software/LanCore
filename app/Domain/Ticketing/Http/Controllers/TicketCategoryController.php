@@ -50,7 +50,7 @@ class TicketCategoryController extends Controller
         $this->authorize('create', TicketCategory::class);
 
         return Inertia::render('ticket-categories/Create', [
-            'events' => Event::orderBy('name')->get(['id', 'name']),
+            'events' => Event::dropdownOptions(),
         ]);
     }
 
@@ -69,7 +69,7 @@ class TicketCategoryController extends Controller
 
         return Inertia::render('ticket-categories/Edit', [
             'ticketCategory' => $ticketCategory->loadCount('ticketTypes'),
-            'events' => Event::orderBy('name')->get(['id', 'name']),
+            'events' => Event::dropdownOptions(),
         ]);
     }
 

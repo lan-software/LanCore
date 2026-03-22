@@ -48,4 +48,9 @@ class EventPolicy
     {
         return $user->isAdmin();
     }
+
+    public function viewAudit(User $user, Event $event): bool
+    {
+        return $user->isAdmin();
+    }
 }

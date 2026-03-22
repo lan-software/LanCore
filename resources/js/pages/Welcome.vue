@@ -251,7 +251,7 @@ function formatDateTime(dateString: string): string {
         <!-- Footer -->
         <footer class="border-t">
             <div class="mx-auto max-w-5xl px-6 py-6 text-center text-sm text-muted-foreground">
-                Powered by LanCore
+                Powered by LanCore 2026
             </div>
         </footer>
     </div>

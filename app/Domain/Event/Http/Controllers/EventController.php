@@ -59,7 +59,7 @@ class EventController extends Controller
         $this->authorize('create', Event::class);
 
         return Inertia::render('events/Create', [
-            'venues' => Venue::orderBy('name')->get(['id', 'name']),
+            'venues' => Venue::dropdownOptions(),
         ]);
     }
 
@@ -86,7 +86,7 @@ class EventController extends Controller
 
         return Inertia::render('events/Edit', [
             'event' => $eventData,
-            'venues' => Venue::orderBy('name')->get(['id', 'name']),
+            'venues' => Venue::dropdownOptions(),
         ]);
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Domain\Event\Models;
 
+use App\Concerns\HasModelCache;
 use App\Domain\Event\Enums\EventStatus;
 use App\Domain\Program\Models\Program;
 use App\Domain\Seating\Models\SeatPlan;
@@ -18,12 +19,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_image', 'status', 'venue_id', 'primary_program_id', 'seat_capacity'])]
-class Event extends Model
+class Event extends Model implements AuditableContract
 {
+    use Auditable;
+
     /** @use HasFactory<EventFactory> */
-    use HasFactory;
+    use HasFactory, HasModelCache;
 
     protected static function newFactory(): EventFactory
     {

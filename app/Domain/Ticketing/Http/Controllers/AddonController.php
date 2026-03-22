@@ -46,7 +46,7 @@ class AddonController extends Controller
 
         return Inertia::render('ticket-addons/Index', [
             'ticketAddons' => $addons,
-            'events' => Event::orderBy('name')->get(['id', 'name']),
+            'events' => Event::dropdownOptions(),
             'filters' => $request->only(['search', 'sort', 'direction', 'event_id', 'per_page']),
         ]);
     }
@@ -56,7 +56,7 @@ class AddonController extends Controller
         $this->authorize('create', Addon::class);
 
         return Inertia::render('ticket-addons/Create', [
-            'events' => Event::orderBy('name')->get(['id', 'name']),
+            'events' => Event::dropdownOptions(),
         ]);
     }
 
@@ -75,7 +75,7 @@ class AddonController extends Controller
 
         return Inertia::render('ticket-addons/Edit', [
             'ticketAddon' => $ticketAddon->load('event')->loadCount('tickets'),
-            'events' => Event::orderBy('name')->get(['id', 'name']),
+            'events' => Event::dropdownOptions(),
         ]);
     }
 
