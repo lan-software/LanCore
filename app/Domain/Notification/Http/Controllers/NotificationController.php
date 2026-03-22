@@ -14,9 +14,22 @@ class NotificationController extends Controller
     {
         $notifications = $request->user()
             ->notifications()
+            ->whereNull('archived_at')
             ->paginate(20);
 
         return Inertia::render('notifications/Index', [
+            'notifications' => $notifications,
+        ]);
+    }
+
+    public function archivedIndex(Request $request): Response
+    {
+        $notifications = $request->user()
+            ->notifications()
+            ->whereNotNull('archived_at')
+            ->paginate(20);
+
+        return Inertia::render('notifications/Archive', [
             'notifications' => $notifications,
         ]);
     }
@@ -39,12 +52,22 @@ class NotificationController extends Controller
         return back();
     }
 
-    public function destroy(Request $request, string $id): RedirectResponse
+    public function archive(Request $request, string $id): RedirectResponse
     {
         $request->user()
             ->notifications()
             ->findOrFail($id)
-            ->delete();
+            ->update(['archived_at' => now()]);
+
+        return back();
+    }
+
+    public function archiveAll(Request $request): RedirectResponse
+    {
+        $request->user()
+            ->notifications()
+            ->whereNull('archived_at')
+            ->update(['archived_at' => now()]);
 
         return back();
     }

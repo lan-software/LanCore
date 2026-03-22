@@ -5,7 +5,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/archive', [NotificationController::class, 'archivedIndex'])->name('notifications.archive');
     Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::patch('notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
-    Route::delete('notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::patch('notifications/{id}/archive', [NotificationController::class, 'archive'])->name('notifications.archive-item');
+    Route::patch('notifications/archive-all', [NotificationController::class, 'archiveAll'])->name('notifications.archive-all');
 });

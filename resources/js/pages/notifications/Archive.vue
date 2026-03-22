@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Archive, ArchiveX, Bell, BellOff, Check, CheckCheck, Settings } from 'lucide-vue-next';
+import { Archive, Bell, ChevronLeft } from 'lucide-vue-next';
 import {
-    archive as archiveNotification,
-    archiveAll,
     archivedIndex as notificationsArchive,
     index as notificationsIndex,
-    markAllAsRead,
-    markAsRead,
 } from '@/actions/App/Domain/Notification/Http/Controllers/NotificationController';
-import { edit as notificationSettingsEdit } from '@/routes/notifications';
 import { Button } from '@/components/ui/button';
 import Heading from '@/components/Heading.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -31,6 +26,7 @@ defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Notifications', href: notificationsIndex().url },
+    { title: 'Archive', href: notificationsArchive().url },
 ];
 
 function notificationLabel(notification: AppNotification): string {
@@ -77,84 +73,38 @@ function formatDate(iso: string): string {
     });
 }
 
-function handleMarkAsRead(notification: AppNotification) {
-    router.patch(markAsRead(notification.id).url, {}, { preserveScroll: true });
-}
-
-function handleMarkAllAsRead() {
-    router.patch(markAllAsRead().url, {}, { preserveScroll: true });
-}
-
-function handleArchive(notification: AppNotification) {
-    router.patch(archiveNotification(notification.id).url, {}, { preserveScroll: true });
-}
-
-function handleArchiveAll() {
-    router.patch(archiveAll().url, {}, { preserveScroll: true });
-}
-
 function goToPage(page: number) {
-    router.get(notificationsIndex().url, { page }, { preserveScroll: true });
+    router.get(notificationsArchive().url, { page }, { preserveScroll: true });
 }
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Notifications" />
+        <Head title="Archived Notifications" />
 
         <div class="px-4 py-6 md:px-6">
             <div class="flex flex-wrap items-start justify-between gap-4">
-                <Heading title="Notifications" description="Your recent notifications and activity." />
-                <div class="flex gap-2">
-                    <Button
-                        v-if="notifications.total > 0"
-                        variant="outline"
-                        size="sm"
-                        @click="handleMarkAllAsRead"
-                    >
-                        <CheckCheck class="mr-2 size-4" />
-                        Mark all as read
-                    </Button>
-                    <Button
-                        v-if="notifications.total > 0"
-                        variant="outline"
-                        size="sm"
-                        @click="handleArchiveAll"
-                    >
-                        <ArchiveX class="mr-2 size-4" />
-                        Archive all
-                    </Button>
-                    <Button variant="outline" size="sm" as-child>
-                        <Link :href="notificationsArchive().url">
-                            <Archive class="mr-2 size-4" />
-                            View archived
-                        </Link>
-                    </Button>
-                    <Button variant="outline" size="sm" as-child>
-                        <Link :href="notificationSettingsEdit()">
-                            <Settings class="mr-2 size-4" />
-                            Notification settings
-                        </Link>
-                    </Button>
-                </div>
+                <Heading title="Archived Notifications" description="Notifications you have previously archived." />
+                <Button variant="outline" size="sm" as-child>
+                    <Link :href="notificationsIndex().url">
+                        <ChevronLeft class="mr-2 size-4" />
+                        Back to notifications
+                    </Link>
+                </Button>
             </div>
 
             <div v-if="notifications.data.length > 0" class="mt-6 space-y-2">
                 <div
                     v-for="notification in notifications.data"
                     :key="notification.id"
-                    class="group flex items-start gap-4 rounded-lg border bg-card p-4 shadow-sm transition-colors"
-                    :class="{ 'border-primary/20 bg-primary/5': !notification.read_at }"
+                    class="flex items-start gap-4 rounded-lg border bg-card p-4 shadow-sm"
                 >
-                    <div class="mt-0.5 rounded-full p-2 text-muted-foreground" :class="{ 'bg-primary/10 text-primary': !notification.read_at }">
+                    <div class="mt-0.5 rounded-full p-2 text-muted-foreground">
                         <Bell class="size-4" />
                     </div>
 
                     <div class="min-w-0 flex-1">
-                        <p
-                            class="text-sm leading-snug"
-                            :class="{ 'font-semibold': !notification.read_at }"
-                        >
+                        <p class="text-sm leading-snug text-muted-foreground">
                             {{ notificationLabel(notification) }}
                         </p>
                         <p v-if="notificationDescription(notification)" class="mt-0.5 text-sm text-muted-foreground">
@@ -165,35 +115,13 @@ function goToPage(page: number) {
                             <span v-if="notification.read_at" class="ml-2">· Read</span>
                         </p>
                     </div>
-
-                    <div class="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                        <Button
-                            v-if="!notification.read_at"
-                            variant="ghost"
-                            size="icon"
-                            class="size-8"
-                            title="Mark as read"
-                            @click="handleMarkAsRead(notification)"
-                        >
-                            <Check class="size-4" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            class="size-8 hover:text-destructive"
-                            title="Archive"
-                            @click="handleArchive(notification)"
-                        >
-                            <Archive class="size-4" />
-                        </Button>
-                    </div>
                 </div>
             </div>
 
             <div v-else class="mt-16 flex flex-col items-center gap-3 text-center text-muted-foreground">
-                <BellOff class="size-12 opacity-30" />
-                <p class="text-lg font-medium">No notifications</p>
-                <p class="text-sm">You're all caught up! Notifications will appear here.</p>
+                <Archive class="size-12 opacity-30" />
+                <p class="text-lg font-medium">No archived notifications</p>
+                <p class="text-sm">Notifications you archive will appear here.</p>
             </div>
 
             <!-- Pagination -->

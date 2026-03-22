@@ -18,10 +18,12 @@ use App\Domain\Webhook\Events\WebhookDispatched;
 use App\Domain\Webhook\Listeners\HandleUserRegisteredWebhooks;
 use App\Domain\Webhook\Listeners\SendWebhookPayload;
 use App\Domain\Webhook\Models\Webhook;
+use App\Domain\Webhook\Models\WebhookDelivery;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Http;
 
@@ -325,4 +327,45 @@ it('sends HTTP POST to webhook URL when WebhookDispatched is handled', function 
     Http::assertSent(fn ($request) => $request->url() === 'https://example.com/hook'
         && $request->hasHeader('X-Webhook-Event', $webhook->event->value)
         && $request->hasHeader('X-Webhook-Signature'));
+});
+
+it('logs a successful delivery when webhook payload is sent', function () {
+    Http::fake(['*' => Http::response(null, 200)]);
+
+    $webhook = Webhook::factory()->create(['url' => 'https://example.com/hook']);
+    $listener = app(SendWebhookPayload::class);
+    $listener->handle(new WebhookDispatched($webhook, ['event' => 'user.registered']));
+
+    $delivery = WebhookDelivery::where('webhook_id', $webhook->id)->sole();
+    expect($delivery->succeeded)->toBeTrue()
+        ->and($delivery->status_code)->toBe(200)
+        ->and($delivery->duration_ms)->not->toBeNull()
+        ->and($delivery->fired_at)->not->toBeNull();
+});
+
+it('logs a failed delivery when the endpoint returns an error', function () {
+    Http::fake(['*' => Http::response(null, 500)]);
+
+    $webhook = Webhook::factory()->create(['url' => 'https://example.com/hook']);
+    $listener = app(SendWebhookPayload::class);
+
+    expect(fn () => $listener->handle(new WebhookDispatched($webhook, ['event' => 'user.registered'])))
+        ->toThrow(RequestException::class);
+
+    $delivery = WebhookDelivery::where('webhook_id', $webhook->id)->sole();
+    expect($delivery->succeeded)->toBeFalse()
+        ->and($delivery->status_code)->toBe(500);
+});
+
+it('allows admins to view webhook show page with delivery history', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $webhook = Webhook::factory()->create();
+
+    $this->actingAs($admin)
+        ->get(route('webhooks.show', $webhook))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('webhooks/Show')
+            ->has('webhook')
+            ->has('deliveries')
+        );
 });

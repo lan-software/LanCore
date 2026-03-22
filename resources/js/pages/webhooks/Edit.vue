@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
-import { update, destroy } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
+import { update, destroy, show as webhookShow } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
 import { edit as webhookEdit } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -24,6 +24,7 @@ const props = defineProps<{
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: webhooksRoute().url },
     { title: 'Webhooks', href: webhooksRoute().url },
+    { title: props.webhook.name, href: webhookShow({ webhook: props.webhook.id }).url },
     { title: 'Edit', href: webhookEdit({ webhook: props.webhook.id }).url },
 ]
 
@@ -55,8 +56,8 @@ function deleteWebhook() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-3xl">
             <div class="flex items-center justify-between">
-                <Link :href="webhooksRoute().url" class="text-sm text-muted-foreground hover:text-foreground">
-                    &larr; Back to Webhooks
+                <Link :href="webhookShow({ webhook: webhook.id }).url" class="text-sm text-muted-foreground hover:text-foreground">
+                    &larr; Back to Webhook
                 </Link>
                 <div class="flex items-center gap-2">
                     <Badge v-if="webhook.is_active" variant="default">Active</Badge>
