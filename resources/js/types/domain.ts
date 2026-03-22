@@ -290,7 +290,7 @@ export type SeatPlanLabel = {
 
 export type SeatPlanData = {
     blocks: SeatPlanBlock[]
-}
+} & Record<string, unknown>
 
 export type SeatPlan = {
     id: number

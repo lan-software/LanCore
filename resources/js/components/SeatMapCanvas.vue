@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
-import type { SeatPlanBlock } from '@/types/domain'
+import type { SeatPlanData } from '@/types/domain'
 
 const props = withDefaults(
     defineProps<{
-        blocks: SeatPlanBlock[]
+        data: SeatPlanData
         options?: Record<string, unknown>
     }>(),
     {
@@ -19,8 +19,19 @@ defineEmits<{
 const containerRef = ref<HTMLDivElement | null>(null)
 let seatmapInstance: InstanceType<typeof import('@alisaitteke/seatmap-canvas').SeatMapCanvas> | null = null
 
+function isPretixFormat(data: SeatPlanData): boolean {
+    return 'zones' in data && Array.isArray((data as Record<string, unknown>).zones)
+}
+
+function hasBlocks(data: SeatPlanData): boolean {
+    return 'blocks' in data && Array.isArray(data.blocks) && data.blocks.length > 0
+}
+
 async function initSeatmap(): Promise<void> {
-    if (!containerRef.value || props.blocks.length === 0) return
+    if (!containerRef.value) return
+
+    const isPretix = isPretixFormat(props.data)
+    if (!isPretix && !hasBlocks(props.data)) return
 
     destroySeatmap()
 
@@ -28,6 +39,7 @@ async function initSeatmap(): Promise<void> {
 
     const defaultOptions = {
         legend: true,
+        json_model: isPretix ? 'pretix' : 'seatmap',
         style: {
             seat: {
                 radius: 12,
@@ -59,7 +71,12 @@ async function initSeatmap(): Promise<void> {
     }
 
     seatmapInstance = new SeatMapCanvas(containerRef.value, mergedOptions)
-    seatmapInstance.data.addBulkBlock(props.blocks)
+
+    if (isPretix) {
+        seatmapInstance.data.addBulkBlock(props.data as unknown as Record<string, unknown>[])
+    } else {
+        seatmapInstance.data.addBulkBlock(props.data.blocks as unknown as Record<string, unknown>[])
+    }
 }
 
 function destroySeatmap(): void {
@@ -78,7 +95,7 @@ onBeforeUnmount(() => {
 })
 
 watch(
-    () => props.blocks,
+    () => props.data,
     () => {
         initSeatmap()
     },

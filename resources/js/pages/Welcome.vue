@@ -20,9 +20,8 @@ const props = withDefaults(
     },
 )
 
-const seatPlanBlocks = computed(() => {
-    const seatPlan = props.nextEvent?.seat_plans?.[0]
-    return seatPlan?.data?.blocks ?? []
+const seatPlanData = computed(() => {
+    return props.nextEvent?.seat_plans?.[0]?.data ?? null
 })
 
 function formatDate(dateString: string): string {
@@ -241,11 +240,11 @@ function formatDateTime(dateString: string): string {
                         </div>
 
                         <!-- Seat Map -->
-                        <div v-if="seatPlanBlocks.length > 0" class="space-y-4">
+                        <div v-if="seatPlanData" class="space-y-4">
                             <h2 class="text-2xl font-semibold">Seat Map</h2>
                             <div class="rounded-xl border" style="height: 500px">
                                 <SeatMapCanvas
-                                    :blocks="seatPlanBlocks"
+                                    :data="seatPlanData"
                                     :options="{
                                         legend: true,
                                         style: {
