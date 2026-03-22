@@ -101,7 +101,7 @@ it('allows marking all notifications as read', function () {
     expect($this->user->unreadNotifications()->count())->toBe(0);
 });
 
-it('allows deleting (archiving) a notification', function () {
+it('allows archiving a notification', function () {
     $notificationId = (string) Str::uuid();
     DatabaseNotification::create([
         'id' => $notificationId,
@@ -112,13 +112,13 @@ it('allows deleting (archiving) a notification', function () {
     ]);
 
     $this->actingAs($this->user)
-        ->delete("/notifications/{$notificationId}")
+        ->patch("/notifications/{$notificationId}/archive")
         ->assertRedirect();
 
-    expect(DatabaseNotification::find($notificationId))->toBeNull();
+    expect(DatabaseNotification::find($notificationId)->archived_at)->not->toBeNull();
 });
 
-it('prevents users from deleting other users\' notifications', function () {
+it('prevents users from archiving other users\' notifications', function () {
     $otherUser = User::factory()->create();
     $notificationId = (string) Str::uuid();
     DatabaseNotification::create([
@@ -130,7 +130,7 @@ it('prevents users from deleting other users\' notifications', function () {
     ]);
 
     $this->actingAs($this->user)
-        ->delete("/notifications/{$notificationId}")
+        ->patch("/notifications/{$notificationId}/archive")
         ->assertNotFound();
 });
 
