@@ -1,0 +1,30 @@
+{
+	frankenphp
+	order php_server before file_server
+
+	# Admin API (used by Octane for metrics/health)
+	admin 0.0.0.0:2019
+}
+
+:80 {
+	root * /var/www/html/public
+
+	encode zstd br gzip
+
+	# Security headers
+	header {
+		X-Frame-Options SAMEORIGIN
+		X-Content-Type-Options nosniff
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	# Serve pre-built assets with long cache lifetime
+	@staticAssets {
+		path *.css *.js *.ico *.jpg *.jpeg *.png *.gif *.svg *.webp *.woff *.woff2 *.ttf
+	}
+	header @staticAssets Cache-Control "public, max-age=31536000, immutable"
+
+	php_server
+}

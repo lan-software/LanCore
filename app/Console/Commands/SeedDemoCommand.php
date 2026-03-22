@@ -19,6 +19,8 @@ use App\Domain\Ticketing\Models\TicketType;
 use App\Domain\Venue\Models\Address;
 use App\Domain\Venue\Models\Venue;
 use App\Domain\Venue\Models\VenueImage;
+use App\Domain\Webhook\Enums\WebhookEvent;
+use App\Domain\Webhook\Models\Webhook;
 use App\Enums\RoleName;
 use App\Models\User;
 use Illuminate\Console\Attributes\Description;
@@ -43,6 +45,7 @@ class SeedDemoCommand extends Command
         $this->seedPrograms($events);
         $this->seedSponsors($events);
         $this->seedNews();
+        $this->seedWebhooks();
 
         $this->newLine();
         $this->info('Demo data seeded successfully.');
@@ -524,6 +527,20 @@ class SeedDemoCommand extends Command
                 'summary' => 'Review the draft tournament rules.',
                 'visibility' => ArticleVisibility::Draft,
                 'author_id' => $admin?->id ?? User::factory()->withRole(RoleName::Admin)->create()->id,
+            ]);
+        });
+    }
+
+    private function seedWebhooks(): void
+    {
+        $this->components->task('Seeding webhooks', function (): void {
+            Webhook::factory()->create([
+                'name' => 'MockServer — User Registered',
+                'description' => 'Development webhook that forwards user registration events to MockServer for inspection.',
+                'url' => 'http://mockserver:1080/webhooks/user-registered',
+                'event' => WebhookEvent::UserRegistered,
+                'secret' => null,
+                'is_active' => true,
             ]);
         });
     }

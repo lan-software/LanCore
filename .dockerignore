@@ -18,7 +18,6 @@ phpunit.xml
 pint.json
 eslint.config.js
 *.md
-*.sh
 .editorconfig
 .gitignore
 .gitattributes

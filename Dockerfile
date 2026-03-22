@@ -42,9 +42,14 @@ RUN composer dump-autoload --optimize --classmap-authoritative
 # ============================
 FROM dunglas/frankenphp:php8.5-alpine AS production
 
-LABEL org.opencontainers.image.source="https://github.com/lan-software/lancore"
-LABEL org.opencontainers.image.description="LanCore Laravel Application"
-LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.title="LanCore" \
+      org.opencontainers.image.description="LanCore — LAN party management application" \
+      org.opencontainers.image.url="https://lan-software.de" \
+      org.opencontainers.image.source="https://github.com/lan-software/lancore" \
+      org.opencontainers.image.vendor="Lan-Software.de" \
+      org.opencontainers.image.authors="Markus Kohn <post@markus-kohn.de>" \
+      org.opencontainers.image.licenses="AGPL-3.0" \
+      org.opencontainers.image.base.name="dunglas/frankenphp:php8.5-alpine"
 
 # System dependencies
 RUN apk add --no-cache supervisor curl
