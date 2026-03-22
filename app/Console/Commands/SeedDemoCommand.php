@@ -141,8 +141,12 @@ class SeedDemoCommand extends Command
         return true;
     }
 
-    private function seedVenues(): void
+    private function seedVenues(): bool
     {
+        if (Venue::query()->where('name', 'Community Hall')->exists()) {
+            return false;
+        }
+
         $this->components->task('Seeding venues', function (): void {
             $communityHall = Venue::factory()->create([
                 'name' => 'Community Hall',
