@@ -19,11 +19,15 @@ class NewsPublishedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     public function shouldSend(object $notifiable, string $channel): bool
     {
+        if ($channel === 'database') {
+            return true;
+        }
+
         $preferences = $notifiable->notificationPreference;
 
         if (! $preferences) {

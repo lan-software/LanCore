@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar, Clock, MapPin, Newspaper, ShoppingCart, Megaphone, AlertTriangle, X } from 'lucide-vue-next'
 import { index as shopIndex } from '@/routes/shop'
 import SeatMapCanvas from '@/components/SeatMapCanvas.vue'
+import NotificationBell from '@/components/NotificationBell.vue'
 import type { Event, NewsArticle, Announcement } from '@/types/domain'
 
 const props = withDefaults(
@@ -75,6 +76,7 @@ function dismissAnnouncement(announcementId: number) {
                         <ShoppingCart class="size-4" />
                         Shop
                     </Link>
+                    <NotificationBell v-if="$page.props.auth.user" />
                     <Link
                         v-if="$page.props.auth.user"
                         :href="dashboard()"

@@ -58,6 +58,16 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'eventContext' => fn () => $this->eventContext($request),
+            'unreadNotificationsCount' => fn () => $user ? $user->unreadNotifications()->count() : 0,
+            'recentNotifications' => fn () => $user
+                ? $user->notifications()->latest()->limit(5)->get()->map(fn ($n) => [
+                    'id' => $n->id,
+                    'type' => $n->type,
+                    'data' => $n->data,
+                    'read_at' => $n->read_at?->toISOString(),
+                    'created_at' => $n->created_at->toISOString(),
+                ])->values()->all()
+                : [],
         ];
     }
 

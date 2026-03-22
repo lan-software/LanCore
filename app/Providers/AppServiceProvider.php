@@ -47,10 +47,16 @@ use App\Domain\Ticketing\Policies\TicketPolicy;
 use App\Domain\Ticketing\Policies\TicketTypePolicy;
 use App\Domain\Venue\Models\Venue;
 use App\Domain\Venue\Policies\VenuePolicy;
+use App\Domain\Webhook\Events\WebhookDispatched;
+use App\Domain\Webhook\Listeners\HandleUserRegisteredWebhooks;
+use App\Domain\Webhook\Listeners\SendWebhookPayload;
+use App\Domain\Webhook\Models\Webhook;
+use App\Domain\Webhook\Policies\WebhookPolicy;
 use App\Models\User;
 use App\Policies\UserPolicy;
 use App\Services\ModelCacheService;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event as EventFacade;
@@ -110,6 +116,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(SeatPlan::class, SeatPlanPolicy::class);
         Gate::policy(NewsArticle::class, NewsArticlePolicy::class);
         Gate::policy(NewsComment::class, NewsCommentPolicy::class);
+        Gate::policy(Webhook::class, WebhookPolicy::class);
     }
 
     /**
@@ -144,6 +151,8 @@ class AppServiceProvider extends ServiceProvider
         EventFacade::listen(ProgramTimeSlotApproaching::class, SendProgramTimeSlotNotification::class);
         EventFacade::listen(UserRolesChanged::class, SendUserRolesChangedNotification::class);
         EventFacade::listen(UserAttributesUpdated::class, SendUserAttributesUpdatedNotification::class);
+        EventFacade::listen(Registered::class, HandleUserRegisteredWebhooks::class);
+        EventFacade::listen(WebhookDispatched::class, SendWebhookPayload::class);
     }
 
     /**

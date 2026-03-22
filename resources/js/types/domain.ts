@@ -380,3 +380,29 @@ export type Announcement = {
     created_at: string
     updated_at: string
 }
+
+// Notification Domain
+
+export type AppNotification = {
+    id: string
+    type: string
+    data: Record<string, unknown>
+    read_at: string | null
+    created_at: string
+}
+
+// Webhook Domain
+
+export type WebhookEventType = 'user.registered'
+
+export type Webhook = {
+    id: number
+    name: string
+    url: string
+    event: WebhookEventType
+    secret: string | null
+    description: string | null
+    is_active: boolean
+    created_at: string
+    updated_at: string
+}

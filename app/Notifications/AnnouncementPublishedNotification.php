@@ -20,11 +20,15 @@ class AnnouncementPublishedNotification extends Notification implements ShouldQu
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     public function shouldSend(object $notifiable, string $channel): bool
     {
+        if ($channel === 'database') {
+            return true;
+        }
+
         if ($this->announcement->priority === AnnouncementPriority::Emergency) {
             return true;
         }

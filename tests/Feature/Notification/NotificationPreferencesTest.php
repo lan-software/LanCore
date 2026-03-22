@@ -52,10 +52,12 @@ it('allows users to update their notification preferences', function () {
             'mail_on_events' => true,
             'mail_on_news_comments' => false,
             'mail_on_program_time_slots' => true,
+            'mail_on_announcements' => true,
             'push_on_news' => false,
             'push_on_events' => false,
             'push_on_news_comments' => false,
             'push_on_program_time_slots' => false,
+            'push_on_announcements' => false,
         ])
         ->assertRedirect();
 
@@ -73,7 +75,9 @@ it('validates notification preference fields are required', function () {
         ->patch('/settings/notifications', [])
         ->assertInvalid([
             'mail_on_news', 'mail_on_events', 'mail_on_news_comments', 'mail_on_program_time_slots',
+            'mail_on_announcements',
             'push_on_news', 'push_on_events', 'push_on_news_comments', 'push_on_program_time_slots',
+            'push_on_announcements',
         ]);
 });
 
