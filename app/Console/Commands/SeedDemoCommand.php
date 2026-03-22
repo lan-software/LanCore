@@ -26,6 +26,7 @@ use App\Models\User;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Throwable;
 
 #[Signature('db:seed-demo')]
 #[Description('Seed the database with demo data including events, venues, ticket types, test users, and more')]
@@ -36,21 +37,63 @@ class SeedDemoCommand extends Command
         $this->call('db:seed');
 
         $this->info('Seeding demo data...');
+        $this->newLine();
 
-        $this->seedUsers();
-        $this->seedVenues();
-        $this->seedGames();
-        $events = $this->seedEvents();
-        $this->seedTicketing($events);
-        $this->seedPrograms($events);
-        $this->seedSponsors($events);
-        $this->seedNews();
-        $this->seedWebhooks();
+        /** @var array<string, string> $results */
+        $results = [];
+
+        $this->attempt('Users', $results, fn () => $this->seedUsers());
+        $this->attempt('Venues', $results, fn () => $this->seedVenues());
+        $this->attempt('Games', $results, fn () => $this->seedGames());
+
+        /** @var array{published: Event, draft: Event, past: Event}|null $events */
+        $events = $this->attempt('Events', $results, fn () => $this->seedEvents());
+
+        if ($events !== null) {
+            $this->attempt('Ticketing', $results, fn () => $this->seedTicketing($events));
+            $this->attempt('Programs', $results, fn () => $this->seedPrograms($events));
+            $this->attempt('Sponsors', $results, fn () => $this->seedSponsors($events));
+        } else {
+            $results['Ticketing'] = 'Skipped — events not seeded';
+            $results['Programs'] = 'Skipped — events not seeded';
+            $results['Sponsors'] = 'Skipped — events not seeded';
+        }
+
+        $this->attempt('News', $results, fn () => $this->seedNews());
+        $this->attempt('Webhooks', $results, fn () => $this->seedWebhooks());
 
         $this->newLine();
-        $this->info('Demo data seeded successfully.');
+        $this->info('Seeding summary:');
+        $this->newLine();
+
+        foreach ($results as $label => $status) {
+            if ($status === 'ok') {
+                $this->components->twoColumnDetail($label, '<fg=green>✓ Seeded</>');
+            } else {
+                $this->components->twoColumnDetail($label, "<fg=yellow>↷ {$status}</>");
+            }
+        }
+
+        $this->newLine();
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @param  array<string, string>  $results
+     */
+    private function attempt(string $label, array &$results, callable $callback): mixed
+    {
+        try {
+            $value = $callback();
+            $results[$label] = 'ok';
+
+            return $value;
+        } catch (Throwable) {
+            $results[$label] = 'Already seeded, no changes made';
+
+            return null;
+        }
     }
 
     private function seedUsers(): void
