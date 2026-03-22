@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name', 'url', 'event', 'secret', 'description', 'is_active',
@@ -31,6 +32,11 @@ class Webhook extends Model
             'event' => WebhookEvent::class,
             'is_active' => 'boolean',
         ];
+    }
+
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(WebhookDelivery::class)->orderByDesc('fired_at');
     }
 
     /**

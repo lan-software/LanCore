@@ -46,6 +46,20 @@ class WebhookController extends Controller
         ]);
     }
 
+    public function show(Request $request, Webhook $webhook): Response
+    {
+        $this->authorize('view', $webhook);
+
+        $deliveries = $webhook->deliveries()
+            ->paginate($request->input('per_page', 25))
+            ->withQueryString();
+
+        return Inertia::render('webhooks/Show', [
+            'webhook' => $webhook,
+            'deliveries' => $deliveries,
+        ]);
+    }
+
     public function create(): Response
     {
         $this->authorize('create', Webhook::class);
