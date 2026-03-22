@@ -21,6 +21,8 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             eventContext: EventContext | null;
+            vapidPublicKey: string;
+            pushSubscribed: boolean;
             unreadNotificationsCount: number;
             recentNotifications: AppNotification[];
             [key: string]: unknown;

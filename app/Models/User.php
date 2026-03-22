@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Notification\Models\NotificationPreference;
 use App\Domain\Notification\Models\ProgramNotificationSubscription;
+use App\Domain\Notification\Models\PushSubscription;
 use App\Domain\Sponsoring\Models\Sponsor;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Enums\RoleName;
@@ -95,6 +96,11 @@ class User extends Authenticatable
     public function programNotificationSubscriptions(): HasMany
     {
         return $this->hasMany(ProgramNotificationSubscription::class);
+    }
+
+    public function pushSubscriptions(): HasMany
+    {
+        return $this->hasMany(PushSubscription::class);
     }
 
     public function dismissedAnnouncements(): BelongsToMany

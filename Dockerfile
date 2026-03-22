@@ -12,16 +12,16 @@ RUN npm ci --frozen-lockfile
 
 COPY . .
 
-# Wayfinder Vite plugin calls `php artisan wayfinder:generate` at build time.
-# Types are already committed; stub php so the plugin exits cleanly.
-RUN printf '#!/bin/sh\nexit 0\n' > /usr/local/bin/php && chmod +x /usr/local/bin/php
+# Overlay with Wayfinder-generated TypeScript (git-ignored, built in the deps stage)
+COPY --from=deps /app/resources/js/actions ./resources/js/actions
+COPY --from=deps /app/resources/js/routes ./resources/js/routes
 
 RUN npm run build
 
 # ============================
 # Stage 2: PHP dependency install
 # ============================
-FROM composer:2 AS composer
+FROM composer:2 AS deps
 
 WORKDIR /app
 
@@ -36,6 +36,19 @@ RUN composer install \
 
 COPY . .
 RUN composer dump-autoload --optimize --classmap-authoritative
+
+# Generate Wayfinder TypeScript files (actions/, routes/) so the frontend
+# build stage has them. These are git-ignored generated artefacts.
+RUN mkdir -p bootstrap/cache \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/framework/cache \
+        storage/logs \
+    && APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+    APP_ENV=local \
+    DB_CONNECTION=sqlite \
+    DB_DATABASE=:memory: \
+    php artisan wayfinder:generate
 
 # ============================
 # Stage 3: Production image (FrankenPHP + Octane)
@@ -85,7 +98,7 @@ RUN chmod +x /entrypoint.sh
 WORKDIR /var/www/html
 
 # Copy application from build stages
-COPY --from=composer /app /var/www/html
+COPY --from=deps /app /var/www/html
 COPY --from=frontend /app/public/build /var/www/html/public/build
 
 # Permissions

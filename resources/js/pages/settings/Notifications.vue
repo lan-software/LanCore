@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { update } from '@/actions/App/Domain/Notification/Http/Controllers/NotificationSettingsController';
 import Heading from '@/components/Heading.vue';
+import PushNotificationPrompt from '@/components/PushNotificationPrompt.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { edit } from '@/routes/notifications';
 import type { BreadcrumbItem } from '@/types';
+
+const page = usePage();
 
 type NotificationPreferences = {
     mail_on_news: boolean;
@@ -125,18 +127,15 @@ const notificationRows: NotificationRow[] = [
                 />
 
                 <form @submit.prevent="submit" class="space-y-6">
+                    <PushNotificationPrompt :settings-mode="true" />
+
                     <div class="overflow-hidden rounded-lg border">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b bg-muted/50">
                                     <th class="px-4 py-3 text-left font-medium">Notification</th>
                                     <th class="w-20 px-4 py-3 text-center font-medium">Email</th>
-                                    <th class="w-20 px-4 py-3 text-center font-medium">
-                                        <div class="flex flex-col items-center gap-0.5">
-                                            <span>Push</span>
-                                            <span class="text-[10px] font-normal text-muted-foreground">coming soon</span>
-                                        </div>
-                                    </th>
+                                                    <th class="w-20 px-4 py-3 text-center font-medium">Push</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -155,11 +154,12 @@ const notificationRows: NotificationRow[] = [
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-center">
-                                        <div class="flex justify-center opacity-40">
+                                        <div class="flex justify-center" :class="{ 'opacity-40': !page.props.pushSubscribed }">
                                             <Checkbox
                                                 :id="row.pushKey"
-                                                :model-value="false"
-                                                disabled
+                                                :model-value="form[row.pushKey] as boolean"
+                                                :disabled="!page.props.pushSubscribed"
+                                                @update:model-value="(val: boolean) => { form[row.pushKey] = val; }"
                                             />
                                         </div>
                                     </td>

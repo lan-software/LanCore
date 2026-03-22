@@ -58,6 +58,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'eventContext' => fn () => $this->eventContext($request),
+            'vapidPublicKey' => config('services.vapid.public_key'),
+            'pushSubscribed' => fn () => $user ? $user->pushSubscriptions()->exists() : false,
             'unreadNotificationsCount' => fn () => $user ? $user->unreadNotifications()->whereNull('archived_at')->count() : 0,
             'recentNotifications' => fn () => $user
                 ? $user->notifications()->whereNull('archived_at')->latest()->limit(5)->get()->map(fn ($n) => [
