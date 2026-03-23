@@ -30,3 +30,8 @@ yarn-error.log
 **/caddy
 /frankenphp
 frankenphp-worker.php
+
+# Frontend testing
+playwright-report/
+test-results/
+coverage/

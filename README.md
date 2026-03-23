@@ -7,6 +7,7 @@
 > LAN party & BYOD event management platform — the modern successor to eventula-manager. Inspired by Byceps and 10 years of Lan-Party experience at (sxlan.de)[sxlan.de]
 
 [![Tests](https://github.com/lan-software/LanCore/actions/workflows/tests.yml/badge.svg)](https://github.com/lan-software/LanCore/actions/workflows/tests.yml)
+[![Frontend Tests](https://github.com/lan-software/LanCore/actions/workflows/frontend-tests.yml/badge.svg)](https://github.com/lan-software/LanCore/actions/workflows/frontend-tests.yml)
 [![Linter](https://github.com/lan-software/LanCore/actions/workflows/lint.yml/badge.svg)](https://github.com/lan-software/LanCore/actions/workflows/lint.yml)
 [![Docker](https://github.com/lan-software/LanCore/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/lan-software/LanCore/actions/workflows/docker-publish.yml)
 [![Coverage](https://codecov.io/gh/lan-software/LanCore/graph/badge.svg)](https://codecov.io/gh/lan-software/LanCore)

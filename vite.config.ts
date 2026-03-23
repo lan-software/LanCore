@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import { defineConfig } from 'vite';
+import { configDefaults } from 'vitest/config';
 
 export default defineConfig({
     plugins: [
@@ -24,4 +25,21 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
+    test: {
+        globals: true,
+        environment: 'jsdom',
+        exclude: [...configDefaults.exclude, 'tests/e2e/**'],
+        include: ['resources/js/**/*.{test,spec}.{ts,js}'],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'lcov'],
+            include: ['resources/js/**/*.{ts,vue}'],
+            exclude: ['resources/js/wayfinder/**', 'resources/js/actions/**', 'resources/js/routes/**'],
+        },
+        resolve: {
+            alias: {
+                '@': '/resources/js',
+            },
+        },
+    },
 });
