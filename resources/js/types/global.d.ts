@@ -20,6 +20,7 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
+            sidebarFavorites: string[];
             eventContext: EventContext | null;
             vapidPublicKey: string;
             pushSubscribed: boolean;

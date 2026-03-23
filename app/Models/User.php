@@ -23,7 +23,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-#[Fillable(['name', 'email', 'password', 'is_ticket_discoverable', 'ticket_discovery_allowlist'])]
+#[Fillable(['name', 'email', 'password', 'is_ticket_discoverable', 'ticket_discovery_allowlist', 'sidebar_favorites'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -43,6 +43,7 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
             'is_ticket_discoverable' => 'boolean',
             'ticket_discovery_allowlist' => 'array',
+            'sidebar_favorites' => 'array',
         ];
     }
 

@@ -57,6 +57,7 @@ class HandleInertiaRequests extends Middleware
                 ]) : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarFavorites' => $user ? ($user->sidebar_favorites ?? []) : [],
             'eventContext' => fn () => $this->eventContext($request),
             'vapidPublicKey' => config('services.vapid.public_key'),
             'pushSubscribed' => fn () => $user ? $user->pushSubscriptions()->exists() : false,

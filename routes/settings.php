@@ -4,6 +4,7 @@ use App\Domain\Notification\Http\Controllers\NotificationSettingsController;
 use App\Domain\Notification\Http\Controllers\ProgramSubscriptionController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
+use App\Http\Controllers\Settings\SidebarFavoriteController;
 use App\Http\Controllers\Settings\TicketDiscoveryController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,4 +33,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('settings/ticket-discovery', [TicketDiscoveryController::class, 'edit'])->name('ticket-discovery.edit');
     Route::patch('settings/ticket-discovery', [TicketDiscoveryController::class, 'update'])->name('ticket-discovery.update');
+
+    Route::post('settings/sidebar-favorites/toggle', [SidebarFavoriteController::class, 'toggle'])->name('sidebar-favorites.toggle');
 });

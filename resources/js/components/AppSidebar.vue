@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Calendar, ClipboardList, CreditCard, FileCheck, FolderGit2, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Puzzle, Rows3, ShieldCheck, ShoppingCart, Tag, Ticket, TicketCheck, Users, Webhook } from 'lucide-vue-next';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { Calendar, ClipboardList, CreditCard, FileCheck, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Pin, PinOff, Puzzle, Rows3, ShieldCheck, ShoppingCart, Tag, Ticket, TicketCheck, Users, Webhook } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import EventSelector from '@/components/EventSelector.vue';
-import NavFooter from '@/components/NavFooter.vue';
+import NavFavorites from '@/components/NavFavorites.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
@@ -16,6 +16,7 @@ import {
     SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
+    SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
@@ -42,6 +43,7 @@ import { index as newsCommentsIndex } from '@/routes/news/comments';
 import { index as purchaseRequirementsIndex } from '@/routes/purchase-requirements';
 import { index as globalPurchaseConditionsIndex } from '@/routes/global-purchase-conditions';
 import { index as paymentProviderConditionsIndex } from '@/routes/payment-provider-conditions';
+import { toggle as toggleFavoriteAction } from '@/actions/App/Http/Controllers/Settings/SidebarFavoriteController';
 import type { NavItem } from '@/types';
 
 const page = usePage();
@@ -69,18 +71,54 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/lan-software/LanCore.git',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://lan-software.de/LanCore/docs',
-        icon: BookOpen,
-    },
-];
+const allPinnableItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        { id: 'dashboard', title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
+        { id: 'my-tickets', title: 'My Tickets', href: ticketsIndex(), icon: Ticket },
+    ];
+
+    if (isAdmin.value) {
+        items.push(
+            { id: 'users', title: 'Users', href: usersIndex(), icon: Users },
+            { id: 'news-articles', title: 'Articles', href: newsIndex(), icon: Newspaper },
+            { id: 'news-comments', title: 'Comments', href: newsCommentsIndex(), icon: MessageSquare },
+            { id: 'announcements', title: 'Announcements', href: announcementsIndex(), icon: Megaphone },
+            { id: 'events', title: 'Events', href: eventsIndex(), icon: Calendar },
+            { id: 'programs', title: 'Programs', href: programsIndex(), icon: ClipboardList },
+            { id: 'venues', title: 'Venues', href: venuesIndex(), icon: MapPin },
+            { id: 'games', title: 'Games', href: gamesIndex(), icon: Gamepad2 },
+            { id: 'sponsors', title: 'Sponsors', href: sponsorsIndex(), icon: Handshake },
+            { id: 'sponsor-levels', title: 'Sponsor Levels', href: sponsorLevelsIndex(), icon: Palette },
+            { id: 'ticket-types', title: 'Ticket Types', href: ticketTypesIndex(), icon: Rows3 },
+            { id: 'ticket-categories', title: 'Ticket Categories', href: ticketCategoriesIndex(), icon: Tag },
+            { id: 'ticket-addons', title: 'Ticket Addons', href: ticketAddonsIndex(), icon: Puzzle },
+            { id: 'vouchers', title: 'Vouchers', href: vouchersIndex(), icon: Gift },
+            { id: 'seat-plans', title: 'Seat Plans', href: seatPlansIndex(), icon: Grid2x2 },
+            { id: 'webhooks', title: 'Webhooks', href: webhooksIndex(), icon: Webhook },
+            { id: 'orders', title: 'Orders', href: ordersIndex(), icon: ShoppingCart },
+            { id: 'admin-tickets', title: 'Tickets (Admin)', href: adminTicketsIndex(), icon: TicketCheck },
+            { id: 'purchase-requirements', title: 'Purchase Requirements', href: purchaseRequirementsIndex(), icon: ShieldCheck },
+            { id: 'purchase-conditions', title: 'Purchase Conditions', href: globalPurchaseConditionsIndex(), icon: FileCheck },
+            { id: 'payment-conditions', title: 'Payment Conditions', href: paymentProviderConditionsIndex(), icon: CreditCard },
+        );
+    }
+
+    if (!isAdmin.value && isSponsorManager.value) {
+        items.push({ id: 'my-sponsors', title: 'My Sponsors', href: sponsorsIndex(), icon: Handshake });
+    }
+
+    return items;
+});
+
+const sidebarFavorites = computed<string[]>(() => page.props.sidebarFavorites ?? []);
+
+function isFavorited(itemId: string): boolean {
+    return sidebarFavorites.value.includes(itemId);
+}
+
+function toggleFavorite(itemId: string): void {
+    router.post(toggleFavoriteAction().url, { item_id: itemId }, { preserveScroll: true, preserveState: true });
+}
 </script>
 
 <template>
@@ -102,6 +140,8 @@ const footerNavItems: NavItem[] = [
         <SidebarContent>
             <NavMain :items="mainNavItems" />
 
+            <NavFavorites :all-items="allPinnableItems" />
+
             <!-- Administration -->
             <SidebarGroup v-if="isAdmin">
                 <SidebarGroupLabel>Administration</SidebarGroupLabel>
@@ -114,6 +154,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Users</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('users')">
+                                <PinOff v-if="isFavorited('users')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -131,6 +175,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Articles</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('news-articles')">
+                                <PinOff v-if="isFavorited('news-articles')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
@@ -139,6 +187,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Comments</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('news-comments')">
+                                <PinOff v-if="isFavorited('news-comments')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -156,6 +208,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Announcements</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('announcements')">
+                                <PinOff v-if="isFavorited('announcements')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -173,6 +229,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Events</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('events')">
+                                <PinOff v-if="isFavorited('events')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -190,6 +250,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Programs</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('programs')">
+                                <PinOff v-if="isFavorited('programs')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -207,6 +271,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Venues</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('venues')">
+                                <PinOff v-if="isFavorited('venues')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -224,6 +292,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Games</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('games')">
+                                <PinOff v-if="isFavorited('games')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -241,6 +313,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Sponsors</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('sponsors')">
+                                <PinOff v-if="isFavorited('sponsors')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                         <SidebarMenuItem v-if="!isAdmin && isSponsorManager">
                             <SidebarMenuButton as-child>
@@ -249,6 +325,10 @@ const footerNavItems: NavItem[] = [
                                     <span>My Sponsors</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('my-sponsors')">
+                                <PinOff v-if="isFavorited('my-sponsors')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                         <SidebarMenuItem v-if="isAdmin">
                             <SidebarMenuButton as-child>
@@ -257,6 +337,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Sponsor Levels</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('sponsor-levels')">
+                                <PinOff v-if="isFavorited('sponsor-levels')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -274,6 +358,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Ticket Types</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('ticket-types')">
+                                <PinOff v-if="isFavorited('ticket-types')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
@@ -282,6 +370,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Ticket Categories</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('ticket-categories')">
+                                <PinOff v-if="isFavorited('ticket-categories')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
@@ -290,6 +382,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Ticket Addons</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('ticket-addons')">
+                                <PinOff v-if="isFavorited('ticket-addons')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
@@ -298,6 +394,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Vouchers</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('vouchers')">
+                                <PinOff v-if="isFavorited('vouchers')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -343,6 +443,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Seat Plans</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('seat-plans')">
+                                <PinOff v-if="isFavorited('seat-plans')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -360,6 +464,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Webhooks</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('webhooks')">
+                                <PinOff v-if="isFavorited('webhooks')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -377,6 +485,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Orders</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('orders')">
+                                <PinOff v-if="isFavorited('orders')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
@@ -385,6 +497,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Tickets</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('admin-tickets')">
+                                <PinOff v-if="isFavorited('admin-tickets')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
@@ -393,6 +509,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Purchase Requirements</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('purchase-requirements')">
+                                <PinOff v-if="isFavorited('purchase-requirements')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
@@ -401,6 +521,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Purchase Conditions</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('purchase-conditions')">
+                                <PinOff v-if="isFavorited('purchase-conditions')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
@@ -409,6 +533,10 @@ const footerNavItems: NavItem[] = [
                                     <span>Payment Conditions</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('payment-conditions')">
+                                <PinOff v-if="isFavorited('payment-conditions')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
@@ -416,7 +544,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { LogOut, Settings } from 'lucide-vue-next';
+import { BookOpen, FolderGit2, LogOut, Settings } from 'lucide-vue-next';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -36,6 +36,21 @@ defineProps<Props>();
                 <Settings class="mr-2 h-4 w-4" />
                 Settings
             </Link>
+        </DropdownMenuItem>
+    </DropdownMenuGroup>
+    <DropdownMenuSeparator />
+    <DropdownMenuGroup>
+        <DropdownMenuItem :as-child="true">
+            <a class="block w-full cursor-pointer" href="https://github.com/lan-software/LanCore.git" target="_blank" rel="noopener noreferrer">
+                <FolderGit2 class="mr-2 h-4 w-4" />
+                Repository
+            </a>
+        </DropdownMenuItem>
+        <DropdownMenuItem :as-child="true">
+            <a class="block w-full cursor-pointer" href="https://lan-software.de/LanCore/docs" target="_blank" rel="noopener noreferrer">
+                <BookOpen class="mr-2 h-4 w-4" />
+                Documentation
+            </a>
         </DropdownMenuItem>
     </DropdownMenuGroup>
     <DropdownMenuSeparator />
