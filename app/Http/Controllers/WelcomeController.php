@@ -35,11 +35,12 @@ class WelcomeController extends Controller
 
         if ($nextEvent) {
             $nextEventData = $nextEvent->toArray();
-            $bannerImages = array_filter($nextEvent->banner_images ?? [], fn ($p) => is_string($p) && $p !== '');
-            $nextEventData['banner_image_urls'] = array_values(array_map(
-                fn (string $path) => Storage::url($path),
+            $bannerImages = array_values(array_filter($nextEvent->banner_images ?? [], fn ($p) => is_string($p) && $p !== ''));
+            $nextEventData['banner_images'] = $bannerImages;
+            $nextEventData['banner_image_urls'] = array_map(
+                fn (string $path) => Storage::fileUrl($path),
                 $bannerImages,
-            ));
+            );
 
             if (isset($nextEventData['venue']['images'])) {
                 $nextEventData['venue']['images'] = collect($nextEventData['venue']['images'])->map(function (array $image) {

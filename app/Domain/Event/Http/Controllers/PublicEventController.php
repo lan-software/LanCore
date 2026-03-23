@@ -20,11 +20,12 @@ class PublicEventController extends Controller
 
         $events->through(function (Event $event) {
             $eventData = $event->toArray();
-            $bannerImages = array_filter($event->banner_images ?? [], fn ($p) => is_string($p) && $p !== '');
-            $eventData['banner_image_urls'] = array_values(array_map(
-                fn (string $path) => Storage::url($path),
+            $bannerImages = array_values(array_filter($event->banner_images ?? [], fn ($p) => is_string($p) && $p !== ''));
+            $eventData['banner_images'] = $bannerImages;
+            $eventData['banner_image_urls'] = array_map(
+                fn (string $path) => Storage::fileUrl($path),
                 $bannerImages,
-            ));
+            );
 
             return $eventData;
         });
