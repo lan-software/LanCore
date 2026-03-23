@@ -22,7 +22,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'is_ticket_discoverable', 'ticket_discovery_allowlist'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -40,6 +40,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'is_ticket_discoverable' => 'boolean',
+            'ticket_discovery_allowlist' => 'array',
         ];
     }
 
@@ -106,5 +108,16 @@ class User extends Authenticatable
     public function dismissedAnnouncements(): BelongsToMany
     {
         return $this->belongsToMany(Announcement::class, 'announcement_dismissals')->withTimestamps();
+    }
+
+    public function isDiscoverableBy(User $searcher): bool
+    {
+        if ($this->is_ticket_discoverable) {
+            return true;
+        }
+
+        $allowlist = $this->ticket_discovery_allowlist ?? [];
+
+        return in_array($searcher->name, $allowlist, true);
     }
 }

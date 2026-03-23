@@ -391,4 +391,5 @@ Server-side patterns (Inertia::render, props, middleware) are covered in inertia
 - Forgetting to add loading states (skeleton screens) when using deferred props
 - Not handling the `undefined` state of deferred props before data loads
 - Using `<form>` without preventing default submission (use `<Form>` component or `@submit.prevent`)
+- **reka-ui / shadcn-vue component bindings**: reka-ui components (Switch, Checkbox, etc.) use `modelValue` / `update:modelValue`, NOT `checked` / `update:checked`. Always use `v-model` to bind reactive state. Using `:checked` silently falls through as an HTML attribute and the component will appear to work visually but never update the bound value.
 - Forgetting to check if `<Form>` component is available in your Inertia version

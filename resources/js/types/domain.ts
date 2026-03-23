@@ -215,6 +215,51 @@ export type Voucher = {
     updated_at: string
 }
 
+export type PurchaseRequirement = {
+    id: number
+    name: string
+    description: string | null
+    requirements_content: string | null
+    acknowledgements: string[] | null
+    is_active: boolean
+    requires_scroll: boolean
+    ticket_types_count?: number
+    addons_count?: number
+    ticket_types?: TicketType[]
+    addons?: TicketAddon[]
+    created_at: string
+    updated_at: string
+}
+
+export type GlobalPurchaseCondition = {
+    id: number
+    name: string
+    description: string | null
+    content: string | null
+    acknowledgement_label: string
+    is_required: boolean
+    is_active: boolean
+    requires_scroll: boolean
+    sort_order: number
+    created_at: string
+    updated_at: string
+}
+
+export type PaymentProviderCondition = {
+    id: number
+    payment_method: PaymentMethod
+    name: string
+    description: string | null
+    content: string | null
+    acknowledgement_label: string
+    is_required: boolean
+    is_active: boolean
+    requires_scroll: boolean
+    sort_order: number
+    created_at: string
+    updated_at: string
+}
+
 export type OrderStatus = 'Pending' | 'Completed' | 'Failed' | 'Refunded'
 
 export type PaymentMethod = 'stripe' | 'on_site'
@@ -244,6 +289,7 @@ export type TicketStatus = 'Active' | 'CheckedIn' | 'Cancelled'
 export type Ticket = {
     id: number
     status: TicketStatus
+    validation_id: string
     checked_in_at: string | null
     ticket_type_id: number
     event_id: number
@@ -252,7 +298,7 @@ export type Ticket = {
     manager_id: number | null
     user_id: number | null
     ticket_type?: TicketType
-    event?: { id: number; name: string }
+    event?: { id: number; name: string; start_date?: string; end_date?: string; banner_images?: string[]; banner_image_urls?: string[] }
     order?: Order
     owner?: { id: number; name: string; email: string }
     manager?: { id: number; name: string; email: string } | null

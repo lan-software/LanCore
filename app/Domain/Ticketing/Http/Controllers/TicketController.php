@@ -8,6 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,12 +25,12 @@ class TicketController extends Controller
         $user = $request->user();
 
         $ownedTickets = $user->ownedTickets()
-            ->with(['ticketType', 'event', 'manager', 'ticketUser', 'addons'])
+            ->with(['ticketType', 'event', 'manager', 'ticketUser', 'addons', 'order'])
             ->get();
 
         $managedTickets = $user->managedTickets()
             ->where('owner_id', '!=', $user->id)
-            ->with(['ticketType', 'event', 'owner', 'ticketUser', 'addons'])
+            ->with(['ticketType', 'event', 'owner', 'ticketUser', 'addons', 'order'])
             ->get();
 
         $usableTickets = $user->usableTickets()
@@ -36,13 +39,13 @@ class TicketController extends Controller
                 $query->where('manager_id', '!=', $user->id)
                     ->orWhereNull('manager_id');
             })
-            ->with(['ticketType', 'event', 'addons'])
+            ->with(['ticketType', 'event', 'addons', 'order'])
             ->get();
 
         return Inertia::render('tickets/Index', [
-            'ownedTickets' => $ownedTickets,
-            'managedTickets' => $managedTickets,
-            'usableTickets' => $usableTickets,
+            'ownedTickets' => $this->enrichTickets($ownedTickets),
+            'managedTickets' => $this->enrichTickets($managedTickets),
+            'usableTickets' => $this->enrichTickets($usableTickets),
         ]);
     }
 
@@ -50,17 +53,44 @@ class TicketController extends Controller
     {
         $this->authorize('view', $ticket);
 
-        return Inertia::render('tickets/Show', [
-            'ticket' => $ticket->load([
-                'ticketType.ticketCategory',
-                'event',
-                'order',
-                'owner',
-                'manager',
-                'ticketUser',
-                'addons',
-            ]),
+        $ticket->load([
+            'ticketType.ticketCategory',
+            'event',
+            'order',
+            'owner',
+            'manager',
+            'ticketUser',
+            'addons',
         ]);
+
+        $ticketData = $this->enrichTickets(collect([$ticket]))[0];
+
+        return Inertia::render('tickets/Show', [
+            'ticket' => $ticketData,
+            'canUpdateManager' => Gate::allows('updateManager', $ticket),
+            'canUpdateUser' => Gate::allows('updateUser', $ticket),
+        ]);
+    }
+
+    /**
+     * @param  Collection<int, Ticket>  $tickets
+     * @return array<int, array<string, mixed>>
+     */
+    private function enrichTickets(Collection $tickets): array
+    {
+        return $tickets->map(function (Ticket $ticket): array {
+            $data = $ticket->toArray();
+
+            if ($ticket->event) {
+                $bannerImages = array_values(array_filter($ticket->event->banner_images ?? [], fn ($p) => is_string($p) && $p !== ''));
+                $data['event']['banner_image_urls'] = array_map(
+                    fn (string $path) => Storage::fileUrl($path),
+                    $bannerImages,
+                );
+            }
+
+            return $data;
+        })->values()->all();
     }
 
     public function updateManager(Request $request, Ticket $ticket): RedirectResponse

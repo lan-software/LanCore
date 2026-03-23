@@ -12,9 +12,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 #[Fillable([
-    'status', 'checked_in_at',
+    'status', 'checked_in_at', 'validation_id',
     'ticket_type_id', 'event_id', 'order_id',
     'owner_id', 'manager_id', 'user_id',
 ])]
@@ -22,6 +23,24 @@ class Ticket extends Model
 {
     /** @use HasFactory<TicketFactory> */
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Ticket $ticket): void {
+            if (empty($ticket->validation_id)) {
+                $ticket->validation_id = self::generateValidationId();
+            }
+        });
+    }
+
+    public static function generateValidationId(): string
+    {
+        do {
+            $id = strtoupper(Str::random(16));
+        } while (self::where('validation_id', $id)->exists());
+
+        return $id;
+    }
 
     protected static function newFactory(): TicketFactory
     {

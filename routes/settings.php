@@ -4,6 +4,7 @@ use App\Domain\Notification\Http\Controllers\NotificationSettingsController;
 use App\Domain\Notification\Http\Controllers\ProgramSubscriptionController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
+use App\Http\Controllers\Settings\TicketDiscoveryController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -28,4 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('settings/notifications', [NotificationSettingsController::class, 'update'])->name('notifications.update');
 
     Route::post('programs/{program}/subscribe', [ProgramSubscriptionController::class, 'toggle'])->name('programs.subscribe.toggle');
+
+    Route::get('settings/ticket-discovery', [TicketDiscoveryController::class, 'edit'])->name('ticket-discovery.edit');
+    Route::patch('settings/ticket-discovery', [TicketDiscoveryController::class, 'update'])->name('ticket-discovery.update');
 });

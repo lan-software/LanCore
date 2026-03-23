@@ -9,6 +9,7 @@ import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editNotifications } from '@/routes/notifications';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
+import { edit as editTicketDiscovery } from '@/routes/ticket-discovery';
 import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
@@ -27,6 +28,10 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Notifications',
         href: editNotifications(),
+    },
+    {
+        title: 'Advanced Ticketing',
+        href: editTicketDiscovery(),
     },
 ];
 
