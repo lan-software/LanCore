@@ -35,3 +35,6 @@ frankenphp-worker.php
 playwright-report/
 test-results/
 coverage/
+
+# SQLite test database
+/testing
