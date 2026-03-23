@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 const props = defineProps<{
     images: string[]
@@ -9,33 +9,37 @@ const props = defineProps<{
 }>()
 
 const currentIndex = ref(0)
-let timer: ReturnType<typeof setInterval> | null = null
+let timer: ReturnType<typeof setTimeout> | null = null
 
-function next() {
+const interval = computed(() => props.intervalMs ?? 7000)
+
+function advance() {
     currentIndex.value = (currentIndex.value + 1) % props.images.length
+    scheduleNext()
 }
 
 function goTo(index: number) {
+    if (index === currentIndex.value) {
+        return
+    }
     currentIndex.value = index
-    restartTimer()
+    scheduleNext()
 }
 
-function restartTimer() {
+function scheduleNext() {
     if (timer !== null) {
-        clearInterval(timer)
+        clearTimeout(timer)
     }
     if (props.images.length > 1) {
-        timer = setInterval(next, props.intervalMs ?? 4000)
+        timer = setTimeout(advance, interval.value)
     }
 }
 
-onMounted(() => {
-    restartTimer()
-})
+onMounted(scheduleNext)
 
 onUnmounted(() => {
     if (timer !== null) {
-        clearInterval(timer)
+        clearTimeout(timer)
     }
 })
 </script>
@@ -43,33 +47,30 @@ onUnmounted(() => {
 <template>
     <div
         v-if="images.length > 0"
-        class="relative overflow-hidden rounded-xl border"
+        class="relative overflow-hidden rounded-xl border bg-muted aspect-[3/1]"
         :class="props.class"
     >
-        <!-- Images -->
-        <template
+        <!-- All images are absolutely stacked — no layout shift on transition -->
+        <img
             v-for="(src, index) in images"
             :key="src"
-        >
-            <img
-                :src="src"
-                :alt="alt"
-                class="w-full object-cover transition-opacity duration-700"
-                :class="index === currentIndex ? 'opacity-100' : 'pointer-events-none absolute inset-0 h-full opacity-0'"
-            />
-        </template>
+            :src="src"
+            :alt="alt"
+            class="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out"
+            :class="index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'"
+        />
 
         <!-- Dot indicators (only when more than one image) -->
         <div
             v-if="images.length > 1"
-            class="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5"
+            class="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-2"
         >
             <button
                 v-for="(_, index) in images"
                 :key="index"
                 type="button"
-                class="size-2 rounded-full transition-colors"
-                :class="index === currentIndex ? 'bg-white' : 'bg-white/40 hover:bg-white/70'"
+                class="rounded-full transition-all duration-300"
+                :class="index === currentIndex ? 'size-2.5 bg-white' : 'size-2 bg-white/40 hover:bg-white/70'"
                 :aria-label="`Go to image ${index + 1}`"
                 @click="goTo(index)"
             />
