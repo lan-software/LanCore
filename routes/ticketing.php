@@ -2,6 +2,7 @@
 
 use App\Domain\Ticketing\Http\Controllers\AddonAuditController;
 use App\Domain\Ticketing\Http\Controllers\AddonController;
+use App\Domain\Ticketing\Http\Controllers\AdminTicketController;
 use App\Domain\Ticketing\Http\Controllers\TicketCategoryAuditController;
 use App\Domain\Ticketing\Http\Controllers\TicketCategoryController;
 use App\Domain\Ticketing\Http\Controllers\TicketController;
@@ -42,4 +43,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('ticket-addons/{ticketAddon}/audit', AddonAuditController::class)->name('ticket-addons.audit');
     Route::patch('ticket-addons/{ticketAddon}', [AddonController::class, 'update'])->name('ticket-addons.update');
     Route::delete('ticket-addons/{ticketAddon}', [AddonController::class, 'destroy'])->name('ticket-addons.destroy');
+
+    // Admin: Tickets Management
+    Route::get('admin-tickets', [AdminTicketController::class, 'index'])->name('admin-tickets.index');
+    Route::get('admin-tickets/{ticket}', [AdminTicketController::class, 'show'])->name('admin-tickets.show');
 });

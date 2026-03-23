@@ -1,20 +1,28 @@
 <script setup lang="ts">
 import UserController from '@/actions/App/Http/Controllers/Users/UserController'
+import OrderController from '@/actions/App/Domain/Shop/Http/Controllers/OrderController'
+import { show as adminTicketShow } from '@/actions/App/Domain/Ticketing/Http/Controllers/AdminTicketController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as usersIndexRoute } from '@/routes/users'
 import type { BreadcrumbItem } from '@/types'
 import type { Role, User } from '@/types/auth'
+import type { Order, Ticket } from '@/types/domain'
 import { Form, Head, Link } from '@inertiajs/vue3'
 
 const props = defineProps<{
     user: User
     availableRoles: Role[]
+    recentOrders: Order[]
+    recentTickets: Ticket[]
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -25,6 +33,31 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 function hasRole(roleName: string): boolean {
     return props.user.roles.some((r) => r.name === roleName)
+}
+
+function formatCurrency(cents: number): string {
+    return (cents / 100).toFixed(2) + ' €'
+}
+
+function formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    })
+}
+
+const orderStatusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+    Completed: 'default',
+    Pending: 'outline',
+    Failed: 'destructive',
+    Refunded: 'secondary',
+}
+
+const ticketStatusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+    Active: 'default',
+    CheckedIn: 'secondary',
+    Cancelled: 'destructive',
 }
 </script>
 
@@ -172,6 +205,78 @@ function hasRole(roleName: string): boolean {
                     </Transition>
                 </div>
             </Form>
+
+            <!-- Recent Orders -->
+            <Card v-if="recentOrders.length > 0">
+                <CardHeader>
+                    <CardTitle>Recent Orders</CardTitle>
+                </CardHeader>
+                <CardContent class="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>ID</TableHead>
+                                <TableHead>Event</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead class="text-right">Total</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead class="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow v-for="order in recentOrders" :key="order.id">
+                                <TableCell class="font-mono text-sm">#{{ order.id }}</TableCell>
+                                <TableCell>{{ order.event?.name ?? '—' }}</TableCell>
+                                <TableCell>
+                                    <Badge :variant="orderStatusVariant[order.status] ?? 'outline'">{{ order.status }}</Badge>
+                                </TableCell>
+                                <TableCell class="text-right font-medium">{{ formatCurrency(order.total) }}</TableCell>
+                                <TableCell class="text-muted-foreground text-sm">{{ formatDate(order.created_at) }}</TableCell>
+                                <TableCell class="text-right">
+                                    <Button variant="outline" size="sm" as-child>
+                                        <Link :href="OrderController.show(order.id).url">View</Link>
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+
+            <!-- Recent Tickets -->
+            <Card v-if="recentTickets.length > 0">
+                <CardHeader>
+                    <CardTitle>Recent Tickets</CardTitle>
+                </CardHeader>
+                <CardContent class="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Validation ID</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Event</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead class="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow v-for="ticket in recentTickets" :key="ticket.id">
+                                <TableCell class="font-mono text-sm">{{ ticket.validation_id }}</TableCell>
+                                <TableCell>{{ ticket.ticket_type?.name ?? '—' }}</TableCell>
+                                <TableCell>{{ ticket.event?.name ?? '—' }}</TableCell>
+                                <TableCell>
+                                    <Badge :variant="ticketStatusVariant[ticket.status] ?? 'outline'">{{ ticket.status }}</Badge>
+                                </TableCell>
+                                <TableCell class="text-right">
+                                    <Button variant="outline" size="sm" as-child>
+                                        <Link :href="adminTicketShow(ticket.id).url">View</Link>
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
         </div>
     </AppLayout>
 </template>

@@ -38,6 +38,7 @@ it('allows admins to store a payment provider condition', function () {
             'acknowledgement_label' => 'I understand a processing fee may apply',
             'is_required' => true,
             'is_active' => true,
+            'requires_scroll' => true,
             'sort_order' => 0,
         ])
         ->assertRedirect('/payment-provider-conditions');
@@ -45,7 +46,8 @@ it('allows admins to store a payment provider condition', function () {
     $condition = PaymentProviderCondition::where('name', 'Stripe Processing Fee Notice')->first();
     expect($condition)->not->toBeNull()
         ->and($condition->payment_method)->toBe(PaymentMethod::Stripe)
-        ->and($condition->is_required)->toBeTrue();
+        ->and($condition->is_required)->toBeTrue()
+        ->and($condition->requires_scroll)->toBeTrue();
 });
 
 it('allows admins to update a payment provider condition', function () {
@@ -61,6 +63,7 @@ it('allows admins to update a payment provider condition', function () {
             'acknowledgement_label' => 'Updated label',
             'is_required' => false,
             'is_active' => true,
+            'requires_scroll' => true,
             'sort_order' => 3,
         ])
         ->assertRedirect();
@@ -68,7 +71,8 @@ it('allows admins to update a payment provider condition', function () {
     $updated = $condition->fresh();
     expect($updated->name)->toBe('Updated Condition')
         ->and($updated->payment_method)->toBe(PaymentMethod::OnSite)
-        ->and($updated->is_required)->toBeFalse();
+        ->and($updated->is_required)->toBeFalse()
+        ->and($updated->requires_scroll)->toBeTrue();
 });
 
 it('allows admins to delete a payment provider condition', function () {

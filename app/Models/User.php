@@ -7,6 +7,7 @@ use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Notification\Models\NotificationPreference;
 use App\Domain\Notification\Models\ProgramNotificationSubscription;
 use App\Domain\Notification\Models\PushSubscription;
+use App\Domain\Shop\Models\Order;
 use App\Domain\Sponsoring\Models\Sponsor;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Enums\RoleName;
@@ -68,6 +69,11 @@ class User extends Authenticatable
     public function managedSponsors(): BelongsToMany
     {
         return $this->belongsToMany(Sponsor::class)->withTimestamps();
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 
     public function isSponsorManager(): bool

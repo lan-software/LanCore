@@ -2,6 +2,7 @@
 
 use App\Domain\Shop\Http\Controllers\CartController;
 use App\Domain\Shop\Http\Controllers\GlobalPurchaseConditionController;
+use App\Domain\Shop\Http\Controllers\OrderController;
 use App\Domain\Shop\Http\Controllers\PaymentProviderConditionController;
 use App\Domain\Shop\Http\Controllers\PurchaseRequirementController;
 use App\Domain\Shop\Http\Controllers\ShopController;
@@ -62,4 +63,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('payment-provider-conditions/{paymentProviderCondition}', [PaymentProviderConditionController::class, 'edit'])->name('payment-provider-conditions.edit');
     Route::patch('payment-provider-conditions/{paymentProviderCondition}', [PaymentProviderConditionController::class, 'update'])->name('payment-provider-conditions.update');
     Route::delete('payment-provider-conditions/{paymentProviderCondition}', [PaymentProviderConditionController::class, 'destroy'])->name('payment-provider-conditions.destroy');
+
+    // Admin: Orders
+    Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 });

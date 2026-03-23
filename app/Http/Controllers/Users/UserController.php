@@ -58,9 +58,25 @@ class UserController extends Controller
     {
         $this->authorize('view', $user);
 
+        $user->load('roles');
+
+        $recentOrders = $user->orders()
+            ->with(['event'])
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        $recentTickets = $user->ownedTickets()
+            ->with(['ticketType', 'event'])
+            ->latest()
+            ->limit(10)
+            ->get();
+
         return Inertia::render('users/Show', [
-            'user' => $user->load('roles'),
+            'user' => $user,
             'availableRoles' => Role::dropdownOptions(),
+            'recentOrders' => $recentOrders,
+            'recentTickets' => $recentTickets,
         ]);
     }
 

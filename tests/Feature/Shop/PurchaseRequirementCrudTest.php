@@ -53,6 +53,7 @@ it('allows admins to store a purchase requirement', function () {
             'requirements_content' => '<p>You must be 18+</p>',
             'acknowledgements' => ['I confirm I am 18 or older'],
             'is_active' => true,
+            'requires_scroll' => true,
             'ticket_type_ids' => [$ticketType->id],
             'addon_ids' => [$addon->id],
         ])
@@ -61,6 +62,7 @@ it('allows admins to store a purchase requirement', function () {
     $requirement = PurchaseRequirement::where('name', 'Age Verification')->first();
     expect($requirement)->not->toBeNull()
         ->and($requirement->acknowledgements)->toBe(['I confirm I am 18 or older'])
+        ->and($requirement->requires_scroll)->toBeTrue()
         ->and($requirement->ticketTypes)->toHaveCount(1)
         ->and($requirement->addons)->toHaveCount(1);
 });
@@ -75,6 +77,7 @@ it('allows admins to update a purchase requirement', function () {
             'description' => $requirement->description,
             'acknowledgements' => ['Updated acknowledgement'],
             'is_active' => false,
+            'requires_scroll' => true,
             'ticket_type_ids' => [],
             'addon_ids' => [],
         ])
@@ -82,7 +85,8 @@ it('allows admins to update a purchase requirement', function () {
 
     $updated = $requirement->fresh();
     expect($updated->name)->toBe('Updated Requirement')
-        ->and($updated->is_active)->toBeFalse();
+        ->and($updated->is_active)->toBeFalse()
+        ->and($updated->requires_scroll)->toBeTrue();
 });
 
 it('allows admins to delete a purchase requirement', function () {

@@ -280,6 +280,21 @@ export type Order = {
     event?: { id: number; name: string }
     voucher?: Voucher | null
     tickets?: Ticket[]
+    order_lines?: OrderLine[]
+    metadata?: Record<string, unknown> | null
+    created_at: string
+    updated_at: string
+}
+
+export type OrderLine = {
+    id: number
+    order_id: number
+    purchasable_type: string
+    purchasable_id: number
+    description: string
+    quantity: number
+    unit_price: number
+    total_price: number
     created_at: string
     updated_at: string
 }

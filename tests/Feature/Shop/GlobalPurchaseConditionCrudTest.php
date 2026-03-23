@@ -36,6 +36,7 @@ it('allows admins to store a global purchase condition', function () {
             'acknowledgement_label' => 'I accept the Terms of Service',
             'is_required' => true,
             'is_active' => true,
+            'requires_scroll' => true,
             'sort_order' => 0,
         ])
         ->assertRedirect('/global-purchase-conditions');
@@ -43,6 +44,7 @@ it('allows admins to store a global purchase condition', function () {
     $condition = GlobalPurchaseCondition::where('name', 'Terms of Service')->first();
     expect($condition)->not->toBeNull()
         ->and($condition->is_required)->toBeTrue()
+        ->and($condition->requires_scroll)->toBeTrue()
         ->and($condition->acknowledgement_label)->toBe('I accept the Terms of Service');
 });
 
@@ -58,6 +60,7 @@ it('allows admins to update a global purchase condition', function () {
             'acknowledgement_label' => 'Updated label',
             'is_required' => false,
             'is_active' => true,
+            'requires_scroll' => true,
             'sort_order' => 5,
         ])
         ->assertRedirect();
@@ -65,6 +68,7 @@ it('allows admins to update a global purchase condition', function () {
     $updated = $condition->fresh();
     expect($updated->name)->toBe('Updated Condition')
         ->and($updated->is_required)->toBeFalse()
+        ->and($updated->requires_scroll)->toBeTrue()
         ->and($updated->sort_order)->toBe(5);
 });
 
