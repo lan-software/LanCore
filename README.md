@@ -12,6 +12,13 @@
 [![Docker](https://github.com/lan-software/LanCore/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/lan-software/LanCore/actions/workflows/docker-publish.yml)
 [![Coverage](https://codecov.io/gh/lan-software/LanCore/graph/badge.svg)](https://codecov.io/gh/lan-software/LanCore)
 
+[![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white)](composer.json)
+[![Laravel](https://img.shields.io/badge/Laravel-%5E13.0-FF2D20?logo=laravel&logoColor=white)](composer.json)
+[![Vue.js](https://img.shields.io/badge/Vue.js-%5E3.5-42b883?logo=vue.js&logoColor=white)](package.json)
+[![Stripe](https://img.shields.io/badge/Stripe-supported-635BFF?logo=stripe&logoColor=white)](composer.json)
+[![PayPal](https://img.shields.io/badge/PayPal-planned-003087?logo=paypal&logoColor=white)](#features)
+[![OIDC](https://img.shields.io/badge/OIDC-planned-blue)](#features)
+
 ---
 
 ## About
