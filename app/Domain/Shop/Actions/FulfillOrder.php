@@ -8,6 +8,7 @@ use App\Domain\Ticketing\Enums\TicketStatus;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketType;
+use App\Notifications\OrderConfirmationNotification;
 use Illuminate\Support\Facades\DB;
 
 class FulfillOrder
@@ -61,5 +62,7 @@ class FulfillOrder
                 $order->voucher->increment('times_used');
             }
         });
+
+        $order->user->notify(new OrderConfirmationNotification($order));
     }
 }

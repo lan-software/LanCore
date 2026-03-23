@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Calendar, ClipboardList, FolderGit2, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Puzzle, Rows3, Tag, Ticket, Users, Webhook } from 'lucide-vue-next';
+import { BookOpen, Calendar, ClipboardList, CreditCard, FileCheck, FolderGit2, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Puzzle, Rows3, ShieldCheck, Tag, Ticket, Users, Webhook } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import EventSelector from '@/components/EventSelector.vue';
@@ -37,6 +37,9 @@ import { index as announcementsIndex } from '@/routes/announcements';
 import { index as webhooksIndex } from '@/routes/webhooks';
 import { index as newsIndex } from '@/routes/news';
 import { index as newsCommentsIndex } from '@/routes/news/comments';
+import { index as purchaseRequirementsIndex } from '@/routes/purchase-requirements';
+import { index as globalPurchaseConditionsIndex } from '@/routes/global-purchase-conditions';
+import { index as paymentProviderConditionsIndex } from '@/routes/payment-provider-conditions';
 import type { NavItem } from '@/types';
 
 const page = usePage();
@@ -366,8 +369,27 @@ const footerNavItems: NavItem[] = [
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <SidebarMenuButton class="text-sidebar-foreground/50 pointer-events-none">
-                                <span>Coming soon</span>
+                            <SidebarMenuButton as-child>
+                                <Link :href="purchaseRequirementsIndex()">
+                                    <ShieldCheck />
+                                    <span>Purchase Requirements</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="globalPurchaseConditionsIndex()">
+                                    <FileCheck />
+                                    <span>Purchase Conditions</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="paymentProviderConditionsIndex()">
+                                    <CreditCard />
+                                    <span>Payment Conditions</span>
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>

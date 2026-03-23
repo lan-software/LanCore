@@ -3,18 +3,36 @@ import CartController from '@/actions/App/Domain/Shop/Http/Controllers/CartContr
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { Event, TicketAddon, TicketType } from '@/types/domain'
 import { Head, Link, router } from '@inertiajs/vue3'
-import { Calendar, MapPin, Plus, ShoppingCart } from 'lucide-vue-next'
+import { Calendar, Info, MapPin, Minus, Plus, ShoppingCart } from 'lucide-vue-next'
 import { dashboard, login } from '@/routes'
 import { index as shopIndex } from '@/routes/shop'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+
+type CartItemRef = {
+    purchasable_type: string
+    purchasable_id: number
+    quantity: number
+}
+
+type TicketTypeExtended = TicketType & {
+    is_purchasable: boolean
+    remaining_quota: number
+    unavailability_reason: string | null
+}
+
+type AddonExtended = TicketAddon & {
+    requires_ticket: boolean
+}
 
 const props = defineProps<{
     event: Event | null
-    ticketTypes: TicketType[]
-    addons: TicketAddon[]
+    ticketTypes: TicketTypeExtended[]
+    addons: AddonExtended[]
     cartItemCount: number
+    cartItems: CartItemRef[]
 }>()
 
 function formatPrice(cents: number): string {
@@ -31,6 +49,32 @@ function formatDate(dateString: string): string {
 }
 
 const addingItem = ref<number | null>(null)
+
+const ticketTypeClass = 'App\\Domain\\Ticketing\\Models\\TicketType'
+const addonClass = 'App\\Domain\\Ticketing\\Models\\Addon'
+
+function getCartQuantity(purchasableType: string, purchasableId: number): number {
+    const item = props.cartItems.find(
+        (i) => i.purchasable_type === purchasableType && i.purchasable_id === purchasableId,
+    )
+    return item?.quantity ?? 0
+}
+
+const ticketCartQuantities = computed(() => {
+    const map: Record<number, number> = {}
+    for (const tt of props.ticketTypes) {
+        map[tt.id] = getCartQuantity(ticketTypeClass, tt.id)
+    }
+    return map
+})
+
+const addonCartQuantities = computed(() => {
+    const map: Record<number, number> = {}
+    for (const addon of props.addons) {
+        map[addon.id] = getCartQuantity(addonClass, addon.id)
+    }
+    return map
+})
 
 function addToCart(purchasableType: 'ticket_type' | 'addon', purchasableId: number) {
     if (!props.event) return
@@ -52,6 +96,43 @@ function addToCart(purchasableType: 'ticket_type' | 'addon', purchasableId: numb
             },
         },
     )
+}
+
+function updateCartQuantity(purchasableType: 'ticket_type' | 'addon', purchasableId: number, delta: number) {
+    const classType = purchasableType === 'ticket_type' ? ticketTypeClass : addonClass
+    const cartItem = props.cartItems.find(
+        (i) => i.purchasable_type === classType && i.purchasable_id === purchasableId,
+    )
+    if (!cartItem) return
+
+    const currentQty = cartItem.quantity
+    const newQty = currentQty + delta
+
+    if (newQty <= 0) {
+        // Find the cart item ID - we need to navigate to the cart for removal
+        // Or use the addItem endpoint with the updated qty
+        router.post(
+            CartController.addItem().url,
+            {
+                purchasable_type: purchasableType,
+                purchasable_id: purchasableId,
+                quantity: 0,
+                event_id: props.event!.id,
+            },
+            { preserveScroll: true },
+        )
+        return
+    }
+
+    // Re-add with quantity 1 to increment, or use addItem which increments
+    if (delta > 0) {
+        addToCart(purchasableType, purchasableId)
+    } else {
+        // For decrement, we need to visit the cart or use a different approach
+        // Since addItem only increments, we'll navigate users to the cart for precise control
+        // But we can post with negative delta approximation using a full page reload
+        router.visit(CartController.show().url)
+    }
 }
 </script>
 
@@ -113,7 +194,17 @@ function addToCart(purchasableType: 'ticket_type' | 'addon', purchasableId: numb
                         <div class="space-y-4">
                             <h2 class="text-2xl font-semibold">Tickets</h2>
                             <div v-if="ticketTypes.length > 0" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                <Card v-for="tt in ticketTypes" :key="tt.id">
+                                <Card v-for="tt in ticketTypes" :key="tt.id" class="relative overflow-hidden">
+                                    <!-- Unavailability Overlay -->
+                                    <div
+                                        v-if="!tt.is_purchasable && tt.unavailability_reason"
+                                        class="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-[1px]"
+                                    >
+                                        <Badge variant="secondary" class="px-4 py-2 text-sm font-semibold">
+                                            {{ tt.unavailability_reason }}
+                                        </Badge>
+                                    </div>
+
                                     <CardHeader>
                                         <div class="flex items-center justify-between">
                                             <CardTitle>{{ tt.name }}</CardTitle>
@@ -131,14 +222,40 @@ function addToCart(purchasableType: 'ticket_type' | 'addon', purchasableId: numb
                                         </div>
                                     </CardContent>
                                     <CardFooter v-if="$page.props.auth.user">
-                                        <Button
-                                            size="sm"
-                                            :disabled="addingItem === tt.id || !tt.is_purchasable"
-                                            @click="addToCart('ticket_type', tt.id)"
-                                        >
-                                            <Plus class="size-4" />
-                                            {{ addingItem === tt.id ? 'Adding…' : 'Add to Cart' }}
-                                        </Button>
+                                        <!-- Quantity Selector (when already in cart) -->
+                                        <template v-if="ticketCartQuantities[tt.id] > 0">
+                                            <div class="flex items-center gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    class="size-8"
+                                                    @click="updateCartQuantity('ticket_type', tt.id, -1)"
+                                                >
+                                                    <Minus class="size-3" />
+                                                </Button>
+                                                <span class="w-8 text-center text-sm font-medium">{{ ticketCartQuantities[tt.id] }}</span>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    class="size-8"
+                                                    :disabled="addingItem === tt.id"
+                                                    @click="addToCart('ticket_type', tt.id)"
+                                                >
+                                                    <Plus class="size-3" />
+                                                </Button>
+                                            </div>
+                                        </template>
+                                        <!-- Add to Cart button (not yet in cart) -->
+                                        <template v-else>
+                                            <Button
+                                                size="sm"
+                                                :disabled="addingItem === tt.id || !tt.is_purchasable"
+                                                @click="addToCart('ticket_type', tt.id)"
+                                            >
+                                                <Plus class="size-4" />
+                                                {{ addingItem === tt.id ? 'Adding…' : 'Add to Cart' }}
+                                            </Button>
+                                        </template>
                                     </CardFooter>
                                 </Card>
                             </div>
@@ -152,21 +269,58 @@ function addToCart(purchasableType: 'ticket_type' | 'addon', purchasableId: numb
                                 <Card v-for="addon in addons" :key="addon.id">
                                     <CardHeader>
                                         <div class="flex items-center justify-between">
-                                            <CardTitle class="text-base">{{ addon.name }}</CardTitle>
+                                            <div class="flex items-center gap-1.5">
+                                                <CardTitle class="text-base">{{ addon.name }}</CardTitle>
+                                                <TooltipProvider v-if="addon.requires_ticket">
+                                                    <Tooltip>
+                                                        <TooltipTrigger as-child>
+                                                            <Info class="size-4 text-muted-foreground" />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Can only be purchased in combination with a ticket.</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
                                             <span class="font-bold">{{ formatPrice(addon.price) }}</span>
                                         </div>
                                         <CardDescription v-if="addon.description">{{ addon.description }}</CardDescription>
                                     </CardHeader>
                                     <CardFooter v-if="$page.props.auth.user">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            :disabled="addingItem === addon.id"
-                                            @click="addToCart('addon', addon.id)"
-                                        >
-                                            <Plus class="size-4" />
-                                            {{ addingItem === addon.id ? 'Adding…' : 'Add to Cart' }}
-                                        </Button>
+                                        <!-- Quantity Selector (when already in cart) -->
+                                        <template v-if="addonCartQuantities[addon.id] > 0">
+                                            <div class="flex items-center gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    class="size-8"
+                                                    @click="updateCartQuantity('addon', addon.id, -1)"
+                                                >
+                                                    <Minus class="size-3" />
+                                                </Button>
+                                                <span class="w-8 text-center text-sm font-medium">{{ addonCartQuantities[addon.id] }}</span>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    class="size-8"
+                                                    :disabled="addingItem === addon.id"
+                                                    @click="addToCart('addon', addon.id)"
+                                                >
+                                                    <Plus class="size-3" />
+                                                </Button>
+                                            </div>
+                                        </template>
+                                        <template v-else>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                :disabled="addingItem === addon.id"
+                                                @click="addToCart('addon', addon.id)"
+                                            >
+                                                <Plus class="size-4" />
+                                                {{ addingItem === addon.id ? 'Adding…' : 'Add to Cart' }}
+                                            </Button>
+                                        </template>
                                     </CardFooter>
                                 </Card>
                             </div>

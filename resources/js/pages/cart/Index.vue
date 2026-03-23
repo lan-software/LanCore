@@ -12,7 +12,7 @@ import type { Event } from '@/types/domain'
 import { Head, Link, router } from '@inertiajs/vue3'
 import { index as shopIndex } from '@/routes/shop'
 import { Minus, Plus, ShoppingCart, Tag, Trash2, X } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 type CartItemData = {
     id: number
@@ -100,15 +100,15 @@ function removeVoucher() {
 
 function checkout() {
     isCheckingOut.value = true
-    router.post(CartController.checkout().url, { payment_method: selectedPaymentMethod.value }, {
+    router.post(CartController.reviewCheckout().url, { payment_method: selectedPaymentMethod.value }, {
         onFinish: () => {
             isCheckingOut.value = false
         },
     })
 }
 
-const ticketItems = props.cartItems.filter((i) => !i.is_addon)
-const addonItems = props.cartItems.filter((i) => i.is_addon)
+const ticketItems = computed(() => props.cartItems.filter((i) => !i.is_addon))
+const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon))
 </script>
 
 <template>

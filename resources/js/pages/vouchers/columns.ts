@@ -47,7 +47,7 @@ export const columns: ColumnDef<Voucher>[] = [
         header: () => h('span', 'Type'),
         cell: ({ row }) => {
             const voucher = row.original
-            if (voucher.type === 'FixedAmount') {
+            if (voucher.type === 'fixed_amount') {
                 return h('span', { class: 'text-muted-foreground' }, (voucher.discount_amount! / 100).toFixed(2) + ' €')
             }
             return h('span', { class: 'text-muted-foreground' }, voucher.discount_percent + '%')

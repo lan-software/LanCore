@@ -1,6 +1,9 @@
 <?php
 
 use App\Domain\Shop\Http\Controllers\CartController;
+use App\Domain\Shop\Http\Controllers\GlobalPurchaseConditionController;
+use App\Domain\Shop\Http\Controllers\PaymentProviderConditionController;
+use App\Domain\Shop\Http\Controllers\PurchaseRequirementController;
 use App\Domain\Shop\Http\Controllers\ShopController;
 use App\Domain\Shop\Http\Controllers\VoucherAuditController;
 use App\Domain\Shop\Http\Controllers\VoucherController;
@@ -17,6 +20,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('cart/items/{cartItem}', [CartController::class, 'removeItem'])->name('cart.remove-item');
     Route::post('cart/voucher', [CartController::class, 'applyVoucher'])->name('cart.apply-voucher');
     Route::delete('cart/voucher', [CartController::class, 'removeVoucher'])->name('cart.remove-voucher');
+    Route::post('cart/review', [CartController::class, 'reviewCheckout'])->name('cart.review-checkout');
+    Route::post('cart/acknowledge', [CartController::class, 'acknowledge'])->name('cart.acknowledge');
     Route::post('cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::get('cart/checkout/{order}/success', [CartController::class, 'checkoutSuccess'])->name('cart.checkout.success');
     Route::get('cart/checkout/{order}/cancel', [CartController::class, 'checkoutCancel'])->name('cart.checkout.cancel');
@@ -33,4 +38,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('vouchers/{voucher}/audit', VoucherAuditController::class)->name('vouchers.audit');
     Route::patch('vouchers/{voucher}', [VoucherController::class, 'update'])->name('vouchers.update');
     Route::delete('vouchers/{voucher}', [VoucherController::class, 'destroy'])->name('vouchers.destroy');
+
+    // Admin: Purchase Requirements
+    Route::get('purchase-requirements', [PurchaseRequirementController::class, 'index'])->name('purchase-requirements.index');
+    Route::get('purchase-requirements/create', [PurchaseRequirementController::class, 'create'])->name('purchase-requirements.create');
+    Route::post('purchase-requirements', [PurchaseRequirementController::class, 'store'])->name('purchase-requirements.store');
+    Route::get('purchase-requirements/{purchaseRequirement}', [PurchaseRequirementController::class, 'edit'])->name('purchase-requirements.edit');
+    Route::patch('purchase-requirements/{purchaseRequirement}', [PurchaseRequirementController::class, 'update'])->name('purchase-requirements.update');
+    Route::delete('purchase-requirements/{purchaseRequirement}', [PurchaseRequirementController::class, 'destroy'])->name('purchase-requirements.destroy');
+
+    // Admin: Global Purchase Conditions
+    Route::get('global-purchase-conditions', [GlobalPurchaseConditionController::class, 'index'])->name('global-purchase-conditions.index');
+    Route::get('global-purchase-conditions/create', [GlobalPurchaseConditionController::class, 'create'])->name('global-purchase-conditions.create');
+    Route::post('global-purchase-conditions', [GlobalPurchaseConditionController::class, 'store'])->name('global-purchase-conditions.store');
+    Route::get('global-purchase-conditions/{globalPurchaseCondition}', [GlobalPurchaseConditionController::class, 'edit'])->name('global-purchase-conditions.edit');
+    Route::patch('global-purchase-conditions/{globalPurchaseCondition}', [GlobalPurchaseConditionController::class, 'update'])->name('global-purchase-conditions.update');
+    Route::delete('global-purchase-conditions/{globalPurchaseCondition}', [GlobalPurchaseConditionController::class, 'destroy'])->name('global-purchase-conditions.destroy');
+
+    // Admin: Payment Provider Conditions
+    Route::get('payment-provider-conditions', [PaymentProviderConditionController::class, 'index'])->name('payment-provider-conditions.index');
+    Route::get('payment-provider-conditions/create', [PaymentProviderConditionController::class, 'create'])->name('payment-provider-conditions.create');
+    Route::post('payment-provider-conditions', [PaymentProviderConditionController::class, 'store'])->name('payment-provider-conditions.store');
+    Route::get('payment-provider-conditions/{paymentProviderCondition}', [PaymentProviderConditionController::class, 'edit'])->name('payment-provider-conditions.edit');
+    Route::patch('payment-provider-conditions/{paymentProviderCondition}', [PaymentProviderConditionController::class, 'update'])->name('payment-provider-conditions.update');
+    Route::delete('payment-provider-conditions/{paymentProviderCondition}', [PaymentProviderConditionController::class, 'destroy'])->name('payment-provider-conditions.destroy');
 });

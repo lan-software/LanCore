@@ -8,7 +8,7 @@ use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Models\Order;
 use App\Domain\Shop\Models\OrderLine;
 use App\Models\User;
-use Stripe\Checkout\Session;
+use Laravel\Cashier\Cashier;
 
 class StripePaymentProvider implements PaymentProvider
 {
@@ -26,13 +26,30 @@ class StripePaymentProvider implements PaymentProvider
     {
         $lineItems = $this->buildStripeLineItems($order);
 
-        $checkout = $user->checkout($lineItems, [
+        $sessionOptions = [
             'success_url' => route('cart.checkout.success', ['order' => $order->id]).'?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('cart.checkout.cancel', ['order' => $order->id]),
             'metadata' => [
                 'order_id' => $order->id,
             ],
-        ]);
+        ];
+
+        if ($order->discount > 0) {
+            $stripe = Cashier::stripe();
+
+            $coupon = $stripe->coupons->create([
+                'amount_off' => $order->discount,
+                'currency' => config('cashier.currency', 'eur'),
+                'duration' => 'once',
+                'name' => $order->voucher?->code
+                    ? "Voucher: {$order->voucher->code}"
+                    : 'Order Discount',
+            ]);
+
+            $sessionOptions['discounts'] = [['coupon' => $coupon->id]];
+        }
+
+        $checkout = $user->checkout($lineItems, $sessionOptions);
 
         return PaymentResult::redirect($checkout->redirect());
     }
@@ -45,7 +62,8 @@ class StripePaymentProvider implements PaymentProvider
             return false;
         }
 
-        $session = Session::retrieve($sessionId);
+        $stripe = Cashier::stripe();
+        $session = $stripe->checkout->sessions->retrieve($sessionId);
 
         if ($session->payment_status !== 'paid') {
             return false;
@@ -67,7 +85,7 @@ class StripePaymentProvider implements PaymentProvider
     /**
      * Build Stripe-compatible line items from order lines.
      *
-     * @return array<int, array{price_data: array{currency: string, product_data: array{name: string, description: string}, unit_amount: int}, quantity: int}>
+     * @return array<int, array{price_data: array{currency: string, product_data: array{name: string}, unit_amount: int}, quantity: int}>
      */
     private function buildStripeLineItems(Order $order): array
     {
@@ -77,7 +95,6 @@ class StripePaymentProvider implements PaymentProvider
                     'currency' => config('cashier.currency', 'eur'),
                     'product_data' => [
                         'name' => $line->description,
-                        'description' => $line->description,
                     ],
                     'unit_amount' => $line->unit_price,
                 ],

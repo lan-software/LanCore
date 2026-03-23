@@ -4,6 +4,7 @@ namespace App\Domain\Shop\Http\Controllers;
 
 use App\Domain\Event\Models\Event;
 use App\Domain\Shop\Models\Cart;
+use App\Domain\Shop\Models\CartItem;
 use App\Domain\Shop\Models\Voucher;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\TicketType;
@@ -28,6 +29,7 @@ class ShopController extends Controller
                 'ticketTypes' => [],
                 'addons' => [],
                 'cartItemCount' => 0,
+                'cartItems' => [],
             ]);
         }
 
@@ -41,6 +43,7 @@ class ShopController extends Controller
                 ...$type->toArray(),
                 'is_purchasable' => $type->isAvailableForPurchase(),
                 'remaining_quota' => $type->remainingQuota(),
+                'unavailability_reason' => $this->getTicketTypeUnavailabilityReason($type),
             ]);
 
         $addons = Addon::where('event_id', $event->id)
@@ -49,12 +52,19 @@ class ShopController extends Controller
             ->map(fn (Addon $addon) => [
                 ...$addon->toArray(),
                 'remaining_quota' => $addon->remainingQuota(),
+                'requires_ticket' => $addon->requires_ticket,
             ]);
 
         $cartItemCount = 0;
+        $cartItems = [];
         if (auth()->check()) {
             $cart = Cart::forUser(auth()->user());
             $cartItemCount = $cart->items()->sum('quantity');
+            $cartItems = $cart->items->map(fn (CartItem $item) => [
+                'purchasable_type' => $item->purchasable_type,
+                'purchasable_id' => $item->purchasable_id,
+                'quantity' => $item->quantity,
+            ]);
         }
 
         return Inertia::render('shop/Index', [
@@ -62,7 +72,27 @@ class ShopController extends Controller
             'ticketTypes' => $ticketTypes,
             'addons' => $addons,
             'cartItemCount' => $cartItemCount,
+            'cartItems' => $cartItems,
         ]);
+    }
+
+    private function getTicketTypeUnavailabilityReason(TicketType $type): ?string
+    {
+        $now = now();
+
+        if ($type->purchase_from && $now->isBefore($type->purchase_from)) {
+            return 'Upcoming';
+        }
+
+        if ($type->purchase_until && $now->isAfter($type->purchase_until)) {
+            return 'No longer available';
+        }
+
+        if ($type->tickets_count >= $type->quota) {
+            return 'Out of Stock';
+        }
+
+        return null;
     }
 
     public function validateVoucher(Request $request): JsonResponse

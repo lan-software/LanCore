@@ -10,7 +10,11 @@ use App\Domain\Shop\Enums\OrderStatus;
 use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Models\Cart;
 use App\Domain\Shop\Models\CartItem;
+use App\Domain\Shop\Models\CheckoutAcknowledgement;
+use App\Domain\Shop\Models\GlobalPurchaseCondition;
 use App\Domain\Shop\Models\Order;
+use App\Domain\Shop\Models\PaymentProviderCondition;
+use App\Domain\Shop\Models\PurchaseRequirement;
 use App\Domain\Shop\Models\Voucher;
 use App\Domain\Shop\PaymentProviders\PaymentProviderManager;
 use App\Domain\Ticketing\Models\Addon;
@@ -212,6 +216,84 @@ class CartController extends Controller
         return back();
     }
 
+    public function reviewCheckout(Request $request): Response|RedirectResponse
+    {
+        $request->validate([
+            'payment_method' => ['required', 'string', Rule::enum(PaymentMethod::class)],
+        ]);
+
+        $cart = Cart::forUser($request->user());
+        $cart->load(['items.purchasable', 'event']);
+
+        if ($cart->isEmpty() || ! $cart->event_id) {
+            return redirect()->route('cart.show')->withErrors(['cart' => 'Your cart is empty.']);
+        }
+
+        $dependencyErrors = $cart->validateDependencies();
+        if (! empty($dependencyErrors)) {
+            return redirect()->route('cart.show')->withErrors(['cart' => $dependencyErrors[0]]);
+        }
+
+        $paymentMethod = PaymentMethod::from($request->input('payment_method'));
+
+        // Gather purchase requirements for items in the cart
+        $purchasableIds = $cart->items->map(fn (CartItem $item) => [
+            'type' => $item->purchasable_type,
+            'id' => $item->purchasable_id,
+        ]);
+
+        $ticketTypeIds = $purchasableIds->where('type', TicketType::class)->pluck('id')->all();
+        $addonIds = $purchasableIds->where('type', Addon::class)->pluck('id')->all();
+
+        $purchaseRequirements = PurchaseRequirement::where('is_active', true)
+            ->where(function ($query) use ($ticketTypeIds, $addonIds) {
+                $query->whereHas('ticketTypes', fn ($q) => $q->whereIn('purchasable_id', $ticketTypeIds))
+                    ->orWhereHas('addons', fn ($q) => $q->whereIn('purchasable_id', $addonIds));
+            })
+            ->get();
+
+        $globalConditions = GlobalPurchaseCondition::activeOrdered()->get();
+        $providerConditions = PaymentProviderCondition::activeForMethod($paymentMethod)->get();
+
+        $items = $cart->items->map(function (CartItem $item) {
+            $purchasable = $item->purchasable;
+
+            return [
+                'name' => $purchasable instanceof Purchasable ? $purchasable->getTitle() : 'Unknown',
+                'quantity' => $item->quantity,
+                'unit_price' => $purchasable instanceof Purchasable ? $purchasable->getUnitPrice() : 0,
+                'line_total' => $item->lineTotal(),
+                'is_addon' => $item->purchasable_type === Addon::class,
+            ];
+        });
+
+        $subtotal = $cart->subtotal();
+        $discount = 0;
+        $voucherInfo = null;
+
+        if ($cart->voucher_code) {
+            $voucher = Voucher::where('code', $cart->voucher_code)->first();
+            if ($voucher && $voucher->isValid()) {
+                $discount = $voucher->calculateDiscount($subtotal);
+                $voucherInfo = ['code' => $voucher->code, 'discount' => $discount];
+            }
+        }
+
+        return Inertia::render('cart/Checkout', [
+            'cartItems' => $items,
+            'event' => $cart->event,
+            'subtotal' => $subtotal,
+            'discount' => $discount,
+            'total' => max(0, $subtotal - $discount),
+            'voucher' => $voucherInfo,
+            'paymentMethod' => $paymentMethod->value,
+            'paymentMethodLabel' => $paymentMethod->label(),
+            'purchaseRequirements' => $purchaseRequirements,
+            'globalConditions' => $globalConditions,
+            'providerConditions' => $providerConditions,
+        ]);
+    }
+
     public function checkout(Request $request): RedirectResponse
     {
         $request->validate([
@@ -310,6 +392,43 @@ class CartController extends Controller
         }
 
         return redirect()->route('cart.show');
+    }
+
+    public function acknowledge(Request $request): JsonResponse
+    {
+        $request->validate([
+            'acknowledgeable_type' => ['required', 'string', 'in:global_purchase_condition,payment_provider_condition,purchase_requirement'],
+            'acknowledgeable_id' => ['required', 'integer'],
+            'acknowledgement_key' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $typeMap = [
+            'global_purchase_condition' => GlobalPurchaseCondition::class,
+            'payment_provider_condition' => PaymentProviderCondition::class,
+            'purchase_requirement' => PurchaseRequirement::class,
+        ];
+
+        $acknowledgeableType = $typeMap[$request->input('acknowledgeable_type')];
+        $acknowledgeableId = $request->input('acknowledgeable_id');
+
+        // Verify the acknowledgeable exists
+        $acknowledgeableType::findOrFail($acknowledgeableId);
+
+        $acknowledgement = CheckoutAcknowledgement::updateOrCreate(
+            [
+                'user_id' => $request->user()->id,
+                'acknowledgeable_type' => $acknowledgeableType,
+                'acknowledgeable_id' => $acknowledgeableId,
+                'acknowledgement_key' => $request->input('acknowledgement_key'),
+            ],
+            [
+                'acknowledged_at' => now(),
+            ],
+        );
+
+        return response()->json([
+            'acknowledged_at' => $acknowledgement->acknowledged_at->toIso8601String(),
+        ]);
     }
 
     /**
