@@ -11,7 +11,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as eventsRoute } from '@/routes/events'
 import type { BreadcrumbItem } from '@/types'
 import { Form, Head, Link } from '@inertiajs/vue3'
-import { ImagePlus } from 'lucide-vue-next'
+import { ImagePlus, X } from 'lucide-vue-next'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -24,15 +24,26 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Create', href: EventController.create().url },
 ]
 
-const bannerPreview = ref<string | null>(null)
+const bannerPreviews = ref<{ id: number; preview: string }[]>([])
+let nextBannerId = 0
 
-function onBannerSelected(event: globalThis.Event) {
+function addBannerSlot() {
+    bannerPreviews.value.push({ id: nextBannerId++, preview: '' })
+}
+
+function onBannerSelected(index: number, event: globalThis.Event) {
     const file = (event.target as HTMLInputElement).files?.[0]
     if (file) {
-        bannerPreview.value = URL.createObjectURL(file)
-    } else {
-        bannerPreview.value = null
+        bannerPreviews.value[index].preview = URL.createObjectURL(file)
     }
+}
+
+function removeBannerSlot(index: number) {
+    const preview = bannerPreviews.value[index].preview
+    if (preview) {
+        URL.revokeObjectURL(preview)
+    }
+    bannerPreviews.value.splice(index, 1)
 }
 </script>
 
@@ -165,36 +176,67 @@ function onBannerSelected(event: globalThis.Event) {
                     <Heading
                         variant="small"
                         title="Media"
-                        description="Optionally add a banner image"
+                        description="Optionally add one or more banner images. Multiple images will cycle automatically."
                     />
 
-                    <div class="grid gap-2">
-                        <Label for="banner_image">Banner Image</Label>
-                        <div class="flex items-center gap-4">
-                            <label
-                                for="banner_image"
-                                class="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground"
+                    <div class="grid gap-3">
+                        <Label>Banner Images</Label>
+
+                        <!-- Existing image slots -->
+                        <div
+                            v-for="(slot, index) in bannerPreviews"
+                            :key="slot.id"
+                            class="flex items-start gap-3"
+                        >
+                            <div class="flex-1">
+                                <label
+                                    :for="`banner_image_${slot.id}`"
+                                    class="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground"
+                                >
+                                    <ImagePlus class="size-4" />
+                                    {{ slot.preview ? 'Replace' : 'Choose Image' }}
+                                </label>
+                                <input
+                                    :id="`banner_image_${slot.id}`"
+                                    type="file"
+                                    name="banner_images[]"
+                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                    class="sr-only"
+                                    @change="onBannerSelected(index, $event)"
+                                />
+                                <img
+                                    v-if="slot.preview"
+                                    :src="slot.preview"
+                                    alt="Banner preview"
+                                    class="mt-2 max-h-36 rounded-md border object-cover"
+                                />
+                            </div>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                class="mt-1 shrink-0"
+                                @click="removeBannerSlot(index)"
                             >
-                                <ImagePlus class="size-4" />
-                                Choose Image
-                            </label>
-                            <input
-                                id="banner_image"
-                                type="file"
-                                name="banner_image"
-                                accept="image/jpeg,image/png,image/gif,image/webp"
-                                class="sr-only"
-                                @change="onBannerSelected"
-                            />
+                                <X class="size-4" />
+                                Remove
+                            </Button>
                         </div>
-                        <img
-                            v-if="bannerPreview"
-                            :src="bannerPreview"
-                            alt="Banner preview"
-                            class="mt-2 max-h-48 rounded-md border object-cover"
-                        />
-                        <p class="text-xs text-muted-foreground">Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB.</p>
-                        <InputError :message="errors.banner_image" />
+
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            class="w-fit"
+                            @click="addBannerSlot"
+                        >
+                            <ImagePlus class="size-4" />
+                            Add Image
+                        </Button>
+
+                        <p class="text-xs text-muted-foreground">Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB each.</p>
+                        <InputError :message="(errors as Record<string, string>)['banner_images']" />
+                        <InputError :message="(errors as Record<string, string>)['banner_images.0']" />
                     </div>
                 </div>
 

@@ -79,7 +79,7 @@ class VenueController extends Controller
 
         $venueData = $venue->load(['address', 'images'])->toArray();
         $venueData['images'] = collect($venueData['images'])->map(function (array $image) {
-            $image['url'] = Storage::fileUrl($image['path']);
+            $image['url'] = Storage::url($image['path']);
 
             return $image;
         })->all();

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class UpdateEvent
 {
     /**
-     * @param  array{name?: string, description?: string|null, start_date?: string, end_date?: string, banner_image?: string|null, venue_id?: int|null, status?: string}  $attributes
+     * @param  array{name?: string, description?: string|null, start_date?: string, end_date?: string, banner_images?: string[], venue_id?: int|null, status?: string, seat_capacity?: int|null}  $attributes
      */
     public function execute(Event $event, array $attributes): void
     {

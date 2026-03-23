@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
-#[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_image', 'status', 'venue_id', 'primary_program_id', 'seat_capacity'])]
+#[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_images', 'status', 'venue_id', 'primary_program_id', 'seat_capacity'])]
 class Event extends Model implements AuditableContract
 {
     use Auditable;
@@ -46,6 +46,7 @@ class Event extends Model implements AuditableContract
             'end_date' => 'datetime',
             'status' => EventStatus::class,
             'seat_capacity' => 'integer',
+            'banner_images' => 'array',
         ];
     }
 

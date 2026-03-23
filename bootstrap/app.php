@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Middleware\AddRequestId;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\TrackHttpMetrics;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,7 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+        // Prepend globally so every request (web + API + health) gets an ID
+        // and metrics are tracked before the response is sent.
+        $middleware->prepend(AddRequestId::class);
+
         $middleware->web(append: [
+            TrackHttpMetrics::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

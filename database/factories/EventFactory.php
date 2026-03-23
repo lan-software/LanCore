@@ -26,7 +26,7 @@ class EventFactory extends Factory
             'description' => fake()->paragraphs(2, true),
             'start_date' => $startDate,
             'end_date' => fake()->dateTimeBetween($startDate, (clone $startDate)->modify('+3 days')),
-            'banner_image' => null,
+            'banner_images' => [],
             'status' => EventStatus::Draft,
             'venue_id' => Venue::factory(),
         ];

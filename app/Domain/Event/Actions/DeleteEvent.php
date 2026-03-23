@@ -11,8 +11,9 @@ class DeleteEvent
     public function execute(Event $event): void
     {
         DB::transaction(function () use ($event): void {
-            if ($event->banner_image) {
-                Storage::delete($event->banner_image);
+            $bannerImages = $event->banner_images ?? [];
+            if (! empty($bannerImages)) {
+                Storage::delete($bannerImages);
             }
             $event->delete();
         });

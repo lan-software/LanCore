@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { CalendarDays, MapPin } from 'lucide-vue-next'
 import { login, register } from '@/routes'
+import BannerCarousel from '@/components/BannerCarousel.vue'
 import type { Event } from '@/types/domain'
 
 interface PaginatedEvents {
@@ -84,8 +85,14 @@ function formatDate(dateString: string): string {
                 <Card
                     v-for="event in events.data"
                     :key="event.id"
-                    class="flex flex-col"
+                    class="flex flex-col overflow-hidden"
                 >
+                    <BannerCarousel
+                        v-if="event.banner_image_urls.length > 0"
+                        :images="event.banner_image_urls"
+                        :alt="event.name"
+                        class="h-48 rounded-none border-0 border-b"
+                    />
                     <CardHeader>
                         <CardTitle class="line-clamp-2">{{ event.name }}</CardTitle>
                     </CardHeader>

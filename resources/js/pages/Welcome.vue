@@ -8,6 +8,7 @@ import { Calendar, Clock, MapPin, Newspaper, ShoppingCart, Megaphone, AlertTrian
 import { index as shopIndex } from '@/routes/shop'
 import SeatMapCanvas from '@/components/SeatMapCanvas.vue'
 import NotificationBell from '@/components/NotificationBell.vue'
+import BannerCarousel from '@/components/BannerCarousel.vue'
 import type { Event, NewsArticle, Announcement } from '@/types/domain'
 
 const props = withDefaults(
@@ -165,11 +166,11 @@ function dismissAnnouncement(announcementId: number) {
                         </div>
 
                         <!-- Banner Image -->
-                        <img
-                            v-if="nextEvent.banner_image_url"
-                            :src="nextEvent.banner_image_url"
+                        <BannerCarousel
+                            v-if="nextEvent.banner_image_urls.length > 0"
+                            :images="nextEvent.banner_image_urls"
                             :alt="nextEvent.name"
-                            class="w-full rounded-xl border object-cover max-h-80"
+                            class="max-h-80"
                         />
 
                         <!-- Key Details Grid -->

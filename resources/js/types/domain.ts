@@ -63,8 +63,8 @@ export type Event = {
     description: string | null
     start_date: string
     end_date: string
-    banner_image: string | null
-    banner_image_url: string | null
+    banner_images: string[]
+    banner_image_urls: string[]
     status: 'draft' | 'published'
     seat_capacity: number | null
     venue_id: number | null

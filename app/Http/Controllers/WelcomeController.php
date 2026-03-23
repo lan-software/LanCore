@@ -35,11 +35,15 @@ class WelcomeController extends Controller
 
         if ($nextEvent) {
             $nextEventData = $nextEvent->toArray();
-            $nextEventData['banner_image_url'] = $nextEvent->banner_image ? Storage::fileUrl($nextEvent->banner_image) : null;
+            $bannerImages = array_filter($nextEvent->banner_images ?? [], fn ($p) => is_string($p) && $p !== '');
+            $nextEventData['banner_image_urls'] = array_values(array_map(
+                fn (string $path) => Storage::url($path),
+                $bannerImages,
+            ));
 
             if (isset($nextEventData['venue']['images'])) {
                 $nextEventData['venue']['images'] = collect($nextEventData['venue']['images'])->map(function (array $image) {
-                    $image['url'] = Storage::fileUrl($image['path']);
+                    $image['url'] = Storage::url($image['path']);
 
                     return $image;
                 })->all();
@@ -47,7 +51,7 @@ class WelcomeController extends Controller
 
             if (isset($nextEventData['sponsors'])) {
                 $nextEventData['sponsors'] = collect($nextEventData['sponsors'])->map(function (array $sponsor) {
-                    $sponsor['logo_url'] = $sponsor['logo'] ? Storage::fileUrl($sponsor['logo']) : null;
+                    $sponsor['logo_url'] = $sponsor['logo'] ? Storage::url($sponsor['logo']) : null;
 
                     return $sponsor;
                 })->all();
@@ -76,7 +80,7 @@ class WelcomeController extends Controller
 
         return $articles->map(function (NewsArticle $article) {
             $data = $article->toArray();
-            $data['image_url'] = $article->image ? Storage::fileUrl($article->image) : null;
+            $data['image_url'] = $article->image ? Storage::url($article->image) : null;
 
             return $data;
         })->all();

@@ -90,7 +90,7 @@ class SponsorController extends Controller
         $sponsor->load(['sponsorLevel', 'events', 'managers']);
 
         $sponsorData = $sponsor->toArray();
-        $sponsorData['logo_url'] = $sponsor->logo ? Storage::fileUrl($sponsor->logo) : null;
+        $sponsorData['logo_url'] = $sponsor->logo ? Storage::url($sponsor->logo) : null;
 
         return Inertia::render('sponsors/Edit', [
             'sponsor' => $sponsorData,

@@ -39,8 +39,8 @@ class PublicNewsController extends Controller
         }
 
         $articleData = $article->toArray();
-        $articleData['image_url'] = $article->image ? Storage::fileUrl($article->image) : null;
-        $articleData['og_image_url'] = $article->og_image ? Storage::fileUrl($article->og_image) : null;
+        $articleData['image_url'] = $article->image ? Storage::url($article->image) : null;
+        $articleData['og_image_url'] = $article->og_image ? Storage::url($article->og_image) : null;
 
         return Inertia::render('news/Show', [
             'article' => $articleData,

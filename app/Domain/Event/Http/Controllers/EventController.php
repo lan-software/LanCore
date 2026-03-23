@@ -67,10 +67,17 @@ class EventController extends Controller
     {
         $this->authorize('create', Event::class);
 
-        $data = $request->validated();
-        if ($request->hasFile('banner_image')) {
-            $data['banner_image'] = $request->file('banner_image')->store('events/banners');
+        $data = $request->safe()->except(['banner_images']);
+        $bannerImages = [];
+        if ($request->hasFile('banner_images')) {
+            foreach ($request->file('banner_images') as $file) {
+                $stored = $file->store('events/banners');
+                if ($stored !== false && $stored !== '') {
+                    $bannerImages[] = $stored;
+                }
+            }
         }
+        $data['banner_images'] = $bannerImages;
 
         $this->createEvent->execute($data);
 
@@ -82,7 +89,11 @@ class EventController extends Controller
         $this->authorize('update', $event);
 
         $eventData = $event->load('venue')->toArray();
-        $eventData['banner_image_url'] = $event->banner_image ? Storage::fileUrl($event->banner_image) : null;
+        $bannerImages = array_filter($event->banner_images ?? [], fn ($p) => is_string($p) && $p !== '');
+        $eventData['banner_image_urls'] = array_values(array_map(
+            fn (string $path) => Storage::url($path),
+            $bannerImages,
+        ));
 
         return Inertia::render('events/Edit', [
             'event' => $eventData,
@@ -94,19 +105,31 @@ class EventController extends Controller
     {
         $this->authorize('update', $event);
 
-        $data = $request->safe()->except(['banner_image', 'remove_banner_image']);
+        $data = $request->safe()->except(['banner_images', 'banner_images_to_remove']);
 
-        if ($request->hasFile('banner_image')) {
-            if ($event->banner_image) {
-                Storage::delete($event->banner_image);
-            }
-            $data['banner_image'] = $request->file('banner_image')->store('events/banners');
-        } elseif ($request->boolean('remove_banner_image')) {
-            if ($event->banner_image) {
-                Storage::delete($event->banner_image);
-            }
-            $data['banner_image'] = null;
+        $currentImages = $event->banner_images ?? [];
+
+        // Remove only images that actually belong to this event.
+        $imagesToRemove = array_filter(
+            $request->input('banner_images_to_remove', []),
+            fn (string $path) => in_array($path, $currentImages, true),
+        );
+        if (! empty($imagesToRemove)) {
+            Storage::delete(array_values($imagesToRemove));
+            $currentImages = array_values(array_diff($currentImages, $imagesToRemove));
         }
+
+        // Append newly uploaded images.
+        if ($request->hasFile('banner_images')) {
+            foreach ($request->file('banner_images') as $file) {
+                $stored = $file->store('events/banners');
+                if ($stored !== false && $stored !== '') {
+                    $currentImages[] = $stored;
+                }
+            }
+        }
+
+        $data['banner_images'] = $currentImages;
 
         $this->updateEvent->execute($event, $data);
 

@@ -1,5 +1,7 @@
 <?php
 
+use App\Logging\RequestContextProcessor;
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -58,11 +60,35 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        /*
+         * Structured JSON channel — writes newline-delimited JSON to stderr.
+         * Recommended for production / containerised deployments so log
+         * aggregators (Loki, CloudWatch, Datadog …) can parse records natively.
+         *
+         * Activate via: LOG_STACK=json  (or LOG_STACK=json,emergency)
+         */
+        'json' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'debug'),
+            'handler' => StreamHandler::class,
+            'handler_with' => ['stream' => 'php://stderr'],
+            'formatter' => JsonFormatter::class,
+            'formatter_with' => [
+                'batchMode' => JsonFormatter::BATCH_MODE_JSON,
+                'appendNewline' => true,
+            ],
+            'processors' => [
+                RequestContextProcessor::class,
+                PsrLogMessageProcessor::class,
+            ],
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'processors' => [RequestContextProcessor::class],
         ],
 
         'daily' => [
@@ -71,6 +97,7 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            'processors' => [RequestContextProcessor::class],
         ],
 
         'slack' => [

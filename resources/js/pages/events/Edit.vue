@@ -36,24 +36,43 @@ function formatDateTimeLocal(dateString: string): string {
 
 const showDeleteDialog = ref(false)
 const publishErrors = ref<Record<string, string>>({})
-const bannerPreview = ref<string | null>(props.event.banner_image_url)
-const removeBanner = ref(false)
 
-function onBannerSelected(event: globalThis.Event) {
+// Existing images still retained (not yet marked for removal).
+const retainedImages = ref<{ path: string; url: string }[]>(
+    (props.event.banner_images ?? []).map((path, i) => ({
+        path,
+        url: props.event.banner_image_urls[i] ?? '',
+    })),
+)
+const imagesToRemove = ref<string[]>([])
+
+function markImageForRemoval(index: number) {
+    const img = retainedImages.value[index]
+    imagesToRemove.value.push(img.path)
+    retainedImages.value.splice(index, 1)
+}
+
+// Newly picked images (not yet uploaded).
+const newBannerSlots = ref<{ id: number; preview: string }[]>([])
+let nextSlotId = 0
+
+function addBannerSlot() {
+    newBannerSlots.value.push({ id: nextSlotId++, preview: '' })
+}
+
+function onNewBannerSelected(index: number, event: globalThis.Event) {
     const file = (event.target as HTMLInputElement).files?.[0]
     if (file) {
-        bannerPreview.value = URL.createObjectURL(file)
-        removeBanner.value = false
+        newBannerSlots.value[index].preview = URL.createObjectURL(file)
     }
 }
 
-function clearBanner() {
-    bannerPreview.value = null
-    removeBanner.value = true
-    const fileInput = document.getElementById('banner_image') as HTMLInputElement
-    if (fileInput) {
-        fileInput.value = ''
+function removeNewBannerSlot(index: number) {
+    const preview = newBannerSlots.value[index].preview
+    if (preview) {
+        URL.revokeObjectURL(preview)
     }
+    newBannerSlots.value.splice(index, 1)
 }
 
 function executeDelete() {
@@ -245,52 +264,101 @@ function unpublishEvent() {
                     <Heading
                         variant="small"
                         title="Media"
-                        description="Update the banner image"
+                        description="Add or remove banner images. Multiple images will cycle automatically."
                     />
 
-                    <div class="grid gap-2">
-                        <Label for="banner_image">Banner Image</Label>
-                        <div class="flex items-center gap-4">
-                            <label
-                                for="banner_image"
-                                class="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground"
-                            >
-                                <ImagePlus class="size-4" />
-                                {{ bannerPreview ? 'Replace Image' : 'Choose Image' }}
-                            </label>
-                            <input
-                                id="banner_image"
-                                type="file"
-                                name="banner_image"
-                                accept="image/jpeg,image/png,image/gif,image/webp"
-                                class="sr-only"
-                                @change="onBannerSelected"
+                    <div class="grid gap-3">
+                        <Label>Banner Images</Label>
+
+                        <!-- Retained existing images -->
+                        <div
+                            v-for="(img, index) in retainedImages"
+                            :key="img.path"
+                            class="flex items-start gap-3"
+                        >
+                            <img
+                                :src="img.url"
+                                alt="Banner image"
+                                class="h-20 w-36 shrink-0 rounded-md border object-cover"
                             />
                             <Button
-                                v-if="bannerPreview"
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                @click="clearBanner"
+                                class="mt-1"
+                                @click="markImageForRemoval(index)"
                             >
                                 <X class="size-4" />
                                 Remove
                             </Button>
                         </div>
-                        <input
-                            v-if="removeBanner"
-                            type="hidden"
-                            name="remove_banner_image"
-                            value="1"
-                        />
-                        <img
-                            v-if="bannerPreview"
-                            :src="bannerPreview"
-                            alt="Banner preview"
-                            class="mt-2 max-h-48 rounded-md border object-cover"
-                        />
-                        <p class="text-xs text-muted-foreground">Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB.</p>
-                        <InputError :message="errors.banner_image" />
+
+                        <!-- Hidden inputs for images to remove -->
+                        <template
+                            v-for="path in imagesToRemove"
+                            :key="path"
+                        >
+                            <input
+                                type="hidden"
+                                name="banner_images_to_remove[]"
+                                :value="path"
+                            />
+                        </template>
+
+                        <!-- New image upload slots -->
+                        <div
+                            v-for="(slot, index) in newBannerSlots"
+                            :key="slot.id"
+                            class="flex items-start gap-3"
+                        >
+                            <div class="flex-1">
+                                <label
+                                    :for="`new_banner_${slot.id}`"
+                                    class="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground"
+                                >
+                                    <ImagePlus class="size-4" />
+                                    {{ slot.preview ? 'Replace' : 'Choose Image' }}
+                                </label>
+                                <input
+                                    :id="`new_banner_${slot.id}`"
+                                    type="file"
+                                    name="banner_images[]"
+                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                    class="sr-only"
+                                    @change="onNewBannerSelected(index, $event)"
+                                />
+                                <img
+                                    v-if="slot.preview"
+                                    :src="slot.preview"
+                                    alt="New banner preview"
+                                    class="mt-2 max-h-36 rounded-md border object-cover"
+                                />
+                            </div>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                class="mt-1 shrink-0"
+                                @click="removeNewBannerSlot(index)"
+                            >
+                                <X class="size-4" />
+                                Remove
+                            </Button>
+                        </div>
+
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            class="w-fit"
+                            @click="addBannerSlot"
+                        >
+                            <ImagePlus class="size-4" />
+                            Add Image
+                        </Button>
+
+                        <p class="text-xs text-muted-foreground">Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB each.</p>
+                        <InputError :message="(errors as Record<string, string>)['banner_images']" />
                     </div>
                 </div>
 

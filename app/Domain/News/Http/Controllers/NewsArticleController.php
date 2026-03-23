@@ -89,8 +89,8 @@ class NewsArticleController extends Controller
         $newsArticle->load(['author:id,name', 'comments.user:id,name']);
 
         $articleData = $newsArticle->toArray();
-        $articleData['image_url'] = $newsArticle->image ? Storage::fileUrl($newsArticle->image) : null;
-        $articleData['og_image_url'] = $newsArticle->og_image ? Storage::fileUrl($newsArticle->og_image) : null;
+        $articleData['image_url'] = $newsArticle->image ? Storage::url($newsArticle->image) : null;
+        $articleData['og_image_url'] = $newsArticle->og_image ? Storage::url($newsArticle->og_image) : null;
 
         return Inertia::render('news/Edit', [
             'article' => $articleData,
