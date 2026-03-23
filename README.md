@@ -30,6 +30,7 @@ The initial goal was just tech-demo for "What could be done in 3 Days". To be ho
 
 | Feature | Status |
 |---|---|
+| CI | Under Construction |
 | Mobile & Desktop Friendly UI | ✅ |
 | User Authentication & Roles | (✅)* |
 | Event Management | ✅ |
@@ -118,6 +119,12 @@ vendor/bin/sail artisan pail
 # Open in browser
 vendor/bin/sail open
 ```
+
+---
+
+## CI/CD
+
+Performance/Load Testing is planned to use K6.
 
 ---
 
