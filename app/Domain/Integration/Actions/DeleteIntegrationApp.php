@@ -10,6 +10,7 @@ class DeleteIntegrationApp
     public function execute(IntegrationApp $app): void
     {
         DB::transaction(function () use ($app): void {
+            $app->webhooks()->delete();
             $app->tokens()->delete();
             $app->delete();
         });

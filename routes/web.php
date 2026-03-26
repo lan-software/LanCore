@@ -34,6 +34,7 @@ require __DIR__.'/games.php';
 require __DIR__.'/seating.php';
 require __DIR__.'/news.php';
 require __DIR__.'/announcements.php';
+require __DIR__.'/achievements.php';
 require __DIR__.'/notifications.php';
 require __DIR__.'/webhooks.php';
 require __DIR__.'/integrations.php';

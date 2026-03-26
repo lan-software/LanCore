@@ -2,13 +2,14 @@
 
 namespace App\Domain\Integration\Models;
 
+use App\Domain\Webhook\Models\Webhook;
 use Database\Factories\IntegrationAppFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'slug', 'description', 'callback_url', 'nav_url', 'nav_icon', 'nav_label', 'allowed_scopes', 'is_active'])]
+#[Fillable(['name', 'slug', 'description', 'callback_url', 'nav_url', 'nav_icon', 'nav_label', 'allowed_scopes', 'is_active', 'send_announcements', 'announcement_endpoint'])]
 class IntegrationApp extends Model
 {
     /** @use HasFactory<IntegrationAppFactory> */
@@ -22,6 +23,7 @@ class IntegrationApp extends Model
         return [
             'allowed_scopes' => 'array',
             'is_active' => 'boolean',
+            'send_announcements' => 'boolean',
         ];
     }
 
@@ -40,6 +42,11 @@ class IntegrationApp extends Model
         return $this->tokens()->whereNull('revoked_at')->where(function ($query): void {
             $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
         });
+    }
+
+    public function webhooks(): HasMany
+    {
+        return $this->hasMany(Webhook::class);
     }
 
     public function hasScope(string $scope): bool

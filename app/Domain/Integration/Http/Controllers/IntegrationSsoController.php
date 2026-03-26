@@ -4,6 +4,7 @@ namespace App\Domain\Integration\Http\Controllers;
 
 use App\Domain\Integration\Actions\ExchangeSsoAuthorizationCode;
 use App\Domain\Integration\Actions\GenerateSsoAuthorizationCode;
+use App\Domain\Integration\Events\IntegrationAccessed;
 use App\Domain\Integration\Models\IntegrationApp;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -44,6 +45,8 @@ class IntegrationSsoController extends Controller
         $user = $request->user();
 
         $code = $this->generateCode->execute($user, $app);
+
+        IntegrationAccessed::dispatch($user, $app);
 
         $separator = str_contains($request->string('redirect_uri')->toString(), '?') ? '&' : '?';
 

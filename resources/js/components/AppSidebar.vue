@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Calendar, ClipboardList, Cog, CreditCard, FileCheck, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Pin, PinOff, Puzzle, Rows3, ShieldCheck, ShoppingCart, Tag, Ticket, TicketCheck, Users, Webhook } from 'lucide-vue-next';
+import { Calendar, ClipboardList, Cog, CreditCard, FileCheck, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Pin, PinOff, Puzzle, Rows3, ShieldCheck, ShoppingCart, Tag, Ticket, TicketCheck, Trophy, Users, Webhook } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import EventSelector from '@/components/EventSelector.vue';
@@ -36,6 +36,7 @@ import { index as ticketsIndex } from '@/routes/tickets';
 import { index as ordersIndex } from '@/routes/orders';
 import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import { index as seatPlansIndex } from '@/routes/seat-plans';
+import { index as achievementsIndex } from '@/routes/achievements';
 import { index as announcementsIndex } from '@/routes/announcements';
 import { index as webhooksIndex } from '@/routes/webhooks';
 import { index as integrationsIndex } from '@/routes/integrations';
@@ -83,6 +84,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
             { id: 'users', title: 'Users', href: usersIndex(), icon: Users },
             { id: 'news-articles', title: 'Articles', href: newsIndex(), icon: Newspaper },
             { id: 'news-comments', title: 'Comments', href: newsCommentsIndex(), icon: MessageSquare },
+            { id: 'achievements', title: 'Achievements', href: achievementsIndex(), icon: Trophy },
             { id: 'announcements', title: 'Announcements', href: announcementsIndex(), icon: Megaphone },
             { id: 'events', title: 'Events', href: eventsIndex(), icon: Calendar },
             { id: 'programs', title: 'Programs', href: programsIndex(), icon: ClipboardList },
@@ -191,6 +193,27 @@ function toggleFavorite(itemId: string): void {
                             </SidebarMenuButton>
                             <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('news-comments')">
                                 <PinOff v-if="isFavorited('news-comments')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Achievements Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Achievements</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="achievementsIndex()">
+                                    <Trophy />
+                                    <span>Achievements</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('achievements')">
+                                <PinOff v-if="isFavorited('achievements')" class="size-4" />
                                 <Pin v-else class="size-4" />
                             </SidebarMenuAction>
                         </SidebarMenuItem>

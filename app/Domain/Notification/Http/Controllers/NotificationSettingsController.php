@@ -2,6 +2,7 @@
 
 namespace App\Domain\Notification\Http\Controllers;
 
+use App\Domain\Notification\Events\NotificationPreferencesUpdated;
 use App\Domain\Notification\Http\Requests\UpdateNotificationPreferencesRequest;
 use App\Domain\Notification\Models\NotificationPreference;
 use App\Http\Controllers\Controller;
@@ -53,6 +54,8 @@ class NotificationSettingsController extends Controller
         );
 
         $preferences->update($request->validated());
+
+        NotificationPreferencesUpdated::dispatch($request->user());
 
         return back();
     }

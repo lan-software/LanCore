@@ -452,6 +452,27 @@ export type AppNotification = {
     created_at: string
 }
 
+// Achievements Domain
+
+export type Achievement = {
+    id: number
+    name: string
+    description: string | null
+    notification_text: string | null
+    color: string
+    icon: string
+    is_active: boolean
+    users_count?: number
+    event_classes?: string[]
+    created_at: string
+    updated_at: string
+}
+
+export type GrantableEvent = {
+    value: string
+    label: string
+}
+
 // Webhook Domain
 
 export type WebhookEventType = 'user.registered' | 'announcement.published' | 'news_article.published' | 'event.published'
@@ -465,6 +486,8 @@ export type Webhook = {
     description: string | null
     is_active: boolean
     sent_count: number
+    integration_app_id: number | null
+    integration_app: { id: number; name: string; slug: string } | null
     deliveries_count: number
     last_delivery_status_code: number | null
     created_at: string

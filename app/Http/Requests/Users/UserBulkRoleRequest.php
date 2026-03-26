@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Users;
 
+use App\Enums\RoleName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +18,7 @@ class UserBulkRoleRequest extends FormRequest
         return [
             'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['integer'],
-            'role' => ['required', 'string', Rule::in(['user', 'admin', 'superadmin', 'sponsor_manager'])],
+            'role' => ['required', 'string', Rule::in(array_column(RoleName::cases(), 'value'))],
         ];
     }
 }

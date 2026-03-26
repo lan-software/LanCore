@@ -7,7 +7,6 @@ import InputError from '@/components/InputError.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -164,11 +163,13 @@ const ticketStatusVariant: Record<string, 'default' | 'secondary' | 'destructive
                             :key="role.id"
                             class="flex items-center gap-2"
                         >
-                            <Checkbox
+                            <input
+                                type="checkbox"
                                 :id="`role-${role.id}`"
-                                :name="`role_names[]`"
+                                name="role_names[]"
                                 :value="role.name"
-                                :default-value="hasRole(role.name)"
+                                :checked="hasRole(role.name)"
+                                class="mt-0.5 size-4 shrink-0 rounded-[4px] border border-input accent-primary"
                             />
                             <Label
                                 :for="`role-${role.id}`"

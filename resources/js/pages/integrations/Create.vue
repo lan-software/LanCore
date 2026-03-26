@@ -173,6 +173,32 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <InputError :message="errors['allowed_scopes']" />
                 </div>
 
+                <!-- Announcements -->
+                <div class="space-y-4">
+                    <Heading
+                        variant="small"
+                        title="Announcements"
+                        description="Forward published announcements to this integration via a managed webhook"
+                    />
+
+                    <div class="flex items-center gap-2">
+                        <Checkbox id="send_announcements" name="send_announcements" />
+                        <Label for="send_announcements">Send Announcements</Label>
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="announcement_endpoint">Announcement Endpoint</Label>
+                        <Input
+                            id="announcement_endpoint"
+                            name="announcement_endpoint"
+                            type="url"
+                            placeholder="https://lanshout.example.com/api/announcements"
+                        />
+                        <p class="text-xs text-muted-foreground">The URL that will receive announcement payloads via a managed webhook.</p>
+                        <InputError :message="errors.announcement_endpoint" />
+                    </div>
+                </div>
+
                 <!-- Submit -->
                 <div class="flex items-center gap-4">
                     <Button

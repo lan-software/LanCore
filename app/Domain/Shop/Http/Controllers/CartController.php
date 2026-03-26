@@ -8,6 +8,7 @@ use App\Domain\Shop\Actions\FulfillOrder;
 use App\Domain\Shop\Contracts\Purchasable;
 use App\Domain\Shop\Enums\OrderStatus;
 use App\Domain\Shop\Enums\PaymentMethod;
+use App\Domain\Shop\Events\CartItemAdded;
 use App\Domain\Shop\Models\Cart;
 use App\Domain\Shop\Models\CartItem;
 use App\Domain\Shop\Models\CheckoutAcknowledgement;
@@ -138,6 +139,8 @@ class CartController extends Controller
                 'quantity' => $quantity,
             ]);
         }
+
+        CartItemAdded::dispatch($user);
 
         return back();
     }

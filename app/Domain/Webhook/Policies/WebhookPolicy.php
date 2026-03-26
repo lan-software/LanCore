@@ -36,11 +36,19 @@ class WebhookPolicy
 
     public function update(User $user, Webhook $webhook): bool
     {
+        if ($webhook->isManaged()) {
+            return false;
+        }
+
         return $user->isAdmin();
     }
 
     public function delete(User $user, Webhook $webhook): bool
     {
+        if ($webhook->isManaged()) {
+            return false;
+        }
+
         return $user->isAdmin();
     }
 }

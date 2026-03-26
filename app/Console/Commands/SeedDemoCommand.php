@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Domain\Achievements\Enums\GrantableEvent;
+use App\Domain\Achievements\Models\Achievement;
 use App\Domain\Event\Models\Event;
 use App\Domain\Games\Models\Game;
 use App\Domain\Games\Models\GameMode;
@@ -65,6 +67,7 @@ class SeedDemoCommand extends Command
         }
 
         $this->attempt('News', $results, fn () => $this->seedNews());
+        $this->attempt('Achievements', $results, fn () => $this->seedAchievements());
         $this->attempt('Webhooks', $results, fn () => $this->seedWebhooks());
 
         $this->newLine();
@@ -648,6 +651,147 @@ class SeedDemoCommand extends Command
         return true;
     }
 
+    private function seedAchievements(): bool
+    {
+        if (Achievement::query()->where('name', 'Welcome Aboard')->exists()) {
+            return false;
+        }
+
+        $this->components->task('Seeding achievements', function (): void {
+            $achievements = [
+                [
+                    'name' => 'Welcome Aboard',
+                    'description' => 'Created your account and joined the community.',
+                    'notification_text' => 'You\'ve earned the Welcome Aboard achievement!',
+                    'color' => '#6366f1',
+                    'icon' => 'star',
+                    'events' => [GrantableEvent::UserRegistered],
+                ],
+                [
+                    'name' => 'News Junkie',
+                    'description' => 'Read your first news article.',
+                    'notification_text' => 'You read a news article and unlocked News Junkie!',
+                    'color' => '#0ea5e9',
+                    'icon' => 'zap',
+                    'events' => [GrantableEvent::NewsArticleRead],
+                ],
+                [
+                    'name' => 'In the Loop',
+                    'description' => 'Browsed the announcements page.',
+                    'notification_text' => 'You stayed informed and earned In the Loop!',
+                    'color' => '#f59e0b',
+                    'icon' => 'bell',
+                    'events' => [GrantableEvent::AnnouncementsViewed],
+                ],
+                [
+                    'name' => 'Clean Slate',
+                    'description' => 'Archived all your notifications.',
+                    'notification_text' => 'Inbox zero achieved — you earned Clean Slate!',
+                    'color' => '#10b981',
+                    'icon' => 'shield',
+                    'events' => [GrantableEvent::NotificationsArchived],
+                ],
+                [
+                    'name' => 'Personalized',
+                    'description' => 'Updated your notification preferences.',
+                    'notification_text' => 'Your preferences are set — Personalized unlocked!',
+                    'color' => '#8b5cf6',
+                    'icon' => 'settings',
+                    'events' => [GrantableEvent::NotificationPreferencesUpdated],
+                ],
+                [
+                    'name' => 'Identity Crisis',
+                    'description' => 'Updated your profile information.',
+                    'notification_text' => 'You updated your profile and earned Identity Crisis!',
+                    'color' => '#ec4899',
+                    'icon' => 'user',
+                    'events' => [GrantableEvent::ProfileUpdated],
+                ],
+                [
+                    'name' => 'Seat Keeper',
+                    'description' => 'Configured your Advanced Seating / ticket discovery settings.',
+                    'notification_text' => 'You configured your seating settings — Seat Keeper unlocked!',
+                    'color' => '#f97316',
+                    'icon' => 'map-pin',
+                    'events' => [GrantableEvent::TicketDiscoverySettingsUpdated],
+                ],
+                [
+                    'name' => 'Ticket Holder',
+                    'description' => 'Purchased a ticket for a LAN event.',
+                    'notification_text' => 'You\'re going to the event — Ticket Holder unlocked!',
+                    'color' => '#14b8a6',
+                    'icon' => 'ticket',
+                    'events' => [GrantableEvent::TicketPurchased],
+                ],
+                [
+                    'name' => 'Window Shopper',
+                    'description' => 'Added an item to your cart.',
+                    'notification_text' => 'You added something to your cart — Window Shopper unlocked!',
+                    'color' => '#84cc16',
+                    'icon' => 'shopping-cart',
+                    'events' => [GrantableEvent::CartItemAdded],
+                ],
+                [
+                    'name' => 'Connected',
+                    'description' => 'Accessed an external integration via SSO.',
+                    'notification_text' => 'You used an integration and earned Connected!',
+                    'color' => '#64748b',
+                    'icon' => 'link',
+                    'events' => [GrantableEvent::IntegrationAccessed],
+                ],
+                [
+                    'name' => 'Event Watcher',
+                    'description' => 'Witnessed a new event go live.',
+                    'notification_text' => 'A new event launched — you earned Event Watcher!',
+                    'color' => '#a855f7',
+                    'icon' => 'calendar',
+                    'events' => [GrantableEvent::EventPublished],
+                ],
+                [
+                    'name' => 'Rising Star',
+                    'description' => 'Had your role changed — you\'re moving up!',
+                    'notification_text' => 'Your role changed — Rising Star unlocked!',
+                    'color' => '#fbbf24',
+                    'icon' => 'crown',
+                    'events' => [GrantableEvent::UserRolesChanged],
+                ],
+                [
+                    'name' => 'Early Bird',
+                    'description' => 'Read a news article and checked announcements — you\'re always first.',
+                    'notification_text' => 'You read the news AND checked announcements — Early Bird earned!',
+                    'color' => '#f43f5e',
+                    'icon' => 'flame',
+                    'events' => [GrantableEvent::NewsArticleRead, GrantableEvent::AnnouncementsViewed],
+                ],
+                [
+                    'name' => 'Completionist',
+                    'description' => 'Updated your profile and configured your notification preferences.',
+                    'notification_text' => 'Profile and preferences done — Completionist unlocked!',
+                    'color' => '#06b6d4',
+                    'icon' => 'award',
+                    'events' => [GrantableEvent::ProfileUpdated, GrantableEvent::NotificationPreferencesUpdated],
+                ],
+            ];
+
+            foreach ($achievements as $data) {
+                $achievement = Achievement::create([
+                    'name' => $data['name'],
+                    'description' => $data['description'],
+                    'notification_text' => $data['notification_text'],
+                    'color' => $data['color'],
+                    'icon' => $data['icon'],
+                    'is_active' => true,
+                ]);
+
+                foreach ($data['events'] as $grantableEvent) {
+                    $achievement->achievementEvents()->create(['event_class' => $grantableEvent->value]);
+                }
+            }
+        });
+
+        return true;
+    }
+
     private function seedWebhooks(): bool
     {
         if (Webhook::query()->where('url', 'http://mockserver:1080/webhooks/user-registered')->exists()) {
@@ -687,6 +831,33 @@ class SeedDemoCommand extends Command
                 'description' => 'Development webhook that forwards event published events to MockServer for inspection.',
                 'url' => 'http://mockserver:1080/webhooks/event-published',
                 'event' => WebhookEvent::EventPublished,
+                'secret' => null,
+                'is_active' => true,
+            ]);
+
+            Webhook::factory()->create([
+                'name' => 'MockServer — Ticket Purchased',
+                'description' => 'Development webhook that forwards ticket purchased events to MockServer for inspection.',
+                'url' => 'http://mockserver:1080/webhooks/ticket-purchased',
+                'event' => WebhookEvent::TicketPurchased,
+                'secret' => null,
+                'is_active' => true,
+            ]);
+
+            Webhook::factory()->create([
+                'name' => 'MockServer — Profile Updated',
+                'description' => 'Development webhook that forwards profile updated events to MockServer for inspection.',
+                'url' => 'http://mockserver:1080/webhooks/profile-updated',
+                'event' => WebhookEvent::ProfileUpdated,
+                'secret' => null,
+                'is_active' => true,
+            ]);
+
+            Webhook::factory()->create([
+                'name' => 'MockServer — Integration Accessed',
+                'description' => 'Development webhook that forwards integration accessed events to MockServer for inspection.',
+                'url' => 'http://mockserver:1080/webhooks/integration-accessed',
+                'event' => WebhookEvent::IntegrationAccessed,
                 'secret' => null,
                 'is_active' => true,
             ]);

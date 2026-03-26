@@ -2,6 +2,7 @@
 
 namespace App\Domain\Notification\Http\Controllers;
 
+use App\Domain\Notification\Events\NotificationsArchived;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -68,6 +69,8 @@ class NotificationController extends Controller
             ->notifications()
             ->whereNull('archived_at')
             ->update(['archived_at' => now()]);
+
+        NotificationsArchived::dispatch($request->user());
 
         return back();
     }

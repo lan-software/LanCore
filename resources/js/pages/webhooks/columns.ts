@@ -37,7 +37,16 @@ export const columns: ColumnDef<Webhook>[] = [
     {
         accessorKey: 'name',
         header: sortableHeader('Name'),
-        cell: ({ row }) => h('span', { class: 'font-medium' }, row.getValue('name')),
+        cell: ({ row }) => {
+            const name = row.getValue('name') as string
+            const integration = row.original.integration_app
+            return h('div', { class: 'flex items-center gap-2' }, [
+                h('span', { class: 'font-medium' }, name),
+                integration
+                    ? h(Badge, { variant: 'outline', class: 'text-xs' }, () => `Integration: ${integration.name}`)
+                    : null,
+            ])
+        },
     },
     {
         accessorKey: 'url',

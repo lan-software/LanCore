@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use App\Domain\Achievements\Listeners\ProcessAchievements;
+use App\Domain\Achievements\Models\Achievement;
+use App\Domain\Achievements\Policies\AchievementPolicy;
 use App\Domain\Announcement\Events\AnnouncementPublished;
+use App\Domain\Announcement\Events\AnnouncementsViewed;
 use App\Domain\Announcement\Listeners\HandleAnnouncementPublishedWebhooks;
 use App\Domain\Announcement\Listeners\SendAnnouncementNotification;
 use App\Domain\Announcement\Models\Announcement;
@@ -15,17 +19,25 @@ use App\Domain\Games\Models\Game;
 use App\Domain\Games\Models\GameMode;
 use App\Domain\Games\Policies\GameModePolicy;
 use App\Domain\Games\Policies\GamePolicy;
+use App\Domain\Integration\Events\IntegrationAccessed;
+use App\Domain\Integration\Listeners\HandleIntegrationAccessedWebhooks;
 use App\Domain\Integration\Models\IntegrationApp;
 use App\Domain\Integration\Policies\IntegrationAppPolicy;
 use App\Domain\News\Events\NewsArticlePublished;
+use App\Domain\News\Events\NewsArticleRead;
 use App\Domain\News\Listeners\HandleNewsArticlePublishedWebhooks;
 use App\Domain\News\Listeners\SendNewsNotification;
 use App\Domain\News\Models\NewsArticle;
 use App\Domain\News\Models\NewsComment;
 use App\Domain\News\Policies\NewsArticlePolicy;
 use App\Domain\News\Policies\NewsCommentPolicy;
+use App\Domain\Notification\Events\NotificationPreferencesUpdated;
+use App\Domain\Notification\Events\NotificationsArchived;
+use App\Domain\Notification\Events\ProfileUpdated;
+use App\Domain\Notification\Events\TicketDiscoverySettingsUpdated;
 use App\Domain\Notification\Events\UserAttributesUpdated;
 use App\Domain\Notification\Events\UserRolesChanged;
+use App\Domain\Notification\Listeners\HandleProfileUpdatedWebhooks;
 use App\Domain\Notification\Listeners\SendUserAttributesUpdatedNotification;
 use App\Domain\Notification\Listeners\SendUserRolesChangedNotification;
 use App\Domain\Program\Events\ProgramTimeSlotApproaching;
@@ -34,6 +46,9 @@ use App\Domain\Program\Models\Program;
 use App\Domain\Program\Policies\ProgramPolicy;
 use App\Domain\Seating\Models\SeatPlan;
 use App\Domain\Seating\Policies\SeatPlanPolicy;
+use App\Domain\Shop\Events\CartItemAdded;
+use App\Domain\Shop\Events\TicketPurchased;
+use App\Domain\Shop\Listeners\HandleTicketPurchasedWebhooks;
 use App\Domain\Shop\Models\GlobalPurchaseCondition;
 use App\Domain\Shop\Models\PaymentProviderCondition;
 use App\Domain\Shop\Models\PurchaseRequirement;
@@ -118,6 +133,7 @@ class AppServiceProvider extends ServiceProvider
     protected function configurePolicies(): void
     {
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Achievement::class, AchievementPolicy::class);
         Gate::policy(Announcement::class, AnnouncementPolicy::class);
         Gate::policy(Venue::class, VenuePolicy::class);
         Gate::policy(Game::class, GamePolicy::class);
@@ -178,6 +194,27 @@ class AppServiceProvider extends ServiceProvider
         EventFacade::listen(NewsArticlePublished::class, HandleNewsArticlePublishedWebhooks::class);
         EventFacade::listen(EventPublished::class, HandleEventPublishedWebhooks::class);
         EventFacade::listen(WebhookDispatched::class, SendWebhookPayload::class);
+
+        // Webhook listeners for new user-action events
+        EventFacade::listen(TicketPurchased::class, HandleTicketPurchasedWebhooks::class);
+        EventFacade::listen(ProfileUpdated::class, HandleProfileUpdatedWebhooks::class);
+        EventFacade::listen(IntegrationAccessed::class, HandleIntegrationAccessedWebhooks::class);
+
+        // Achievement processing — listen to all grantable events
+        EventFacade::listen(Registered::class, ProcessAchievements::class);
+        EventFacade::listen(AnnouncementPublished::class, ProcessAchievements::class);
+        EventFacade::listen(AnnouncementsViewed::class, ProcessAchievements::class);
+        EventFacade::listen(CartItemAdded::class, ProcessAchievements::class);
+        EventFacade::listen(EventPublished::class, ProcessAchievements::class);
+        EventFacade::listen(IntegrationAccessed::class, ProcessAchievements::class);
+        EventFacade::listen(NewsArticlePublished::class, ProcessAchievements::class);
+        EventFacade::listen(NewsArticleRead::class, ProcessAchievements::class);
+        EventFacade::listen(NotificationPreferencesUpdated::class, ProcessAchievements::class);
+        EventFacade::listen(NotificationsArchived::class, ProcessAchievements::class);
+        EventFacade::listen(ProfileUpdated::class, ProcessAchievements::class);
+        EventFacade::listen(TicketDiscoverySettingsUpdated::class, ProcessAchievements::class);
+        EventFacade::listen(TicketPurchased::class, ProcessAchievements::class);
+        EventFacade::listen(UserRolesChanged::class, ProcessAchievements::class);
     }
 
     /**

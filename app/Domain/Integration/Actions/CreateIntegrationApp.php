@@ -8,8 +8,10 @@ use Illuminate\Support\Str;
 
 class CreateIntegrationApp
 {
+    public function __construct(private readonly SyncIntegrationWebhooks $syncWebhooks) {}
+
     /**
-     * @param  array{name: string, slug?: string, description?: string|null, callback_url?: string|null, allowed_scopes?: array<string>|null, is_active?: bool}  $attributes
+     * @param  array{name: string, slug?: string, description?: string|null, callback_url?: string|null, allowed_scopes?: array<string>|null, is_active?: bool, send_announcements?: bool, announcement_endpoint?: string|null}  $attributes
      */
     public function execute(array $attributes): IntegrationApp
     {
@@ -18,7 +20,11 @@ class CreateIntegrationApp
                 $attributes['slug'] = Str::slug($attributes['name']);
             }
 
-            return IntegrationApp::create($attributes);
+            $app = IntegrationApp::create($attributes);
+
+            $this->syncWebhooks->execute($app);
+
+            return $app;
         });
     }
 }

@@ -47,6 +47,8 @@ type IntegrationApp = {
     nav_label: string | null
     allowed_scopes: string[] | null
     is_active: boolean
+    send_announcements: boolean
+    announcement_endpoint: string | null
     tokens: IntegrationToken[]
     created_at: string
     updated_at: string
@@ -282,6 +284,33 @@ function isTokenActive(token: IntegrationToken): boolean {
                                 <p class="text-xs text-muted-foreground">{{ scope.description }}</p>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Announcements -->
+                <div class="space-y-4">
+                    <Heading
+                        variant="small"
+                        title="Announcements"
+                        description="Forward published announcements to this integration via a managed webhook"
+                    />
+
+                    <div class="flex items-center gap-2">
+                        <Checkbox id="send_announcements" name="send_announcements" :default-value="integrationApp.send_announcements" />
+                        <Label for="send_announcements">Send Announcements</Label>
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="announcement_endpoint">Announcement Endpoint</Label>
+                        <Input
+                            id="announcement_endpoint"
+                            name="announcement_endpoint"
+                            type="url"
+                            :default-value="integrationApp.announcement_endpoint ?? ''"
+                            placeholder="https://lanshout.example.com/api/announcements"
+                        />
+                        <p class="text-xs text-muted-foreground">The URL that will receive announcement payloads via a managed webhook.</p>
+                        <InputError :message="errors.announcement_endpoint" />
                     </div>
                 </div>
 

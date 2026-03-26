@@ -27,6 +27,8 @@ class IntegrationAppFactory extends Factory
             'callback_url' => fake()->url(),
             'allowed_scopes' => ['user:read'],
             'is_active' => true,
+            'send_announcements' => false,
+            'announcement_endpoint' => null,
         ];
     }
 
@@ -41,5 +43,13 @@ class IntegrationAppFactory extends Factory
     public function withScopes(array $scopes): static
     {
         return $this->state(['allowed_scopes' => $scopes]);
+    }
+
+    public function withAnnouncements(string $endpoint = 'https://lanshout.example.com/api/announcements'): static
+    {
+        return $this->state([
+            'send_announcements' => true,
+            'announcement_endpoint' => $endpoint,
+        ]);
     }
 }

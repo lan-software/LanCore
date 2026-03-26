@@ -28,6 +28,8 @@ class StoreIntegrationAppRequest extends FormRequest
             'allowed_scopes' => ['sometimes', 'array'],
             'allowed_scopes.*' => ['string', Rule::in(['user:read', 'user:email', 'user:roles'])],
             'is_active' => ['sometimes', 'boolean'],
+            'send_announcements' => ['sometimes', 'boolean'],
+            'announcement_endpoint' => ['nullable', 'required_if:send_announcements,true', 'url', 'max:2048'],
         ];
     }
 
@@ -35,6 +37,7 @@ class StoreIntegrationAppRequest extends FormRequest
     {
         $this->merge([
             'is_active' => $this->boolean('is_active'),
+            'send_announcements' => $this->boolean('send_announcements'),
             'allowed_scopes' => $this->input('allowed_scopes', []),
         ]);
     }

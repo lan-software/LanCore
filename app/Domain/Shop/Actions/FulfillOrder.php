@@ -3,11 +3,13 @@
 namespace App\Domain\Shop\Actions;
 
 use App\Domain\Shop\Enums\OrderStatus;
+use App\Domain\Shop\Events\TicketPurchased;
 use App\Domain\Shop\Models\Order;
 use App\Domain\Ticketing\Enums\TicketStatus;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketType;
+use App\Models\User;
 use App\Notifications\OrderConfirmationNotification;
 use Illuminate\Support\Facades\DB;
 
@@ -63,6 +65,11 @@ class FulfillOrder
             }
         });
 
-        $order->user->notify(new OrderConfirmationNotification($order));
+        /** @var User $user */
+        $user = $order->user;
+
+        $user->notify(new OrderConfirmationNotification($order));
+
+        TicketPurchased::dispatch($user, $order);
     }
 }

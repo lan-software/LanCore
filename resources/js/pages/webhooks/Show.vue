@@ -77,8 +77,7 @@ function statusLabel(delivery: WebhookDelivery): string {
                     <div class="flex items-center gap-2">
                         <h1 class="text-xl font-semibold">{{ webhook.name }}</h1>
                         <Badge v-if="webhook.is_active" variant="default">Active</Badge>
-                        <Badge v-else variant="outline">Inactive</Badge>
-                    </div>
+                        <Badge v-else variant="outline">Inactive</Badge>                        <Badge v-if="webhook.integration_app" variant="outline">Integration: {{ webhook.integration_app.name }}</Badge>                    </div>
                     <div class="flex items-center gap-3 text-sm text-muted-foreground">
                         <span class="font-mono">{{ webhook.url }}</span>
                         <span>&middot;</span>
@@ -88,7 +87,7 @@ function statusLabel(delivery: WebhookDelivery): string {
                     </div>
                     <p v-if="webhook.description" class="text-sm text-muted-foreground mt-1">{{ webhook.description }}</p>
                 </div>
-                <Link :href="webhookEdit({ webhook: webhook.id }).url">
+                <Link v-if="!webhook.integration_app" :href="webhookEdit({ webhook: webhook.id }).url">
                     <Button variant="outline" size="sm">
                         <Pencil class="mr-1.5 size-3.5" />
                         Edit

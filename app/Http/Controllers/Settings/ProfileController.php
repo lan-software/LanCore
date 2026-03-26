@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Domain\Notification\Events\ProfileUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
@@ -37,6 +38,8 @@ class ProfileController extends Controller
         }
 
         $request->user()->save();
+
+        ProfileUpdated::dispatch($request->user());
 
         return to_route('profile.edit');
     }

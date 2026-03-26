@@ -46,7 +46,9 @@ class WebhookController extends Controller
                 ->limit(1),
         ]);
 
-        $webhooks = $query->withCount('deliveries')->paginate($request->input('per_page', 20))->withQueryString();
+        $webhooks = $query->withCount('deliveries')
+            ->with('integrationApp:id,name,slug')
+            ->paginate($request->input('per_page', 20))->withQueryString();
 
         return Inertia::render('webhooks/Index', [
             'webhooks' => $webhooks,
@@ -57,6 +59,8 @@ class WebhookController extends Controller
     public function show(Request $request, Webhook $webhook): Response
     {
         $this->authorize('view', $webhook);
+
+        $webhook->load('integrationApp:id,name,slug');
 
         $deliveries = $webhook->deliveries()
             ->paginate($request->input('per_page', 25))

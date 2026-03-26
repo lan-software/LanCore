@@ -2,6 +2,7 @@
 
 namespace App\Domain\Announcement\Http\Controllers;
 
+use App\Domain\Announcement\Events\AnnouncementsViewed;
 use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Event\Models\Event;
 use App\Http\Controllers\Controller;
@@ -22,6 +23,8 @@ class PublicAnnouncementController extends Controller
 
         $dismissedIds = [];
         if ($request->user()) {
+            AnnouncementsViewed::dispatch($request->user());
+
             $dismissedIds = $request->user()
                 ->dismissedAnnouncements()
                 ->pluck('announcements.id')
