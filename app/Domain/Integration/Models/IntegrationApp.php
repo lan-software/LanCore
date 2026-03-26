@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'slug', 'description', 'callback_url', 'allowed_scopes', 'is_active'])]
+#[Fillable(['name', 'slug', 'description', 'callback_url', 'nav_url', 'nav_icon', 'nav_label', 'allowed_scopes', 'is_active'])]
 class IntegrationApp extends Model
 {
     /** @use HasFactory<IntegrationAppFactory> */

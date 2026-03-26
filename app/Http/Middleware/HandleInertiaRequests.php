@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Domain\Event\Models\Event;
+use App\Domain\Integration\Models\IntegrationApp;
 use App\Enums\RoleName;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -60,6 +61,18 @@ class HandleInertiaRequests extends Middleware
             'sidebarFavorites' => $user ? ($user->sidebar_favorites ?? []) : [],
             'eventContext' => fn () => $this->eventContext($request),
             'vapidPublicKey' => config('services.vapid.public_key'),
+            'integrationLinks' => fn () => IntegrationApp::query()
+                ->where('is_active', true)
+                ->whereNotNull('nav_url')
+                ->whereNotNull('nav_label')
+                ->get(['nav_url', 'nav_icon', 'nav_label'])
+                ->map(fn (IntegrationApp $app) => [
+                    'url' => $app->nav_url,
+                    'icon' => $app->nav_icon,
+                    'label' => $app->nav_label,
+                ])
+                ->values()
+                ->all(),
             'pushSubscribed' => fn () => $user ? $user->pushSubscriptions()->exists() : false,
             'unreadNotificationsCount' => fn () => $user ? $user->unreadNotifications()->whereNull('archived_at')->count() : 0,
             'recentNotifications' => fn () => $user

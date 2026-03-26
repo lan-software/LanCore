@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import { computed, defineAsyncComponent, type Component } from 'vue'
 import { dashboard, login, register } from '@/routes'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar, Clock, MapPin, Newspaper, ShoppingCart, Megaphone, AlertTriangle, X } from 'lucide-vue-next'
+import { Calendar, Clock, MapPin, Newspaper, ShoppingCart, Megaphone, AlertTriangle, X, ExternalLink } from 'lucide-vue-next'
 import { index as shopIndex } from '@/routes/shop'
 import SeatMapCanvas from '@/components/SeatMapCanvas.vue'
 import NotificationBell from '@/components/NotificationBell.vue'
@@ -59,6 +59,33 @@ function formatDateTime(dateString: string): string {
 function dismissAnnouncement(announcementId: number) {
     router.post(`/announcements/${announcementId}/dismiss`, {}, { preserveScroll: true })
 }
+
+const page = usePage()
+const integrationLinks = computed(() => page.props.integrationLinks ?? [])
+
+const iconCache = new Map<string, Component>()
+
+function resolveIcon(name: string | null): Component {
+    if (!name) return ExternalLink
+    if (iconCache.has(name)) return iconCache.get(name)!
+
+    const pascalCase = name
+        .split('-')
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join('')
+
+    const asyncIcon = defineAsyncComponent({
+        loader: () =>
+            import('lucide-vue-next').then((mod) => {
+                const icon = (mod as Record<string, Component>)[pascalCase]
+                return icon ?? ExternalLink
+            }),
+        loadingComponent: ExternalLink,
+    })
+
+    iconCache.set(name, asyncIcon)
+    return asyncIcon
+}
 </script>
 
 <template>
@@ -77,6 +104,17 @@ function dismissAnnouncement(announcementId: number) {
                         <ShoppingCart class="size-4" />
                         Shop
                     </Link>
+                    <a
+                        v-for="link in integrationLinks"
+                        :key="link.url"
+                        :href="link.url"
+                        target="_blank"
+                        rel="noopener"
+                        class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        <component :is="resolveIcon(link.icon)" class="size-4" />
+                        {{ link.label }}
+                    </a>
                     <NotificationBell v-if="$page.props.auth.user" />
                     <Link
                         v-if="$page.props.auth.user"

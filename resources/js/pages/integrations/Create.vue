@@ -103,6 +103,50 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </div>
                 </div>
 
+                <!-- Navigation Link -->
+                <div class="space-y-4">
+                    <Heading
+                        variant="small"
+                        title="Navigation Link"
+                        description="Show a shortcut button in the top navigation bar for logged-in users"
+                    />
+
+                    <div class="grid gap-2">
+                        <Label for="nav_url">Link URL</Label>
+                        <Input
+                            id="nav_url"
+                            name="nav_url"
+                            type="url"
+                            placeholder="https://lanshout.example.com"
+                        />
+                        <p class="text-xs text-muted-foreground">The URL users are directed to when clicking the button.</p>
+                        <InputError :message="errors.nav_url" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="nav_label">Button Label</Label>
+                        <Input
+                            id="nav_label"
+                            name="nav_label"
+                            placeholder="e.g. LanShout"
+                        />
+                        <InputError :message="errors.nav_label" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="nav_icon">Icon Name</Label>
+                        <Input
+                            id="nav_icon"
+                            name="nav_icon"
+                            placeholder="e.g. megaphone, message-circle, radio"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            A <a href="https://lucide.dev/icons" target="_blank" rel="noopener" class="underline hover:text-foreground">Lucide icon</a> name (lowercase, kebab-case). Leave empty for a default link icon.
+                        </p>
+                        <InputError :message="errors.nav_icon" />
+                    </div>
+                </div>
+
                 <!-- Scopes -->
                 <div class="space-y-4">
                     <Heading
