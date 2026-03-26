@@ -1,11 +1,9 @@
 <?php
 
-use App\Providers\AppServiceProvider;
-use App\Providers\FortifyServiceProvider;
-use App\Providers\PrometheusServiceProvider;
-
 return [
-    AppServiceProvider::class,
-    FortifyServiceProvider::class,
-    PrometheusServiceProvider::class,
+    App\Providers\AppServiceProvider::class,
+    App\Providers\FortifyServiceProvider::class,
+    App\Providers\HorizonServiceProvider::class,
+    App\Providers\PrometheusServiceProvider::class,
+    App\Providers\TelescopeServiceProvider::class,
 ];
