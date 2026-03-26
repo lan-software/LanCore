@@ -41,6 +41,35 @@ it('creates a managed webhook when send_announcements is enabled', function () {
         ->and($webhook->name)->toContain("Integration: {$app->name}");
 });
 
+it('sets the webhook secret when provided', function () {
+    $app = IntegrationApp::factory()->withAnnouncements()->create();
+
+    app(SyncIntegrationWebhooks::class)->execute($app, 'my-secret');
+
+    $webhook = Webhook::where('integration_app_id', $app->id)->sole();
+    expect($webhook->secret)->toBe('my-secret');
+});
+
+it('updates the webhook secret when changed', function () {
+    $app = IntegrationApp::factory()->withAnnouncements()->create();
+    app(SyncIntegrationWebhooks::class)->execute($app, 'original-secret');
+
+    app(SyncIntegrationWebhooks::class)->execute($app, 'new-secret');
+
+    $webhook = Webhook::where('integration_app_id', $app->id)->sole();
+    expect($webhook->secret)->toBe('new-secret');
+});
+
+it('clears the webhook secret when null is provided', function () {
+    $app = IntegrationApp::factory()->withAnnouncements()->create();
+    app(SyncIntegrationWebhooks::class)->execute($app, 'original-secret');
+
+    app(SyncIntegrationWebhooks::class)->execute($app, null);
+
+    $webhook = Webhook::where('integration_app_id', $app->id)->sole();
+    expect($webhook->secret)->toBeNull();
+});
+
 it('does not create a webhook when send_announcements is disabled', function () {
     $app = IntegrationApp::factory()->create(['send_announcements' => false]);
 
@@ -259,6 +288,43 @@ it('allows admins to update integration announcement settings', function () {
     $app->refresh();
     expect($app->send_announcements)->toBeTrue()
         ->and($app->announcement_endpoint)->toBe('https://lanshout.example.com/api/announcements');
+});
+
+it('sets managed webhook secret when storing integration with a secret', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->post('/integrations', [
+            'name' => 'LanShout',
+            'slug' => 'lanshout',
+            'is_active' => true,
+            'send_announcements' => true,
+            'announcement_endpoint' => 'https://lanshout.example.com/api/announcements',
+            'announcement_webhook_secret' => 'super-secret',
+        ])
+        ->assertRedirect('/integrations');
+
+    $app = IntegrationApp::where('slug', 'lanshout')->first();
+    $webhook = Webhook::where('integration_app_id', $app->id)->sole();
+    expect($webhook->secret)->toBe('super-secret');
+});
+
+it('updates managed webhook secret when updating integration', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $app = IntegrationApp::factory()->withAnnouncements()->create();
+    app(SyncIntegrationWebhooks::class)->execute($app, 'old-secret');
+
+    $this->actingAs($admin)
+        ->patch("/integrations/{$app->id}", [
+            'name' => $app->name,
+            'send_announcements' => true,
+            'announcement_endpoint' => $app->announcement_endpoint,
+            'announcement_webhook_secret' => 'new-secret',
+        ])
+        ->assertRedirect();
+
+    $webhook = Webhook::where('integration_app_id', $app->id)->sole();
+    expect($webhook->secret)->toBe('new-secret');
 });
 
 /*
