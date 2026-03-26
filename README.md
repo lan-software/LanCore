@@ -4,7 +4,7 @@
 
 # LanCore
 
-> LAN party & BYOD event management platform — the modern successor to eventula-manager. Inspired by Byceps and 10 years of Lan-Party experience at (sxlan.de)[sxlan.de]
+> LAN party & BYOD event management platform — the modern successor to eventula-manager. Inspired by Byceps and 10 years of Lan-Party experience at [sxlan.de](sxlan.de)
 
 [![Tests](https://github.com/lan-software/LanCore/actions/workflows/tests.yml/badge.svg)](https://github.com/lan-software/LanCore/actions/workflows/tests.yml)
 [![Frontend Tests](https://github.com/lan-software/LanCore/actions/workflows/frontend-tests.yml/badge.svg)](https://github.com/lan-software/LanCore/actions/workflows/frontend-tests.yml)
@@ -17,7 +17,6 @@
 [![Vue.js](https://img.shields.io/badge/Vue.js-%5E3.5-42b883?logo=vue.js&logoColor=white)](package.json)
 [![Stripe](https://img.shields.io/badge/Stripe-supported-635BFF?logo=stripe&logoColor=white)](composer.json)
 [![PayPal](https://img.shields.io/badge/PayPal-planned-003087?logo=paypal&logoColor=white)](#features)
-[![OIDC](https://img.shields.io/badge/OIDC-planned-blue)](#features)
 
 ---
 
@@ -53,16 +52,15 @@ The initial goal was just tech-demo for "What could be done in 3 Days". To be ho
 | Stripe Integration | 🚧 In Progress |
 | Game Server Management with Pelican Panel | Planned |
 | Tournament Match Management with TMT2 | Planned |
-| OIDC / SSO | Planned |
-| Eco-System with other App | Planned |
+| Eco-System with other App | 1/3 Apps functional |
 
 *Action and Policy based architecture implemented, currently no focus on any reasonable checks as roles and permissions are not in the scope of the poc see [PoC.md](docs/poc/PoC.md)
 
 Beyond LanCore there is already a bigger ecosystem of apps planned, partially developed. Soon following apps will join the lan-software team:
-| | | |
+| Name | Scope | Current status |
 | --- | --- | --- |
 | LanBrackets | Basically a replacement for Challonge with its own laravel-package, framework agnostic bracket and tournament builder | Requirments Ready, Architecture WIP |
-| LanShout | Shoutbox tailored for Lan-Events | Demo Ready since SX30 |
+| LanShout | Shoutbox tailored for Lan-Events | Demo Ready since SX30, fully integrated with LanCores Integration Feature Domain |
 | LanEntrance | Entrance Client, for orgas to validate, checkin and guide arriving guests | Requirements Ready, Architecture layed out | 
 | LanHelp | Minified HelpDesk for Issues, FAQ and knowledge base across your lan events | Requirements Ready | 
 | LanVote | Minified Voting Site | Requierements Ready |
