@@ -15,6 +15,8 @@ use App\Domain\Games\Models\Game;
 use App\Domain\Games\Models\GameMode;
 use App\Domain\Games\Policies\GameModePolicy;
 use App\Domain\Games\Policies\GamePolicy;
+use App\Domain\Integration\Models\IntegrationApp;
+use App\Domain\Integration\Policies\IntegrationAppPolicy;
 use App\Domain\News\Events\NewsArticlePublished;
 use App\Domain\News\Listeners\HandleNewsArticlePublishedWebhooks;
 use App\Domain\News\Listeners\SendNewsNotification;
@@ -74,6 +76,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Telescope\TelescopeServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -92,9 +95,9 @@ class AppServiceProvider extends ServiceProvider
             return $manager;
         });
 
-        if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
-            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
-            //$this->app->register(TelescopeServiceProvider::class);
+        if ($this->app->environment('local') && class_exists(TelescopeServiceProvider::class)) {
+            $this->app->register(TelescopeServiceProvider::class);
+            // $this->app->register(TelescopeServiceProvider::class);
         }
     }
 
@@ -119,6 +122,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Venue::class, VenuePolicy::class);
         Gate::policy(Game::class, GamePolicy::class);
         Gate::policy(GameMode::class, GameModePolicy::class);
+        Gate::policy(IntegrationApp::class, IntegrationAppPolicy::class);
         Gate::policy(Event::class, EventPolicy::class);
         Gate::policy(Program::class, ProgramPolicy::class);
         Gate::policy(Sponsor::class, SponsorPolicy::class);

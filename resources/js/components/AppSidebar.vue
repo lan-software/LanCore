@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Calendar, ClipboardList, CreditCard, FileCheck, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Pin, PinOff, Puzzle, Rows3, ShieldCheck, ShoppingCart, Tag, Ticket, TicketCheck, Users, Webhook } from 'lucide-vue-next';
+import { Calendar, ClipboardList, Cog, CreditCard, FileCheck, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Pin, PinOff, Puzzle, Rows3, ShieldCheck, ShoppingCart, Tag, Ticket, TicketCheck, Users, Webhook } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import EventSelector from '@/components/EventSelector.vue';
@@ -38,6 +38,7 @@ import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import { index as seatPlansIndex } from '@/routes/seat-plans';
 import { index as announcementsIndex } from '@/routes/announcements';
 import { index as webhooksIndex } from '@/routes/webhooks';
+import { index as integrationsIndex } from '@/routes/integrations';
 import { index as newsIndex } from '@/routes/news';
 import { index as newsCommentsIndex } from '@/routes/news/comments';
 import { index as purchaseRequirementsIndex } from '@/routes/purchase-requirements';
@@ -95,6 +96,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
             { id: 'vouchers', title: 'Vouchers', href: vouchersIndex(), icon: Gift },
             { id: 'seat-plans', title: 'Seat Plans', href: seatPlansIndex(), icon: Grid2x2 },
             { id: 'webhooks', title: 'Webhooks', href: webhooksIndex(), icon: Webhook },
+            { id: 'integrations', title: 'Integrations', href: integrationsIndex(), icon: Cog },
             { id: 'orders', title: 'Orders', href: ordersIndex(), icon: ShoppingCart },
             { id: 'admin-tickets', title: 'Tickets (Admin)', href: adminTicketsIndex(), icon: TicketCheck },
             { id: 'purchase-requirements', title: 'Purchase Requirements', href: purchaseRequirementsIndex(), icon: ShieldCheck },
@@ -466,6 +468,27 @@ function toggleFavorite(itemId: string): void {
                             </SidebarMenuButton>
                             <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('webhooks')">
                                 <PinOff v-if="isFavorited('webhooks')" class="size-4" />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Integration Domain -->
+            <SidebarGroup v-if="isAdmin">
+                <SidebarGroupLabel>Integrations</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="integrationsIndex()">
+                                    <Cog />
+                                    <span>Integrations</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction :show-on-hover="true" @click="toggleFavorite('integrations')">
+                                <PinOff v-if="isFavorited('integrations')" class="size-4" />
                                 <Pin v-else class="size-4" />
                             </SidebarMenuAction>
                         </SidebarMenuItem>

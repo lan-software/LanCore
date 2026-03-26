@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Integration\Http\Middleware\AuthenticateIntegration;
 use App\Http\Middleware\AddRequestId;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\HandleAppearance;
@@ -32,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
+            'integration.auth' => AuthenticateIntegration::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
