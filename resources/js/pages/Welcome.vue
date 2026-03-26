@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, MapPin, Newspaper, ShoppingCart, Megaphone, AlertTriangle, X, ExternalLink } from 'lucide-vue-next'
 import { index as shopIndex } from '@/routes/shop'
+import AppLogo from '@/components/AppLogo.vue'
 import SeatMapCanvas from '@/components/SeatMapCanvas.vue'
 import NotificationBell from '@/components/NotificationBell.vue'
 import BannerCarousel from '@/components/BannerCarousel.vue'
@@ -95,7 +96,7 @@ function resolveIcon(name: string | null): Component {
         <!-- Header -->
         <header class="border-b">
             <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-                <span class="text-lg font-semibold">LanCore</span>
+                <AppLogo />
                 <nav class="flex items-center gap-4">
                     <Link
                         :href="shopIndex().url"
