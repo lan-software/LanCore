@@ -1,5 +1,6 @@
 services:
-    lancore.test:
+    laravel.test:
+        container_name: 'lancore.test'
         build:
             context: './vendor/laravel/sail/runtimes/8.5'
             dockerfile: Dockerfile
@@ -42,7 +43,7 @@ services:
         networks:
             - sail
         depends_on:
-            - lancore.test
+            - laravel.test
             - pgsql
             - redis
         command: 'php artisan queue:work --sleep=3 --tries=3 --max-time=3600'
