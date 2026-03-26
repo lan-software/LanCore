@@ -49,6 +49,7 @@ type IntegrationApp = {
     is_active: boolean
     send_announcements: boolean
     announcement_endpoint: string | null
+    announcement_webhook_secret: string | null
     tokens: IntegrationToken[]
     created_at: string
     updated_at: string
@@ -311,6 +312,22 @@ function isTokenActive(token: IntegrationToken): boolean {
                         />
                         <p class="text-xs text-muted-foreground">The URL that will receive announcement payloads via a managed webhook.</p>
                         <InputError :message="errors.announcement_endpoint" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="announcement_webhook_secret">Webhook Secret</Label>
+                        <Input
+                            id="announcement_webhook_secret"
+                            name="announcement_webhook_secret"
+                            type="password"
+                            :default-value="integrationApp.announcement_webhook_secret ?? ''"
+                            placeholder="Leave blank to remove the secret"
+                            autocomplete="off"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Used to sign announcement payloads via HMAC-SHA256. Must match the <code>LANCORE_WEBHOOK_SECRET</code> set in the integration.
+                        </p>
+                        <InputError :message="errors.announcement_webhook_secret" />
                     </div>
                 </div>
 

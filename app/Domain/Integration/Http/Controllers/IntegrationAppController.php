@@ -9,6 +9,7 @@ use App\Domain\Integration\Http\Requests\IntegrationAppIndexRequest;
 use App\Domain\Integration\Http\Requests\StoreIntegrationAppRequest;
 use App\Domain\Integration\Http\Requests\UpdateIntegrationAppRequest;
 use App\Domain\Integration\Models\IntegrationApp;
+use App\Domain\Webhook\Enums\WebhookEvent;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -71,8 +72,14 @@ class IntegrationAppController extends Controller
 
         $integration->load(['tokens' => fn ($q) => $q->orderByDesc('created_at')]);
 
+        $managedWebhook = $integration->webhooks()
+            ->where('event', WebhookEvent::AnnouncementPublished->value)
+            ->first();
+
         return Inertia::render('integrations/Edit', [
-            'integrationApp' => $integration,
+            'integrationApp' => array_merge($integration->toArray(), [
+                'announcement_webhook_secret' => $managedWebhook?->secret,
+            ]),
             'availableScopes' => self::availableScopes(),
         ]);
     }

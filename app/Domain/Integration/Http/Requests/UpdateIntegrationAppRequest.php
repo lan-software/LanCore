@@ -29,6 +29,7 @@ class UpdateIntegrationAppRequest extends FormRequest
             'is_active' => ['sometimes', 'boolean'],
             'send_announcements' => ['sometimes', 'boolean'],
             'announcement_endpoint' => ['nullable', 'required_if:send_announcements,true', 'url', 'max:2048'],
+            'announcement_webhook_secret' => ['nullable', 'string', 'max:255'],
         ];
     }
 

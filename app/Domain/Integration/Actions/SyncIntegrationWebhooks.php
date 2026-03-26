@@ -8,17 +8,18 @@ use App\Domain\Webhook\Models\Webhook;
 
 class SyncIntegrationWebhooks
 {
-    public function execute(IntegrationApp $app): void
+    public function execute(IntegrationApp $app, ?string $webhookSecret = null): void
     {
         $this->syncWebhook(
             $app,
             WebhookEvent::AnnouncementPublished,
             (bool) $app->send_announcements,
             $app->announcement_endpoint,
+            $webhookSecret,
         );
     }
 
-    private function syncWebhook(IntegrationApp $app, WebhookEvent $event, bool $enabled, ?string $endpoint): void
+    private function syncWebhook(IntegrationApp $app, WebhookEvent $event, bool $enabled, ?string $endpoint, ?string $secret): void
     {
         $existing = Webhook::query()
             ->where('integration_app_id', $app->id)
@@ -30,6 +31,7 @@ class SyncIntegrationWebhooks
                 $existing->update([
                     'name' => "Integration: {$app->name} — {$event->label()}",
                     'url' => $endpoint,
+                    'secret' => $secret ?: null,
                     'is_active' => $app->is_active,
                 ]);
             } else {
@@ -38,6 +40,7 @@ class SyncIntegrationWebhooks
                     'name' => "Integration: {$app->name} — {$event->label()}",
                     'url' => $endpoint,
                     'event' => $event->value,
+                    'secret' => $secret ?: null,
                     'is_active' => $app->is_active,
                     'description' => "Managed by {$app->name} integration. Do not edit manually.",
                 ]);
