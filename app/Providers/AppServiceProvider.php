@@ -38,6 +38,7 @@ use App\Domain\Notification\Events\TicketDiscoverySettingsUpdated;
 use App\Domain\Notification\Events\UserAttributesUpdated;
 use App\Domain\Notification\Events\UserRolesChanged;
 use App\Domain\Notification\Listeners\HandleProfileUpdatedWebhooks;
+use App\Domain\Notification\Listeners\HandleUserRolesChangedWebhooks;
 use App\Domain\Notification\Listeners\SendUserAttributesUpdatedNotification;
 use App\Domain\Notification\Listeners\SendUserRolesChangedNotification;
 use App\Domain\Program\Events\ProgramTimeSlotApproaching;
@@ -188,6 +189,7 @@ class AppServiceProvider extends ServiceProvider
         EventFacade::listen(NewsArticlePublished::class, SendNewsNotification::class);
         EventFacade::listen(ProgramTimeSlotApproaching::class, SendProgramTimeSlotNotification::class);
         EventFacade::listen(UserRolesChanged::class, SendUserRolesChangedNotification::class);
+        EventFacade::listen(UserRolesChanged::class, HandleUserRolesChangedWebhooks::class);
         EventFacade::listen(UserAttributesUpdated::class, SendUserAttributesUpdatedNotification::class);
         EventFacade::listen(Registered::class, HandleUserRegisteredWebhooks::class);
         EventFacade::listen(AnnouncementPublished::class, HandleAnnouncementPublishedWebhooks::class);

@@ -10,6 +10,7 @@ enum WebhookEvent: string
     case EventPublished = 'event.published';
     case TicketPurchased = 'ticket.purchased';
     case ProfileUpdated = 'user.profile_updated';
+    case UserRolesUpdated = 'user.roles_updated';
     case IntegrationAccessed = 'integration.accessed';
 
     public function label(): string
@@ -21,6 +22,7 @@ enum WebhookEvent: string
             self::EventPublished => 'Event Published',
             self::TicketPurchased => 'Ticket Purchased',
             self::ProfileUpdated => 'Profile Updated',
+            self::UserRolesUpdated => 'User Roles Updated',
             self::IntegrationAccessed => 'Integration Accessed',
         };
     }
