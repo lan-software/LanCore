@@ -8,14 +8,22 @@ use App\Domain\Webhook\Models\Webhook;
 
 class SyncIntegrationWebhooks
 {
-    public function execute(IntegrationApp $app, ?string $webhookSecret = null): void
+    public function execute(IntegrationApp $app, ?string $announcementWebhookSecret = null, ?string $rolesWebhookSecret = null): void
     {
         $this->syncWebhook(
             $app,
             WebhookEvent::AnnouncementPublished,
             (bool) $app->send_announcements,
             $app->announcement_endpoint,
-            $webhookSecret,
+            $announcementWebhookSecret,
+        );
+
+        $this->syncWebhook(
+            $app,
+            WebhookEvent::UserRolesUpdated,
+            (bool) $app->send_role_updates,
+            $app->roles_endpoint,
+            $rolesWebhookSecret,
         );
     }
 

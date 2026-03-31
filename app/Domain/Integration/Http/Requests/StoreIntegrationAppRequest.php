@@ -31,6 +31,9 @@ class StoreIntegrationAppRequest extends FormRequest
             'send_announcements' => ['sometimes', 'boolean'],
             'announcement_endpoint' => ['nullable', 'required_if:send_announcements,true', 'url', 'max:2048'],
             'announcement_webhook_secret' => ['nullable', 'string', 'max:255'],
+            'send_role_updates' => ['sometimes', 'boolean'],
+            'roles_endpoint' => ['nullable', 'required_if:send_role_updates,true', 'url', 'max:2048'],
+            'roles_webhook_secret' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -39,6 +42,7 @@ class StoreIntegrationAppRequest extends FormRequest
         $this->merge([
             'is_active' => $this->boolean('is_active'),
             'send_announcements' => $this->boolean('send_announcements'),
+            'send_role_updates' => $this->boolean('send_role_updates'),
             'allowed_scopes' => $this->input('allowed_scopes', []),
         ]);
     }

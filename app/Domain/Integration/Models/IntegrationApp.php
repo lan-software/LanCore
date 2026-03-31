@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'slug', 'description', 'callback_url', 'nav_url', 'nav_icon', 'nav_label', 'allowed_scopes', 'is_active', 'send_announcements', 'announcement_endpoint'])]
+#[Fillable(['name', 'slug', 'description', 'callback_url', 'nav_url', 'nav_icon', 'nav_label', 'allowed_scopes', 'is_active', 'send_announcements', 'announcement_endpoint', 'send_role_updates', 'roles_endpoint'])]
 class IntegrationApp extends Model
 {
     /** @use HasFactory<IntegrationAppFactory> */
@@ -24,6 +24,7 @@ class IntegrationApp extends Model
             'allowed_scopes' => 'array',
             'is_active' => 'boolean',
             'send_announcements' => 'boolean',
+            'send_role_updates' => 'boolean',
         ];
     }
 

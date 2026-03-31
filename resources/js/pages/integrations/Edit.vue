@@ -50,6 +50,9 @@ type IntegrationApp = {
     send_announcements: boolean
     announcement_endpoint: string | null
     announcement_webhook_secret: string | null
+    send_role_updates: boolean
+    roles_endpoint: string | null
+    roles_webhook_secret: string | null
     tokens: IntegrationToken[]
     created_at: string
     updated_at: string
@@ -328,6 +331,49 @@ function isTokenActive(token: IntegrationToken): boolean {
                             Used to sign announcement payloads via HMAC-SHA256. Must match the <code>LANCORE_WEBHOOK_SECRET</code> set in the integration.
                         </p>
                         <InputError :message="errors.announcement_webhook_secret" />
+                    </div>
+                </div>
+
+                <!-- Role Updates -->
+                <div class="space-y-4">
+                    <Heading
+                        variant="small"
+                        title="Role Updates"
+                        description="Notify this integration when a user's roles change via a managed webhook"
+                    />
+
+                    <div class="flex items-center gap-2">
+                        <Checkbox id="send_role_updates" name="send_role_updates" :default-value="integrationApp.send_role_updates" />
+                        <Label for="send_role_updates">Send Role Updates</Label>
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="roles_endpoint">Roles Endpoint</Label>
+                        <Input
+                            id="roles_endpoint"
+                            name="roles_endpoint"
+                            type="url"
+                            :default-value="integrationApp.roles_endpoint ?? ''"
+                            placeholder="https://lanshout.example.com/api/webhooks/roles"
+                        />
+                        <p class="text-xs text-muted-foreground">The URL that will receive role update payloads via a managed webhook.</p>
+                        <InputError :message="errors.roles_endpoint" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="roles_webhook_secret">Webhook Secret</Label>
+                        <Input
+                            id="roles_webhook_secret"
+                            name="roles_webhook_secret"
+                            type="password"
+                            :default-value="integrationApp.roles_webhook_secret ?? ''"
+                            placeholder="Leave blank to remove the secret"
+                            autocomplete="off"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Used to sign role update payloads via HMAC-SHA256. Must match the secret configured in the integration.
+                        </p>
+                        <InputError :message="errors.roles_webhook_secret" />
                     </div>
                 </div>
 

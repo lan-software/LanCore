@@ -347,3 +347,126 @@ it('dispatches managed integration webhook when announcement is published', func
         return $event->webhook->integration_app_id === $app->id;
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Managed Role Update Webhooks
+|--------------------------------------------------------------------------
+*/
+
+it('creates a managed roles webhook when send_role_updates is enabled', function () {
+    $app = IntegrationApp::factory()->withRoleUpdates()->create();
+
+    app(SyncIntegrationWebhooks::class)->execute($app);
+
+    $webhook = Webhook::where('integration_app_id', $app->id)
+        ->where('event', WebhookEvent::UserRolesUpdated->value)
+        ->sole();
+
+    expect($webhook->url)->toBe('https://lanshout.example.com/api/webhooks/roles')
+        ->and($webhook->is_active)->toBeTrue()
+        ->and($webhook->isManaged())->toBeTrue()
+        ->and($webhook->name)->toContain("Integration: {$app->name}");
+});
+
+it('does not create a roles webhook when send_role_updates is disabled', function () {
+    $app = IntegrationApp::factory()->create(['send_role_updates' => false]);
+
+    app(SyncIntegrationWebhooks::class)->execute($app);
+
+    expect(Webhook::where('integration_app_id', $app->id)
+        ->where('event', WebhookEvent::UserRolesUpdated->value)
+        ->count())->toBe(0);
+});
+
+it('updates managed roles webhook when endpoint changes', function () {
+    $app = IntegrationApp::factory()->withRoleUpdates()->create();
+    app(SyncIntegrationWebhooks::class)->execute($app);
+
+    $app->update(['roles_endpoint' => 'https://new-url.example.com/roles']);
+    app(SyncIntegrationWebhooks::class)->execute($app);
+
+    $webhooks = Webhook::where('integration_app_id', $app->id)
+        ->where('event', WebhookEvent::UserRolesUpdated->value)
+        ->get();
+
+    expect($webhooks)->toHaveCount(1)
+        ->and($webhooks->first()->url)->toBe('https://new-url.example.com/roles');
+});
+
+it('deletes managed roles webhook when send_role_updates is disabled', function () {
+    $app = IntegrationApp::factory()->withRoleUpdates()->create();
+    app(SyncIntegrationWebhooks::class)->execute($app);
+
+    $app->update(['send_role_updates' => false]);
+    app(SyncIntegrationWebhooks::class)->execute($app);
+
+    expect(Webhook::where('integration_app_id', $app->id)
+        ->where('event', WebhookEvent::UserRolesUpdated->value)
+        ->count())->toBe(0);
+});
+
+it('sets the roles webhook secret when provided', function () {
+    $app = IntegrationApp::factory()->withRoleUpdates()->create();
+
+    app(SyncIntegrationWebhooks::class)->execute($app, null, 'roles-secret');
+
+    $webhook = Webhook::where('integration_app_id', $app->id)
+        ->where('event', WebhookEvent::UserRolesUpdated->value)
+        ->sole();
+
+    expect($webhook->secret)->toBe('roles-secret');
+});
+
+it('creates both announcement and roles webhooks independently', function () {
+    $app = IntegrationApp::factory()->withAnnouncements()->withRoleUpdates()->create();
+
+    app(SyncIntegrationWebhooks::class)->execute($app, 'ann-secret', 'roles-secret');
+
+    $webhooks = Webhook::where('integration_app_id', $app->id)->get();
+    expect($webhooks)->toHaveCount(2);
+
+    $announcement = $webhooks->firstWhere('event', WebhookEvent::AnnouncementPublished);
+    $roles = $webhooks->firstWhere('event', WebhookEvent::UserRolesUpdated);
+
+    expect($announcement->secret)->toBe('ann-secret')
+        ->and($roles->secret)->toBe('roles-secret');
+});
+
+it('allows admins to store an integration with role update settings via HTTP', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->post('/integrations', [
+            'name' => 'LanShout',
+            'slug' => 'lanshout-roles',
+            'is_active' => true,
+            'send_role_updates' => true,
+            'roles_endpoint' => 'https://lanshout.example.com/api/webhooks/roles',
+            'roles_webhook_secret' => 'my-roles-secret',
+        ])
+        ->assertRedirect('/integrations');
+
+    $app = IntegrationApp::where('slug', 'lanshout-roles')->first();
+    expect($app->send_role_updates)->toBeTrue()
+        ->and($app->roles_endpoint)->toBe('https://lanshout.example.com/api/webhooks/roles');
+
+    $webhook = Webhook::where('integration_app_id', $app->id)
+        ->where('event', WebhookEvent::UserRolesUpdated->value)
+        ->sole();
+
+    expect($webhook->secret)->toBe('my-roles-secret');
+});
+
+it('validates roles_endpoint is required when send_role_updates is true', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->post('/integrations', [
+            'name' => 'Test',
+            'slug' => 'test-roles-val',
+            'send_role_updates' => true,
+            'roles_endpoint' => '',
+        ])
+        ->assertSessionHasErrors(['roles_endpoint']);
+});

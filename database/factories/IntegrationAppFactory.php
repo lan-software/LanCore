@@ -29,6 +29,8 @@ class IntegrationAppFactory extends Factory
             'is_active' => true,
             'send_announcements' => false,
             'announcement_endpoint' => null,
+            'send_role_updates' => false,
+            'roles_endpoint' => null,
         ];
     }
 
@@ -50,6 +52,14 @@ class IntegrationAppFactory extends Factory
         return $this->state([
             'send_announcements' => true,
             'announcement_endpoint' => $endpoint,
+        ]);
+    }
+
+    public function withRoleUpdates(string $endpoint = 'https://lanshout.example.com/api/webhooks/roles'): static
+    {
+        return $this->state([
+            'send_role_updates' => true,
+            'roles_endpoint' => $endpoint,
         ]);
     }
 }

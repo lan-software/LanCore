@@ -72,13 +72,18 @@ class IntegrationAppController extends Controller
 
         $integration->load(['tokens' => fn ($q) => $q->orderByDesc('created_at')]);
 
-        $managedWebhook = $integration->webhooks()
+        $announcementWebhook = $integration->webhooks()
             ->where('event', WebhookEvent::AnnouncementPublished->value)
+            ->first();
+
+        $rolesWebhook = $integration->webhooks()
+            ->where('event', WebhookEvent::UserRolesUpdated->value)
             ->first();
 
         return Inertia::render('integrations/Edit', [
             'integrationApp' => array_merge($integration->toArray(), [
-                'announcement_webhook_secret' => $managedWebhook?->secret,
+                'announcement_webhook_secret' => $announcementWebhook?->secret,
+                'roles_webhook_secret' => $rolesWebhook?->secret,
             ]),
             'availableScopes' => self::availableScopes(),
         ]);
