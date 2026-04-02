@@ -234,11 +234,54 @@ Development is community-driven. Contributors should be familiar with:
 
 ## Appendix A: CI/CD Pipeline
 
-### GitHub Actions Workflows
+### A.1 Pipeline Architecture
 
-| Workflow | Trigger | Description |
-|----------|---------|-------------|
-| `tests.yml` | Push/PR | PHP 8.5, Pest tests, coverage to Codecov |
-| `frontend-tests.yml` | Push/PR | Node.js, Vitest, Playwright E2E |
-| `lint.yml` | Push/PR | Pint (PHP) + ESLint/Prettier (JS) |
-| `docker-publish.yml` | Release | Multi-platform Docker image build (amd64, arm64) to GHCR |
+LanCore uses four independent GitHub Actions workflows. All run in parallel on push/PR events with no cross-workflow dependencies.
+
+| Workflow | File | Purpose | Artifacts |
+|----------|------|---------|-----------|
+| `tests.yml` | `.github/workflows/tests.yml` | Backend qualification testing | `coverage.xml` (Codecov) |
+| `frontend-tests.yml` | `.github/workflows/frontend-tests.yml` | Frontend component and E2E testing | `playwright-report/` (on failure) |
+| `lint.yml` | `.github/workflows/lint.yml` | Code style and quality enforcement | None |
+| `docker-publish.yml` | `.github/workflows/docker-publish.yml` | Container image build and publish | Docker image on GHCR |
+
+### A.2 CI Environment Configuration
+
+The CI environment differs from local development in several key areas:
+
+| Aspect | Local (Sail) | CI (GitHub Actions) |
+|--------|-------------|-------------------|
+| Runtime | Docker containers via Sail | Ubuntu runner, native PHP/Node |
+| Database | PostgreSQL (Sail service) | SQLite file + in-memory (tests) |
+| Cache | Redis (Sail service) | Array driver (no Redis) |
+| Session | Database driver | Array driver (tests), File driver (E2E) |
+| Queue | Database/Redis driver | Sync driver |
+| Assets | Vite dev server (HMR) | Pre-built via `npm run build` |
+| PHP Version | 8.5 (Sail container) | 8.5 (`shivammathur/setup-php`) |
+
+**Key design decision:** CI uses SQLite and array/sync drivers to eliminate external service dependencies (Redis, PostgreSQL) from the test runner. The `phpunit.xml` file overrides `.env` values for the test process. Playwright E2E tests use a file session driver because they run against a real Laravel server process (not the PHPUnit test harness).
+
+### A.3 Secrets Management
+
+| Secret | Purpose | Provisioned Via |
+|--------|---------|-----------------|
+| `CODECOV_TOKEN` | Upload coverage reports to Codecov | GitHub repository secret |
+| `GITHUB_TOKEN` | Authenticate to GHCR for Docker push, artifact attestation | Automatic (GitHub Actions) |
+
+No application secrets (Stripe keys, SMTP credentials, etc.) are used in CI. All external integrations are either mocked in tests or skipped.
+
+### A.4 Pipeline Maintenance
+
+- **PHP/Node version updates:** Update the `php-version` and `node-version` values in all workflow files simultaneously. The project standard PHP version is defined in `composer.json` (`require.php`).
+- **Dependency caching:** Node dependencies use `actions/setup-node` built-in caching (`cache: 'npm'`). Composer dependencies are not cached.
+- **Debugging CI failures:** Reproduce locally by running the same commands outside Sail (matching the CI environment). Check the "Actions" tab on GitHub for detailed step logs. For Playwright failures, download the `playwright-report` artifact.
+- **Adding new pipelines:** Follow the existing pattern in `.github/workflows/`. Ensure new pipelines are added to branch protection required status checks.
+
+### A.5 Merge Requirements
+
+All pipelines triggered by a pull request must pass before merge is permitted. Branch protection rules enforce this for `main` and `develop`. The required status checks are:
+
+- `ci` (from `tests.yml`)
+- `Vitest (Component Tests)` (from `frontend-tests.yml`)
+- `Playwright (E2E Tests)` (from `frontend-tests.yml`)
+- `quality` (from `lint.yml`)

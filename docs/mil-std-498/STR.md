@@ -83,10 +83,51 @@ This document reports test results, analysis, and coverage metrics for the curre
 
 | Pipeline | Status | Description |
 |----------|--------|-------------|
-| tests.yml | Passing | PHP 8.5, Pest tests, coverage upload |
-| frontend-tests.yml | Passing | Vitest, Playwright |
-| lint.yml | Passing | Pint, ESLint, Prettier |
+| tests.yml | Resolved | PHP 8.5, Pest tests, coverage upload |
+| frontend-tests.yml (Vitest) | Resolved | Vitest component tests |
+| frontend-tests.yml (Playwright) | Resolved | Playwright E2E tests |
+| lint.yml | Resolved | Pint (PHP) + ESLint/Prettier (JS) |
 | docker-publish.yml | Passing | Multi-arch Docker build |
+
+### 3.4 CI Pipeline Failure Analysis (2026-04-03)
+
+All four CI pipelines were failing on `main` as of 2026-04-03. Root causes and resolutions documented below.
+
+#### 3.4.1 Backend Tests (`tests.yml`)
+
+| Item | Detail |
+|------|--------|
+| **Error** | `RuntimeException: A facade root has not been set` at `database/factories/UserFactory.php:33` |
+| **Root Cause** | Workflow lacked SQLite database creation (`touch database/database.sqlite`) and migration step. `.env` defaults (`CACHE_STORE=redis`, `SESSION_DRIVER=database`) conflicted with CI environment where Redis is unavailable. |
+| **Fix** | Added `touch database/database.sqlite` and `php artisan migrate --force` steps. Added environment overrides: `CACHE_STORE=array`, `SESSION_DRIVER=array`, `QUEUE_CONNECTION=sync`. |
+| **Date Resolved** | 2026-04-03 |
+
+#### 3.4.2 Frontend Tests — Vitest (`frontend-tests.yml`)
+
+| Item | Detail |
+|------|--------|
+| **Error** | `You should not run the Vite HMR server in CI environments` |
+| **Root Cause** | Laravel Vite plugin detects `CI` environment variable (set by GitHub Actions) and blocks server startup. Vitest does not use HMR, but the plugin check fires during Vite config resolution. |
+| **Fix** | Added `LARAVEL_BYPASS_ENV_CHECK: 1` environment variable to the Vitest step. |
+| **Date Resolved** | 2026-04-03 |
+
+#### 3.4.3 Frontend Tests — Playwright (`frontend-tests.yml`)
+
+| Item | Detail |
+|------|--------|
+| **Error** | `Timed out waiting for: http://localhost` |
+| **Root Cause** | `php artisan serve --port=80` failed because port 80 requires root privileges on GitHub Actions Ubuntu runners. Server never started, causing `wait-on` timeout. Missing SQLite database file and conflicting `.env` defaults (Redis, database session) also prevented bootstrapping. |
+| **Fix** | Changed port from 80 to 8000. Updated `APP_URL` to `http://localhost:8000`. Added `touch database/database.sqlite` step. Added environment overrides: `CACHE_STORE=array`, `SESSION_DRIVER=file`, `QUEUE_CONNECTION=sync`. |
+| **Date Resolved** | 2026-04-03 |
+
+#### 3.4.4 Linting (`lint.yml`)
+
+| Item | Detail |
+|------|--------|
+| **Error** | 51 ESLint errors (unused variables, import order, type imports, `v-html` on components, textarea mustache syntax) and PHP version mismatch |
+| **Root Cause** | PHP version was set to 8.4 instead of 8.5 (project standard). ESLint errors accumulated across 20+ Vue/TypeScript files. CI used `npm run lint` (with `--fix`) instead of `npm run lint:check` (check-only mode). |
+| **Fix** | Updated PHP version to 8.5. Changed CI to use `npm run lint:check`. Fixed all 51 ESLint errors across source files: removed unused imports/variables, fixed `v-html` on components, replaced textarea mustache with `v-model`, corrected import ordering, added `tests/e2e/` to ESLint ignore. |
+| **Date Resolved** | 2026-04-03 |
 
 ---
 

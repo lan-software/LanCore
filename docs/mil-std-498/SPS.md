@@ -190,12 +190,73 @@ docker buildx build \
 
 ### 4.4 CI/CD Build Pipeline
 
-GitHub Actions automates the build and test process:
+#### 4.4.1 Backend Tests (`tests.yml`)
 
-1. **tests.yml** — Install deps → Run Pest tests → Upload coverage to Codecov
-2. **frontend-tests.yml** — Install npm deps → Run Vitest → Run Playwright
-3. **lint.yml** — Run Pint → Run ESLint → Run Prettier → Run vue-tsc
-4. **docker-publish.yml** — Build Docker image → Push to GHCR (on release)
+| Step | Command | Purpose |
+|------|---------|---------|
+| PHP Setup | `shivammathur/setup-php@v2` (PHP 8.5, Xdebug) | Runtime and coverage |
+| Node Setup | `actions/setup-node@v4` (Node 22) | Frontend asset compilation |
+| Dependencies | `composer install`, `npm i` | Install PHP and JS packages |
+| Environment | `cp .env.example .env`, `php artisan key:generate` | Application configuration |
+| Database | `touch database/database.sqlite`, `php artisan migrate --force` | Test database |
+| Assets | `npm run build` | Compile frontend for integration tests |
+| Tests | `./vendor/bin/pest --coverage-clover coverage.xml` | Execute test suite |
+| Coverage | `codecov/codecov-action@v5` | Upload to Codecov |
+
+**Artifacts:** `coverage.xml` (uploaded to Codecov)
+
+#### 4.4.2 Frontend Tests (`frontend-tests.yml`)
+
+**Vitest Job:**
+
+| Step | Command | Purpose |
+|------|---------|---------|
+| Node Setup | `actions/setup-node@v4` (Node 22) | Runtime |
+| Dependencies | `npm ci` | Install packages |
+| Tests | `npm test` (with `LARAVEL_BYPASS_ENV_CHECK=1`) | Vue component tests |
+
+**Playwright Job:**
+
+| Step | Command | Purpose |
+|------|---------|---------|
+| Full Setup | PHP 8.5, Node 22, Composer, npm | Full-stack runtime |
+| Server | `php artisan serve --port=8000` | Laravel dev server for E2E |
+| Browser | `npx playwright install chromium --with-deps` | Test browser |
+| Tests | `npm run test:e2e` | End-to-end browser tests |
+
+**Artifacts:** `playwright-report/` (uploaded on failure, 7-day retention)
+
+#### 4.4.3 Linting (`lint.yml`)
+
+| Step | Command | Purpose |
+|------|---------|---------|
+| PHP Setup | `shivammathur/setup-php@v2` (PHP 8.5) | Pint runtime |
+| Dependencies | `composer install`, `npm install` | Install packages |
+| PHP Style | `composer lint` (Pint) | PHP code formatting |
+| JS Format | `npm run format` (Prettier) | Frontend formatting |
+| JS Lint | `npm run lint:check` (ESLint) | Frontend code quality |
+
+**Artifacts:** None
+
+#### 4.4.4 Docker Publish (`docker-publish.yml`)
+
+| Step | Command | Purpose |
+|------|---------|---------|
+| Buildx | `docker/setup-buildx-action` | Multi-platform build support |
+| Auth | `docker/login-action` (GHCR) | Container registry authentication |
+| Metadata | `docker/metadata-action` | Tag and label generation |
+| Build | `docker/build-push-action` (linux/amd64, linux/arm64) | Multi-arch image build and push |
+| Attestation | `actions/attest-build-provenance` | Supply chain security |
+
+**Artifacts:** Docker image published to `ghcr.io` with build provenance attestation
+
+#### 4.4.5 External Service Dependencies
+
+| Service | Used By | Purpose |
+|---------|---------|---------|
+| Codecov | `tests.yml` | Coverage trend tracking |
+| GitHub Container Registry | `docker-publish.yml` | Docker image hosting |
+| GitHub Actions | All workflows | CI/CD execution platform |
 
 ### 4.5 Asset Compilation
 

@@ -61,6 +61,35 @@ No special hardware preparation required. Tests run on standard development mach
    vendor/bin/sail up -d
    ```
 
+#### 3.2.1 CI Environment Preparation
+
+In GitHub Actions CI, the following steps replace the local Sail environment:
+
+1. Setup PHP 8.5 via `shivammathur/setup-php@v2` with Xdebug coverage
+2. Setup Node.js 22 via `actions/setup-node@v4`
+3. Install dependencies:
+   ```bash
+   composer install --no-interaction --prefer-dist --optimize-autoloader
+   npm ci
+   ```
+4. Configure environment:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   touch database/database.sqlite
+   php artisan migrate --force
+   ```
+5. Build frontend assets:
+   ```bash
+   npm run build
+   ```
+6. Environment overrides applied by `phpunit.xml`:
+   - `DB_DATABASE=testing` (SQLite in-memory)
+   - `CACHE_STORE=array`
+   - `SESSION_DRIVER=array`
+
+For Playwright E2E tests, a Laravel development server is started on port 8000 with `SESSION_DRIVER=file` since E2E tests run outside the PHPUnit process.
+
 ### 3.3 Test Database
 
 Tests use the `RefreshDatabase` trait which:
@@ -279,6 +308,18 @@ This ensures complete isolation between test cases.
 | Domain structure | Domain modules follow expected directory structure |
 | No direct DB:: usage | Models use Eloquent, not DB facade |
 | Controller returns | Controllers return Inertia or redirect responses |
+
+### 4.9 CI Pipeline Verification
+
+**Scope:** GitHub Actions workflows (`.github/workflows/`)
+
+| Test | Assertion |
+|------|-----------|
+| Backend pipeline executes | `tests.yml` completes Pest test suite with coverage |
+| Frontend pipeline executes | `frontend-tests.yml` completes Vitest and Playwright tests |
+| Lint pipeline executes | `lint.yml` passes Pint, ESLint, and Prettier checks with zero errors |
+| Docker pipeline executes | `docker-publish.yml` builds multi-platform image and pushes to GHCR |
+| All pipelines gate merges | Pull requests cannot merge with failing required status checks |
 
 ---
 

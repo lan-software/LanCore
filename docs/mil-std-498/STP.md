@@ -61,6 +61,21 @@ This document describes the test environment, test approach, planned tests, and 
 | Node.js | Latest LTS | Latest LTS (Sail container) |
 | Browser | Chromium (Playwright) | Chromium (Playwright) |
 
+#### 3.2.1 CI Pipeline Configuration
+
+| Configuration | Value |
+|---------------|-------|
+| CI Platform | GitHub Actions |
+| Runner | `ubuntu-latest` |
+| PHP Setup | `shivammathur/setup-php@v2` with Xdebug coverage |
+| Node.js Setup | `actions/setup-node@v4`, Node 22 |
+| Database (CI) | SQLite file (`database/database.sqlite`) with migrations |
+| Database (Tests) | SQLite in-memory via `phpunit.xml` override (`DB_DATABASE=testing`) |
+| Cache/Session (CI) | Overridden to `array` via `phpunit.xml` (no Redis in CI) |
+| Coverage Tool | Xdebug (collection) + Codecov (reporting) |
+| Secrets Required | `CODECOV_TOKEN` (coverage upload), `GITHUB_TOKEN` (automatic, for Docker/GHCR) |
+| Asset Build | `npm run build` (Vite production build before tests) |
+
 ### 3.3 Test Data
 
 - **Factories:** Each Eloquent model has a corresponding factory for generating test data
@@ -209,11 +224,67 @@ vendor/bin/sail npm run types:check
 
 ### 5.1 Continuous Integration
 
-| Trigger | Tests Run | Pipeline |
-|---------|-----------|----------|
-| Push to any branch | All Pest tests, lint, type check | `tests.yml`, `lint.yml` |
-| Pull request | All Pest tests, frontend tests, lint | `tests.yml`, `frontend-tests.yml`, `lint.yml` |
-| Release tag | All tests + Docker image build | All workflows |
+#### 5.1.1 Pipeline Overview
+
+| Workflow | File | Triggers | Scope |
+|----------|------|----------|-------|
+| Backend Tests | `tests.yml` | Push/PR to `develop`, `main`, `master`, `workos` | Pest PHP tests with Xdebug coverage, uploaded to Codecov |
+| Frontend Tests | `frontend-tests.yml` | Push/PR to `develop`, `main`, `master` | Vitest component tests + Playwright E2E browser tests |
+| Linting | `lint.yml` | Push/PR to `develop`, `main`, `master`, `workos` | PHP Pint formatting + ESLint/Prettier frontend checks |
+| Docker Publish | `docker-publish.yml` | Push to `main`/`master`, version tags | Multi-platform Docker image (amd64/arm64) to GitHub Container Registry |
+
+#### 5.1.2 Backend Tests (`tests.yml`)
+
+1. Checkout code
+2. Setup PHP 8.5 with Xdebug coverage
+3. Setup Node.js 22
+4. Install PHP and Node dependencies
+5. Copy `.env.example` to `.env`, generate application key
+6. Create SQLite database and run migrations
+7. Build frontend assets (`npm run build`)
+8. Run Pest tests with coverage output (`./vendor/bin/pest --coverage-clover coverage.xml`)
+9. Upload coverage to Codecov
+
+**Environment overrides:** `CACHE_STORE=array`, `SESSION_DRIVER=array`, `QUEUE_CONNECTION=sync`
+
+#### 5.1.3 Frontend Tests (`frontend-tests.yml`)
+
+**Vitest Job (Component Tests):**
+1. Checkout code, setup Node.js 22
+2. Install dependencies (`npm ci`)
+3. Run Vitest (`npm test`) with `LARAVEL_BYPASS_ENV_CHECK=1`
+
+**Playwright Job (E2E Tests):**
+1. Checkout code, setup PHP 8.5 and Node.js 22
+2. Install PHP and Node dependencies
+3. Copy `.env.example`, generate key, create SQLite DB, run migrations
+4. Build assets (`npm run build`)
+5. Install Playwright Chromium browser
+6. Start Laravel dev server on port 8000
+7. Wait for server readiness (`wait-on http://localhost:8000`)
+8. Run Playwright tests (`npm run test:e2e`)
+9. Upload Playwright report artifact on failure
+
+#### 5.1.4 Linting (`lint.yml`)
+
+1. Checkout code, setup PHP 8.5
+2. Install PHP and Node dependencies
+3. Run PHP Pint (`composer lint`)
+4. Run Prettier formatting check (`npm run format`)
+5. Run ESLint check (`npm run lint:check`)
+
+#### 5.1.5 Docker Publish (`docker-publish.yml`)
+
+1. Checkout code
+2. Setup Docker Buildx for multi-platform builds
+3. Log in to GitHub Container Registry
+4. Extract metadata (tags, labels)
+5. Build and push multi-platform image (linux/amd64, linux/arm64)
+6. Generate artifact attestation for supply chain security
+
+#### 5.1.6 Merge Requirements
+
+All applicable pipelines must pass before a pull request can be merged. Pipeline failures block merge to protected branches (`main`, `develop`).
 
 ### 5.2 Development Workflow
 
