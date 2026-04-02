@@ -49,11 +49,21 @@ jobs:
       - name: Generate Application Key
         run: php artisan key:generate
 
+      - name: Create Database
+        run: touch database/database.sqlite
+
+      - name: Run Migrations
+        run: php artisan migrate --force
+
       - name: Build Assets
         run: npm run build
 
       - name: Tests
         run: ./vendor/bin/pest --coverage-clover coverage.xml
+        env:
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
