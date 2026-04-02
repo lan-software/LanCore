@@ -1,47 +1,60 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3'
-import { FlexRender } from '@tanstack/vue-table'
-import { Plus } from 'lucide-vue-next'
-import { edit } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorController'
-import { create as sponsorCreate } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorController'
-import Heading from '@/components/Heading.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useDataTable } from '@/composables/useDataTable'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as sponsorsRoute } from '@/routes/sponsors'
-import type { BreadcrumbItem } from '@/types'
-import type { Sponsor } from '@/types/domain'
-import { columns } from './columns'
+import { Head, Link, router } from '@inertiajs/vue3';
+import { FlexRender } from '@tanstack/vue-table';
+import { Plus } from 'lucide-vue-next';
+import { edit } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorController';
+import { create as sponsorCreate } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorController';
+import Heading from '@/components/Heading.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { useDataTable } from '@/composables/useDataTable';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as sponsorsRoute } from '@/routes/sponsors';
+import type { BreadcrumbItem } from '@/types';
+import type { Sponsor } from '@/types/domain';
+import { columns } from './columns';
 
 defineProps<{
     sponsors: {
-        data: Sponsor[]
-        current_page: number
-        last_page: number
-        per_page: number
-        total: number
-        links: { url: string | null; label: string; active: boolean }[]
-    }
+        data: Sponsor[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        links: { url: string | null; label: string; active: boolean }[];
+    };
     filters: {
-        search?: string
-        sort?: string
-        direction?: 'asc' | 'desc'
-        per_page?: number
-    }
-}>()
+        search?: string;
+        sort?: string;
+        direction?: 'asc' | 'desc';
+        per_page?: number;
+    };
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: sponsorsRoute().url },
     { title: 'Sponsors', href: sponsorsRoute().url },
-]
+];
 
 const { setSearch, setSort, setPerPage } = useDataTable(
     () => sponsorsRoute().url,
     {},
-)
+);
 </script>
 
 <template>
@@ -91,16 +104,24 @@ const { setSearch, setSort, setPerPage } = useDataTable(
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead v-for="col in columns" :key="col.id ?? (col as any).accessorKey">
+                            <TableHead
+                                v-for="col in columns"
+                                :key="col.id ?? (col as any).accessorKey"
+                            >
                                 <FlexRender
                                     v-if="typeof col.header === 'function'"
                                     :render="col.header"
                                     :props="{
                                         column: {
-                                            getToggleSortingHandler: () => () => setSort((col as any).accessorKey),
+                                            getToggleSortingHandler: () => () =>
+                                                setSort(
+                                                    (col as any).accessorKey,
+                                                ),
                                             getIsSorted: () =>
-                                                filters.sort === (col as any).accessorKey
-                                                    ? filters.direction ?? false
+                                                filters.sort ===
+                                                (col as any).accessorKey
+                                                    ? (filters.direction ??
+                                                      false)
                                                     : false,
                                         },
                                     }"
@@ -116,16 +137,29 @@ const { setSearch, setSort, setPerPage } = useDataTable(
                             class="cursor-pointer"
                             @click="router.visit(edit(sponsor.id).url)"
                         >
-                            <TableCell v-for="col in columns" :key="col.id ?? (col as any).accessorKey">
+                            <TableCell
+                                v-for="col in columns"
+                                :key="col.id ?? (col as any).accessorKey"
+                            >
                                 <FlexRender
                                     v-if="typeof col.cell === 'function'"
                                     :render="col.cell"
-                                    :props="{ row: { original: sponsor, getValue: (key: string) => (sponsor as any)[key] }, column: col }"
+                                    :props="{
+                                        row: {
+                                            original: sponsor,
+                                            getValue: (key: string) =>
+                                                (sponsor as any)[key],
+                                        },
+                                        column: col,
+                                    }"
                                 />
                             </TableCell>
                         </TableRow>
                         <TableRow v-if="sponsors.data.length === 0">
-                            <TableCell :colspan="columns.length" class="text-center text-muted-foreground py-8">
+                            <TableCell
+                                :colspan="columns.length"
+                                class="py-8 text-center text-muted-foreground"
+                            >
                                 No sponsors found.
                             </TableCell>
                         </TableRow>
@@ -134,9 +168,13 @@ const { setSearch, setSort, setPerPage } = useDataTable(
             </div>
 
             <!-- Pagination -->
-            <div v-if="sponsors.last_page > 1" class="flex items-center justify-between">
+            <div
+                v-if="sponsors.last_page > 1"
+                class="flex items-center justify-between"
+            >
                 <p class="text-sm text-muted-foreground">
-                    Showing {{ sponsors.data.length }} of {{ sponsors.total }} sponsors
+                    Showing {{ sponsors.data.length }} of
+                    {{ sponsors.total }} sponsors
                 </p>
                 <div class="flex gap-1">
                     <template v-for="link in sponsors.links" :key="link.label">
@@ -146,13 +184,11 @@ const { setSearch, setSort, setPerPage } = useDataTable(
                             size="sm"
                             :class="{ 'bg-accent': link.active }"
                             @click="router.visit(link.url)"
-                        ><span v-html="link.label" /></Button>
-                        <Button
-                            v-else
-                            variant="outline"
-                            size="sm"
-                            disabled
-                        ><span v-html="link.label" /></Button>
+                            ><span v-html="link.label"
+                        /></Button>
+                        <Button v-else variant="outline" size="sm" disabled
+                            ><span v-html="link.label"
+                        /></Button>
                     </template>
                 </div>
             </div>

@@ -1,52 +1,58 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3'
-import { ImagePlus, X } from 'lucide-vue-next'
-import { ref } from 'vue'
-import EventController from '@/actions/App/Domain/Event/Http/Controllers/EventController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as eventsRoute } from '@/routes/events'
-import type { BreadcrumbItem } from '@/types'
+import { Form, Head, Link } from '@inertiajs/vue3';
+import { ImagePlus, X } from 'lucide-vue-next';
+import { ref } from 'vue';
+import EventController from '@/actions/App/Domain/Event/Http/Controllers/EventController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as eventsRoute } from '@/routes/events';
+import type { BreadcrumbItem } from '@/types';
 
 defineProps<{
-    venues: { id: number; name: string }[]
-}>()
+    venues: { id: number; name: string }[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: eventsRoute().url },
     { title: 'Events', href: eventsRoute().url },
     { title: 'Create', href: EventController.create().url },
-]
+];
 
-const bannerPreviews = ref<{ id: number; preview: string }[]>([])
-let nextBannerId = 0
+const bannerPreviews = ref<{ id: number; preview: string }[]>([]);
+let nextBannerId = 0;
 
 function addBannerSlot() {
-    bannerPreviews.value.push({ id: nextBannerId++, preview: '' })
+    bannerPreviews.value.push({ id: nextBannerId++, preview: '' });
 }
 
 function onBannerSelected(index: number, event: globalThis.Event) {
-    const file = (event.target as HTMLInputElement).files?.[0]
+    const file = (event.target as HTMLInputElement).files?.[0];
 
     if (file) {
-        bannerPreviews.value[index].preview = URL.createObjectURL(file)
+        bannerPreviews.value[index].preview = URL.createObjectURL(file);
     }
 }
 
 function removeBannerSlot(index: number) {
-    const preview = bannerPreviews.value[index].preview
+    const preview = bannerPreviews.value[index].preview;
 
     if (preview) {
-        URL.revokeObjectURL(preview)
+        URL.revokeObjectURL(preview);
     }
 
-    bannerPreviews.value.splice(index, 1)
+    bannerPreviews.value.splice(index, 1);
 }
 </script>
 
@@ -54,7 +60,7 @@ function removeBannerSlot(index: number) {
     <Head title="Create Event" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <!-- Back link -->
             <div>
                 <Link
@@ -146,7 +152,9 @@ function removeBannerSlot(index: number) {
                         <Label for="venue_id">Venue</Label>
                         <Select name="venue_id">
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a venue (optional)" />
+                                <SelectValue
+                                    placeholder="Select a venue (optional)"
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem
@@ -197,7 +205,11 @@ function removeBannerSlot(index: number) {
                                     class="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground"
                                 >
                                     <ImagePlus class="size-4" />
-                                    {{ slot.preview ? 'Replace' : 'Choose Image' }}
+                                    {{
+                                        slot.preview
+                                            ? 'Replace'
+                                            : 'Choose Image'
+                                    }}
                                 </label>
                                 <input
                                     :id="`banner_image_${slot.id}`"
@@ -237,18 +249,30 @@ function removeBannerSlot(index: number) {
                             Add Image
                         </Button>
 
-                        <p class="text-xs text-muted-foreground">Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB each.</p>
-                        <InputError :message="(errors as Record<string, string>)['banner_images']" />
-                        <InputError :message="(errors as Record<string, string>)['banner_images.0']" />
+                        <p class="text-xs text-muted-foreground">
+                            Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB
+                            each.
+                        </p>
+                        <InputError
+                            :message="
+                                (errors as Record<string, string>)[
+                                    'banner_images'
+                                ]
+                            "
+                        />
+                        <InputError
+                            :message="
+                                (errors as Record<string, string>)[
+                                    'banner_images.0'
+                                ]
+                            "
+                        />
                     </div>
                 </div>
 
                 <!-- Submit -->
                 <div class="flex items-center gap-4">
-                    <Button
-                        type="submit"
-                        :disabled="processing"
-                    >
+                    <Button type="submit" :disabled="processing">
                         {{ processing ? 'Creating…' : 'Create Event' }}
                     </Button>
                 </div>

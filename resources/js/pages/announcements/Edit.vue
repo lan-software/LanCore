@@ -1,33 +1,52 @@
 <script setup lang="ts">
-import { Head, Link, useForm, router } from '@inertiajs/vue3'
-import { ref } from 'vue'
-import { update, destroy } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
-import { edit as announcementEdit } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as announcementsRoute } from '@/routes/announcements'
-import type { BreadcrumbItem } from '@/types'
-import type { Announcement } from '@/types/domain'
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import {
+    update,
+    destroy,
+} from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController';
+import { edit as announcementEdit } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as announcementsRoute } from '@/routes/announcements';
+import type { BreadcrumbItem } from '@/types';
+import type { Announcement } from '@/types/domain';
 
 const props = defineProps<{
-    announcement: Announcement
-    events: { id: number; name: string }[]
-}>()
+    announcement: Announcement;
+    events: { id: number; name: string }[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: announcementsRoute().url },
     { title: 'Announcements', href: announcementsRoute().url },
-    { title: 'Edit', href: announcementEdit({ announcement: props.announcement.id }).url },
-]
+    {
+        title: 'Edit',
+        href: announcementEdit({ announcement: props.announcement.id }).url,
+    },
+];
 
 const form = useForm({
     title: props.announcement.title,
@@ -35,20 +54,20 @@ const form = useForm({
     priority: props.announcement.priority,
     event_id: String(props.announcement.event_id),
     publish_now: false,
-})
+});
 
-const publishNow = ref(false)
+const publishNow = ref(false);
 
 function submit() {
-    form.publish_now = publishNow.value
+    form.publish_now = publishNow.value;
     form.patch(update({ announcement: props.announcement.id }).url, {
         preserveScroll: true,
-    })
+    });
 }
 
 function deleteAnnouncement() {
     if (confirm('Are you sure you want to delete this announcement?')) {
-        router.delete(destroy({ announcement: props.announcement.id }).url)
+        router.delete(destroy({ announcement: props.announcement.id }).url);
     }
 }
 </script>
@@ -57,30 +76,49 @@ function deleteAnnouncement() {
     <Head title="Edit Announcement" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-3xl">
+        <div class="flex h-full max-w-3xl flex-1 flex-col gap-8 p-4">
             <div class="flex items-center justify-between">
-                <Link :href="announcementsRoute().url" class="text-sm text-muted-foreground hover:text-foreground">
+                <Link
+                    :href="announcementsRoute().url"
+                    class="text-sm text-muted-foreground hover:text-foreground"
+                >
                     &larr; Back to Announcements
                 </Link>
                 <div class="flex items-center gap-2">
-                    <Badge v-if="announcement.published_at" variant="default">Published</Badge>
+                    <Badge v-if="announcement.published_at" variant="default"
+                        >Published</Badge
+                    >
                     <Badge v-else variant="outline">Draft</Badge>
                 </div>
             </div>
 
             <form @submit.prevent="submit" class="space-y-8">
                 <div class="space-y-4">
-                    <Heading variant="small" title="Announcement Information" description="Update the announcement details" />
+                    <Heading
+                        variant="small"
+                        title="Announcement Information"
+                        description="Update the announcement details"
+                    />
 
                     <div class="grid gap-2">
                         <Label for="title">Title</Label>
-                        <Input id="title" v-model="form.title" required placeholder="Announcement title" />
+                        <Input
+                            id="title"
+                            v-model="form.title"
+                            required
+                            placeholder="Announcement title"
+                        />
                         <InputError :message="form.errors.title" />
                     </div>
 
                     <div class="grid gap-2">
                         <Label for="description">Description</Label>
-                        <Textarea id="description" v-model="form.description" placeholder="Provide details about the announcement" rows="4" />
+                        <Textarea
+                            id="description"
+                            v-model="form.description"
+                            placeholder="Provide details about the announcement"
+                            rows="4"
+                        />
                         <InputError :message="form.errors.description" />
                     </div>
 
@@ -91,7 +129,11 @@ function deleteAnnouncement() {
                                 <SelectValue placeholder="Select an event" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem v-for="event in events" :key="event.id" :value="String(event.id)">
+                                <SelectItem
+                                    v-for="event in events"
+                                    :key="event.id"
+                                    :value="String(event.id)"
+                                >
                                     {{ event.name }}
                                 </SelectItem>
                             </SelectContent>
@@ -106,9 +148,17 @@ function deleteAnnouncement() {
                                 <SelectValue placeholder="Select priority" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="silent">Silent — no notifications sent</SelectItem>
-                                <SelectItem value="normal">Normal — respects user preferences</SelectItem>
-                                <SelectItem value="emergency">Emergency — always notifies all users</SelectItem>
+                                <SelectItem value="silent"
+                                    >Silent — no notifications sent</SelectItem
+                                >
+                                <SelectItem value="normal"
+                                    >Normal — respects user
+                                    preferences</SelectItem
+                                >
+                                <SelectItem value="emergency"
+                                    >Emergency — always notifies all
+                                    users</SelectItem
+                                >
                             </SelectContent>
                         </Select>
                         <InputError :message="form.errors.priority" />
@@ -116,10 +166,17 @@ function deleteAnnouncement() {
                 </div>
 
                 <div v-if="!announcement.published_at" class="space-y-4">
-                    <Heading variant="small" title="Publishing" description="Control when this announcement is visible" />
+                    <Heading
+                        variant="small"
+                        title="Publishing"
+                        description="Control when this announcement is visible"
+                    />
 
                     <div class="flex items-center gap-2">
-                        <Checkbox id="publish_now" v-model:checked="publishNow" />
+                        <Checkbox
+                            id="publish_now"
+                            v-model:checked="publishNow"
+                        />
                         <Label for="publish_now">Publish now</Label>
                     </div>
                 </div>
@@ -136,18 +193,37 @@ function deleteAnnouncement() {
                             leave-active-class="transition ease-in-out"
                             leave-to-class="opacity-0"
                         >
-                            <p v-if="form.recentlySuccessful" class="text-sm text-muted-foreground">Saved.</p>
+                            <p
+                                v-if="form.recentlySuccessful"
+                                class="text-sm text-muted-foreground"
+                            >
+                                Saved.
+                            </p>
                         </Transition>
                     </div>
 
-                    <Button type="button" variant="destructive" @click="deleteAnnouncement">
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        @click="deleteAnnouncement"
+                    >
                         Delete
                     </Button>
                 </div>
             </form>
 
-            <div v-if="announcement.dismissed_by_users && announcement.dismissed_by_users.length > 0" class="space-y-4">
-                <Heading variant="small" :title="`Acknowledged Users (${announcement.dismissed_by_users.length})`" description="Users who have acknowledged this announcement" />
+            <div
+                v-if="
+                    announcement.dismissed_by_users &&
+                    announcement.dismissed_by_users.length > 0
+                "
+                class="space-y-4"
+            >
+                <Heading
+                    variant="small"
+                    :title="`Acknowledged Users (${announcement.dismissed_by_users.length})`"
+                    description="Users who have acknowledged this announcement"
+                />
 
                 <div class="overflow-hidden rounded-lg border">
                     <Table>
@@ -157,7 +233,10 @@ function deleteAnnouncement() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="user in announcement.dismissed_by_users" :key="user.id">
+                            <TableRow
+                                v-for="user in announcement.dismissed_by_users"
+                                :key="user.id"
+                            >
                                 <TableCell>{{ user.name }}</TableCell>
                             </TableRow>
                         </TableBody>
@@ -165,7 +244,11 @@ function deleteAnnouncement() {
                 </div>
             </div>
             <div v-else-if="announcement.published_at" class="space-y-4">
-                <Heading variant="small" title="Acknowledged Users (0)" description="No users have acknowledged this announcement yet" />
+                <Heading
+                    variant="small"
+                    title="Acknowledged Users (0)"
+                    description="No users have acknowledged this announcement yet"
+                />
             </div>
         </div>
     </AppLayout>

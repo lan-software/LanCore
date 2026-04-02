@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3'
-import { store } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController'
-import { create as sponsorLevelCreate } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as sponsorLevelsRoute } from '@/routes/sponsor-levels'
-import type { BreadcrumbItem } from '@/types'
+import { Form, Head, Link } from '@inertiajs/vue3';
+import { store } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController';
+import { create as sponsorLevelCreate } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as sponsorLevelsRoute } from '@/routes/sponsor-levels';
+import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: sponsorLevelsRoute().url },
     { title: 'Sponsor Levels', href: sponsorLevelsRoute().url },
     { title: 'Create', href: sponsorLevelCreate().url },
-]
+];
 </script>
 
 <template>
     <Head title="Create Sponsor Level" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <div>
                 <Link
                     :href="sponsorLevelsRoute().url"
@@ -65,7 +65,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 class="h-10 w-16 p-1"
                                 value="#000000"
                             />
-                            <span class="text-sm text-muted-foreground">Choose a hex color for this level</span>
+                            <span class="text-sm text-muted-foreground"
+                                >Choose a hex color for this level</span
+                            >
                         </div>
                         <InputError :message="errors.color" />
                     </div>

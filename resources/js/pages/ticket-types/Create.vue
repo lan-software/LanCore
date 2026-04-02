@@ -1,37 +1,43 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3'
-import TicketTypeController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketTypeController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as ticketTypesRoute } from '@/routes/ticket-types'
-import type { BreadcrumbItem } from '@/types'
+import { Form, Head, Link } from '@inertiajs/vue3';
+import TicketTypeController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketTypeController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as ticketTypesRoute } from '@/routes/ticket-types';
+import type { BreadcrumbItem } from '@/types';
 
 defineProps<{
-    events: { id: number; name: string }[]
-    categories: { id: number; name: string }[]
-    groups: { id: number; name: string }[]
-    selectedEventId?: number | null
-}>()
+    events: { id: number; name: string }[];
+    categories: { id: number; name: string }[];
+    groups: { id: number; name: string }[];
+    selectedEventId?: number | null;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: ticketTypesRoute().url },
     { title: 'Ticket Types', href: ticketTypesRoute().url },
     { title: 'Create', href: TicketTypeController.create().url },
-]
+];
 </script>
 
 <template>
     <Head title="Create Ticket Type" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <!-- Back link -->
             <div>
                 <Link
@@ -149,19 +155,17 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <Checkbox
-                            id="is_row_ticket"
-                            name="is_row_ticket"
-                        />
-                        <Label for="is_row_ticket" class="cursor-pointer">Row ticket</Label>
+                        <Checkbox id="is_row_ticket" name="is_row_ticket" />
+                        <Label for="is_row_ticket" class="cursor-pointer"
+                            >Row ticket</Label
+                        >
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <Checkbox
-                            id="is_seatable"
-                            name="is_seatable"
-                        />
-                        <Label for="is_seatable" class="cursor-pointer">Seatable</Label>
+                        <Checkbox id="is_seatable" name="is_seatable" />
+                        <Label for="is_seatable" class="cursor-pointer"
+                            >Seatable</Label
+                        >
                     </div>
                 </div>
 
@@ -196,11 +200,10 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <Checkbox
-                            id="is_hidden"
-                            name="is_hidden"
-                        />
-                        <Label for="is_hidden" class="cursor-pointer">Hidden</Label>
+                        <Checkbox id="is_hidden" name="is_hidden" />
+                        <Label for="is_hidden" class="cursor-pointer"
+                            >Hidden</Label
+                        >
                     </div>
                 </div>
 
@@ -214,7 +217,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                     <div class="grid gap-2">
                         <Label for="event_id">Event</Label>
-                        <Select name="event_id" :default-value="selectedEventId ? String(selectedEventId) : undefined">
+                        <Select
+                            name="event_id"
+                            :default-value="
+                                selectedEventId
+                                    ? String(selectedEventId)
+                                    : undefined
+                            "
+                        >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select an event" />
                             </SelectTrigger>
@@ -235,7 +245,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <Label for="ticket_category_id">Category</Label>
                         <Select name="ticket_category_id">
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a category (optional)" />
+                                <SelectValue
+                                    placeholder="Select a category (optional)"
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem
@@ -254,7 +266,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <Label for="ticket_group_id">Group</Label>
                         <Select name="ticket_group_id">
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a group (optional)" />
+                                <SelectValue
+                                    placeholder="Select a group (optional)"
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem
@@ -272,10 +286,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                 <!-- Submit -->
                 <div class="flex items-center gap-4">
-                    <Button
-                        type="submit"
-                        :disabled="processing"
-                    >
+                    <Button type="submit" :disabled="processing">
                         {{ processing ? 'Creating…' : 'Create Ticket Type' }}
                     </Button>
                 </div>

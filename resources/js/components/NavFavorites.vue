@@ -30,7 +30,11 @@ const favorites = computed(() => {
 });
 
 function removeFavorite(itemId: string) {
-    router.post(toggleFavorite().url, { item_id: itemId }, { preserveScroll: true, preserveState: true });
+    router.post(
+        toggleFavorite().url,
+        { item_id: itemId },
+        { preserveScroll: true, preserveState: true },
+    );
 }
 </script>
 
@@ -49,7 +53,10 @@ function removeFavorite(itemId: string) {
                         <span>{{ item.title }}</span>
                     </Link>
                 </SidebarMenuButton>
-                <SidebarMenuAction :show-on-hover="true" @click="removeFavorite(item.id!)">
+                <SidebarMenuAction
+                    :show-on-hover="true"
+                    @click="removeFavorite(item.id!)"
+                >
                     <PinOff class="size-4" />
                     <span class="sr-only">Unpin {{ item.title }}</span>
                 </SidebarMenuAction>

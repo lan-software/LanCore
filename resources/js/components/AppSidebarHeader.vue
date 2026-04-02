@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { House, ExternalLink } from 'lucide-vue-next';
-import { computed, defineAsyncComponent  } from 'vue';
-import type {Component} from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
+import type { Component } from 'vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import NotificationBell from '@/components/NotificationBell.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { home } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
@@ -26,12 +31,12 @@ const iconCache = new Map<string, Component>();
 
 function resolveIcon(name: string | null): Component {
     if (!name) {
-return ExternalLink;
-}
+        return ExternalLink;
+    }
 
     if (iconCache.has(name)) {
-return iconCache.get(name)!;
-}
+        return iconCache.get(name)!;
+    }
 
     const pascalCase = name
         .split('-')
@@ -74,7 +79,10 @@ return iconCache.get(name)!;
                             rel="noopener"
                             class="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                         >
-                            <component :is="resolveIcon(link.icon)" class="size-4" />
+                            <component
+                                :is="resolveIcon(link.icon)"
+                                class="size-4"
+                            />
                         </a>
                     </TooltipTrigger>
                     <TooltipContent>

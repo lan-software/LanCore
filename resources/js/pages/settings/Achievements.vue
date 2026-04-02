@@ -1,65 +1,67 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3'
-import { Trophy, ExternalLink } from 'lucide-vue-next'
-import { defineAsyncComponent  } from 'vue'
-import type {Component} from 'vue';
-import UserAchievementsController from '@/actions/App/Http/Controllers/Settings/UserAchievementsController'
-import Heading from '@/components/Heading.vue'
-import AppLayout from '@/layouts/AppLayout.vue'
-import SettingsLayout from '@/layouts/settings/Layout.vue'
-import type { BreadcrumbItem } from '@/types'
+import { Head } from '@inertiajs/vue3';
+import { Trophy, ExternalLink } from 'lucide-vue-next';
+import { defineAsyncComponent } from 'vue';
+import type { Component } from 'vue';
+import UserAchievementsController from '@/actions/App/Http/Controllers/Settings/UserAchievementsController';
+import Heading from '@/components/Heading.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import SettingsLayout from '@/layouts/settings/Layout.vue';
+import type { BreadcrumbItem } from '@/types';
 
 type EarnedAchievement = {
-    id: number
-    name: string
-    description: string | null
-    color: string
-    icon: string
+    id: number;
+    name: string;
+    description: string | null;
+    color: string;
+    icon: string;
     pivot: {
-        earned_at: string
-    }
-}
+        earned_at: string;
+    };
+};
 
 defineProps<{
-    achievements: EarnedAchievement[]
-}>()
+    achievements: EarnedAchievement[];
+}>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
     {
         title: 'Achievements',
         href: UserAchievementsController.url(),
     },
-]
+];
 
-const iconCache = new Map<string, Component>()
+const iconCache = new Map<string, Component>();
 
 function resolveIcon(name: string): Component {
     if (iconCache.has(name)) {
-return iconCache.get(name)!
-}
+        return iconCache.get(name)!;
+    }
 
     const pascalCase = name
         .split('-')
         .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-        .join('')
+        .join('');
 
     const asyncIcon = defineAsyncComponent({
         loader: () =>
             import('lucide-vue-next').then((mod) => {
-                const icon = (mod as Record<string, Component>)[pascalCase]
+                const icon = (mod as Record<string, Component>)[pascalCase];
 
-                return icon ?? ExternalLink
+                return icon ?? ExternalLink;
             }),
         loadingComponent: ExternalLink,
-    })
+    });
 
-    iconCache.set(name, asyncIcon)
+    iconCache.set(name, asyncIcon);
 
-    return asyncIcon
+    return asyncIcon;
 }
 
 function formatDate(dateString: string): string {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(dateString))
+    return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(
+        new Date(dateString),
+    );
 }
 </script>
 
@@ -77,7 +79,10 @@ function formatDate(dateString: string): string {
                     description="Badges you've earned by using LanCore"
                 />
 
-                <div v-if="achievements.length > 0" class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <div
+                    v-if="achievements.length > 0"
+                    class="grid grid-cols-2 gap-4 sm:grid-cols-3"
+                >
                     <div
                         v-for="achievement in achievements"
                         :key="achievement.id"
@@ -94,8 +99,13 @@ function formatDate(dateString: string): string {
                         </div>
 
                         <div class="space-y-1">
-                            <p class="text-sm font-semibold leading-tight">{{ achievement.name }}</p>
-                            <p v-if="achievement.description" class="text-xs text-muted-foreground">
+                            <p class="text-sm leading-tight font-semibold">
+                                {{ achievement.name }}
+                            </p>
+                            <p
+                                v-if="achievement.description"
+                                class="text-xs text-muted-foreground"
+                            >
                                 {{ achievement.description }}
                             </p>
                         </div>
@@ -106,8 +116,13 @@ function formatDate(dateString: string): string {
                     </div>
                 </div>
 
-                <div v-else class="flex flex-col items-center gap-3 rounded-xl border border-dashed py-12 text-center">
-                    <div class="flex size-12 items-center justify-center rounded-full bg-muted">
+                <div
+                    v-else
+                    class="flex flex-col items-center gap-3 rounded-xl border border-dashed py-12 text-center"
+                >
+                    <div
+                        class="flex size-12 items-center justify-center rounded-full bg-muted"
+                    >
                         <Trophy class="size-6 text-muted-foreground" />
                     </div>
                     <div class="space-y-1">

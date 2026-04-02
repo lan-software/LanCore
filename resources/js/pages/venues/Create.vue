@@ -1,40 +1,42 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3'
-import { ImagePlus, Plus, Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
-import VenueController from '@/actions/App/Domain/Venue/Http/Controllers/VenueController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as venuesRoute } from '@/routes/venues'
-import type { BreadcrumbItem } from '@/types'
+import { Form, Head, Link } from '@inertiajs/vue3';
+import { ImagePlus, Plus, Trash2 } from 'lucide-vue-next';
+import { ref } from 'vue';
+import VenueController from '@/actions/App/Domain/Venue/Http/Controllers/VenueController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as venuesRoute } from '@/routes/venues';
+import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: venuesRoute().url },
     { title: 'Venues', href: venuesRoute().url },
     { title: 'Create', href: VenueController.create().url },
-]
+];
 
-const images = ref<{ file: File | null; alt_text: string; preview: string | null }[]>([])
+const images = ref<
+    { file: File | null; alt_text: string; preview: string | null }[]
+>([]);
 
 function addImage() {
-    images.value.push({ file: null, alt_text: '', preview: null })
+    images.value.push({ file: null, alt_text: '', preview: null });
 }
 
 function removeImage(index: number) {
-    images.value.splice(index, 1)
+    images.value.splice(index, 1);
 }
 
 function onFileSelected(index: number, event: globalThis.Event) {
-    const file = (event.target as HTMLInputElement).files?.[0]
+    const file = (event.target as HTMLInputElement).files?.[0];
 
     if (file) {
-        images.value[index].file = file
-        images.value[index].preview = URL.createObjectURL(file)
+        images.value[index].file = file;
+        images.value[index].preview = URL.createObjectURL(file);
     }
 }
 </script>
@@ -43,7 +45,7 @@ function onFileSelected(index: number, event: globalThis.Event) {
     <Head title="Create Venue" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <!-- Back link -->
             <div>
                 <Link
@@ -177,7 +179,11 @@ function onFileSelected(index: number, event: globalThis.Event) {
                                     class="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground"
                                 >
                                     <ImagePlus class="size-4" />
-                                    {{ image.file ? image.file.name : 'Choose Image' }}
+                                    {{
+                                        image.file
+                                            ? image.file.name
+                                            : 'Choose Image'
+                                    }}
                                 </label>
                                 <input
                                     :id="`image_file_${index}`"
@@ -220,16 +226,15 @@ function onFileSelected(index: number, event: globalThis.Event) {
                         <Plus class="size-4" />
                         Add Image
                     </Button>
-                    <p class="text-xs text-muted-foreground">Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB each.</p>
+                    <p class="text-xs text-muted-foreground">
+                        Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB each.
+                    </p>
                     <InputError :message="errors.images" />
                 </div>
 
                 <!-- Submit -->
                 <div class="flex items-center gap-4">
-                    <Button
-                        type="submit"
-                        :disabled="processing"
-                    >
+                    <Button type="submit" :disabled="processing">
                         {{ processing ? 'Creating…' : 'Create Venue' }}
                     </Button>
                 </div>

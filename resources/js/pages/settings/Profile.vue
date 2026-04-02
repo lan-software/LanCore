@@ -175,7 +175,10 @@ const countries = [
                                 autocomplete="postal-code"
                                 placeholder="12345"
                             />
-                            <InputError class="mt-2" :message="errors.zip_code" />
+                            <InputError
+                                class="mt-2"
+                                :message="errors.zip_code"
+                            />
                         </div>
 
                         <div class="grid gap-2">
@@ -194,7 +197,10 @@ const countries = [
 
                     <div class="grid gap-2">
                         <Label for="country">Country</Label>
-                        <Select name="country" :default-value="(user.country as string) ?? ''">
+                        <Select
+                            name="country"
+                            :default-value="(user.country as string) ?? ''"
+                        >
                             <SelectTrigger id="country" class="mt-1 w-full">
                                 <SelectValue placeholder="Select a country" />
                             </SelectTrigger>

@@ -1,41 +1,60 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3'
-import { Calendar, Info, MapPin, Minus, Plus, ShoppingCart } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
-import CartController from '@/actions/App/Domain/Shop/Http/Controllers/CartController'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { dashboard, login } from '@/routes'
-import type { Event, TicketAddon, TicketType } from '@/types/domain'
+import { Head, Link, router } from '@inertiajs/vue3';
+import {
+    Calendar,
+    Info,
+    MapPin,
+    Minus,
+    Plus,
+    ShoppingCart,
+} from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+import CartController from '@/actions/App/Domain/Shop/Http/Controllers/CartController';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { dashboard, login } from '@/routes';
+import type { Event, TicketAddon, TicketType } from '@/types/domain';
 
 type CartItemRef = {
-    purchasable_type: string
-    purchasable_id: number
-    quantity: number
-}
+    purchasable_type: string;
+    purchasable_id: number;
+    quantity: number;
+};
 
 type TicketTypeExtended = TicketType & {
-    is_purchasable: boolean
-    remaining_quota: number
-    unavailability_reason: string | null
-}
+    is_purchasable: boolean;
+    remaining_quota: number;
+    unavailability_reason: string | null;
+};
 
 type AddonExtended = TicketAddon & {
-    requires_ticket: boolean
-}
+    requires_ticket: boolean;
+};
 
 const props = defineProps<{
-    event: Event | null
-    ticketTypes: TicketTypeExtended[]
-    addons: AddonExtended[]
-    cartItemCount: number
-    cartItems: CartItemRef[]
-}>()
+    event: Event | null;
+    ticketTypes: TicketTypeExtended[];
+    addons: AddonExtended[];
+    cartItemCount: number;
+    cartItems: CartItemRef[];
+}>();
 
 function formatPrice(cents: number): string {
-    return (cents / 100).toFixed(2) + ' €'
+    return (cents / 100).toFixed(2) + ' €';
 }
 
 function formatDate(dateString: string): string {
@@ -44,48 +63,56 @@ function formatDate(dateString: string): string {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
-    })
+    });
 }
 
-const addingItem = ref<number | null>(null)
+const addingItem = ref<number | null>(null);
 
-const ticketTypeClass = 'App\\Domain\\Ticketing\\Models\\TicketType'
-const addonClass = 'App\\Domain\\Ticketing\\Models\\Addon'
+const ticketTypeClass = 'App\\Domain\\Ticketing\\Models\\TicketType';
+const addonClass = 'App\\Domain\\Ticketing\\Models\\Addon';
 
-function getCartQuantity(purchasableType: string, purchasableId: number): number {
+function getCartQuantity(
+    purchasableType: string,
+    purchasableId: number,
+): number {
     const item = props.cartItems.find(
-        (i) => i.purchasable_type === purchasableType && i.purchasable_id === purchasableId,
-    )
+        (i) =>
+            i.purchasable_type === purchasableType &&
+            i.purchasable_id === purchasableId,
+    );
 
-    return item?.quantity ?? 0
+    return item?.quantity ?? 0;
 }
 
 const ticketCartQuantities = computed(() => {
-    const map: Record<number, number> = {}
+    const map: Record<number, number> = {};
 
     for (const tt of props.ticketTypes) {
-        map[tt.id] = getCartQuantity(ticketTypeClass, tt.id)
+        map[tt.id] = getCartQuantity(ticketTypeClass, tt.id);
     }
 
-    return map
-})
+    return map;
+});
 
 const addonCartQuantities = computed(() => {
-    const map: Record<number, number> = {}
+    const map: Record<number, number> = {};
 
     for (const addon of props.addons) {
-        map[addon.id] = getCartQuantity(addonClass, addon.id)
+        map[addon.id] = getCartQuantity(addonClass, addon.id);
     }
 
-    return map
-})
+    return map;
+});
 
-function addToCart(purchasableType: 'ticket_type' | 'addon', purchasableId: number) {
+function addToCart(
+    purchasableType: 'ticket_type' | 'addon',
+    purchasableId: number,
+) {
     if (!props.event) {
-return
-}
+        return;
+    }
 
-    addingItem.value = purchasableId
+    addingItem.value = purchasableId;
 
     router.post(
         CartController.addItem().url,
@@ -98,24 +125,31 @@ return
         {
             preserveScroll: true,
             onFinish: () => {
-                addingItem.value = null
+                addingItem.value = null;
             },
         },
-    )
+    );
 }
 
-function updateCartQuantity(purchasableType: 'ticket_type' | 'addon', purchasableId: number, delta: number) {
-    const classType = purchasableType === 'ticket_type' ? ticketTypeClass : addonClass
+function updateCartQuantity(
+    purchasableType: 'ticket_type' | 'addon',
+    purchasableId: number,
+    delta: number,
+) {
+    const classType =
+        purchasableType === 'ticket_type' ? ticketTypeClass : addonClass;
     const cartItem = props.cartItems.find(
-        (i) => i.purchasable_type === classType && i.purchasable_id === purchasableId,
-    )
+        (i) =>
+            i.purchasable_type === classType &&
+            i.purchasable_id === purchasableId,
+    );
 
     if (!cartItem) {
-return
-}
+        return;
+    }
 
-    const currentQty = cartItem.quantity
-    const newQty = currentQty + delta
+    const currentQty = cartItem.quantity;
+    const newQty = currentQty + delta;
 
     if (newQty <= 0) {
         // Find the cart item ID - we need to navigate to the cart for removal
@@ -129,19 +163,19 @@ return
                 event_id: props.event!.id,
             },
             { preserveScroll: true },
-        )
+        );
 
-        return
+        return;
     }
 
     // Re-add with quantity 1 to increment, or use addItem which increments
     if (delta > 0) {
-        addToCart(purchasableType, purchasableId)
+        addToCart(purchasableType, purchasableId);
     } else {
         // For decrement, we need to visit the cart or use a different approach
         // Since addItem only increments, we'll navigate users to the cart for precise control
         // But we can post with negative delta approximation using a full page reload
-        router.visit(CartController.show().url)
+        router.visit(CartController.show().url);
     }
 }
 </script>
@@ -152,11 +186,16 @@ return
     <div class="flex min-h-screen flex-col bg-background text-foreground">
         <!-- Header -->
         <header class="border-b">
-            <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+            <div
+                class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4"
+            >
                 <Link href="/" class="text-lg font-semibold">LanCore</Link>
                 <nav class="flex items-center gap-4">
                     <template v-if="$page.props.auth.user">
-                        <Link :href="CartController.show().url" class="relative text-muted-foreground hover:text-foreground">
+                        <Link
+                            :href="CartController.show().url"
+                            class="relative text-muted-foreground hover:text-foreground"
+                        >
                             <ShoppingCart class="size-5" />
                             <Badge
                                 v-if="cartItemCount > 0"
@@ -173,7 +212,11 @@ return
                         </Link>
                     </template>
                     <template v-else>
-                        <Link :href="login()" class="text-sm text-muted-foreground hover:text-foreground">Log in</Link>
+                        <Link
+                            :href="login()"
+                            class="text-sm text-muted-foreground hover:text-foreground"
+                            >Log in</Link
+                        >
                     </template>
                 </nav>
             </div>
@@ -185,16 +228,27 @@ return
                     <div class="space-y-8">
                         <!-- Event Info -->
                         <div>
-                            <p class="text-sm font-medium uppercase tracking-wider text-muted-foreground">Ticket Shop</p>
-                            <h1 class="mt-2 text-4xl font-bold tracking-tight">{{ event.name }}</h1>
+                            <p
+                                class="text-sm font-medium tracking-wider text-muted-foreground uppercase"
+                            >
+                                Ticket Shop
+                            </p>
+                            <h1 class="mt-2 text-4xl font-bold tracking-tight">
+                                {{ event.name }}
+                            </h1>
                         </div>
 
-                        <div class="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                        <div
+                            class="flex flex-wrap gap-4 text-sm text-muted-foreground"
+                        >
                             <div class="flex items-center gap-1.5">
                                 <Calendar class="size-4" />
                                 {{ formatDate(event.start_date) }}
                             </div>
-                            <div v-if="event.venue" class="flex items-center gap-1.5">
+                            <div
+                                v-if="event.venue"
+                                class="flex items-center gap-1.5"
+                            >
                                 <MapPin class="size-4" />
                                 {{ event.venue.name }}
                             </div>
@@ -203,53 +257,119 @@ return
                         <!-- Ticket Types -->
                         <div class="space-y-4">
                             <h2 class="text-2xl font-semibold">Tickets</h2>
-                            <div v-if="ticketTypes.length > 0" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                <Card v-for="tt in ticketTypes" :key="tt.id" class="relative overflow-hidden">
+                            <div
+                                v-if="ticketTypes.length > 0"
+                                class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                            >
+                                <Card
+                                    v-for="tt in ticketTypes"
+                                    :key="tt.id"
+                                    class="relative overflow-hidden"
+                                >
                                     <!-- Unavailability Overlay -->
                                     <div
-                                        v-if="!tt.is_purchasable && tt.unavailability_reason"
+                                        v-if="
+                                            !tt.is_purchasable &&
+                                            tt.unavailability_reason
+                                        "
                                         class="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-[1px]"
                                     >
-                                        <Badge variant="secondary" class="px-4 py-2 text-sm font-semibold">
+                                        <Badge
+                                            variant="secondary"
+                                            class="px-4 py-2 text-sm font-semibold"
+                                        >
                                             {{ tt.unavailability_reason }}
                                         </Badge>
                                     </div>
 
                                     <CardHeader>
-                                        <div class="flex items-center justify-between">
+                                        <div
+                                            class="flex items-center justify-between"
+                                        >
                                             <CardTitle>{{ tt.name }}</CardTitle>
-                                            <span class="text-lg font-bold">{{ formatPrice(tt.price) }}</span>
+                                            <span class="text-lg font-bold">{{
+                                                formatPrice(tt.price)
+                                            }}</span>
                                         </div>
-                                        <CardDescription v-if="tt.description">{{ tt.description }}</CardDescription>
+                                        <CardDescription
+                                            v-if="tt.description"
+                                            >{{
+                                                tt.description
+                                            }}</CardDescription
+                                        >
                                     </CardHeader>
                                     <CardContent>
-                                        <div class="text-sm text-muted-foreground space-y-1">
-                                            <p v-if="tt.ticket_category">Category: {{ tt.ticket_category.name }}</p>
-                                            <p>{{ tt.seats_per_ticket }} seat(s) per ticket</p>
-                                            <p v-if="tt.remaining_quota !== undefined">
-                                                {{ tt.remaining_quota }} remaining
+                                        <div
+                                            class="space-y-1 text-sm text-muted-foreground"
+                                        >
+                                            <p v-if="tt.ticket_category">
+                                                Category:
+                                                {{ tt.ticket_category.name }}
+                                            </p>
+                                            <p>
+                                                {{
+                                                    tt.seats_per_ticket
+                                                }}
+                                                seat(s) per ticket
+                                            </p>
+                                            <p
+                                                v-if="
+                                                    tt.remaining_quota !==
+                                                    undefined
+                                                "
+                                            >
+                                                {{
+                                                    tt.remaining_quota
+                                                }}
+                                                remaining
                                             </p>
                                         </div>
                                     </CardContent>
                                     <CardFooter v-if="$page.props.auth.user">
                                         <!-- Quantity Selector (when already in cart) -->
-                                        <template v-if="ticketCartQuantities[tt.id] > 0">
-                                            <div class="flex items-center gap-2">
+                                        <template
+                                            v-if="
+                                                ticketCartQuantities[tt.id] > 0
+                                            "
+                                        >
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
                                                 <Button
                                                     variant="outline"
                                                     size="icon"
                                                     class="size-8"
-                                                    @click="updateCartQuantity('ticket_type', tt.id, -1)"
+                                                    @click="
+                                                        updateCartQuantity(
+                                                            'ticket_type',
+                                                            tt.id,
+                                                            -1,
+                                                        )
+                                                    "
                                                 >
                                                     <Minus class="size-3" />
                                                 </Button>
-                                                <span class="w-8 text-center text-sm font-medium">{{ ticketCartQuantities[tt.id] }}</span>
+                                                <span
+                                                    class="w-8 text-center text-sm font-medium"
+                                                    >{{
+                                                        ticketCartQuantities[
+                                                            tt.id
+                                                        ]
+                                                    }}</span
+                                                >
                                                 <Button
                                                     variant="outline"
                                                     size="icon"
                                                     class="size-8"
-                                                    :disabled="addingItem === tt.id"
-                                                    @click="addToCart('ticket_type', tt.id)"
+                                                    :disabled="
+                                                        addingItem === tt.id
+                                                    "
+                                                    @click="
+                                                        addToCart(
+                                                            'ticket_type',
+                                                            tt.id,
+                                                        )
+                                                    "
                                                 >
                                                     <Plus class="size-3" />
                                                 </Button>
@@ -259,62 +379,129 @@ return
                                         <template v-else>
                                             <Button
                                                 size="sm"
-                                                :disabled="addingItem === tt.id || !tt.is_purchasable"
-                                                @click="addToCart('ticket_type', tt.id)"
+                                                :disabled="
+                                                    addingItem === tt.id ||
+                                                    !tt.is_purchasable
+                                                "
+                                                @click="
+                                                    addToCart(
+                                                        'ticket_type',
+                                                        tt.id,
+                                                    )
+                                                "
                                             >
                                                 <Plus class="size-4" />
-                                                {{ addingItem === tt.id ? 'Adding…' : 'Add to Cart' }}
+                                                {{
+                                                    addingItem === tt.id
+                                                        ? 'Adding…'
+                                                        : 'Add to Cart'
+                                                }}
                                             </Button>
                                         </template>
                                     </CardFooter>
                                 </Card>
                             </div>
-                            <p v-else class="text-muted-foreground">No tickets available at this time.</p>
+                            <p v-else class="text-muted-foreground">
+                                No tickets available at this time.
+                            </p>
                         </div>
 
                         <!-- Addons -->
                         <div v-if="addons.length > 0" class="space-y-4">
                             <h2 class="text-2xl font-semibold">Addons</h2>
-                            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <div
+                                class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                            >
                                 <Card v-for="addon in addons" :key="addon.id">
                                     <CardHeader>
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center gap-1.5">
-                                                <CardTitle class="text-base">{{ addon.name }}</CardTitle>
-                                                <TooltipProvider v-if="addon.requires_ticket">
+                                        <div
+                                            class="flex items-center justify-between"
+                                        >
+                                            <div
+                                                class="flex items-center gap-1.5"
+                                            >
+                                                <CardTitle class="text-base">{{
+                                                    addon.name
+                                                }}</CardTitle>
+                                                <TooltipProvider
+                                                    v-if="addon.requires_ticket"
+                                                >
                                                     <Tooltip>
-                                                        <TooltipTrigger as-child>
-                                                            <Info class="size-4 text-muted-foreground" />
+                                                        <TooltipTrigger
+                                                            as-child
+                                                        >
+                                                            <Info
+                                                                class="size-4 text-muted-foreground"
+                                                            />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p>Can only be purchased in combination with a ticket.</p>
+                                                            <p>
+                                                                Can only be
+                                                                purchased in
+                                                                combination with
+                                                                a ticket.
+                                                            </p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>
                                             </div>
-                                            <span class="font-bold">{{ formatPrice(addon.price) }}</span>
+                                            <span class="font-bold">{{
+                                                formatPrice(addon.price)
+                                            }}</span>
                                         </div>
-                                        <CardDescription v-if="addon.description">{{ addon.description }}</CardDescription>
+                                        <CardDescription
+                                            v-if="addon.description"
+                                            >{{
+                                                addon.description
+                                            }}</CardDescription
+                                        >
                                     </CardHeader>
                                     <CardFooter v-if="$page.props.auth.user">
                                         <!-- Quantity Selector (when already in cart) -->
-                                        <template v-if="addonCartQuantities[addon.id] > 0">
-                                            <div class="flex items-center gap-2">
+                                        <template
+                                            v-if="
+                                                addonCartQuantities[addon.id] >
+                                                0
+                                            "
+                                        >
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
                                                 <Button
                                                     variant="outline"
                                                     size="icon"
                                                     class="size-8"
-                                                    @click="updateCartQuantity('addon', addon.id, -1)"
+                                                    @click="
+                                                        updateCartQuantity(
+                                                            'addon',
+                                                            addon.id,
+                                                            -1,
+                                                        )
+                                                    "
                                                 >
                                                     <Minus class="size-3" />
                                                 </Button>
-                                                <span class="w-8 text-center text-sm font-medium">{{ addonCartQuantities[addon.id] }}</span>
+                                                <span
+                                                    class="w-8 text-center text-sm font-medium"
+                                                    >{{
+                                                        addonCartQuantities[
+                                                            addon.id
+                                                        ]
+                                                    }}</span
+                                                >
                                                 <Button
                                                     variant="outline"
                                                     size="icon"
                                                     class="size-8"
-                                                    :disabled="addingItem === addon.id"
-                                                    @click="addToCart('addon', addon.id)"
+                                                    :disabled="
+                                                        addingItem === addon.id
+                                                    "
+                                                    @click="
+                                                        addToCart(
+                                                            'addon',
+                                                            addon.id,
+                                                        )
+                                                    "
                                                 >
                                                     <Plus class="size-3" />
                                                 </Button>
@@ -324,11 +511,19 @@ return
                                             <Button
                                                 size="sm"
                                                 variant="outline"
-                                                :disabled="addingItem === addon.id"
-                                                @click="addToCart('addon', addon.id)"
+                                                :disabled="
+                                                    addingItem === addon.id
+                                                "
+                                                @click="
+                                                    addToCart('addon', addon.id)
+                                                "
                                             >
                                                 <Plus class="size-4" />
-                                                {{ addingItem === addon.id ? 'Adding…' : 'Add to Cart' }}
+                                                {{
+                                                    addingItem === addon.id
+                                                        ? 'Adding…'
+                                                        : 'Add to Cart'
+                                                }}
                                             </Button>
                                         </template>
                                     </CardFooter>
@@ -337,8 +532,13 @@ return
                         </div>
 
                         <!-- Login prompt -->
-                        <div v-if="!$page.props.auth?.user" class="rounded-lg border p-6 text-center space-y-3">
-                            <p class="text-muted-foreground">Please log in to purchase tickets.</p>
+                        <div
+                            v-if="!$page.props.auth?.user"
+                            class="space-y-3 rounded-lg border p-6 text-center"
+                        >
+                            <p class="text-muted-foreground">
+                                Please log in to purchase tickets.
+                            </p>
                             <Button as-child>
                                 <Link :href="login()">Log in</Link>
                             </Button>
@@ -349,11 +549,16 @@ return
 
             <template v-else>
                 <div class="flex flex-1 items-center justify-center px-6 py-24">
-                    <div class="text-center space-y-4">
-                        <ShoppingCart class="mx-auto size-12 text-muted-foreground" />
-                        <h1 class="text-3xl font-bold tracking-tight">No Tickets Available</h1>
-                        <p class="text-muted-foreground max-w-md mx-auto">
-                            There are currently no events with tickets available for purchase.
+                    <div class="space-y-4 text-center">
+                        <ShoppingCart
+                            class="mx-auto size-12 text-muted-foreground"
+                        />
+                        <h1 class="text-3xl font-bold tracking-tight">
+                            No Tickets Available
+                        </h1>
+                        <p class="mx-auto max-w-md text-muted-foreground">
+                            There are currently no events with tickets available
+                            for purchase.
                         </p>
                     </div>
                 </div>
@@ -361,7 +566,9 @@ return
         </main>
 
         <footer class="border-t">
-            <div class="mx-auto max-w-5xl px-6 py-6 text-center text-sm text-muted-foreground">
+            <div
+                class="mx-auto max-w-5xl px-6 py-6 text-center text-sm text-muted-foreground"
+            >
                 Powered by LanCore
             </div>
         </footer>

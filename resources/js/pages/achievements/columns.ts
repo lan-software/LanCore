@@ -1,12 +1,19 @@
-import type { ColumnDef } from '@tanstack/vue-table'
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { h } from 'vue'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import type { Achievement } from '@/types/domain'
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
+import { h } from 'vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import type { Achievement } from '@/types/domain';
 
 function sortableHeader(label: string) {
-    return ({ column }: { column: { getToggleSortingHandler: () => ((e: Event) => void) | undefined; getIsSorted: () => false | 'asc' | 'desc' } }) =>
+    return ({
+        column,
+    }: {
+        column: {
+            getToggleSortingHandler: () => ((e: Event) => void) | undefined;
+            getIsSorted: () => false | 'asc' | 'desc';
+        };
+    }) =>
         h(
             Button,
             {
@@ -20,10 +27,10 @@ function sortableHeader(label: string) {
                 column.getIsSorted() === 'asc'
                     ? h(ArrowUp, { class: 'ml-1.5 size-3.5' })
                     : column.getIsSorted() === 'desc'
-                        ? h(ArrowDown, { class: 'ml-1.5 size-3.5' })
-                        : h(ArrowUpDown, { class: 'ml-1.5 size-3.5 opacity-40' }),
+                      ? h(ArrowDown, { class: 'ml-1.5 size-3.5' })
+                      : h(ArrowUpDown, { class: 'ml-1.5 size-3.5 opacity-40' }),
             ],
-        )
+        );
 }
 
 export const columns: ColumnDef<Achievement>[] = [
@@ -42,26 +49,32 @@ export const columns: ColumnDef<Achievement>[] = [
     {
         accessorKey: 'icon',
         header: () => h('span', 'Icon'),
-        cell: ({ row }) => h('span', { class: 'text-muted-foreground' }, row.getValue('icon')),
+        cell: ({ row }) =>
+            h('span', { class: 'text-muted-foreground' }, row.getValue('icon')),
     },
     {
         accessorKey: 'is_active',
         header: sortableHeader('Status'),
         cell: ({ row }) => {
-            const isActive = row.getValue('is_active') as boolean
+            const isActive = row.getValue('is_active') as boolean;
 
             return h(
                 Badge,
                 { variant: isActive ? 'default' : 'secondary' },
-                () => isActive ? 'Active' : 'Inactive',
-            )
+                () => (isActive ? 'Active' : 'Inactive'),
+            );
         },
     },
     {
         id: 'users_count',
         accessorKey: 'users_count',
         header: sortableHeader('Earned'),
-        cell: ({ row }) => h('span', { class: 'text-muted-foreground' }, `${row.original.users_count ?? 0}`),
+        cell: ({ row }) =>
+            h(
+                'span',
+                { class: 'text-muted-foreground' },
+                `${row.original.users_count ?? 0}`,
+            ),
     },
     {
         accessorKey: 'created_at',
@@ -70,11 +83,13 @@ export const columns: ColumnDef<Achievement>[] = [
             h(
                 'span',
                 { class: 'text-muted-foreground' },
-                new Date(row.getValue('created_at') as string).toLocaleDateString(undefined, {
+                new Date(
+                    row.getValue('created_at') as string,
+                ).toLocaleDateString(undefined, {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',
                 }),
             ),
     },
-]
+];

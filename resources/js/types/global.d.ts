@@ -23,7 +23,11 @@ declare module '@inertiajs/core' {
             sidebarFavorites: string[];
             eventContext: EventContext | null;
             vapidPublicKey: string;
-            integrationLinks: { url: string; icon: string | null; label: string }[];
+            integrationLinks: {
+                url: string;
+                icon: string | null;
+                label: string;
+            }[];
             pushSubscribed: boolean;
             unreadNotificationsCount: number;
             recentNotifications: AppNotification[];

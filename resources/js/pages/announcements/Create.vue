@@ -1,31 +1,37 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import { ref } from 'vue'
-import { store } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
-import { create as announcementCreate } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as announcementsRoute } from '@/routes/announcements'
-import type { BreadcrumbItem } from '@/types'
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { store } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController';
+import { create as announcementCreate } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as announcementsRoute } from '@/routes/announcements';
+import type { BreadcrumbItem } from '@/types';
 
 defineProps<{
-    events: { id: number; name: string }[]
-}>()
+    events: { id: number; name: string }[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: announcementsRoute().url },
     { title: 'Announcements', href: announcementsRoute().url },
     { title: 'Create', href: announcementCreate().url },
-]
+];
 
-const publishNow = ref(false)
+const publishNow = ref(false);
 
 const form = useForm({
     title: '',
@@ -33,11 +39,11 @@ const form = useForm({
     priority: 'normal',
     event_id: '',
     publish_now: false,
-})
+});
 
 function submit() {
-    form.publish_now = publishNow.value
-    form.post(store().url)
+    form.publish_now = publishNow.value;
+    form.post(store().url);
 }
 </script>
 
@@ -45,26 +51,43 @@ function submit() {
     <Head title="Create Announcement" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-3xl">
+        <div class="flex h-full max-w-3xl flex-1 flex-col gap-8 p-4">
             <div>
-                <Link :href="announcementsRoute().url" class="text-sm text-muted-foreground hover:text-foreground">
+                <Link
+                    :href="announcementsRoute().url"
+                    class="text-sm text-muted-foreground hover:text-foreground"
+                >
                     &larr; Back to Announcements
                 </Link>
             </div>
 
             <form @submit.prevent="submit" class="space-y-8">
                 <div class="space-y-4">
-                    <Heading variant="small" title="Announcement Information" description="Create a new announcement for event attendees" />
+                    <Heading
+                        variant="small"
+                        title="Announcement Information"
+                        description="Create a new announcement for event attendees"
+                    />
 
                     <div class="grid gap-2">
                         <Label for="title">Title</Label>
-                        <Input id="title" v-model="form.title" required placeholder="Announcement title" />
+                        <Input
+                            id="title"
+                            v-model="form.title"
+                            required
+                            placeholder="Announcement title"
+                        />
                         <InputError :message="form.errors.title" />
                     </div>
 
                     <div class="grid gap-2">
                         <Label for="description">Description</Label>
-                        <Textarea id="description" v-model="form.description" placeholder="Provide details about the announcement" rows="4" />
+                        <Textarea
+                            id="description"
+                            v-model="form.description"
+                            placeholder="Provide details about the announcement"
+                            rows="4"
+                        />
                         <InputError :message="form.errors.description" />
                     </div>
 
@@ -75,7 +98,11 @@ function submit() {
                                 <SelectValue placeholder="Select an event" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem v-for="event in events" :key="event.id" :value="String(event.id)">
+                                <SelectItem
+                                    v-for="event in events"
+                                    :key="event.id"
+                                    :value="String(event.id)"
+                                >
                                     {{ event.name }}
                                 </SelectItem>
                             </SelectContent>
@@ -90,9 +117,17 @@ function submit() {
                                 <SelectValue placeholder="Select priority" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="silent">Silent — no notifications sent</SelectItem>
-                                <SelectItem value="normal">Normal — respects user preferences</SelectItem>
-                                <SelectItem value="emergency">Emergency — always notifies all users</SelectItem>
+                                <SelectItem value="silent"
+                                    >Silent — no notifications sent</SelectItem
+                                >
+                                <SelectItem value="normal"
+                                    >Normal — respects user
+                                    preferences</SelectItem
+                                >
+                                <SelectItem value="emergency"
+                                    >Emergency — always notifies all
+                                    users</SelectItem
+                                >
                             </SelectContent>
                         </Select>
                         <InputError :message="form.errors.priority" />
@@ -100,17 +135,28 @@ function submit() {
                 </div>
 
                 <div class="space-y-4">
-                    <Heading variant="small" title="Publishing" description="Control when this announcement is visible" />
+                    <Heading
+                        variant="small"
+                        title="Publishing"
+                        description="Control when this announcement is visible"
+                    />
 
                     <div class="flex items-center gap-2">
-                        <Checkbox id="publish_now" v-model:checked="publishNow" />
+                        <Checkbox
+                            id="publish_now"
+                            v-model:checked="publishNow"
+                        />
                         <Label for="publish_now">Publish immediately</Label>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4">
                     <Button type="submit" :disabled="form.processing">
-                        {{ form.processing ? 'Creating...' : 'Create Announcement' }}
+                        {{
+                            form.processing
+                                ? 'Creating...'
+                                : 'Create Announcement'
+                        }}
                     </Button>
                 </div>
             </form>

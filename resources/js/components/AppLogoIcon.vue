@@ -14,9 +14,5 @@ defineProps<Props>();
 </script>
 
 <template>
-    <img
-        :class="className"
-        :src="logoIcon"
-        alt="App Logo Icon"
-    />
+    <img :class="className" :src="logoIcon" alt="App Logo Icon" />
 </template>

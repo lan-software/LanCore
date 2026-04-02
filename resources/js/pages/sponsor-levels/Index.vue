@@ -1,25 +1,35 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3'
-import { Plus } from 'lucide-vue-next'
-import SponsorLevelAuditController from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelAuditController'
-import { edit } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController'
-import Heading from '@/components/Heading.vue'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as sponsorLevelsRoute, create as sponsorLevelCreate } from '@/routes/sponsor-levels'
-import type { BreadcrumbItem } from '@/types'
-import type { SponsorLevel } from '@/types/domain'
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Plus } from 'lucide-vue-next';
+import SponsorLevelAuditController from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelAuditController';
+import { edit } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController';
+import Heading from '@/components/Heading.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    index as sponsorLevelsRoute,
+    create as sponsorLevelCreate,
+} from '@/routes/sponsor-levels';
+import type { BreadcrumbItem } from '@/types';
+import type { SponsorLevel } from '@/types/domain';
 
 defineProps<{
-    sponsorLevels: SponsorLevel[]
-}>()
+    sponsorLevels: SponsorLevel[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: sponsorLevelsRoute().url },
     { title: 'Sponsor Levels', href: sponsorLevelsRoute().url },
-]
+];
 </script>
 
 <template>
@@ -28,7 +38,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="flex items-center justify-between">
-                <Heading title="Sponsor Levels" description="Manage sponsor level tiers" />
+                <Heading
+                    title="Sponsor Levels"
+                    description="Manage sponsor level tiers"
+                />
                 <Link :href="sponsorLevelCreate().url">
                     <Button>
                         <Plus class="size-4" />
@@ -61,19 +74,38 @@ const breadcrumbs: BreadcrumbItem[] = [
                                     :style="{ backgroundColor: level.color }"
                                 />
                             </TableCell>
-                            <TableCell class="font-medium">{{ level.name }}</TableCell>
+                            <TableCell class="font-medium">{{
+                                level.name
+                            }}</TableCell>
                             <TableCell>
-                                <Badge variant="secondary">{{ level.sponsors_count ?? 0 }}</Badge>
+                                <Badge variant="secondary">{{
+                                    level.sponsors_count ?? 0
+                                }}</Badge>
                             </TableCell>
-                            <TableCell class="text-muted-foreground">{{ level.sort_order }}</TableCell>
+                            <TableCell class="text-muted-foreground">{{
+                                level.sort_order
+                            }}</TableCell>
                             <TableCell>
-                                <Button variant="outline" size="sm" @click.stop="router.visit(SponsorLevelAuditController(level.id).url)">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    @click.stop="
+                                        router.visit(
+                                            SponsorLevelAuditController(
+                                                level.id,
+                                            ).url,
+                                        )
+                                    "
+                                >
                                     Audit
                                 </Button>
                             </TableCell>
                         </TableRow>
                         <TableRow v-if="sponsorLevels.length === 0">
-                            <TableCell :colspan="5" class="text-center text-muted-foreground py-8">
+                            <TableCell
+                                :colspan="5"
+                                class="py-8 text-center text-muted-foreground"
+                            >
                                 No sponsor levels yet.
                             </TableCell>
                         </TableRow>

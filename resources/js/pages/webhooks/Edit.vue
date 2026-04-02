@@ -1,32 +1,45 @@
 <script setup lang="ts">
-import { Head, Link, useForm, router } from '@inertiajs/vue3'
-import { update, destroy, show as webhookShow } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
-import { edit as webhookEdit } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as webhooksRoute } from '@/routes/webhooks'
-import type { BreadcrumbItem } from '@/types'
-import type { Webhook } from '@/types/domain'
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import {
+    update,
+    destroy,
+    show as webhookShow,
+} from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController';
+import { edit as webhookEdit } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as webhooksRoute } from '@/routes/webhooks';
+import type { BreadcrumbItem } from '@/types';
+import type { Webhook } from '@/types/domain';
 
 const props = defineProps<{
-    webhook: Webhook
-    events: { value: string; label: string }[]
-}>()
+    webhook: Webhook;
+    events: { value: string; label: string }[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: webhooksRoute().url },
     { title: 'Webhooks', href: webhooksRoute().url },
-    { title: props.webhook.name, href: webhookShow({ webhook: props.webhook.id }).url },
+    {
+        title: props.webhook.name,
+        href: webhookShow({ webhook: props.webhook.id }).url,
+    },
     { title: 'Edit', href: webhookEdit({ webhook: props.webhook.id }).url },
-]
+];
 
 const form = useForm({
     name: props.webhook.name,
@@ -35,17 +48,17 @@ const form = useForm({
     secret: props.webhook.secret ?? '',
     description: props.webhook.description ?? '',
     is_active: props.webhook.is_active,
-})
+});
 
 function submit() {
     form.patch(update({ webhook: props.webhook.id }).url, {
         preserveScroll: true,
-    })
+    });
 }
 
 function deleteWebhook() {
     if (confirm('Are you sure you want to delete this webhook?')) {
-        router.delete(destroy({ webhook: props.webhook.id }).url)
+        router.delete(destroy({ webhook: props.webhook.id }).url);
     }
 }
 </script>
@@ -54,30 +67,50 @@ function deleteWebhook() {
     <Head title="Edit Webhook" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-3xl">
+        <div class="flex h-full max-w-3xl flex-1 flex-col gap-8 p-4">
             <div class="flex items-center justify-between">
-                <Link :href="webhookShow({ webhook: webhook.id }).url" class="text-sm text-muted-foreground hover:text-foreground">
+                <Link
+                    :href="webhookShow({ webhook: webhook.id }).url"
+                    class="text-sm text-muted-foreground hover:text-foreground"
+                >
                     &larr; Back to Webhook
                 </Link>
                 <div class="flex items-center gap-2">
-                    <Badge v-if="webhook.is_active" variant="default">Active</Badge>
+                    <Badge v-if="webhook.is_active" variant="default"
+                        >Active</Badge
+                    >
                     <Badge v-else variant="outline">Inactive</Badge>
                 </div>
             </div>
 
             <form @submit.prevent="submit" class="space-y-8">
                 <div class="space-y-4">
-                    <Heading variant="small" title="Webhook Details" description="Update the webhook endpoint configuration" />
+                    <Heading
+                        variant="small"
+                        title="Webhook Details"
+                        description="Update the webhook endpoint configuration"
+                    />
 
                     <div class="grid gap-2">
                         <Label for="name">Name</Label>
-                        <Input id="name" v-model="form.name" required placeholder="My Webhook" />
+                        <Input
+                            id="name"
+                            v-model="form.name"
+                            required
+                            placeholder="My Webhook"
+                        />
                         <InputError :message="form.errors.name" />
                     </div>
 
                     <div class="grid gap-2">
                         <Label for="url">URL</Label>
-                        <Input id="url" v-model="form.url" type="url" required placeholder="https://example.com/webhook" />
+                        <Input
+                            id="url"
+                            v-model="form.url"
+                            type="url"
+                            required
+                            placeholder="https://example.com/webhook"
+                        />
                         <InputError :message="form.errors.url" />
                     </div>
 
@@ -88,7 +121,11 @@ function deleteWebhook() {
                                 <SelectValue placeholder="Select an event" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem v-for="event in events" :key="event.value" :value="event.value">
+                                <SelectItem
+                                    v-for="event in events"
+                                    :key="event.value"
+                                    :value="event.value"
+                                >
                                     {{ event.label }}
                                 </SelectItem>
                             </SelectContent>
@@ -97,24 +134,52 @@ function deleteWebhook() {
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="secret">Secret <span class="text-muted-foreground font-normal">(optional)</span></Label>
-                        <Input id="secret" v-model="form.secret" placeholder="Leave empty to keep existing secret or clear it" />
+                        <Label for="secret"
+                            >Secret
+                            <span class="font-normal text-muted-foreground"
+                                >(optional)</span
+                            ></Label
+                        >
+                        <Input
+                            id="secret"
+                            v-model="form.secret"
+                            placeholder="Leave empty to keep existing secret or clear it"
+                        />
                         <InputError :message="form.errors.secret" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="description">Description <span class="text-muted-foreground font-normal">(optional)</span></Label>
-                        <Textarea id="description" v-model="form.description" placeholder="Notes about this webhook" rows="3" />
+                        <Label for="description"
+                            >Description
+                            <span class="font-normal text-muted-foreground"
+                                >(optional)</span
+                            ></Label
+                        >
+                        <Textarea
+                            id="description"
+                            v-model="form.description"
+                            placeholder="Notes about this webhook"
+                            rows="3"
+                        />
                         <InputError :message="form.errors.description" />
                     </div>
                 </div>
 
                 <div class="space-y-4">
-                    <Heading variant="small" title="Status" description="Control whether this webhook is active" />
+                    <Heading
+                        variant="small"
+                        title="Status"
+                        description="Control whether this webhook is active"
+                    />
 
                     <div class="flex items-center gap-2">
-                        <Checkbox id="is_active" v-model:checked="form.is_active" />
-                        <Label for="is_active">Active — send payloads when the event fires</Label>
+                        <Checkbox
+                            id="is_active"
+                            v-model:checked="form.is_active"
+                        />
+                        <Label for="is_active"
+                            >Active — send payloads when the event fires</Label
+                        >
                     </div>
                 </div>
 
@@ -130,11 +195,20 @@ function deleteWebhook() {
                             leave-active-class="transition ease-in-out"
                             leave-to-class="opacity-0"
                         >
-                            <p v-if="form.recentlySuccessful" class="text-sm text-muted-foreground">Saved.</p>
+                            <p
+                                v-if="form.recentlySuccessful"
+                                class="text-sm text-muted-foreground"
+                            >
+                                Saved.
+                            </p>
                         </Transition>
                     </div>
 
-                    <Button type="button" variant="destructive" @click="deleteWebhook">
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        @click="deleteWebhook"
+                    >
                         Delete
                     </Button>
                 </div>

@@ -1,39 +1,47 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3'
-import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import EventController from '@/actions/App/Domain/Event/Http/Controllers/EventController'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as eventsRoute } from '@/routes/events'
-import type { BreadcrumbItem } from '@/types'
-import type { Audit } from '@/types/domain'
+import { Head, Link } from '@inertiajs/vue3';
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import EventController from '@/actions/App/Domain/Event/Http/Controllers/EventController';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableEmpty,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as eventsRoute } from '@/routes/events';
+import type { BreadcrumbItem } from '@/types';
+import type { Audit } from '@/types/domain';
 
 interface PaginatedAudits {
-    data: Audit[]
-    current_page: number
-    last_page: number
-    per_page: number
-    total: number
-    from: number | null
-    to: number | null
-    links: { url: string | null; label: string; active: boolean }[]
-    prev_page_url: string | null
-    next_page_url: string | null
+    data: Audit[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    links: { url: string | null; label: string; active: boolean }[];
+    prev_page_url: string | null;
+    next_page_url: string | null;
 }
 
 const props = defineProps<{
-    event: { id: number; name: string }
-    audits: PaginatedAudits
-}>()
+    event: { id: number; name: string };
+    audits: PaginatedAudits;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: eventsRoute().url },
     { title: 'Events', href: eventsRoute().url },
     { title: props.event.name, href: EventController.edit(props.event.id).url },
     { title: 'Audit Log', href: '#' },
-]
+];
 
 function formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString(undefined, {
@@ -43,62 +51,69 @@ function formatDate(dateString: string): string {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-    })
+    });
 }
 
 function eventLabel(event: string): string {
     switch (event) {
         case 'created':
-            return 'Created'
+            return 'Created';
         case 'updated':
-            return 'Updated'
+            return 'Updated';
         case 'deleted':
-            return 'Deleted'
+            return 'Deleted';
         case 'restored':
-            return 'Restored'
+            return 'Restored';
         default:
-            return event.charAt(0).toUpperCase() + event.slice(1)
+            return event.charAt(0).toUpperCase() + event.slice(1);
     }
 }
 
-function eventVariant(event: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+function eventVariant(
+    event: string,
+): 'default' | 'secondary' | 'destructive' | 'outline' {
     switch (event) {
         case 'created':
-            return 'default'
+            return 'default';
         case 'updated':
-            return 'outline'
+            return 'outline';
         case 'deleted':
-            return 'destructive'
+            return 'destructive';
         default:
-            return 'secondary'
+            return 'secondary';
     }
 }
 
-function changedFields(audit: Audit): { field: string; old: unknown; new: unknown }[] {
-    const fields: { field: string; old: unknown; new: unknown }[] = []
-    const allKeys = new Set([...Object.keys(audit.old_values ?? {}), ...Object.keys(audit.new_values ?? {})])
+function changedFields(
+    audit: Audit,
+): { field: string; old: unknown; new: unknown }[] {
+    const fields: { field: string; old: unknown; new: unknown }[] = [];
+    const allKeys = new Set([
+        ...Object.keys(audit.old_values ?? {}),
+        ...Object.keys(audit.new_values ?? {}),
+    ]);
 
     for (const key of allKeys) {
         fields.push({
             field: key,
             old: audit.old_values?.[key] ?? null,
             new: audit.new_values?.[key] ?? null,
-        })
+        });
     }
 
-    return fields
+    return fields;
 }
 
 function formatValue(value: unknown): string {
     if (value === null || value === undefined) {
-        return '—'
+        return '—';
     }
 
     if (typeof value === 'object') {
-        return JSON.stringify(value)
+        return JSON.stringify(value);
     }
 
-    return String(value)
+    return String(value);
 }
 </script>
 
@@ -118,7 +133,9 @@ function formatValue(value: unknown): string {
                 </Button>
             </div>
 
-            <div class="rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+            <div
+                class="rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
+            >
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -130,11 +147,18 @@ function formatValue(value: unknown): string {
                     </TableHeader>
                     <TableBody>
                         <template v-if="audits.data.length">
-                            <TableRow v-for="audit in audits.data" :key="audit.id">
-                                <TableCell class="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
+                            <TableRow
+                                v-for="audit in audits.data"
+                                :key="audit.id"
+                            >
+                                <TableCell
+                                    class="px-4 py-3 text-sm whitespace-nowrap text-muted-foreground"
+                                >
                                     {{ formatDate(audit.created_at) }}
                                 </TableCell>
-                                <TableCell class="px-4 py-3 whitespace-nowrap text-sm">
+                                <TableCell
+                                    class="px-4 py-3 text-sm whitespace-nowrap"
+                                >
                                     {{ audit.user?.name ?? 'System' }}
                                 </TableCell>
                                 <TableCell class="px-4 py-3">
@@ -143,24 +167,48 @@ function formatValue(value: unknown): string {
                                     </Badge>
                                 </TableCell>
                                 <TableCell class="px-4 py-3">
-                                    <div v-if="changedFields(audit).length" class="space-y-1">
+                                    <div
+                                        v-if="changedFields(audit).length"
+                                        class="space-y-1"
+                                    >
                                         <div
-                                            v-for="change in changedFields(audit)"
+                                            v-for="change in changedFields(
+                                                audit,
+                                            )"
                                             :key="change.field"
                                             class="text-sm"
                                         >
-                                            <span class="font-medium">{{ change.field }}:</span>
-                                            <span v-if="audit.event === 'created'" class="text-green-600 dark:text-green-400">
+                                            <span class="font-medium"
+                                                >{{ change.field }}:</span
+                                            >
+                                            <span
+                                                v-if="audit.event === 'created'"
+                                                class="text-green-600 dark:text-green-400"
+                                            >
                                                 {{ formatValue(change.new) }}
                                             </span>
                                             <template v-else>
-                                                <span class="text-red-500 line-through">{{ formatValue(change.old) }}</span>
+                                                <span
+                                                    class="text-red-500 line-through"
+                                                    >{{
+                                                        formatValue(change.old)
+                                                    }}</span
+                                                >
                                                 <span class="mx-1">→</span>
-                                                <span class="text-green-600 dark:text-green-400">{{ formatValue(change.new) }}</span>
+                                                <span
+                                                    class="text-green-600 dark:text-green-400"
+                                                    >{{
+                                                        formatValue(change.new)
+                                                    }}</span
+                                                >
                                             </template>
                                         </div>
                                     </div>
-                                    <span v-else class="text-sm text-muted-foreground">No changes recorded</span>
+                                    <span
+                                        v-else
+                                        class="text-sm text-muted-foreground"
+                                        >No changes recorded</span
+                                    >
                                 </TableCell>
                             </TableRow>
                         </template>
@@ -171,14 +219,15 @@ function formatValue(value: unknown): string {
                 </Table>
 
                 <!-- Pagination -->
-                <div class="flex items-center justify-between border-t border-sidebar-border/70 px-4 py-3 dark:border-sidebar-border">
+                <div
+                    class="flex items-center justify-between border-t border-sidebar-border/70 px-4 py-3 dark:border-sidebar-border"
+                >
                     <span class="text-xs text-muted-foreground">
                         <template v-if="audits.from && audits.to">
-                            Showing {{ audits.from }}–{{ audits.to }} of {{ audits.total }} entries
-                        </template>
-                        <template v-else>
+                            Showing {{ audits.from }}–{{ audits.to }} of
                             {{ audits.total }} entries
                         </template>
+                        <template v-else> {{ audits.total }} entries </template>
                     </span>
                     <div class="flex items-center gap-1">
                         <Button

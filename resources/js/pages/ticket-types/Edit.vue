@@ -1,55 +1,71 @@
 <script setup lang="ts">
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
-import TicketTypeController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketTypeController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as ticketTypesRoute } from '@/routes/ticket-types'
-import type { BreadcrumbItem } from '@/types'
-import type { TicketType } from '@/types/domain'
+import { Form, Head, Link, router } from '@inertiajs/vue3';
+import { Trash2 } from 'lucide-vue-next';
+import { ref } from 'vue';
+import TicketTypeController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketTypeController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as ticketTypesRoute } from '@/routes/ticket-types';
+import type { BreadcrumbItem } from '@/types';
+import type { TicketType } from '@/types/domain';
 
 const props = defineProps<{
-    ticketType: TicketType
-    events: { id: number; name: string }[]
-    categories: { id: number; name: string }[]
-    groups: { id: number; name: string }[]
-}>()
+    ticketType: TicketType;
+    events: { id: number; name: string }[];
+    categories: { id: number; name: string }[];
+    groups: { id: number; name: string }[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: ticketTypesRoute().url },
     { title: 'Ticket Types', href: ticketTypesRoute().url },
-    { title: props.ticketType.name, href: TicketTypeController.edit(props.ticketType.id).url },
-]
+    {
+        title: props.ticketType.name,
+        href: TicketTypeController.edit(props.ticketType.id).url,
+    },
+];
 
 function formatDateTimeLocal(dateString: string | null): string {
     if (!dateString) {
-return ''
+        return '';
+    }
+
+    const date = new Date(dateString);
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-    const date = new Date(dateString)
-    const pad = (n: number) => String(n).padStart(2, '0')
-
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
-}
-
-const showDeleteDialog = ref(false)
+const showDeleteDialog = ref(false);
 
 function executeDelete() {
     router.delete(TicketTypeController.destroy(props.ticketType.id).url, {
         onSuccess: () => {
-            showDeleteDialog.value = false
+            showDeleteDialog.value = false;
         },
-    })
+    });
 }
 </script>
 
@@ -57,7 +73,7 @@ function executeDelete() {
     <Head :title="`Edit ${ticketType.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <!-- Back link -->
             <div>
                 <Link
@@ -158,7 +174,11 @@ function executeDelete() {
                             id="max_per_user"
                             type="number"
                             name="max_per_user"
-                            :default-value="ticketType.max_per_user !== null ? String(ticketType.max_per_user) : ''"
+                            :default-value="
+                                ticketType.max_per_user !== null
+                                    ? String(ticketType.max_per_user)
+                                    : ''
+                            "
                             min="1"
                             placeholder="Leave empty for unlimited"
                         />
@@ -194,7 +214,9 @@ function executeDelete() {
                             :default-value="ticketType.is_row_ticket"
                             :disabled="ticketType.is_locked"
                         />
-                        <Label for="is_row_ticket" class="cursor-pointer">Row ticket</Label>
+                        <Label for="is_row_ticket" class="cursor-pointer"
+                            >Row ticket</Label
+                        >
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -204,7 +226,9 @@ function executeDelete() {
                             :default-value="ticketType.is_seatable"
                             :disabled="ticketType.is_locked"
                         />
-                        <Label for="is_seatable" class="cursor-pointer">Seatable</Label>
+                        <Label for="is_seatable" class="cursor-pointer"
+                            >Seatable</Label
+                        >
                     </div>
                 </div>
 
@@ -223,7 +247,11 @@ function executeDelete() {
                                 id="purchase_from"
                                 type="datetime-local"
                                 name="purchase_from"
-                                :default-value="formatDateTimeLocal(ticketType.purchase_from)"
+                                :default-value="
+                                    formatDateTimeLocal(
+                                        ticketType.purchase_from,
+                                    )
+                                "
                             />
                             <InputError :message="errors.purchase_from" />
                         </div>
@@ -234,7 +262,11 @@ function executeDelete() {
                                 id="purchase_until"
                                 type="datetime-local"
                                 name="purchase_until"
-                                :default-value="formatDateTimeLocal(ticketType.purchase_until)"
+                                :default-value="
+                                    formatDateTimeLocal(
+                                        ticketType.purchase_until,
+                                    )
+                                "
                             />
                             <InputError :message="errors.purchase_until" />
                         </div>
@@ -246,7 +278,9 @@ function executeDelete() {
                             name="is_hidden"
                             :default-value="ticketType.is_hidden"
                         />
-                        <Label for="is_hidden" class="cursor-pointer">Hidden</Label>
+                        <Label for="is_hidden" class="cursor-pointer"
+                            >Hidden</Label
+                        >
                     </div>
                 </div>
 
@@ -262,7 +296,11 @@ function executeDelete() {
                         <Label for="event_id">Event</Label>
                         <Select
                             name="event_id"
-                            :default-value="ticketType.event_id ? String(ticketType.event_id) : undefined"
+                            :default-value="
+                                ticketType.event_id
+                                    ? String(ticketType.event_id)
+                                    : undefined
+                            "
                             :disabled="ticketType.is_locked"
                         >
                             <SelectTrigger>
@@ -285,10 +323,16 @@ function executeDelete() {
                         <Label for="ticket_category_id">Category</Label>
                         <Select
                             name="ticket_category_id"
-                            :default-value="ticketType.ticket_category_id ? String(ticketType.ticket_category_id) : undefined"
+                            :default-value="
+                                ticketType.ticket_category_id
+                                    ? String(ticketType.ticket_category_id)
+                                    : undefined
+                            "
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a category (optional)" />
+                                <SelectValue
+                                    placeholder="Select a category (optional)"
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem
@@ -307,10 +351,16 @@ function executeDelete() {
                         <Label for="ticket_group_id">Group</Label>
                         <Select
                             name="ticket_group_id"
-                            :default-value="ticketType.ticket_group_id ? String(ticketType.ticket_group_id) : undefined"
+                            :default-value="
+                                ticketType.ticket_group_id
+                                    ? String(ticketType.ticket_group_id)
+                                    : undefined
+                            "
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a group (optional)" />
+                                <SelectValue
+                                    placeholder="Select a group (optional)"
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem
@@ -328,10 +378,7 @@ function executeDelete() {
 
                 <!-- Actions -->
                 <div class="flex items-center gap-4">
-                    <Button
-                        type="submit"
-                        :disabled="processing"
-                    >
+                    <Button type="submit" :disabled="processing">
                         {{ processing ? 'Saving…' : 'Save Changes' }}
                     </Button>
 
@@ -348,8 +395,12 @@ function executeDelete() {
             <div class="border-t pt-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-sm font-medium text-destructive">Delete Ticket Type</h3>
-                        <p class="text-sm text-muted-foreground">Permanently delete this ticket type.</p>
+                        <h3 class="text-sm font-medium text-destructive">
+                            Delete Ticket Type
+                        </h3>
+                        <p class="text-sm text-muted-foreground">
+                            Permanently delete this ticket type.
+                        </p>
                     </div>
                     <Button
                         variant="destructive"
@@ -369,20 +420,15 @@ function executeDelete() {
                 <DialogHeader>
                     <DialogTitle>Delete {{ ticketType.name }}?</DialogTitle>
                     <DialogDescription>
-                        This action cannot be undone. The ticket type will be permanently removed.
+                        This action cannot be undone. The ticket type will be
+                        permanently removed.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button
-                        variant="outline"
-                        @click="showDeleteDialog = false"
-                    >
+                    <Button variant="outline" @click="showDeleteDialog = false">
                         Cancel
                     </Button>
-                    <Button
-                        variant="destructive"
-                        @click="executeDelete"
-                    >
+                    <Button variant="destructive" @click="executeDelete">
                         Delete
                     </Button>
                 </DialogFooter>

@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Archive, ArchiveX, Bell, BellOff, Check, CheckCheck, Settings } from 'lucide-vue-next';
+import {
+    Archive,
+    ArchiveX,
+    Bell,
+    BellOff,
+    Check,
+    CheckCheck,
+    Settings,
+} from 'lucide-vue-next';
 import {
     archive as archiveNotification,
     archiveAll,
@@ -64,7 +72,10 @@ function notificationDescription(notification: AppNotification): string | null {
     const type = notification.type.split('\\').pop() ?? '';
     const data = notification.data;
 
-    if (type === 'UserAttributesUpdatedNotification' && Array.isArray(data.changed_attributes)) {
+    if (
+        type === 'UserAttributesUpdatedNotification' &&
+        Array.isArray(data.changed_attributes)
+    ) {
         return `Updated fields: ${(data.changed_attributes as string[]).join(', ')}`;
     }
 
@@ -90,7 +101,11 @@ function handleMarkAllAsRead() {
 }
 
 function handleArchive(notification: AppNotification) {
-    router.patch(archiveNotification(notification.id).url, {}, { preserveScroll: true });
+    router.patch(
+        archiveNotification(notification.id).url,
+        {},
+        { preserveScroll: true },
+    );
 }
 
 function handleArchiveAll() {
@@ -108,7 +123,10 @@ function goToPage(page: number) {
 
         <div class="px-4 py-6 md:px-6">
             <div class="flex flex-wrap items-start justify-between gap-4">
-                <Heading title="Notifications" description="Your recent notifications and activity." />
+                <Heading
+                    title="Notifications"
+                    description="Your recent notifications and activity."
+                />
                 <div class="flex gap-2">
                     <Button
                         v-if="notifications.total > 0"
@@ -148,9 +166,16 @@ function goToPage(page: number) {
                     v-for="notification in notifications.data"
                     :key="notification.id"
                     class="group flex items-start gap-4 rounded-lg border bg-card p-4 shadow-sm transition-colors"
-                    :class="{ 'border-primary/20 bg-primary/5': !notification.read_at }"
+                    :class="{
+                        'border-primary/20 bg-primary/5': !notification.read_at,
+                    }"
                 >
-                    <div class="mt-0.5 rounded-full p-2 text-muted-foreground" :class="{ 'bg-primary/10 text-primary': !notification.read_at }">
+                    <div
+                        class="mt-0.5 rounded-full p-2 text-muted-foreground"
+                        :class="{
+                            'bg-primary/10 text-primary': !notification.read_at,
+                        }"
+                    >
                         <Bell class="size-4" />
                     </div>
 
@@ -161,16 +186,23 @@ function goToPage(page: number) {
                         >
                             {{ notificationLabel(notification) }}
                         </p>
-                        <p v-if="notificationDescription(notification)" class="mt-0.5 text-sm text-muted-foreground">
+                        <p
+                            v-if="notificationDescription(notification)"
+                            class="mt-0.5 text-sm text-muted-foreground"
+                        >
                             {{ notificationDescription(notification) }}
                         </p>
                         <p class="mt-1 text-xs text-muted-foreground">
                             {{ formatDate(notification.created_at) }}
-                            <span v-if="notification.read_at" class="ml-2">· Read</span>
+                            <span v-if="notification.read_at" class="ml-2"
+                                >· Read</span
+                            >
                         </p>
                     </div>
 
-                    <div class="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div
+                        class="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
                         <Button
                             v-if="!notification.read_at"
                             variant="ghost"
@@ -194,10 +226,15 @@ function goToPage(page: number) {
                 </div>
             </div>
 
-            <div v-else class="mt-16 flex flex-col items-center gap-3 text-center text-muted-foreground">
+            <div
+                v-else
+                class="mt-16 flex flex-col items-center gap-3 text-center text-muted-foreground"
+            >
                 <BellOff class="size-12 opacity-30" />
                 <p class="text-lg font-medium">No notifications</p>
-                <p class="text-sm">You're all caught up! Notifications will appear here.</p>
+                <p class="text-sm">
+                    You're all caught up! Notifications will appear here.
+                </p>
             </div>
 
             <!-- Pagination -->
@@ -206,7 +243,8 @@ function goToPage(page: number) {
                 class="mt-6 flex items-center justify-between text-sm text-muted-foreground"
             >
                 <p>
-                    Showing {{ notifications.from }}–{{ notifications.to }} of {{ notifications.total }}
+                    Showing {{ notifications.from }}–{{ notifications.to }} of
+                    {{ notifications.total }}
                 </p>
                 <div class="flex gap-2">
                     <Button
@@ -220,7 +258,10 @@ function goToPage(page: number) {
                     <Button
                         variant="outline"
                         size="sm"
-                        :disabled="notifications.current_page === notifications.last_page"
+                        :disabled="
+                            notifications.current_page ===
+                            notifications.last_page
+                        "
                         @click="goToPage(notifications.current_page + 1)"
                     >
                         Next
