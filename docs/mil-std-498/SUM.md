@@ -168,8 +168,11 @@ Open your web browser and navigate to the LanCore instance URL provided by your 
 
 1. Navigate to **Settings > Profile**
 2. Update your name or email address
-3. Click **Save**
-4. If you changed your email, you will need to verify the new address
+3. Fill in your address (street, city, ZIP code, country) and phone number
+4. Click **Save**
+5. If you changed your email, you will need to verify the new address
+
+> **Note:** A complete profile (address and at least one contact method) is required before you can add items to your shopping cart.
 
 #### 5.8.2 Change Password
 

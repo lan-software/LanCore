@@ -97,6 +97,13 @@ class CartController extends Controller
 
     public function addItem(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        if (! $user->hasCompleteProfile()) {
+            return redirect()->route('profile.edit')
+                ->withErrors(['profile' => 'Please complete your address and contact information before adding items to your cart.']);
+        }
+
         $request->validate([
             'purchasable_type' => ['required', 'string', 'in:ticket_type,addon'],
             'purchasable_id' => ['required', 'integer'],
@@ -104,7 +111,6 @@ class CartController extends Controller
             'event_id' => ['required', 'integer', 'exists:events,id'],
         ]);
 
-        $user = $request->user();
         $cart = Cart::forUser($user);
 
         // Ensure the cart is scoped to one event

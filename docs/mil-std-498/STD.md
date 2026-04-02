@@ -136,8 +136,9 @@ This ensures complete isolation between test cases.
 | Test | Preconditions | Input | Expected Result |
 |------|--------------|-------|-----------------|
 | profile page is displayed | Authenticated | GET /settings/profile | 200 OK |
-| profile information can be updated | Authenticated | PATCH /settings/profile {name, email} | 302, user updated |
+| profile information can be updated | Authenticated | PATCH /settings/profile {name, email, phone, street, city, zip_code, country} | 302, user updated |
 | email verification reset on email change | Authenticated, verified | PATCH /settings/profile {new email} | email_verified_at = null |
+| redirects to profile when incomplete | Authenticated, no address fields | POST /cart/items | 302 to /settings/profile, session error "profile" |
 
 #### 4.2.2 Security
 

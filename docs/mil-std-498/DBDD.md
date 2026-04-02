@@ -75,6 +75,11 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | id | bigint PK | Primary key |
 | name | varchar | Display name |
 | email | varchar (unique) | Login email |
+| phone | varchar(50) (nullable) | Phone number |
+| street | varchar(255) (nullable) | Street address |
+| city | varchar(255) (nullable) | City |
+| zip_code | varchar(20) (nullable) | ZIP / postal code |
+| country | varchar(2) (nullable) | ISO 3166-1 alpha-2 country code |
 | email_verified_at | timestamp | Email verification timestamp |
 | password | varchar | Bcrypt-hashed password |
 | two_factor_secret | text (nullable) | Encrypted TOTP secret |

@@ -193,7 +193,8 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-USR-002 | The system shall support role-based access: Admin, Superadmin, SponsorManager |
 | CAP-USR-003 | The system shall support two-factor authentication (TOTP) |
 | CAP-USR-004 | The system shall support password reset via email |
-| CAP-USR-005 | The system shall support user profile management |
+| CAP-USR-005 | The system shall support user profile management (name, email, phone, address) |
+| CAP-USR-009 | The system shall require a complete profile (address and at least one contact method) before allowing purchases |
 | CAP-USR-006 | The system shall support ticket discovery settings (user visibility control) |
 | CAP-USR-007 | The system shall support sidebar favorites for navigation customization |
 | CAP-USR-008 | The system shall support appearance settings (theme preferences) |

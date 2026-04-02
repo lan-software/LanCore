@@ -292,6 +292,8 @@ The LanCore CSCI shall support the following operational states:
 | USR-F-009 | The software shall support sidebar favorites for navigation customization |
 | USR-F-010 | The software shall support appearance/theme settings |
 | USR-F-011 | The software shall integrate with Stripe Cashier for billing customer management |
+| USR-F-012 | The software shall store user address fields (phone, street, city, zip_code, country) on the users table |
+| USR-F-013 | The software shall enforce profile completeness (address + at least phone or email) via `hasCompleteProfile()` before allowing cart item additions |
 
 ### 3.3 CSCI External Interface Requirements
 

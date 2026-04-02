@@ -8,6 +8,13 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { edit } from '@/routes/profile';
@@ -30,6 +37,29 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+
+const countries = [
+    { code: 'AT', name: 'Austria' },
+    { code: 'BE', name: 'Belgium' },
+    { code: 'CH', name: 'Switzerland' },
+    { code: 'CZ', name: 'Czech Republic' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'DK', name: 'Denmark' },
+    { code: 'ES', name: 'Spain' },
+    { code: 'FI', name: 'Finland' },
+    { code: 'FR', name: 'France' },
+    { code: 'GB', name: 'United Kingdom' },
+    { code: 'HU', name: 'Hungary' },
+    { code: 'IE', name: 'Ireland' },
+    { code: 'IT', name: 'Italy' },
+    { code: 'LU', name: 'Luxembourg' },
+    { code: 'NL', name: 'Netherlands' },
+    { code: 'NO', name: 'Norway' },
+    { code: 'PL', name: 'Poland' },
+    { code: 'PT', name: 'Portugal' },
+    { code: 'SE', name: 'Sweden' },
+    { code: 'SK', name: 'Slovakia' },
+];
 </script>
 
 <template>
@@ -99,6 +129,86 @@ const user = computed(() => page.props.auth.user);
                             A new verification link has been sent to your email
                             address.
                         </div>
+                    </div>
+
+                    <Heading
+                        variant="small"
+                        title="Address & Contact"
+                        description="Required for purchases. Provide your address and at least one contact method."
+                    />
+
+                    <div class="grid gap-2">
+                        <Label for="phone">Phone number</Label>
+                        <Input
+                            id="phone"
+                            type="tel"
+                            class="mt-1 block w-full"
+                            name="phone"
+                            :default-value="(user.phone as string) ?? ''"
+                            autocomplete="tel"
+                            placeholder="+49 123 456789"
+                        />
+                        <InputError class="mt-2" :message="errors.phone" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="street">Street address</Label>
+                        <Input
+                            id="street"
+                            class="mt-1 block w-full"
+                            name="street"
+                            :default-value="(user.street as string) ?? ''"
+                            autocomplete="street-address"
+                            placeholder="Street and house number"
+                        />
+                        <InputError class="mt-2" :message="errors.street" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="zip_code">ZIP / Postal code</Label>
+                            <Input
+                                id="zip_code"
+                                class="mt-1 block w-full"
+                                name="zip_code"
+                                :default-value="(user.zip_code as string) ?? ''"
+                                autocomplete="postal-code"
+                                placeholder="12345"
+                            />
+                            <InputError class="mt-2" :message="errors.zip_code" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="city">City</Label>
+                            <Input
+                                id="city"
+                                class="mt-1 block w-full"
+                                name="city"
+                                :default-value="(user.city as string) ?? ''"
+                                autocomplete="address-level2"
+                                placeholder="City"
+                            />
+                            <InputError class="mt-2" :message="errors.city" />
+                        </div>
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="country">Country</Label>
+                        <Select name="country" :default-value="(user.country as string) ?? ''">
+                            <SelectTrigger id="country" class="mt-1 w-full">
+                                <SelectValue placeholder="Select a country" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem
+                                    v-for="c in countries"
+                                    :key="c.code"
+                                    :value="c.code"
+                                >
+                                    {{ c.name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <InputError class="mt-2" :message="errors.country" />
                     </div>
 
                     <div class="flex items-center gap-4">
