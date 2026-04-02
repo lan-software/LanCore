@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useEditor, EditorContent } from '@tiptap/vue-3'
-import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
+import StarterKit from '@tiptap/starter-kit'
+import { useEditor, EditorContent } from '@tiptap/vue-3'
 import { Bold, Italic, Strikethrough, Code, List, ListOrdered, Quote, Undo, Redo, Link as LinkIcon, Image as ImageIcon, Heading1, Heading2, Heading3, RemoveFormatting, Minus } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { watch } from 'vue'
 import { Button } from '@/components/ui/button'
 
 const props = defineProps<{
@@ -38,6 +38,7 @@ watch(() => props.modelValue, (value) => {
 
 function setLink() {
     const url = window.prompt('Enter URL:')
+
     if (url) {
         editor.value?.chain().focus().setLink({ href: url }).run()
     }
@@ -45,6 +46,7 @@ function setLink() {
 
 function addImage() {
     const url = window.prompt('Enter image URL:')
+
     if (url) {
         editor.value?.chain().focus().setImage({ src: url }).run()
     }

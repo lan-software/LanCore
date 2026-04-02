@@ -1,9 +1,9 @@
-import { h } from 'vue'
+import { router } from '@inertiajs/vue3'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { router } from '@inertiajs/vue3'
-import { Button } from '@/components/ui/button'
+import { h } from 'vue'
 import SeatPlanAuditController from '@/actions/App/Domain/Seating/Http/Controllers/SeatPlanAuditController'
+import { Button } from '@/components/ui/button'
 import type { SeatPlan } from '@/types/domain'
 
 function sortableHeader(label: string) {
@@ -48,6 +48,7 @@ export const columns: ColumnDef<SeatPlan>[] = [
         header: sortableHeader('Created'),
         cell: ({ row }) => {
             const date = new Date(row.getValue('created_at') as string)
+
             return h('span', { class: 'text-muted-foreground' }, date.toLocaleDateString())
         },
     },

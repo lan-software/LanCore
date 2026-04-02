@@ -1,15 +1,14 @@
 <script setup lang="ts">
+import { Head, Link, router } from '@inertiajs/vue3'
+import { Calendar, Info, MapPin, Minus, Plus, ShoppingCart } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
 import CartController from '@/actions/App/Domain/Shop/Http/Controllers/CartController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import type { Event, TicketAddon, TicketType } from '@/types/domain'
-import { Head, Link, router } from '@inertiajs/vue3'
-import { Calendar, Info, MapPin, Minus, Plus, ShoppingCart } from 'lucide-vue-next'
 import { dashboard, login } from '@/routes'
-import { index as shopIndex } from '@/routes/shop'
-import { computed, ref } from 'vue'
+import type { Event, TicketAddon, TicketType } from '@/types/domain'
 
 type CartItemRef = {
     purchasable_type: string
@@ -57,27 +56,34 @@ function getCartQuantity(purchasableType: string, purchasableId: number): number
     const item = props.cartItems.find(
         (i) => i.purchasable_type === purchasableType && i.purchasable_id === purchasableId,
     )
+
     return item?.quantity ?? 0
 }
 
 const ticketCartQuantities = computed(() => {
     const map: Record<number, number> = {}
+
     for (const tt of props.ticketTypes) {
         map[tt.id] = getCartQuantity(ticketTypeClass, tt.id)
     }
+
     return map
 })
 
 const addonCartQuantities = computed(() => {
     const map: Record<number, number> = {}
+
     for (const addon of props.addons) {
         map[addon.id] = getCartQuantity(addonClass, addon.id)
     }
+
     return map
 })
 
 function addToCart(purchasableType: 'ticket_type' | 'addon', purchasableId: number) {
-    if (!props.event) return
+    if (!props.event) {
+return
+}
 
     addingItem.value = purchasableId
 
@@ -103,7 +109,10 @@ function updateCartQuantity(purchasableType: 'ticket_type' | 'addon', purchasabl
     const cartItem = props.cartItems.find(
         (i) => i.purchasable_type === classType && i.purchasable_id === purchasableId,
     )
-    if (!cartItem) return
+
+    if (!cartItem) {
+return
+}
 
     const currentQty = cartItem.quantity
     const newQty = currentQty + delta
@@ -121,6 +130,7 @@ function updateCartQuantity(purchasableType: 'ticket_type' | 'addon', purchasabl
             },
             { preserveScroll: true },
         )
+
         return
     }
 

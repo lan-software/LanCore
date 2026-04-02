@@ -1,10 +1,10 @@
-import { h } from 'vue'
+import { router } from '@inertiajs/vue3'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { router } from '@inertiajs/vue3'
+import { h } from 'vue'
+import ProgramAuditController from '@/actions/App/Domain/Program/Http/Controllers/ProgramAuditController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import ProgramAuditController from '@/actions/App/Domain/Program/Http/Controllers/ProgramAuditController'
 import type { Program } from '@/types/domain'
 
 function sortableHeader(label: string) {
@@ -50,6 +50,7 @@ export const columns: ColumnDef<Program>[] = [
         header: sortableHeader('Visibility'),
         cell: ({ row }) => {
             const visibility = row.getValue('visibility') as string
+
             return h(
                 Badge,
                 { variant: visibilityVariant[visibility] ?? 'secondary' },

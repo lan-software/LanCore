@@ -1,10 +1,10 @@
-import { h } from 'vue'
+import { router } from '@inertiajs/vue3'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { router } from '@inertiajs/vue3'
+import { h } from 'vue'
+import VoucherAuditController from '@/actions/App/Domain/Shop/Http/Controllers/VoucherAuditController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import VoucherAuditController from '@/actions/App/Domain/Shop/Http/Controllers/VoucherAuditController'
 import type { Voucher } from '@/types/domain'
 
 function sortableHeader(label: string) {
@@ -47,9 +47,11 @@ export const columns: ColumnDef<Voucher>[] = [
         header: () => h('span', 'Type'),
         cell: ({ row }) => {
             const voucher = row.original
+
             if (voucher.type === 'fixed_amount') {
                 return h('span', { class: 'text-muted-foreground' }, (voucher.discount_amount! / 100).toFixed(2) + ' €')
             }
+
             return h('span', { class: 'text-muted-foreground' }, voucher.discount_percent + '%')
         },
     },
@@ -59,6 +61,7 @@ export const columns: ColumnDef<Voucher>[] = [
         cell: ({ row }) => {
             const voucher = row.original
             const max = voucher.max_uses !== null ? String(voucher.max_uses) : '∞'
+
             return h('span', { class: 'text-muted-foreground' }, `${voucher.times_used} / ${max}`)
         },
     },

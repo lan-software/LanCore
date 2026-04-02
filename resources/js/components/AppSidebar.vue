@@ -2,6 +2,7 @@
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { Calendar, ClipboardList, Cog, CreditCard, FileCheck, Gamepad2, Gift, Grid2x2, Handshake, LayoutGrid, MapPin, Megaphone, MessageSquare, Newspaper, Palette, Pin, PinOff, Puzzle, Rows3, ShieldCheck, ShoppingCart, Tag, Ticket, TicketCheck, Trophy, Users, Webhook } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { toggle as toggleFavoriteAction } from '@/actions/App/Http/Controllers/Settings/SidebarFavoriteController';
 import AppLogo from '@/components/AppLogo.vue';
 import EventSelector from '@/components/EventSelector.vue';
 import NavFavorites from '@/components/NavFavorites.vue';
@@ -21,42 +22,43 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard, home } from '@/routes';
+import { index as achievementsIndex } from '@/routes/achievements';
+import { index as adminTicketsIndex } from '@/routes/admin-tickets';
+import { index as announcementsIndex } from '@/routes/announcements';
 import { index as eventsIndex } from '@/routes/events';
 import { index as gamesIndex } from '@/routes/games';
-import { index as programsIndex } from '@/routes/programs';
-import { index as sponsorLevelsIndex } from '@/routes/sponsor-levels';
-import { index as sponsorsIndex } from '@/routes/sponsors';
-import { index as usersIndex } from '@/routes/users';
-import { index as venuesIndex } from '@/routes/venues';
-import { index as ticketTypesIndex } from '@/routes/ticket-types';
-import { index as ticketCategoriesIndex } from '@/routes/ticket-categories';
-import { index as ticketAddonsIndex } from '@/routes/ticket-addons';
-import { index as vouchersIndex } from '@/routes/vouchers';
-import { index as ticketsIndex } from '@/routes/tickets';
-import { index as ordersIndex } from '@/routes/orders';
-import { index as adminTicketsIndex } from '@/routes/admin-tickets';
-import { index as seatPlansIndex } from '@/routes/seat-plans';
-import { index as achievementsIndex } from '@/routes/achievements';
-import { index as announcementsIndex } from '@/routes/announcements';
-import { index as webhooksIndex } from '@/routes/webhooks';
+import { index as globalPurchaseConditionsIndex } from '@/routes/global-purchase-conditions';
 import { index as integrationsIndex } from '@/routes/integrations';
 import { index as newsIndex } from '@/routes/news';
 import { index as newsCommentsIndex } from '@/routes/news/comments';
-import { index as purchaseRequirementsIndex } from '@/routes/purchase-requirements';
-import { index as globalPurchaseConditionsIndex } from '@/routes/global-purchase-conditions';
+import { index as ordersIndex } from '@/routes/orders';
 import { index as paymentProviderConditionsIndex } from '@/routes/payment-provider-conditions';
-import { toggle as toggleFavoriteAction } from '@/actions/App/Http/Controllers/Settings/SidebarFavoriteController';
+import { index as programsIndex } from '@/routes/programs';
+import { index as purchaseRequirementsIndex } from '@/routes/purchase-requirements';
+import { index as seatPlansIndex } from '@/routes/seat-plans';
+import { index as sponsorLevelsIndex } from '@/routes/sponsor-levels';
+import { index as sponsorsIndex } from '@/routes/sponsors';
+import { index as ticketAddonsIndex } from '@/routes/ticket-addons';
+import { index as ticketCategoriesIndex } from '@/routes/ticket-categories';
+import { index as ticketTypesIndex } from '@/routes/ticket-types';
+import { index as ticketsIndex } from '@/routes/tickets';
+import { index as usersIndex } from '@/routes/users';
+import { index as venuesIndex } from '@/routes/venues';
+import { index as vouchersIndex } from '@/routes/vouchers';
+import { index as webhooksIndex } from '@/routes/webhooks';
 import type { NavItem } from '@/types';
 
 const page = usePage();
 
 const isAdmin = computed(() => {
     const roles: { name: string }[] = page.props.auth?.user?.roles ?? [];
+
     return roles.some((role) => role.name === 'admin' || role.name === 'superadmin');
 });
 
 const isSponsorManager = computed(() => {
     const roles: { name: string }[] = page.props.auth?.user?.roles ?? [];
+
     return roles.some((role) => role.name === 'sponsor_manager');
 });
 

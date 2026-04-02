@@ -1,6 +1,6 @@
-import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
+import { h } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Webhook } from '@/types/domain'
@@ -40,6 +40,7 @@ export const columns: ColumnDef<Webhook>[] = [
         cell: ({ row }) => {
             const name = row.getValue('name') as string
             const integration = row.original.integration_app
+
             return h('div', { class: 'flex items-center gap-2' }, [
                 h('span', { class: 'font-medium' }, name),
                 integration
@@ -59,6 +60,7 @@ export const columns: ColumnDef<Webhook>[] = [
         header: () => h('span', 'Event'),
         cell: ({ row }) => {
             const event = row.getValue('event') as string
+
             return h(Badge, { variant: 'secondary' }, () => eventLabels[event] ?? event)
         },
     },
@@ -67,6 +69,7 @@ export const columns: ColumnDef<Webhook>[] = [
         header: () => h('span', 'Status'),
         cell: ({ row }) => {
             const isActive = row.getValue('is_active') as boolean
+
             return isActive
                 ? h(Badge, { variant: 'default' }, () => 'Active')
                 : h(Badge, { variant: 'outline' }, () => 'Inactive')
@@ -83,12 +86,15 @@ export const columns: ColumnDef<Webhook>[] = [
         header: () => h('span', 'Health'),
         cell: ({ row }) => {
             const code = row.original.last_delivery_status_code
+
             if (code === null) {
                 return h(Badge, { variant: 'secondary' }, () => 'Unknown')
             }
+
             if (code >= 200 && code < 300) {
                 return h(Badge, { class: 'bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20' }, () => 'Healthy')
             }
+
             return h(Badge, { class: 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/20' }, () => `Unhealthy ${code}`)
         },
     },

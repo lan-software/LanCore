@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Form, Head, Link, router } from '@inertiajs/vue3'
 import PaymentProviderConditionController from '@/actions/App/Domain/Shop/Http/Controllers/PaymentProviderConditionController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -10,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as conditionsIndex } from '@/routes/payment-provider-conditions'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
 
 type Condition = {
     id: number
@@ -93,7 +93,8 @@ function deleteCondition() {
                             name="content"
                             rows="6"
                             class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >{{ condition.content ?? '' }}</textarea>
+                            :value="condition.content ?? ''"
+                        />
                         <InputError :message="errors.content" />
                     </div>
 

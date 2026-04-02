@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import EventController from '@/actions/App/Domain/Event/Http/Controllers/EventController'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import AppLayout from '@/layouts/AppLayout.vue'
 import { index as eventsRoute } from '@/routes/events'
 import type { BreadcrumbItem } from '@/types'
 import type { Audit } from '@/types/domain'
@@ -93,9 +93,11 @@ function formatValue(value: unknown): string {
     if (value === null || value === undefined) {
         return '—'
     }
+
     if (typeof value === 'object') {
         return JSON.stringify(value)
     }
+
     return String(value)
 }
 </script>

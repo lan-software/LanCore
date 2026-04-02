@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
+import { Plus, Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
 import PurchaseRequirementController from '@/actions/App/Domain/Shop/Http/Controllers/PurchaseRequirementController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -9,9 +12,6 @@ import { Label } from '@/components/ui/label'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as requirementsIndex } from '@/routes/purchase-requirements'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
-import { Plus, Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 defineProps<{
     ticketTypes: { id: number; name: string }[]

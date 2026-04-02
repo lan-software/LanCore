@@ -1,10 +1,10 @@
-import { h } from 'vue'
+import { router } from '@inertiajs/vue3'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { router } from '@inertiajs/vue3'
+import { h } from 'vue'
+import NewsArticleAuditController from '@/actions/App/Domain/News/Http/Controllers/NewsArticleAuditController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import NewsArticleAuditController from '@/actions/App/Domain/News/Http/Controllers/NewsArticleAuditController'
 import type { NewsArticle } from '@/types/domain'
 
 function sortableHeader(label: string) {
@@ -40,6 +40,7 @@ export const columns: ColumnDef<NewsArticle>[] = [
         header: sortableHeader('Title'),
         cell: ({ row }) => {
             const article = row.original
+
             return h('div', { class: 'space-y-1' }, [
                 h('span', { class: 'font-medium' }, row.getValue('title')),
                 article.is_archived ? h(Badge, { variant: 'outline', class: 'ml-2 text-xs' }, () => 'Archived') : null,
@@ -56,6 +57,7 @@ export const columns: ColumnDef<NewsArticle>[] = [
         header: sortableHeader('Visibility'),
         cell: ({ row }) => {
             const visibility = row.getValue('visibility') as string
+
             return h(
                 Badge,
                 { variant: visibilityVariant[visibility] ?? 'secondary' },
@@ -68,6 +70,7 @@ export const columns: ColumnDef<NewsArticle>[] = [
         header: sortableHeader('Published'),
         cell: ({ row }) => {
             const date = row.getValue('published_at') as string | null
+
             return h(
                 'span',
                 { class: 'text-muted-foreground' },

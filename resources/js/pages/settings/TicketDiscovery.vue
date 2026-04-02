@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3'
+import { X } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 import { update } from '@/actions/App/Http/Controllers/Settings/TicketDiscoveryController'
 import Heading from '@/components/Heading.vue'
@@ -13,7 +14,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import SettingsLayout from '@/layouts/settings/Layout.vue'
 import { edit } from '@/routes/ticket-discovery'
 import type { BreadcrumbItem } from '@/types'
-import { X } from 'lucide-vue-next'
 
 const props = defineProps<{
     isTicketDiscoverable: boolean
@@ -36,9 +36,11 @@ const newUsername = ref('')
 
 function addUsername(): void {
     const trimmed = newUsername.value.trim()
+
     if (trimmed && !form.ticket_discovery_allowlist.includes(trimmed)) {
         form.ticket_discovery_allowlist.push(trimmed)
     }
+
     newUsername.value = ''
 }
 

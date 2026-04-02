@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
 import VoucherController from '@/actions/App/Domain/Shop/Http/Controllers/VoucherController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -10,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as vouchersIndex } from '@/routes/vouchers'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
 
 defineProps<{
     events: { id: number; name: string }[]

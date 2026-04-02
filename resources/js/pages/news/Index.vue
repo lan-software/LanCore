@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { FlexRender, getCoreRowModel, useVueTable, type SortingState } from '@tanstack/vue-table'
 import { router, Head, Link } from '@inertiajs/vue3'
-import { edit } from '@/actions/App/Domain/News/Http/Controllers/NewsArticleController'
-import { create as newsCreate } from '@/actions/App/Domain/News/Http/Controllers/NewsArticleController'
+import { FlexRender, getCoreRowModel, useVueTable  } from '@tanstack/vue-table'
+import type {SortingState} from '@tanstack/vue-table';
 import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
-import AppLayout from '@/layouts/AppLayout.vue'
+import { edit } from '@/actions/App/Domain/News/Http/Controllers/NewsArticleController'
+import { create as newsCreate } from '@/actions/App/Domain/News/Http/Controllers/NewsArticleController'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useDataTable, type DataTableFilters } from '@/composables/useDataTable'
+import { useDataTable  } from '@/composables/useDataTable'
+import type {DataTableFilters} from '@/composables/useDataTable';
+import AppLayout from '@/layouts/AppLayout.vue'
 import { index as newsRoute } from '@/routes/news'
 import type { BreadcrumbItem } from '@/types'
 import type { NewsArticle } from '@/types/domain'
@@ -35,7 +37,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'News', href: newsRoute().url },
 ]
 
-const { filters, setSearch, toggleSort, setFilter, setPage, setPerPage } =
+const { setSearch, toggleSort, setFilter, setPage } =
     useDataTable(() => newsRoute().url, props.filters)
 
 const searchValue = ref(props.filters.search ?? '')
@@ -64,6 +66,7 @@ const table = useVueTable({
     },
     onSortingChange: (updater) => {
         const newSorting = typeof updater === 'function' ? updater(sorting.value) : updater
+
         if (newSorting.length > 0) {
             toggleSort(newSorting[0].id)
         } else {
@@ -73,7 +76,7 @@ const table = useVueTable({
     },
 })
 
-const perPageOptions = [10, 20, 50, 100]
+// Per-page options: 10, 20, 50, 100
 </script>
 
 <template>

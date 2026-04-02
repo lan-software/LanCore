@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import UserController from '@/actions/App/Http/Controllers/Users/UserController'
+import { Form, Head, Link } from '@inertiajs/vue3'
 import OrderController from '@/actions/App/Domain/Shop/Http/Controllers/OrderController'
 import { show as adminTicketShow } from '@/actions/App/Domain/Ticketing/Http/Controllers/AdminTicketController'
+import UserController from '@/actions/App/Http/Controllers/Users/UserController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
 import { Badge } from '@/components/ui/badge'
@@ -15,7 +16,6 @@ import { index as usersIndexRoute } from '@/routes/users'
 import type { BreadcrumbItem } from '@/types'
 import type { Role, User } from '@/types/auth'
 import type { Order, Ticket } from '@/types/domain'
-import { Form, Head, Link } from '@inertiajs/vue3'
 
 const props = defineProps<{
     user: User

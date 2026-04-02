@@ -1,6 +1,6 @@
-import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
+import { h } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Order } from '@/types/domain'
@@ -58,6 +58,7 @@ export const columns: ColumnDef<Order>[] = [
         header: () => h('span', 'Customer'),
         cell: ({ row }) => {
             const user = row.original.user
+
             return user
                 ? h('div', { class: 'flex flex-col' }, [
                       h('span', { class: 'font-medium' }, user.name),
@@ -76,6 +77,7 @@ export const columns: ColumnDef<Order>[] = [
         header: sortableHeader('Status'),
         cell: ({ row }) => {
             const status = row.getValue<string>('status')
+
             return h(Badge, { variant: statusVariant[status] ?? 'outline' }, () => status)
         },
     },
@@ -85,6 +87,7 @@ export const columns: ColumnDef<Order>[] = [
         cell: ({ row }) => {
             const method = row.getValue<string>('payment_method')
             const label = method === 'stripe' ? 'Credit Card' : method === 'on_site' ? 'On Site' : method
+
             return h('span', { class: 'text-muted-foreground' }, label)
         },
     },

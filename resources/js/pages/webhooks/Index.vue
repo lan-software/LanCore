@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { FlexRender, getCoreRowModel, useVueTable, type SortingState } from '@tanstack/vue-table'
 import { router, Head, Link } from '@inertiajs/vue3'
-import { edit, show } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
-import { create as webhookCreate } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
+import { FlexRender, getCoreRowModel, useVueTable  } from '@tanstack/vue-table'
+import type {SortingState} from '@tanstack/vue-table';
 import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
-import AppLayout from '@/layouts/AppLayout.vue'
+import { show } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
+import { create as webhookCreate } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useDataTable, type DataTableFilters } from '@/composables/useDataTable'
+import { useDataTable  } from '@/composables/useDataTable'
+import type {DataTableFilters} from '@/composables/useDataTable';
+import AppLayout from '@/layouts/AppLayout.vue'
 import { index as webhooksRoute } from '@/routes/webhooks'
 import type { BreadcrumbItem } from '@/types'
 import type { Webhook } from '@/types/domain'
@@ -35,7 +37,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Webhooks', href: webhooksRoute().url },
 ]
 
-const { filters, setSearch, toggleSort, setFilter, setPage } =
+const { setSearch, toggleSort, setFilter, setPage } =
     useDataTable(() => webhooksRoute().url, props.filters)
 
 const searchValue = ref(props.filters.search ?? '')
@@ -64,6 +66,7 @@ const table = useVueTable({
     },
     onSortingChange: (updater) => {
         const newSorting = typeof updater === 'function' ? updater(sorting.value) : updater
+
         if (newSorting.length > 0) {
             toggleSort(newSorting[0].id)
         } else {

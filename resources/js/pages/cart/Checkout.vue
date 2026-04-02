@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { Head, Link, router } from '@inertiajs/vue3'
+import axios from 'axios'
+import { ArrowLeft, FileText, ShieldCheck } from 'lucide-vue-next'
+import { computed, onMounted, reactive, ref } from 'vue'
 import CartController from '@/actions/App/Domain/Shop/Http/Controllers/CartController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -6,13 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import type { Event } from '@/types/domain'
-import { Head, Link, router } from '@inertiajs/vue3'
 import { show as cartShow } from '@/routes/cart'
 import { acknowledge as cartAcknowledge } from '@/routes/cart'
-import { ArrowLeft, FileText, ShieldCheck } from 'lucide-vue-next'
-import { computed, onMounted, reactive, ref } from 'vue'
-import axios from 'axios'
+import type { Event } from '@/types/domain'
 
 type CartItemSummary = {
     name: string
@@ -72,22 +72,27 @@ const scrolledToBottom = reactive<Record<string, boolean>>({})
 onMounted(() => {
     for (const cond of props.globalConditions) {
         globalChecks[cond.id] = false
+
         if (cond.requires_scroll && cond.content) {
             scrolledToBottom[`global-${cond.id}`] = false
         }
     }
+
     for (const cond of props.providerConditions) {
         providerChecks[cond.id] = false
+
         if (cond.requires_scroll && cond.content) {
             scrolledToBottom[`provider-${cond.id}`] = false
         }
     }
+
     for (const req of props.purchaseRequirements) {
         if (req.acknowledgements) {
             for (let i = 0; i < req.acknowledgements.length; i++) {
                 requirementChecks[`${req.id}-${i}`] = false
             }
         }
+
         if (req.requires_scroll && req.requirements_content) {
             scrolledToBottom[`req-${req.id}`] = false
         }
@@ -97,6 +102,7 @@ onMounted(() => {
 function handleScroll(event: globalThis.Event, key: string) {
     const el = event.target as HTMLElement
     const isAtBottom = Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 5
+
     if (isAtBottom) {
         scrolledToBottom[key] = true
     }
@@ -106,6 +112,7 @@ function isCheckboxDisabled(scrollKey: string, requiresScroll: boolean, hasConte
     if (!requiresScroll || !hasContent) {
         return false
     }
+
     return !scrolledToBottom[scrollKey]
 }
 
@@ -120,6 +127,7 @@ function saveAcknowledgement(type: string, id: number, key: string | null = null
 
 function onGlobalCheck(condId: number, val: boolean | 'indeterminate') {
     globalChecks[condId] = val === true
+
     if (val === true) {
         saveAcknowledgement('global_purchase_condition', condId)
     }
@@ -127,6 +135,7 @@ function onGlobalCheck(condId: number, val: boolean | 'indeterminate') {
 
 function onProviderCheck(condId: number, val: boolean | 'indeterminate') {
     providerChecks[condId] = val === true
+
     if (val === true) {
         saveAcknowledgement('payment_provider_condition', condId)
     }
@@ -134,6 +143,7 @@ function onProviderCheck(condId: number, val: boolean | 'indeterminate') {
 
 function onRequirementCheck(reqId: number, idx: number, val: boolean | 'indeterminate') {
     requirementChecks[`${reqId}-${idx}`] = val === true
+
     if (val === true) {
         saveAcknowledgement('purchase_requirement', reqId, String(idx))
     }
@@ -146,11 +156,13 @@ const allRequiredSatisfied = computed(() => {
             return false
         }
     }
+
     for (const cond of props.providerConditions) {
         if (cond.is_required && !providerChecks[cond.id]) {
             return false
         }
     }
+
     for (const req of props.purchaseRequirements) {
         if (req.acknowledgements) {
             for (let i = 0; i < req.acknowledgements.length; i++) {
@@ -160,6 +172,7 @@ const allRequiredSatisfied = computed(() => {
             }
         }
     }
+
     return true
 })
 

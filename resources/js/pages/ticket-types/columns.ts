@@ -1,10 +1,10 @@
-import { h } from 'vue'
+import { router } from '@inertiajs/vue3'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { router } from '@inertiajs/vue3'
+import { h } from 'vue'
+import TicketTypeAuditController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketTypeAuditController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import TicketTypeAuditController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketTypeAuditController'
 import type { TicketType } from '@/types/domain'
 
 function sortableHeader(label: string) {

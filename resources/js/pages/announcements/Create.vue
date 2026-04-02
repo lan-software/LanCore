@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3'
+import { ref } from 'vue'
 import { store } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
 import { create as announcementCreate } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
 import Heading from '@/components/Heading.vue'
@@ -13,9 +14,8 @@ import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as announcementsRoute } from '@/routes/announcements'
 import type { BreadcrumbItem } from '@/types'
-import { ref } from 'vue'
 
-const props = defineProps<{
+defineProps<{
     events: { id: number; name: string }[]
 }>()
 

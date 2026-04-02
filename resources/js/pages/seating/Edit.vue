@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link, router } from '@inertiajs/vue3'
+import { Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
 import SeatPlanController from '@/actions/App/Domain/Seating/Http/Controllers/SeatPlanController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -11,9 +14,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as seatPlansRoute } from '@/routes/seat-plans'
 import type { BreadcrumbItem } from '@/types'
 import type { SeatPlan } from '@/types/domain'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 const props = defineProps<{
     seatPlan: SeatPlan

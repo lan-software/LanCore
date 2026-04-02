@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3'
 import { Trophy, ExternalLink } from 'lucide-vue-next'
-import { defineAsyncComponent, type Component } from 'vue'
+import { defineAsyncComponent  } from 'vue'
+import type {Component} from 'vue';
 import UserAchievementsController from '@/actions/App/Http/Controllers/Settings/UserAchievementsController'
 import Heading from '@/components/Heading.vue'
 import AppLayout from '@/layouts/AppLayout.vue'
@@ -33,7 +34,9 @@ const breadcrumbItems: BreadcrumbItem[] = [
 const iconCache = new Map<string, Component>()
 
 function resolveIcon(name: string): Component {
-    if (iconCache.has(name)) return iconCache.get(name)!
+    if (iconCache.has(name)) {
+return iconCache.get(name)!
+}
 
     const pascalCase = name
         .split('-')
@@ -44,12 +47,14 @@ function resolveIcon(name: string): Component {
         loader: () =>
             import('lucide-vue-next').then((mod) => {
                 const icon = (mod as Record<string, Component>)[pascalCase]
+
                 return icon ?? ExternalLink
             }),
         loadingComponent: ExternalLink,
     })
 
     iconCache.set(name, asyncIcon)
+
     return asyncIcon
 }
 

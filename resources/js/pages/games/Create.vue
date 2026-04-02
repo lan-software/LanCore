@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
 import GameController from '@/actions/App/Domain/Games/Http/Controllers/GameController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -9,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as gamesRoute } from '@/routes/games'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: gamesRoute().url },

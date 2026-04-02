@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
+import { ImagePlus, Plus, Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
 import VenueController from '@/actions/App/Domain/Venue/Http/Controllers/VenueController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -9,9 +12,6 @@ import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as venuesRoute } from '@/routes/venues'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
-import { ImagePlus, Plus, Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: venuesRoute().url },
@@ -31,6 +31,7 @@ function removeImage(index: number) {
 
 function onFileSelected(index: number, event: globalThis.Event) {
     const file = (event.target as HTMLInputElement).files?.[0]
+
     if (file) {
         images.value[index].file = file
         images.value[index].preview = URL.createObjectURL(file)

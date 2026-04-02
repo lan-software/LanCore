@@ -1,13 +1,13 @@
 <script setup lang="ts">
+import { Form } from '@inertiajs/vue3'
+import { Armchair, Eye, EyeOff } from 'lucide-vue-next'
+import { ref } from 'vue'
 import TicketController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketController'
 import InputError from '@/components/InputError.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { Ticket } from '@/types/domain'
-import { Form } from '@inertiajs/vue3'
-import { Armchair, Eye, EyeOff } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 const props = defineProps<{
     ticket: Ticket

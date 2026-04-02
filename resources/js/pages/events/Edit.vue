@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link, router } from '@inertiajs/vue3'
+import { ImagePlus, Trash2, X } from 'lucide-vue-next'
+import { ref } from 'vue'
 import EventController from '@/actions/App/Domain/Event/Http/Controllers/EventController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -13,9 +16,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as eventsRoute } from '@/routes/events'
 import type { BreadcrumbItem } from '@/types'
 import type { Event } from '@/types/domain'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { ImagePlus, Trash2, X } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 const props = defineProps<{
     event: Event
@@ -31,6 +31,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 function formatDateTimeLocal(dateString: string): string {
     const date = new Date(dateString)
     const pad = (n: number) => String(n).padStart(2, '0')
+
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
@@ -62,6 +63,7 @@ function addBannerSlot() {
 
 function onNewBannerSelected(index: number, event: globalThis.Event) {
     const file = (event.target as HTMLInputElement).files?.[0]
+
     if (file) {
         newBannerSlots.value[index].preview = URL.createObjectURL(file)
     }
@@ -69,9 +71,11 @@ function onNewBannerSelected(index: number, event: globalThis.Event) {
 
 function removeNewBannerSlot(index: number) {
     const preview = newBannerSlots.value[index].preview
+
     if (preview) {
         URL.revokeObjectURL(preview)
     }
+
     newBannerSlots.value.splice(index, 1)
 }
 

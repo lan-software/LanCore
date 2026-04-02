@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
-import { computed, defineAsyncComponent, type Component } from 'vue'
-import { dashboard, login, register } from '@/routes'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Calendar, Clock, MapPin, Newspaper, ShoppingCart, Megaphone, AlertTriangle, X, ExternalLink } from 'lucide-vue-next'
-import { index as shopIndex } from '@/routes/shop'
+import { computed, defineAsyncComponent  } from 'vue'
+import type {Component} from 'vue';
 import AppLogo from '@/components/AppLogo.vue'
-import SeatMapCanvas from '@/components/SeatMapCanvas.vue'
-import NotificationBell from '@/components/NotificationBell.vue'
 import BannerCarousel from '@/components/BannerCarousel.vue'
+import NotificationBell from '@/components/NotificationBell.vue'
+import SeatMapCanvas from '@/components/SeatMapCanvas.vue'
+import { Badge } from '@/components/ui/badge'
+import { dashboard, login, register } from '@/routes'
+import { index as shopIndex } from '@/routes/shop'
 import type { Event, NewsArticle, Announcement } from '@/types/domain'
 
 const props = withDefaults(
@@ -67,8 +67,13 @@ const integrationLinks = computed(() => page.props.integrationLinks ?? [])
 const iconCache = new Map<string, Component>()
 
 function resolveIcon(name: string | null): Component {
-    if (!name) return ExternalLink
-    if (iconCache.has(name)) return iconCache.get(name)!
+    if (!name) {
+return ExternalLink
+}
+
+    if (iconCache.has(name)) {
+return iconCache.get(name)!
+}
 
     const pascalCase = name
         .split('-')
@@ -79,12 +84,14 @@ function resolveIcon(name: string | null): Component {
         loader: () =>
             import('lucide-vue-next').then((mod) => {
                 const icon = (mod as Record<string, Component>)[pascalCase]
+
                 return icon ?? ExternalLink
             }),
         loadingComponent: ExternalLink,
     })
 
     iconCache.set(name, asyncIcon)
+
     return asyncIcon
 }
 </script>

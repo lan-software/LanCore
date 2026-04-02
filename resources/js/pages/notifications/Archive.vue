@@ -5,8 +5,8 @@ import {
     archivedIndex as notificationsArchive,
     index as notificationsIndex,
 } from '@/actions/App/Domain/Notification/Http/Controllers/NotificationController';
-import { Button } from '@/components/ui/button';
 import Heading from '@/components/Heading.vue';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { AppNotification, BreadcrumbItem } from '@/types';
 
@@ -36,15 +36,19 @@ function notificationLabel(notification: AppNotification): string {
     if (type === 'NewsPublishedNotification' && data.title) {
         return `New article: ${data.title}`;
     }
+
     if (type === 'AnnouncementPublishedNotification' && data.title) {
         return `Announcement: ${data.title}`;
     }
+
     if (type === 'ProgramTimeSlotNotification') {
         return 'Upcoming program time slot';
     }
+
     if (type === 'UserAttributesUpdatedNotification') {
         return 'Your profile was updated';
     }
+
     if (type === 'UserRolesChangedNotification') {
         return 'Your roles have changed';
     }

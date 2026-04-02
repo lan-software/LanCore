@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { CalendarDays, MapPin } from 'lucide-vue-next'
-import { login, register } from '@/routes'
 import BannerCarousel from '@/components/BannerCarousel.vue'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { login, register } from '@/routes'
 import type { Event } from '@/types/domain'
 
 interface PaginatedEvents {
@@ -137,8 +137,7 @@ function formatDate(dateString: string): string {
                         :class="link.active
                             ? 'bg-primary text-primary-foreground'
                             : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'"
-                        v-html="link.label"
-                    />
+                    ><span v-html="link.label" /></Link>
                     <span
                         v-else
                         class="px-3 py-1.5 text-sm text-muted-foreground/50"

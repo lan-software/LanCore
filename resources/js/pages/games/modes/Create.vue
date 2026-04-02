@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
 import GameController from '@/actions/App/Domain/Games/Http/Controllers/GameController'
 import GameModeController from '@/actions/App/Domain/Games/Http/Controllers/GameModeController'
 import Heading from '@/components/Heading.vue'
@@ -11,7 +12,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as gamesRoute } from '@/routes/games'
 import type { BreadcrumbItem } from '@/types'
 import type { Game } from '@/types/domain'
-import { Form, Head, Link } from '@inertiajs/vue3'
 
 const props = defineProps<{
     game: Game

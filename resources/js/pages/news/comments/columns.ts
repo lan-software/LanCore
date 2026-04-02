@@ -1,10 +1,10 @@
-import { h } from 'vue'
+import { router } from '@inertiajs/vue3'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { router } from '@inertiajs/vue3'
+import { h } from 'vue'
+import NewsCommentAuditController from '@/actions/App/Domain/News/Http/Controllers/NewsCommentAuditController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import NewsCommentAuditController from '@/actions/App/Domain/News/Http/Controllers/NewsCommentAuditController'
 import type { NewsComment } from '@/types/domain'
 
 function sortableHeader(label: string) {
@@ -35,6 +35,7 @@ export const columns: ColumnDef<NewsComment & { article?: { id: number; title: s
         cell: ({ row }) => {
             const content = row.original.content
             const truncated = content.length > 120 ? content.slice(0, 120) + '…' : content
+
             return h('div', { class: 'max-w-md' }, [
                 h('p', { class: 'text-sm line-clamp-2' }, truncated),
                 row.original.edited_at
@@ -53,7 +54,11 @@ export const columns: ColumnDef<NewsComment & { article?: { id: number; title: s
         header: () => h('span', 'Article'),
         cell: ({ row }) => {
             const article = row.original.article
-            if (!article) return h('span', '—')
+
+            if (!article) {
+return h('span', '—')
+}
+
             return h('div', { class: 'space-y-0.5' }, [
                 h('span', { class: 'text-sm font-medium line-clamp-1' }, article.title),
                 h(
@@ -69,6 +74,7 @@ export const columns: ColumnDef<NewsComment & { article?: { id: number; title: s
         header: sortableHeader('Status'),
         cell: ({ row }) => {
             const approved = row.original.is_approved
+
             return h(
                 Badge,
                 { variant: approved ? 'default' : 'outline', class: approved ? '' : 'border-amber-500 text-amber-600' },

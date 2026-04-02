@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { Head, Link } from '@inertiajs/vue3'
+import { edit as eventEdit } from '@/actions/App/Domain/Event/Http/Controllers/EventController'
 import OrderController from '@/actions/App/Domain/Shop/Http/Controllers/OrderController'
 import { show as adminTicketShow } from '@/actions/App/Domain/Ticketing/Http/Controllers/AdminTicketController'
-import { edit as eventEdit } from '@/actions/App/Domain/Event/Http/Controllers/EventController'
 import { edit as ticketTypeEdit } from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketTypeController'
 import { show as userShow } from '@/actions/App/Http/Controllers/Users/UserController'
 import Heading from '@/components/Heading.vue'
@@ -13,7 +14,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as ordersIndex } from '@/routes/orders'
 import type { BreadcrumbItem } from '@/types'
 import type { Order } from '@/types/domain'
-import { Head, Link } from '@inertiajs/vue3'
 
 const props = defineProps<{
     order: Order

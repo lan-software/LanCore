@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { FlexRender, getCoreRowModel, useVueTable, type SortingState } from '@tanstack/vue-table'
 import { router, Head } from '@inertiajs/vue3'
-import { approve, destroy, update } from '@/actions/App/Domain/News/Http/Controllers/NewsCommentController'
-import { edit as editArticle } from '@/actions/App/Domain/News/Http/Controllers/NewsArticleController'
+import { FlexRender, getCoreRowModel, useVueTable  } from '@tanstack/vue-table'
+import type {SortingState} from '@tanstack/vue-table';
 import { ChevronLeft, ChevronRight, Check, Pencil, Search, Trash2, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
-import AppLayout from '@/layouts/AppLayout.vue'
+import { approve, destroy, update } from '@/actions/App/Domain/News/Http/Controllers/NewsCommentController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { useDataTable, type DataTableFilters } from '@/composables/useDataTable'
+import { useDataTable  } from '@/composables/useDataTable'
+import type {DataTableFilters} from '@/composables/useDataTable';
+import AppLayout from '@/layouts/AppLayout.vue'
 import { index as commentsRoute } from '@/routes/news/comments'
 import type { BreadcrumbItem } from '@/types'
 import type { NewsComment } from '@/types/domain'
@@ -70,6 +71,7 @@ const table = useVueTable({
     },
     onSortingChange: (updater) => {
         const newSorting = typeof updater === 'function' ? updater(sorting.value) : updater
+
         if (newSorting.length > 0) {
             toggleSort(newSorting[0].id)
         } else {
@@ -105,12 +107,11 @@ function approveComment(comment: NewsComment) {
 }
 
 function deleteComment(comment: NewsComment) {
-    if (!confirm('Are you sure you want to delete this comment?')) return
-    router.delete(destroy({ newsComment: comment.id }).url, { preserveScroll: true })
+    if (!confirm('Are you sure you want to delete this comment?')) {
+return
 }
 
-function goToArticle(articleId: number) {
-    router.visit(editArticle({ newsArticle: articleId }).url)
+    router.delete(destroy({ newsComment: comment.id }).url, { preserveScroll: true })
 }
 
 const perPageOptions = [10, 20, 50, 100]

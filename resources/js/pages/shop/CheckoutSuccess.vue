@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge'
+import { Head, Link } from '@inertiajs/vue3'
+import { CheckCircle } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import type { Order } from '@/types/domain'
-import { Head, Link } from '@inertiajs/vue3'
-import { index as ticketsIndex } from '@/routes/tickets'
 import { index as shopIndex } from '@/routes/shop'
-import { CheckCircle } from 'lucide-vue-next'
+import { index as ticketsIndex } from '@/routes/tickets'
+import type { Order } from '@/types/domain'
 
 defineProps<{
     order: Order

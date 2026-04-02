@@ -1,10 +1,10 @@
-import { h } from 'vue'
+import { router } from '@inertiajs/vue3'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { router } from '@inertiajs/vue3'
+import { h } from 'vue'
+import { publish } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { publish } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
 import type { Announcement } from '@/types/domain'
 
 function sortableHeader(label: string) {
@@ -45,6 +45,7 @@ export const columns: ColumnDef<Announcement>[] = [
         header: sortableHeader('Priority'),
         cell: ({ row }) => {
             const priority = row.getValue('priority') as string
+
             return h(
                 Badge,
                 { variant: priorityVariant[priority] ?? 'outline' },
@@ -67,6 +68,7 @@ export const columns: ColumnDef<Announcement>[] = [
         header: sortableHeader('Published'),
         cell: ({ row }) => {
             const date = row.getValue('published_at') as string | null
+
             return date
                 ? h(
                       'span',
@@ -99,6 +101,7 @@ export const columns: ColumnDef<Announcement>[] = [
         header: () => h('span', 'Acknowledged'),
         cell: ({ row }) => {
             const count = row.original.dismissed_by_users_count ?? 0
+
             return h('span', { class: 'text-muted-foreground' }, `${count}`)
         },
     },
@@ -106,7 +109,10 @@ export const columns: ColumnDef<Announcement>[] = [
         id: 'actions',
         header: () => h('span'),
         cell: ({ row }) => {
-            if (row.original.published_at) return null
+            if (row.original.published_at) {
+return null
+}
+
             return h(
                 Button,
                 {

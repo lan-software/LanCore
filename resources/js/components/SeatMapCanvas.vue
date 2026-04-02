@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { SeatMapCanvas as SeatMapCanvasClass } from '@alisaitteke/seatmap-canvas'
 import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import type { SeatPlanBlock, SeatPlanData } from '@/types/domain'
 
@@ -47,14 +48,10 @@ defineEmits<{
 }>()
 
 const containerRef = ref<HTMLDivElement | null>(null)
-let seatmapInstance: InstanceType<typeof import('@alisaitteke/seatmap-canvas').SeatMapCanvas> | null = null
+let seatmapInstance: SeatMapCanvasClass | null = null
 
 function isZoneFormat(data: SeatPlanData): data is SeatPlanData & ZoneFormat {
     return 'zones' in data && Array.isArray((data as Record<string, unknown>).zones)
-}
-
-function hasBlocks(data: SeatPlanData): boolean {
-    return 'blocks' in data && Array.isArray(data.blocks) && data.blocks.length > 0
 }
 
 /**
@@ -64,6 +61,7 @@ function hasBlocks(data: SeatPlanData): boolean {
  */
 function convertZonesToBlocks(data: ZoneFormat): SeatPlanBlock[] {
     const categoryColors = new Map<string, string>()
+
     if (data.categories) {
         for (const cat of data.categories) {
             categoryColors.set(cat.name, cat.color)
@@ -106,6 +104,7 @@ function convertZonesToBlocks(data: ZoneFormat): SeatPlanBlock[] {
     }
 
     const blocks = Array.from(blockMap.values())
+
     for (const block of blocks) {
         block.seats.sort((a, b) => a.x === b.x ? a.y - b.y : a.x - b.x)
     }
@@ -117,14 +116,20 @@ function getBlocks(): SeatPlanBlock[] {
     if (isZoneFormat(props.data)) {
         return convertZonesToBlocks(props.data)
     }
+
     return props.data.blocks ?? []
 }
 
 async function initSeatmap(): Promise<void> {
-    if (!containerRef.value) return
+    if (!containerRef.value) {
+return
+}
 
     const blocks = getBlocks()
-    if (blocks.length === 0) return
+
+    if (blocks.length === 0) {
+return
+}
 
     destroySeatmap()
 

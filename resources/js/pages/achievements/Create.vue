@@ -14,7 +14,7 @@ import { index as achievementsRoute } from '@/routes/achievements'
 import type { BreadcrumbItem } from '@/types'
 import type { GrantableEvent } from '@/types/domain'
 
-const props = defineProps<{
+defineProps<{
     grantableEvents: GrantableEvent[]
 }>()
 
@@ -36,6 +36,7 @@ const form = useForm({
 
 function toggleEvent(eventClass: string) {
     const index = form.event_classes.indexOf(eventClass)
+
     if (index === -1) {
         form.event_classes.push(eventClass)
     } else {

@@ -1,13 +1,14 @@
 <script setup lang="ts">
+import { Link, usePage } from '@inertiajs/vue3';
+import { House, ExternalLink } from 'lucide-vue-next';
+import { computed, defineAsyncComponent  } from 'vue';
+import type {Component} from 'vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import NotificationBell from '@/components/NotificationBell.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Link, usePage } from '@inertiajs/vue3';
-import { House, ExternalLink } from 'lucide-vue-next';
 import { home } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
-import { computed, defineAsyncComponent, type Component } from 'vue';
 
 withDefaults(
     defineProps<{
@@ -24,8 +25,13 @@ const integrationLinks = computed(() => page.props.integrationLinks ?? []);
 const iconCache = new Map<string, Component>();
 
 function resolveIcon(name: string | null): Component {
-    if (!name) return ExternalLink;
-    if (iconCache.has(name)) return iconCache.get(name)!;
+    if (!name) {
+return ExternalLink;
+}
+
+    if (iconCache.has(name)) {
+return iconCache.get(name)!;
+}
 
     const pascalCase = name
         .split('-')
@@ -36,12 +42,14 @@ function resolveIcon(name: string | null): Component {
         loader: () =>
             import('lucide-vue-next').then((mod) => {
                 const icon = (mod as Record<string, Component>)[pascalCase];
+
                 return icon ?? ExternalLink;
             }),
         loadingComponent: ExternalLink,
     });
 
     iconCache.set(name, asyncIcon);
+
     return asyncIcon;
 }
 </script>

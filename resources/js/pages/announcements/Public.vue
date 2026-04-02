@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Head, Link } from '@inertiajs/vue3'
 import { AlertTriangle, Megaphone, ArrowLeft } from 'lucide-vue-next'
+import { Badge } from '@/components/ui/badge'
 import type { Announcement } from '@/types/domain'
 
-const props = defineProps<{
+defineProps<{
     event: { id: number; name: string }
     announcements: Announcement[]
     dismissedIds: number[]

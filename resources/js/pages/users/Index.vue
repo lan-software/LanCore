@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { FlexRender, getCoreRowModel, useVueTable, type SortingState } from '@tanstack/vue-table'
 import { router, Head } from '@inertiajs/vue3'
-import UserController from '@/actions/App/Http/Controllers/Users/UserController'
+import { FlexRender, getCoreRowModel, useVueTable  } from '@tanstack/vue-table'
+import type {SortingState} from '@tanstack/vue-table';
 import { ChevronLeft, ChevronRight, Search, Shield, Trash2, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
-import AppLayout from '@/layouts/AppLayout.vue'
+import UserController from '@/actions/App/Http/Controllers/Users/UserController'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useDataTable, type DataTableFilters } from '@/composables/useDataTable'
+import { useDataTable  } from '@/composables/useDataTable'
+import type {DataTableFilters} from '@/composables/useDataTable';
+import AppLayout from '@/layouts/AppLayout.vue'
 import { index as usersRoute, bulk_assign_role as usersBulkAssignRoleRoute, bulk_destroy as usersBulkDestroyRoute } from '@/routes/users'
 import type { BreadcrumbItem } from '@/types'
 import type { User } from '@/types/auth'
@@ -70,6 +72,7 @@ const table = useVueTable({
     },
     onSortingChange: (updater) => {
         const newSorting = typeof updater === 'function' ? updater(sorting.value) : updater
+
         if (newSorting.length > 0) {
             toggleSort(newSorting[0].id)
         } else {
@@ -111,6 +114,7 @@ function executeAssignRole() {
     if (!pendingRole.value) {
         return
     }
+
     router.patch(usersBulkAssignRoleRoute().url, {
         ids: selectedIds.value,
         role: pendingRole.value.value,

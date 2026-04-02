@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link, router } from '@inertiajs/vue3'
+import { Plus, Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
 import PurchaseRequirementController from '@/actions/App/Domain/Shop/Http/Controllers/PurchaseRequirementController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -9,9 +12,6 @@ import { Label } from '@/components/ui/label'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as requirementsIndex } from '@/routes/purchase-requirements'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { Plus, Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 type PurchaseRequirement = {
     id: number
@@ -52,6 +52,7 @@ function removeAcknowledgement(index: number) {
 
 function toggleTicketType(id: number) {
     const idx = selectedTicketTypeIds.value.indexOf(id)
+
     if (idx === -1) {
         selectedTicketTypeIds.value.push(id)
     } else {
@@ -61,6 +62,7 @@ function toggleTicketType(id: number) {
 
 function toggleAddon(id: number) {
     const idx = selectedAddonIds.value.indexOf(id)
+
     if (idx === -1) {
         selectedAddonIds.value.push(id)
     } else {
@@ -110,7 +112,8 @@ function deleteRequirement() {
                             name="requirements_content"
                             rows="6"
                             class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >{{ requirement.requirements_content ?? '' }}</textarea>
+                            :value="requirement.requirements_content ?? ''"
+                        />
                         <InputError :message="errors.requirements_content" />
                     </div>
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
 import { store } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorController'
 import { create as sponsorCreate } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorController'
 import Heading from '@/components/Heading.vue'
@@ -13,7 +14,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as sponsorsRoute } from '@/routes/sponsors'
 import type { BreadcrumbItem } from '@/types'
 import type { SponsorLevel } from '@/types/domain'
-import { Form, Head, Link } from '@inertiajs/vue3'
 
 defineProps<{
     sponsorLevels: SponsorLevel[]

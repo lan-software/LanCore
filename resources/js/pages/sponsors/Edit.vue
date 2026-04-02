@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link, router } from '@inertiajs/vue3'
+import { Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
 import { edit as sponsorEdit, update, destroy } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -13,9 +16,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as sponsorsRoute } from '@/routes/sponsors'
 import type { BreadcrumbItem } from '@/types'
 import type { Sponsor, SponsorLevel } from '@/types/domain'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 const props = defineProps<{
     sponsor: Sponsor

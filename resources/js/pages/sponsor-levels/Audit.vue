@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { edit as sponsorLevelEdit } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import AppLayout from '@/layouts/AppLayout.vue'
 import { index as sponsorLevelsRoute } from '@/routes/sponsor-levels'
 import type { BreadcrumbItem } from '@/types'
 import type { Audit } from '@/types/domain'
@@ -68,15 +68,23 @@ function eventVariant(event: string): 'default' | 'secondary' | 'destructive' | 
 function changedFields(audit: Audit): { field: string; old: unknown; new: unknown }[] {
     const fields: { field: string; old: unknown; new: unknown }[] = []
     const allKeys = new Set([...Object.keys(audit.old_values ?? {}), ...Object.keys(audit.new_values ?? {})])
+
     for (const key of allKeys) {
         fields.push({ field: key, old: audit.old_values?.[key] ?? null, new: audit.new_values?.[key] ?? null })
     }
+
     return fields
 }
 
 function formatValue(value: unknown): string {
-    if (value === null || value === undefined) return '—'
-    if (typeof value === 'object') return JSON.stringify(value)
+    if (value === null || value === undefined) {
+return '—'
+}
+
+    if (typeof value === 'object') {
+return JSON.stringify(value)
+}
+
     return String(value)
 }
 </script>

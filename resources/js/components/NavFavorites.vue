@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Pin, PinOff } from 'lucide-vue-next';
+import { PinOff } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { toggle as toggleFavorite } from '@/actions/App/Http/Controllers/Settings/SidebarFavoriteController';
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -12,7 +13,6 @@ import {
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import type { NavItem } from '@/types';
-import { toggle as toggleFavorite } from '@/actions/App/Http/Controllers/Settings/SidebarFavoriteController';
 
 const props = defineProps<{
     allItems: NavItem[];
@@ -23,6 +23,7 @@ const { isCurrentUrl } = useCurrentUrl();
 
 const favorites = computed(() => {
     const favoriteIds: string[] = page.props.sidebarFavorites ?? [];
+
     return favoriteIds
         .map((id) => props.allItems.find((item) => item.id === id))
         .filter((item): item is NavItem => !!item);

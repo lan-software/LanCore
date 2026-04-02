@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link, router } from '@inertiajs/vue3'
+import { Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
 import GameController from '@/actions/App/Domain/Games/Http/Controllers/GameController'
 import GameModeController from '@/actions/App/Domain/Games/Http/Controllers/GameModeController'
 import Heading from '@/components/Heading.vue'
@@ -13,9 +16,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as gamesRoute } from '@/routes/games'
 import type { BreadcrumbItem } from '@/types'
 import type { Game, GameMode } from '@/types/domain'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 const props = defineProps<{
     game: Game

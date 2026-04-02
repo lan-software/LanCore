@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
 import AddonController from '@/actions/App/Domain/Ticketing/Http/Controllers/AddonController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -11,7 +12,6 @@ import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as ticketAddonsIndex } from '@/routes/ticket-addons'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
 
 defineProps<{
     events: { id: number; name: string }[]

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
-import { ChevronLeft, ChevronRight, Pencil } from 'lucide-vue-next'
 import { router } from '@inertiajs/vue3'
+import { ChevronLeft, ChevronRight, Pencil } from 'lucide-vue-next'
 import { edit as webhookEdit } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
 import { show as webhookShow } from '@/actions/App/Domain/Webhook/Http/Controllers/WebhookController'
-import AppLayout from '@/layouts/AppLayout.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import AppLayout from '@/layouts/AppLayout.vue'
 import { index as webhooksRoute } from '@/routes/webhooks'
 import type { BreadcrumbItem } from '@/types'
 import type { Webhook, WebhookDelivery } from '@/types/domain'
@@ -54,14 +54,26 @@ function formatDate(dateString: string): string {
 }
 
 function statusVariant(delivery: WebhookDelivery): 'default' | 'secondary' | 'destructive' | 'outline' {
-    if (delivery.succeeded) return 'default'
-    if (delivery.status_code === null) return 'secondary'
+    if (delivery.succeeded) {
+return 'default'
+}
+
+    if (delivery.status_code === null) {
+return 'secondary'
+}
+
     return 'destructive'
 }
 
 function statusLabel(delivery: WebhookDelivery): string {
-    if (delivery.succeeded) return 'Success'
-    if (delivery.status_code === null) return 'Network Error'
+    if (delivery.succeeded) {
+return 'Success'
+}
+
+    if (delivery.status_code === null) {
+return 'Network Error'
+}
+
     return 'Failed'
 }
 </script>

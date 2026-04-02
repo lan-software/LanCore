@@ -26,7 +26,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
 
       - name: Install Dependencies
         run: |
@@ -40,7 +40,7 @@ jobs:
         run: npm run format
 
       - name: Lint Frontend
-        run: npm run lint
+        run: npm run lint:check
 
       # - name: Commit Changes
       #   uses: stefanzweifel/git-auto-commit-action@v7

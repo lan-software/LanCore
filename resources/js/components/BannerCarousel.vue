@@ -22,6 +22,7 @@ function goTo(index: number) {
     if (index === currentIndex.value) {
         return
     }
+
     currentIndex.value = index
     scheduleNext()
 }
@@ -30,6 +31,7 @@ function scheduleNext() {
     if (timer !== null) {
         clearTimeout(timer)
     }
+
     if (props.images.length > 1) {
         timer = setTimeout(advance, interval.value)
     }

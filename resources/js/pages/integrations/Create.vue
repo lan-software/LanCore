@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
 import { store } from '@/actions/App/Domain/Integration/Http/Controllers/IntegrationAppController'
 import { create as integrationCreate } from '@/actions/App/Domain/Integration/Http/Controllers/IntegrationAppController'
 import Heading from '@/components/Heading.vue'
@@ -11,7 +12,6 @@ import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as integrationsRoute } from '@/routes/integrations'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
 
 defineProps<{
     availableScopes: { value: string; label: string; description: string }[]

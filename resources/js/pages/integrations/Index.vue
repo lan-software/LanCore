@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { index as integrationsRoute } from '@/routes/integrations'
+import { Head, Link, router } from '@inertiajs/vue3'
+import { Plus } from 'lucide-vue-next'
 import { edit } from '@/actions/App/Domain/Integration/Http/Controllers/IntegrationAppController'
 import { create as integrationCreate } from '@/actions/App/Domain/Integration/Http/Controllers/IntegrationAppController'
 import Heading from '@/components/Heading.vue'
@@ -8,11 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import AppLayout from '@/layouts/AppLayout.vue'
-import type { BreadcrumbItem } from '@/types'
-import { Head, Link, router } from '@inertiajs/vue3'
-import { Plus } from 'lucide-vue-next'
 import { useDataTable } from '@/composables/useDataTable'
+import AppLayout from '@/layouts/AppLayout.vue'
+import { index as integrationsRoute } from '@/routes/integrations'
+import type { BreadcrumbItem } from '@/types'
 
 export type IntegrationApp = {
     id: number
@@ -164,15 +164,13 @@ const { setSearch, setPerPage } = useDataTable(
                             size="sm"
                             :class="{ 'bg-accent': link.active }"
                             @click="router.visit(link.url)"
-                            v-html="link.label"
-                        />
+                        ><span v-html="link.label" /></Button>
                         <Button
                             v-else
                             variant="outline"
                             size="sm"
                             disabled
-                            v-html="link.label"
-                        />
+                        ><span v-html="link.label" /></Button>
                     </template>
                 </div>
             </div>

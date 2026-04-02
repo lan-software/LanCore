@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
 import SeatPlanController from '@/actions/App/Domain/Seating/Http/Controllers/SeatPlanController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -10,9 +11,8 @@ import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as seatPlansRoute } from '@/routes/seat-plans'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
 
-const props = defineProps<{
+defineProps<{
     events: { id: number; name: string }[]
     selectedEventId?: number | null
 }>()

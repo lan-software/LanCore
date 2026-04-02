@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
+import { Plus, Trash2 } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
 import { store } from '@/actions/App/Domain/Program/Http/Controllers/ProgramController'
 import { create as programCreate } from '@/actions/App/Domain/Program/Http/Controllers/ProgramController'
 import Heading from '@/components/Heading.vue'
@@ -13,9 +16,6 @@ import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as programsRoute } from '@/routes/programs'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
-import { Plus, Trash2 } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
 
 const props = defineProps<{
     events: { id: number; name: string; primary_program_id: number | null; primary_program: { id: number; name: string } | null }[]

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link, router } from '@inertiajs/vue3'
+import { Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
 import VoucherController from '@/actions/App/Domain/Shop/Http/Controllers/VoucherController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -12,9 +15,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as vouchersIndex } from '@/routes/vouchers'
 import type { BreadcrumbItem } from '@/types'
 import type { Voucher } from '@/types/domain'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 const props = defineProps<{
     voucher: Voucher
@@ -33,8 +33,10 @@ function formatDateTimeLocal(dateString: string | null): string {
     if (!dateString) {
         return ''
     }
+
     const date = new Date(dateString)
     const pad = (n: number) => String(n).padStart(2, '0')
+
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 

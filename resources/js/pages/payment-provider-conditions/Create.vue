@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
 import PaymentProviderConditionController from '@/actions/App/Domain/Shop/Http/Controllers/PaymentProviderConditionController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -10,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as conditionsIndex } from '@/routes/payment-provider-conditions'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
 
 defineProps<{
     paymentMethods: { value: string; label: string }[]

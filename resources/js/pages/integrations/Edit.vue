@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link, router, usePage } from '@inertiajs/vue3'
+import { Copy, Key, RefreshCw, Trash2 } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
 import { update, destroy } from '@/actions/App/Domain/Integration/Http/Controllers/IntegrationAppController'
 import { store as storeToken, destroy as destroyToken, rotate as rotateToken } from '@/actions/App/Domain/Integration/Http/Controllers/IntegrationTokenController'
 import Heading from '@/components/Heading.vue'
@@ -22,9 +25,6 @@ import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as integrationsRoute } from '@/routes/integrations'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link, router, usePage } from '@inertiajs/vue3'
-import { Copy, Key, RefreshCw, Trash2 } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
 
 type IntegrationToken = {
     id: number
@@ -122,8 +122,14 @@ function rotateTokenAction(tokenId: number) {
 }
 
 function isTokenActive(token: IntegrationToken): boolean {
-    if (token.revoked_at) return false
-    if (token.expires_at && new Date(token.expires_at) < new Date()) return false
+    if (token.revoked_at) {
+return false
+}
+
+    if (token.expires_at && new Date(token.expires_at) < new Date()) {
+return false
+}
+
     return true
 }
 </script>

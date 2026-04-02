@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { Head, Link, router } from '@inertiajs/vue3'
+import { Minus, Plus, ShoppingCart, Tag, Trash2, X } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
 import CartController from '@/actions/App/Domain/Shop/Http/Controllers/CartController'
-import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,11 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { Event } from '@/types/domain'
-import { Head, Link, router } from '@inertiajs/vue3'
 import { index as shopIndex } from '@/routes/shop'
-import { Minus, Plus, ShoppingCart, Tag, Trash2, X } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import type { Event } from '@/types/domain'
 
 type CartItemData = {
     id: number
@@ -61,6 +60,7 @@ const selectedPaymentMethod = ref(props.paymentMethods[0]?.value ?? '')
 function updateQuantity(item: CartItemData, newQty: number) {
     if (newQty < 1) {
         removeItem(item)
+
         return
     }
 
@@ -78,7 +78,9 @@ function removeItem(item: CartItemData) {
 }
 
 function applyVoucher() {
-    if (!voucherInput.value) return
+    if (!voucherInput.value) {
+return
+}
 
     router.post(
         CartController.applyVoucher().url,

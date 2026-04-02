@@ -1,6 +1,6 @@
-import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
+import { h } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -69,6 +69,7 @@ export const columns: ColumnDef<User>[] = [
         header: () => h('span', 'Roles'),
         cell: ({ row }) => {
             const roles = row.getValue<User['roles']>('roles')
+
             return h(
                 'div',
                 { class: 'flex flex-wrap gap-1' },

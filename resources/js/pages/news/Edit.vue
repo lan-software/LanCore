@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { Head, Link, router, useForm } from '@inertiajs/vue3'
+import { Check, ExternalLink, Trash2, X } from 'lucide-vue-next'
+import { ref, watch } from 'vue'
 import { update, destroy } from '@/actions/App/Domain/News/Http/Controllers/NewsArticleController'
-import { update as updateComment, destroy as destroyComment, approve } from '@/actions/App/Domain/News/Http/Controllers/NewsCommentController'
+import { destroy as destroyComment, approve } from '@/actions/App/Domain/News/Http/Controllers/NewsCommentController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
 import RichTextEditor from '@/components/RichTextEditor.vue'
@@ -13,12 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as newsRoute } from '@/routes/news'
-import { show as newsShow } from '@/routes/news'
 import type { BreadcrumbItem } from '@/types'
 import type { NewsArticle, NewsComment } from '@/types/domain'
-import { Head, Link, router, useForm } from '@inertiajs/vue3'
-import { Check, ExternalLink, Trash2, X } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
 
 const props = defineProps<{
     article: NewsArticle
@@ -66,9 +65,11 @@ watch(publishMode, (mode) => {
 
 function addTag() {
     const tag = tagInput.value.trim().toLowerCase()
+
     if (tag && !form.tags.includes(tag)) {
         form.tags.push(tag)
     }
+
     tagInput.value = ''
 }
 
@@ -85,6 +86,7 @@ function handleTagKeydown(e: KeyboardEvent) {
 
 function handleImageChange(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0]
+
     if (file) {
         form.image = file
         form.remove_image = false
@@ -100,6 +102,7 @@ function removeImage() {
 
 function handleOgImageChange(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0]
+
     if (file) {
         form.og_image = file
         form.remove_og_image = false

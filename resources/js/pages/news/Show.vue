@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
+import { ThumbsUp, ThumbsDown, Calendar, User, ArrowLeft } from 'lucide-vue-next'
+import { computed } from 'vue'
 import { store as storeComment, vote } from '@/actions/App/Domain/News/Http/Controllers/NewsCommentController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { ThumbsUp, ThumbsDown, Calendar, User, ArrowLeft } from 'lucide-vue-next'
-import { computed } from 'vue'
 import type { NewsArticle, NewsComment } from '@/types/domain'
 
 const props = defineProps<{

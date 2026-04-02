@@ -32,15 +32,19 @@ function notificationLabel(notification: AppNotification): string {
     if (type === 'NewsPublishedNotification' && data.title) {
         return `New article: ${data.title}`;
     }
+
     if (type === 'AnnouncementPublishedNotification' && data.title) {
         return `Announcement: ${data.title}`;
     }
+
     if (type === 'ProgramTimeSlotNotification') {
         return 'Upcoming program time slot';
     }
+
     if (type === 'UserAttributesUpdatedNotification') {
         return 'Your profile was updated';
     }
+
     if (type === 'UserRolesChangedNotification') {
         return 'Your roles have changed';
     }

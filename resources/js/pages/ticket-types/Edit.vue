@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link, router } from '@inertiajs/vue3'
+import { Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
 import TicketTypeController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketTypeController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -14,9 +17,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as ticketTypesRoute } from '@/routes/ticket-types'
 import type { BreadcrumbItem } from '@/types'
 import type { TicketType } from '@/types/domain'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 const props = defineProps<{
     ticketType: TicketType
@@ -32,9 +32,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 function formatDateTimeLocal(dateString: string | null): string {
-    if (!dateString) return ''
+    if (!dateString) {
+return ''
+}
+
     const date = new Date(dateString)
     const pad = (n: number) => String(n).padStart(2, '0')
+
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 

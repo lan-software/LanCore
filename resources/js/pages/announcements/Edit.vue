@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
+import { ref } from 'vue'
 import { update, destroy } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
 import { edit as announcementEdit } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
 import Heading from '@/components/Heading.vue'
@@ -16,7 +17,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as announcementsRoute } from '@/routes/announcements'
 import type { BreadcrumbItem } from '@/types'
 import type { Announcement } from '@/types/domain'
-import { ref } from 'vue'
 
 const props = defineProps<{
     announcement: Announcement

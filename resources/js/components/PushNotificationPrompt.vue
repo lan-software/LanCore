@@ -33,19 +33,26 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
     const rawData = window.atob(base64);
+
     return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
 }
 
 async function subscribe(): Promise<void> {
-    if (!isPushSupported || !vapidPublicKey) return;
+    if (!isPushSupported || !vapidPublicKey) {
+return;
+}
 
     loading.value = true;
+
     try {
         const registration = await navigator.serviceWorker.register('/sw.js');
         await navigator.serviceWorker.ready;
 
         const existing = await registration.pushManager.getSubscription();
-        if (existing) await existing.unsubscribe();
+
+        if (existing) {
+await existing.unsubscribe();
+}
 
         const pushSubscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
@@ -84,9 +91,12 @@ async function subscribe(): Promise<void> {
 }
 
 async function unsubscribe(): Promise<void> {
-    if (!isPushSupported) return;
+    if (!isPushSupported) {
+return;
+}
 
     loading.value = true;
+
     try {
         const registration = await navigator.serviceWorker.getRegistration('/sw.js');
         const pushSubscription = registration ? await registration.pushManager.getSubscription() : null;

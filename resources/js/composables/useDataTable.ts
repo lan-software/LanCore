@@ -1,5 +1,5 @@
-import type { Updater } from '@tanstack/vue-table'
 import { router } from '@inertiajs/vue3'
+import type { Updater } from '@tanstack/vue-table'
 import { useDebounceFn } from '@vueuse/core'
 import { computed, reactive, ref } from 'vue'
 import { valueUpdater } from '@/components/ui/table/utils'
@@ -46,6 +46,7 @@ export function useDataTable(routeUrl: () => string, initialFilters: DataTableFi
             filters.sort = column
             filters.direction = 'asc'
         }
+
         navigate({ page: undefined })
     }
 

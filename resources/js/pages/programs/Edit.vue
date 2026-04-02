@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link, router } from '@inertiajs/vue3'
+import { Plus, Trash2 } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
 import { edit as programEdit, update, destroy } from '@/actions/App/Domain/Program/Http/Controllers/ProgramController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -13,9 +16,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as programsRoute } from '@/routes/programs'
 import type { BreadcrumbItem } from '@/types'
 import type { Program, Sponsor, TimeSlot } from '@/types/domain'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { Plus, Trash2 } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
 
 const props = defineProps<{
     program: Program & { time_slots: TimeSlot[] }
@@ -33,6 +33,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 function formatDateTimeLocal(dateString: string): string {
     const date = new Date(dateString)
     const pad = (n: number) => String(n).padStart(2, '0')
+
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
@@ -45,7 +46,10 @@ const currentEvent = computed(() =>
 )
 
 function onPrimaryToggle(checked: boolean | 'indeterminate') {
-    if (checked === 'indeterminate') return
+    if (checked === 'indeterminate') {
+return
+}
+
     if (checked && currentEvent.value?.primary_program && currentEvent.value.primary_program.id !== props.program.id) {
         showPrimaryConfirmDialog.value = true
     } else {
@@ -123,6 +127,7 @@ function toggleProgramSponsor(sponsorId: number, checked: boolean | 'indetermina
 
 function toggleSlotSponsor(slotIndex: number, sponsorId: number, checked: boolean | 'indeterminate') {
     const ids = timeSlots.value[slotIndex].sponsor_ids
+
     if (checked === true) {
         ids.push(sponsorId)
     } else {

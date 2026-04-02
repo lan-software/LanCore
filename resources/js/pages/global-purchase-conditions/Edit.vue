@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Form, Head, Link, router } from '@inertiajs/vue3'
 import GlobalPurchaseConditionController from '@/actions/App/Domain/Shop/Http/Controllers/GlobalPurchaseConditionController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -9,7 +10,6 @@ import { Label } from '@/components/ui/label'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as conditionsIndex } from '@/routes/global-purchase-conditions'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
 
 type Condition = {
     id: number
@@ -75,7 +75,8 @@ function deleteCondition() {
                             name="content"
                             rows="6"
                             class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >{{ condition.content ?? '' }}</textarea>
+                            :value="condition.content ?? ''"
+                        />
                         <InputError :message="errors.content" />
                     </div>
 

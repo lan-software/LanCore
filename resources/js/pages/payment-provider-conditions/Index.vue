@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { FlexRender, getCoreRowModel, useVueTable, type ColumnDef } from '@tanstack/vue-table'
 import { router, Head, Link } from '@inertiajs/vue3'
-import PaymentProviderConditionController from '@/actions/App/Domain/Shop/Http/Controllers/PaymentProviderConditionController'
+import { FlexRender, getCoreRowModel, useVueTable  } from '@tanstack/vue-table'
+import type {ColumnDef} from '@tanstack/vue-table';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
-import AppLayout from '@/layouts/AppLayout.vue'
+import { h } from 'vue'
+import PaymentProviderConditionController from '@/actions/App/Domain/Shop/Http/Controllers/PaymentProviderConditionController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import AppLayout from '@/layouts/AppLayout.vue'
 import { index as conditionsIndex } from '@/routes/payment-provider-conditions'
 import type { BreadcrumbItem } from '@/types'
-import { h } from 'vue'
 
 type ConditionRow = {
     id: number

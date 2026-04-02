@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { index as sponsorsRoute } from '@/routes/sponsors'
+import { Head, Link, router } from '@inertiajs/vue3'
+import { FlexRender } from '@tanstack/vue-table'
+import { Plus } from 'lucide-vue-next'
 import { edit } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorController'
-import { columns } from './columns'
+import { create as sponsorCreate } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorController'
 import Heading from '@/components/Heading.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useDataTable } from '@/composables/useDataTable'
 import AppLayout from '@/layouts/AppLayout.vue'
+import { index as sponsorsRoute } from '@/routes/sponsors'
 import type { BreadcrumbItem } from '@/types'
 import type { Sponsor } from '@/types/domain'
-import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
-import { Head, Link, router } from '@inertiajs/vue3'
-import { Plus } from 'lucide-vue-next'
-import { useDataTable } from '@/composables/useDataTable'
-import { create as sponsorCreate } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorController'
+import { columns } from './columns'
 
 defineProps<{
     sponsors: {
@@ -38,7 +38,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Sponsors', href: sponsorsRoute().url },
 ]
 
-const { filters: tableFilters, setSearch, setSort, setPerPage, navigate } = useDataTable(
+const { setSearch, setSort, setPerPage } = useDataTable(
     () => sponsorsRoute().url,
     {},
 )
@@ -146,15 +146,13 @@ const { filters: tableFilters, setSearch, setSort, setPerPage, navigate } = useD
                             size="sm"
                             :class="{ 'bg-accent': link.active }"
                             @click="router.visit(link.url)"
-                            v-html="link.label"
-                        />
+                        ><span v-html="link.label" /></Button>
                         <Button
                             v-else
                             variant="outline"
                             size="sm"
                             disabled
-                            v-html="link.label"
-                        />
+                        ><span v-html="link.label" /></Button>
                     </template>
                 </div>
             </div>

@@ -1,10 +1,10 @@
-import { h } from 'vue'
+import { router } from '@inertiajs/vue3'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { router } from '@inertiajs/vue3'
+import { h } from 'vue'
+import SponsorAuditController from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorAuditController'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import SponsorAuditController from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorAuditController'
 import type { Sponsor } from '@/types/domain'
 
 function sortableHeader(label: string) {
@@ -39,7 +39,11 @@ export const columns: ColumnDef<Sponsor>[] = [
         header: () => h('span', 'Level'),
         cell: ({ row }) => {
             const level = row.original.sponsor_level
-            if (!level) return h('span', { class: 'text-muted-foreground' }, '—')
+
+            if (!level) {
+return h('span', { class: 'text-muted-foreground' }, '—')
+}
+
             return h(
                 Badge,
                 { variant: 'outline', style: { borderColor: level.color, color: level.color } },
@@ -52,7 +56,11 @@ export const columns: ColumnDef<Sponsor>[] = [
         header: () => h('span', 'Events'),
         cell: ({ row }) => {
             const events = row.original.events ?? []
-            if (events.length === 0) return h('span', { class: 'text-muted-foreground' }, '—')
+
+            if (events.length === 0) {
+return h('span', { class: 'text-muted-foreground' }, '—')
+}
+
             return h('span', events.map((e) => e.name).join(', '))
         },
     },

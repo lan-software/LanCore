@@ -1,6 +1,6 @@
-import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
+import { h } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Achievement } from '@/types/domain'
@@ -49,6 +49,7 @@ export const columns: ColumnDef<Achievement>[] = [
         header: sortableHeader('Status'),
         cell: ({ row }) => {
             const isActive = row.getValue('is_active') as boolean
+
             return h(
                 Badge,
                 { variant: isActive ? 'default' : 'secondary' },

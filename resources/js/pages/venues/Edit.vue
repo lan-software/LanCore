@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Form, Head, Link, router } from '@inertiajs/vue3'
+import { ImagePlus, Plus, Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
 import VenueController from '@/actions/App/Domain/Venue/Http/Controllers/VenueController'
 import Heading from '@/components/Heading.vue'
 import InputError from '@/components/InputError.vue'
@@ -11,9 +14,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { index as venuesRoute } from '@/routes/venues'
 import type { BreadcrumbItem } from '@/types'
 import type { Venue } from '@/types/domain'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { ImagePlus, Plus, Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 const props = defineProps<{
     venue: Venue
@@ -49,6 +49,7 @@ function removeNewImage(index: number) {
 
 function onNewFileSelected(index: number, event: globalThis.Event) {
     const file = (event.target as HTMLInputElement).files?.[0]
+
     if (file) {
         newImages.value[index].file = file
         newImages.value[index].preview = URL.createObjectURL(file)

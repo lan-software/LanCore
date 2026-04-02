@@ -12,6 +12,7 @@ const eventContext = computed(() => page.props.eventContext as EventContext | nu
 
 const selectedValue = computed(() => {
     const id = eventContext.value?.selectedEventId;
+
     return id ? String(id) : 'all';
 });
 

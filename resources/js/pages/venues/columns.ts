@@ -1,6 +1,6 @@
-import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
+import { h } from 'vue'
 import { Button } from '@/components/ui/button'
 import type { Venue } from '@/types/domain'
 
@@ -46,6 +46,7 @@ export const columns: ColumnDef<Venue>[] = [
         header: sortableHeader('Created'),
         cell: ({ row }) => {
             const date = new Date(row.getValue('created_at') as string)
+
             return h('span', { class: 'text-muted-foreground' }, date.toLocaleDateString())
         },
     },

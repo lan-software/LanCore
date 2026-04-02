@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Form, Head, Link } from '@inertiajs/vue3'
 import { store } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController'
 import { create as sponsorLevelCreate } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController'
 import Heading from '@/components/Heading.vue'
@@ -9,7 +10,6 @@ import { Label } from '@/components/ui/label'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as sponsorLevelsRoute } from '@/routes/sponsor-levels'
 import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: sponsorLevelsRoute().url },

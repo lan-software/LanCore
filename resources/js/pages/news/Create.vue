@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Head, Link, useForm } from '@inertiajs/vue3'
+import { X } from 'lucide-vue-next'
+import { ref, watch } from 'vue'
 import { store } from '@/actions/App/Domain/News/Http/Controllers/NewsArticleController'
 import { create as newsCreate } from '@/actions/App/Domain/News/Http/Controllers/NewsArticleController'
 import Heading from '@/components/Heading.vue'
@@ -13,9 +16,6 @@ import { Textarea } from '@/components/ui/textarea'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as newsRoute } from '@/routes/news'
 import type { BreadcrumbItem } from '@/types'
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import { X } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: newsRoute().url },
@@ -56,9 +56,11 @@ watch(publishMode, (mode) => {
 
 function addTag() {
     const tag = tagInput.value.trim().toLowerCase()
+
     if (tag && !form.tags.includes(tag)) {
         form.tags.push(tag)
     }
+
     tagInput.value = ''
 }
 
@@ -75,6 +77,7 @@ function handleTagKeydown(e: KeyboardEvent) {
 
 function handleImageChange(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0]
+
     if (file) {
         form.image = file
         imagePreview.value = URL.createObjectURL(file)
@@ -83,6 +86,7 @@ function handleImageChange(e: Event) {
 
 function handleOgImageChange(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0]
+
     if (file) {
         form.og_image = file
         ogImagePreview.value = URL.createObjectURL(file)

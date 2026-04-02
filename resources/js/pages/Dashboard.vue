@@ -9,20 +9,18 @@ import {
     Clock,
     CreditCard,
     Gamepad2,
-    Grid3x3,
     Handshake,
     MapPin,
     Palette,
     Receipt,
     Shield,
     ShieldCheck,
-    Tag,
     Ticket,
     TicketCheck,
     Users,
 } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
@@ -71,7 +69,7 @@ interface DashboardStats {
     }[];
 }
 
-const props = defineProps<{
+defineProps<{
     stats: DashboardStats;
     isAdmin: boolean;
 }>();
@@ -89,13 +87,22 @@ function formatRelativeTime(isoString: string): string {
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / 60000);
 
-    if (diffMinutes < 1) return 'Just now';
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffMinutes < 1) {
+return 'Just now';
+}
+
+    if (diffMinutes < 60) {
+return `${diffMinutes}m ago`;
+}
 
     const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
+
+    if (diffHours < 24) {
+return `${diffHours}h ago`;
+}
 
     const diffDays = Math.floor(diffHours / 24);
+
     return `${diffDays}d ago`;
 }
 

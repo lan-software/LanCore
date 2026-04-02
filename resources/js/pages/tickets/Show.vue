@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { Head, Link } from '@inertiajs/vue3'
 import TicketController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketController'
 import TicketCard from '@/components/TicketCard.vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as ticketsIndex } from '@/routes/tickets'
 import type { BreadcrumbItem } from '@/types'
 import type { Ticket } from '@/types/domain'
-import { Head, Link } from '@inertiajs/vue3'
 
 const props = defineProps<{
     ticket: Ticket

@@ -1,13 +1,13 @@
 <script setup lang="ts">
+import { Head, Link } from '@inertiajs/vue3'
+import { ShoppingCart } from 'lucide-vue-next'
 import TicketCard from '@/components/TicketCard.vue'
 import { Button } from '@/components/ui/button'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { index as ticketsIndex } from '@/routes/tickets'
 import { index as shopIndex } from '@/routes/shop'
+import { index as ticketsIndex } from '@/routes/tickets'
 import type { BreadcrumbItem } from '@/types'
 import type { Ticket } from '@/types/domain'
-import { Head, Link } from '@inertiajs/vue3'
-import { ShoppingCart } from 'lucide-vue-next'
 
 defineProps<{
     ownedTickets: Ticket[]
