@@ -117,6 +117,8 @@ The LanCore CSCI shall support the following operational states:
 | SHP-F-012 | The software shall emit TicketPurchased event on order fulfillment |
 | SHP-F-013 | The software shall emit CartItemAdded event when items are added to cart |
 | SHP-F-014 | The software shall enforce OrderPolicy, VoucherPolicy, PurchaseRequirementPolicy, GlobalPurchaseConditionPolicy, PaymentProviderConditionPolicy |
+| SHP-F-015 | The software shall fulfill orders via Stripe `checkout.session.completed` webhook when the user does not return to the checkout success URL |
+| SHP-F-016 | The software shall ensure order fulfillment is idempotent — both the success URL redirect and the webhook may trigger fulfillment, but tickets shall only be created once |
 
 #### 3.2.4 Program Domain (CSCI-PRG)
 

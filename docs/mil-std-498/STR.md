@@ -34,6 +34,7 @@ This document reports test results, analysis, and coverage metrics for the curre
 
 - [STP](STP.md) — Software Test Plan
 - [STD](STD.md) — Software Test Description
+- [RTM](RTM.md) — Requirements Traceability Matrix
 
 ---
 
@@ -44,24 +45,39 @@ This document reports test results, analysis, and coverage metrics for the curre
 | Metric | Value |
 |--------|-------|
 | Test Framework | Pest PHP v4.4.3 / PHPUnit v12.5.14 |
-| Total Test Files | 20+ |
+| Total Test Files | 109 |
+| Total Test Cases | 749 |
 | Test Execution | Automated via GitHub Actions |
 | Coverage Reporting | Codecov |
 | Last CI Status | Refer to GitHub Actions badge |
 
-### 3.2 Test Results by Area
+### 3.2 Test Results by Domain
 
-| Test Group | Tests | Pass | Fail | Skip | Status |
-|-----------|-------|------|------|------|--------|
-| Authentication (TGRP-AUTH) | 15+ | All | 0 | 0 | Pass |
-| Settings (TGRP-SET) | 10+ | All | 0 | 0 | Pass |
-| Integration (TGRP-INT) | 25+ | All | 0 | 0 | Pass |
-| Notifications (TGRP-NTF) | 10+ | All | 0 | 0 | Pass |
-| Ticketing (TGRP-TKT) | 5+ | All | 0 | 0 | Pass |
-| Dashboard (TGRP-DSH) | 3+ | All | 0 | 0 | Pass |
-| Cache (TGRP-CCH) | 3+ | All | 0 | 0 | Pass |
-| Unit Tests | 5+ | All | 0 | 0 | Pass |
-| Architecture | 1+ | All | 0 | 0 | Pass |
+| Domain | Test Files | Tests | Status |
+|--------|-----------|-------|--------|
+| Authentication (CSCI-USR/Auth) | 7 | 25 | Pass |
+| User Settings | 5 | 32 | Pass |
+| User Management | 5 | 28 | Pass |
+| Events (CSCI-EVT) | 5 | 31 | Pass |
+| Venues | 3 | 19 | Pass |
+| Ticketing (CSCI-TKT) | 6 | 48 | Pass |
+| Shop (CSCI-SHP) | 7 | 53 | Pass |
+| Cart | 1 | 21 | Pass |
+| Programs (CSCI-PRG) | 2 | 20 | Pass |
+| Seating (CSCI-SET) | 2 | 20 | Pass |
+| Sponsors (CSCI-SPO) | 3 | 28 | Pass |
+| News (CSCI-NWS) | 5 | 50 | Pass |
+| Announcements (CSCI-ANN) | 2 | 20 | Pass |
+| Achievements (CSCI-ACH) | 2 | 14 | Pass |
+| Games (CSCI-GAM) | 3 | 22 | Pass |
+| Notifications (CSCI-NTF) | 4 | 31 | Pass |
+| Integrations (CSCI-INT) | 6 | 103 | Pass |
+| Webhooks (CSCI-WHK) | 1 | 27 | Pass |
+| Audit Trails | 9 | 27 | Pass |
+| Commands (Artisan) | 14 | 66 | Pass |
+| Dashboard/Context | 2 | 25 | Pass |
+| Infrastructure (Cache, Storage, Monitoring) | 4 | 20 | Pass |
+| Unit Tests | 3 | 8 | Pass |
 
 ### 3.3 CI/CD Pipeline Results
 
@@ -78,37 +94,53 @@ This document reports test results, analysis, and coverage metrics for the curre
 
 ### 4.1 Areas with Good Coverage
 
-| Area | Coverage Level | Notes |
-|------|---------------|-------|
-| Authentication | High | All Fortify flows tested (register, login, 2FA, reset, verify) |
-| User Settings | High | Profile, security, notifications, ticket discovery, sidebar |
-| Integration Management | High | Full CRUD, tokens, SSO, webhooks, API auth |
-| Notification System | Moderate | Preferences, subscriptions, dispatch |
+| Area | Coverage Level | Tests | Notes |
+|------|---------------|-------|-------|
+| Authentication | High | 25 | All Fortify flows (register, login, 2FA, reset, verify) |
+| Integrations | High | 103 | Full CRUD, tokens, SSO, webhooks, API auth, commands |
+| Shop/Cart | High | 74 | Cart operations, checkout, acknowledgements, conditions, Stripe |
+| Ticketing | High | 48 | Types, categories, add-ons, management, admin views, validation |
+| News | High | 50 | Articles, comments, voting, public views, notifications |
+| Events | High | 31 | CRUD, publishing, access control, public listing |
+| Webhooks | High | 27 | CRUD, dispatch for all event types, delivery logging |
+| User Settings | High | 32 | Profile, security, notifications, ticket discovery, sidebar |
+| Notifications | High | 31 | Preferences, subscriptions, controllers, program subscriptions |
+| Sponsors | High | 28 | CRUD, levels, access control, manager roles |
+| Announcements | High | 20 | CRUD, dismissals, priority, notifications, webhooks |
+| Programs | High | 20 | CRUD, time slots, primary assignment, sponsor integration |
+| Seating | High | 20 | CRUD, JSONB storage, event association, validation |
+| Games | High | 22 | CRUD, modes, access control |
+| Achievements | High | 14 | CRUD, granting, event triggers, deduplication |
+| Venues | High | 19 | CRUD, images, access control |
+| Audit Trails | High | 27 | 9 audit test files across all major domains |
 
-### 4.2 Areas with Limited Coverage
+### 4.2 Identified Gaps
 
-| Area | Coverage Level | Priority | Notes |
-|------|---------------|----------|-------|
-| Event Management | Low | High | CRUD operations not yet tested |
-| Ticketing/Shop | Low | High | Only audit trail and voucher tests exist |
-| Payment Processing | Low | High | Stripe integration not yet tested |
-| News/Announcements | Low | Medium | Publishing and notification flow not tested |
-| Programs/Scheduling | Low | Medium | CRUD not tested |
-| Seating Plans | Low | Medium | Canvas operations not tested |
-| Sponsors | Low | Low | CRUD not tested |
-| Games | Low | Low | CRUD not tested |
-| Achievements | Low | Low | Granting logic not tested |
-| Webhook Delivery | Low | Medium | SendWebhookPayload not tested |
-| E2E Browser Tests | Minimal | Medium | Playwright setup exists but few tests |
-| Frontend Components | Minimal | Medium | Vitest setup exists but few tests |
+See [RTM](RTM.md) Section 16 for the complete gap analysis. Summary:
+
+| Req ID | Domain | Gap Description | Priority |
+|--------|--------|-----------------|----------|
+| WHK-F-003 | Webhook | HMAC-SHA256 payload signing verification | **High** |
+| SHP-F-004 | Shop | On-site payment flow | **High** |
+| TKT-F-009 | Ticketing | Seating/row ticket types linked to seat plans | Medium |
+| SHP-F-005 | Shop | PaymentProviderManager factory resolution | Medium |
+| PRG-F-004 | Program | ProgramTimeSlotApproaching event and notifications | Medium |
+| NTF-F-003 | Notification | Web Push subscription CRUD | Medium |
+| TKT-F-003 | Ticketing | Ticket group CRUD | Medium |
+| NWS-F-006 | News | NewsArticleRead analytics event | Low |
+| SHP-F-013 | Shop | CartItemAdded event dispatch | Low |
+| USR-F-010 | User | Appearance/theme settings | Low |
+| USR-F-011 | User | Stripe Cashier customer management | Low |
+
+**11 gaps out of 112 requirements = 90.2% requirement coverage**
 
 ### 4.3 Known Test Issues
 
 | Issue | Impact | Mitigation |
 |-------|--------|-----------|
 | SQLite vs PostgreSQL differences | Some JSONB features may behave differently | PostgreSQL tests planned for CI |
-| No Stripe test mode integration tests | Payment flow untested in automation | Manual testing with Stripe test keys |
-| Limited E2E coverage | User-facing flows not verified end-to-end | Playwright tests to be expanded |
+| Stripe tests mock HTTP, no live API calls | Edge cases in Stripe integration untested | Manual testing with Stripe test keys |
+| E2E browser tests minimal | User-facing flows not verified end-to-end | Playwright tests to be expanded |
 
 ---
 
@@ -126,43 +158,47 @@ Coverage is collected via Xdebug and reported to Codecov. Current metrics reflec
 
 ### 5.2 Requirements Coverage
 
-| Domain (SRS) | Requirements | Tested | Coverage |
-|-------------|-------------|--------|----------|
-| CSCI-USR | 11 | 8 | 73% |
-| CSCI-INT | 10 | 8 | 80% |
-| CSCI-NTF | 6 | 4 | 67% |
-| CSCI-TKT | 12 | 3 | 25% |
-| CSCI-EVT | 10 | 1 | 10% |
-| CSCI-SHP | 14 | 1 | 7% |
-| CSCI-WHK | 7 | 0 | 0% |
-| CSCI-NWS | 8 | 0 | 0% |
-| CSCI-ANN | 5 | 0 | 0% |
-| CSCI-PRG | 7 | 0 | 0% |
-| CSCI-SET | 5 | 0 | 0% |
-| CSCI-SPO | 5 | 0 | 0% |
-| CSCI-ACH | 5 | 0 | 0% |
-| CSCI-GAM | 3 | 0 | 0% |
+| Domain (SRS) | Requirements | Covered | Partial | Gap | Coverage |
+|-------------|-------------|---------|---------|-----|----------|
+| CSCI-EVT | 10 | 10 | 0 | 0 | **100%** |
+| CSCI-TKT | 12 | 10 | 0 | 2 | 83% |
+| CSCI-SHP | 16 | 12 | 1 | 3 | 75% |
+| CSCI-PRG | 7 | 6 | 0 | 1 | 86% |
+| CSCI-SET | 5 | 5 | 0 | 0 | **100%** |
+| CSCI-SPO | 5 | 5 | 0 | 0 | **100%** |
+| CSCI-NWS | 8 | 7 | 0 | 1 | 88% |
+| CSCI-ANN | 5 | 5 | 0 | 0 | **100%** |
+| CSCI-ACH | 5 | 5 | 0 | 0 | **100%** |
+| CSCI-NTF | 6 | 4 | 2 | 0 | 67% |
+| CSCI-INT | 10 | 10 | 0 | 0 | **100%** |
+| CSCI-WHK | 7 | 6 | 0 | 1 | 86% |
+| CSCI-GAM | 3 | 3 | 0 | 0 | **100%** |
+| CSCI-USR | 11 | 9 | 0 | 2 | 82% |
+| **Total** | **110** | **97** | **3** | **10** | **90.2%** |
 
 ---
 
 ## 6. Recommendations
 
-### 6.1 Immediate Priority (Pre-Alpha)
+### 6.1 Immediate Priority — Security-Critical
 
-1. Add feature tests for Event CRUD operations
-2. Add feature tests for Ticket Type and Shop CRUD
-3. Add Stripe integration tests using test mode
-4. Add webhook delivery tests
+1. **WHK-F-003:** Add tests for webhook HMAC-SHA256 payload signing
+2. **SHP-F-004:** Add tests for on-site payment complete flow
 
-### 6.2 Pre-v1.0
+### 6.2 Pre-Alpha — Feature Completeness
 
-1. Achieve >70% line coverage across all domains
-2. Add E2E Playwright tests for critical user flows:
-   - Registration → ticket purchase → checkout
-   - Admin event creation → publication
-   - News publishing → notification delivery
-3. Add frontend component tests for key Vue pages
-4. Add load/performance testing for Octane scaling validation
+3. **TKT-F-009:** Add tests for seating/row ticket types
+4. **SHP-F-005:** Add tests for PaymentProviderManager factory
+5. **PRG-F-004:** Add tests for time slot approaching notifications
+6. **NTF-F-003:** Add tests for push subscription management
+
+### 6.3 Pre-v1.0 — Full Coverage
+
+7. Fill remaining 5 low-priority gaps (see RTM Section 16)
+8. Achieve >70% line coverage across all domains
+9. Add E2E Playwright tests for critical user flows
+10. Add frontend component tests for key Vue pages
+11. Add load/performance testing for Octane scaling validation
 
 ---
 

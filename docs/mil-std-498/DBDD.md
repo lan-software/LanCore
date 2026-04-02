@@ -294,8 +294,13 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | event_id | bigint FK | References events.id |
 | status | varchar | OrderStatus enum |
 | payment_method | varchar | PaymentMethod enum |
-| total | decimal | Order total |
-| stripe_session_id | varchar (nullable) | Stripe checkout session |
+| subtotal | decimal | Order subtotal before discount |
+| discount | decimal | Discount amount (from voucher) |
+| total | decimal | Order total after discount |
+| voucher_id | bigint FK (nullable) | References vouchers.id |
+| provider_session_id | varchar (nullable) | Payment provider session ID (Stripe: checkout session) |
+| provider_transaction_id | varchar (nullable) | Payment provider transaction ID (Stripe: payment intent) |
+| metadata | text (nullable) | JSON-encoded fulfillment data (ticket types, quantities, addon IDs) |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 

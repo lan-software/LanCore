@@ -301,7 +301,7 @@ class CartController extends Controller
         ]);
     }
 
-    public function checkout(Request $request): RedirectResponse
+    public function checkout(Request $request): RedirectResponse|\Symfony\Component\HttpFoundation\Response
     {
         $request->validate([
             'payment_method' => ['required', 'string', Rule::enum(PaymentMethod::class)],
@@ -354,6 +354,12 @@ class CartController extends Controller
             // Clear the cart after successful order creation
             $cart->items()->delete();
             $cart->update(['event_id' => null, 'voucher_code' => null]);
+
+            // External payment providers (Stripe) require Inertia::location()
+            // to perform a full page redirect instead of an XHR visit
+            if ($result->requiresRedirect) {
+                return Inertia::location($result->toResponse()->getTargetUrl());
+            }
 
             return $result->toResponse();
         } catch (\InvalidArgumentException $e) {

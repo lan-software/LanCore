@@ -90,6 +90,8 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-SHP-006 | The system shall support configurable purchase requirements (terms acceptance, conditions) |
 | CAP-SHP-007 | The system shall support global purchase conditions and payment-provider-specific conditions |
 | CAP-SHP-008 | The system shall track checkout acknowledgements per user |
+| CAP-SHP-009 | The system shall fulfill orders asynchronously via Stripe `checkout.session.completed` webhook when users do not return to the checkout success URL |
+| CAP-SHP-010 | The system shall ensure order fulfillment is idempotent — both the success URL redirect and webhook may trigger fulfillment, but tickets shall only be created once |
 
 #### 3.2.4 Programs and Scheduling (CAP-PRG)
 

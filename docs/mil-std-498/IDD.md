@@ -273,23 +273,47 @@ Each delivery attempt is recorded in `webhook_deliveries`:
 #### 3.4.1 Checkout Session Creation
 
 ```
-StripePaymentProvider::createCheckoutSession(Cart $cart)
+StripePaymentProvider::initiate(User $user, Order $order): PaymentResult
 ```
 
 Creates a Stripe Checkout Session with:
-- Line items derived from cart items
-- Success URL: `/shop/checkout/success?session_id={CHECKOUT_SESSION_ID}`
-- Cancel URL: `/shop`
+- Line items derived from order lines (`price_data` with dynamic pricing, not pre-created Stripe prices)
+- Success URL: `/cart/checkout/{order}/success?session_id={CHECKOUT_SESSION_ID}`
+- Cancel URL: `/cart/checkout/{order}/cancel`
+- Metadata: `order_id` for webhook correlation
 - Customer: user's Stripe customer ID (created via Cashier if needed)
+- Discount: Stripe coupon created dynamically if voucher discount applies
 
-#### 3.4.2 Payment Confirmation
+Returns a `PaymentResult::redirect()` that redirects the user to Stripe's hosted Checkout page.
 
-Stripe sends a webhook to Laravel Cashier's webhook endpoint. On `checkout.session.completed`:
+#### 3.4.2 Payment Confirmation — Success URL
 
-1. FulfillOrder action is invoked
-2. Order status updated to `confirmed`
-3. Tickets created for each ticket-type line item
-4. `TicketPurchased` event dispatched
+When the user completes payment on Stripe's hosted page, Stripe redirects to the success URL:
+
+1. `CartController::checkoutSuccess()` receives the request with `session_id` query parameter
+2. `StripePaymentProvider::handleSuccess()` retrieves the Checkout Session from Stripe API
+3. If `payment_status === 'paid'`, updates order with `provider_session_id` and `provider_transaction_id`
+4. `FulfillOrder::execute()` is invoked:
+   - Order status updated to `completed`
+   - Tickets created for each ticket-type line item with addons attached
+   - Voucher usage incremented
+   - `OrderConfirmationNotification` sent to user
+   - `TicketPurchased` event dispatched
+
+#### 3.4.3 Payment Confirmation — Webhook Fallback
+
+If the user does not return to the success URL (e.g., closes browser), Stripe sends a `checkout.session.completed` webhook:
+
+1. Stripe POSTs to `/stripe/webhook` (Cashier's auto-registered route)
+2. Cashier verifies the webhook signature using `STRIPE_WEBHOOK_SECRET`
+3. Cashier dispatches `WebhookReceived` event
+4. `HandleStripeCheckoutCompleted` listener:
+   - Filters for `checkout.session.completed` event type
+   - Extracts `order_id` from session metadata
+   - Updates order with `provider_session_id` and `provider_transaction_id`
+   - Calls `FulfillOrder::execute()` (idempotent — skips if already completed)
+
+Both paths (3.4.2 and 3.4.3) may fire for the same order. `FulfillOrder::execute()` is idempotent: it checks `order.status === Completed` and returns early if already fulfilled.
 
 ### 3.5 Inertia.js Interface
 

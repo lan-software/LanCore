@@ -51,11 +51,15 @@ This document describes the requirements for all external interfaces of the LanC
 | IF-STRIPE-005 | The system shall support Stripe subscriptions via `subscriptions` and `subscription_items` tables |
 | IF-STRIPE-006 | The system shall use HTTPS for all Stripe API communication |
 | IF-STRIPE-007 | The system shall store Stripe API keys as environment variables, never in code |
+| IF-STRIPE-008 | The system shall handle `checkout.session.completed` webhook events to fulfill orders when the user does not return to the checkout success URL |
+| IF-STRIPE-009 | The system shall verify Stripe webhook signatures using `STRIPE_WEBHOOK_SECRET` to prevent unauthorized webhook payloads |
 
 **Configuration:**
 - `STRIPE_KEY` — Stripe publishable key
 - `STRIPE_SECRET` — Stripe secret key
-- `CASHIER_CURRENCY` — Payment currency
+- `STRIPE_WEBHOOK_SECRET` — Webhook endpoint signing secret (from Stripe Dashboard or CLI)
+- `CASHIER_CURRENCY` — Payment currency (e.g., `eur`)
+- `CASHIER_CURRENCY_LOCALE` — Locale for currency formatting (e.g., `de_DE`)
 - Config file: `config/cashier.php`
 
 ### 3.2 S3-Compatible Object Storage (IF-S3)

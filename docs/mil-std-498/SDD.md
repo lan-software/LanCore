@@ -155,7 +155,7 @@ Each domain module follows a consistent internal structure:
 |--------|--------|---------|-------------|--------|-----------|
 | Event | 4 | 7 | 3 | 1 | 1 |
 | Ticketing | 5 | 6+ | 5 | 0 | 0 |
-| Shop | 7 | 14 | 7 | 2 | 1 |
+| Shop | 7 | 14 | 7 | 2 | 2 |
 | Program | 2 | 6 | 2 | 1 | 1 |
 | Seating | 1 | 3 | 2 | 0 | 0 |
 | Sponsoring | 2 | 6 | 4 | 0 | 0 |
@@ -313,7 +313,24 @@ Factory pattern for payment provider selection:
 - Implements `PaymentProvider` contract
 - Returns `PaymentResult` objects
 
-#### 5.2.3 Contracts
+#### 5.2.3 Webhook Listeners
+
+Event-driven listeners handle side effects from external systems:
+
+| Listener | Event | Responsibility |
+|----------|-------|---------------|
+| HandleStripeCheckoutCompleted | `WebhookReceived` (Cashier) | Fulfills orders on `checkout.session.completed` webhook |
+| HandleTicketPurchasedWebhooks | `TicketPurchased` | Dispatches webhook notifications to integration apps |
+
+**HandleStripeCheckoutCompleted** design:
+- Filters `WebhookReceived` events for `checkout.session.completed` type
+- Extracts `order_id` from Stripe session metadata
+- Validates order exists and has `Pending` status
+- Updates order with `provider_session_id` and `provider_transaction_id`
+- Delegates to `FulfillOrder` action (idempotent — skips if already `Completed`)
+- Gracefully ignores malformed or irrelevant webhooks
+
+#### 5.2.4 Contracts
 
 | Contract | Purpose |
 |----------|---------|

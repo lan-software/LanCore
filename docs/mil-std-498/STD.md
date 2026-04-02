@@ -235,7 +235,31 @@ This ensures complete isolation between test cases.
 | voucher can be created | Admin | POST voucher {code, type, value} | 302, voucher created |
 | voucher can be updated | Admin, voucher exists | PUT voucher {value} | 302, voucher updated |
 
-### 4.6 Unit Tests
+### 4.6 Shop and Payment Tests
+
+#### 4.6.1 Stripe Webhook Processing
+
+**File:** `tests/Feature/Shop/StripeWebhookTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| fulfills pending order on checkout.session.completed | Order pending, ticket type exists, order has metadata and order lines | `WebhookReceived` with `checkout.session.completed` payload containing `order_id` | Order status = Completed, provider fields populated, ticket(s) created |
+| does not duplicate tickets for completed orders | Order already Completed | `WebhookReceived` with `checkout.session.completed` payload (duplicate) | Order status unchanged, no new tickets created |
+| ignores webhooks without order_id | None | `checkout.session.completed` payload with empty metadata | No order modified |
+| ignores non-checkout webhook types | Order pending | `customer.subscription.created` event | Order status unchanged (Pending) |
+
+#### 4.6.2 Stripe Checkout Flow
+
+**File:** `tests/Feature/Shop/StripeCheckoutTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| creates order and redirects to Stripe | User authenticated, cart populated with ticket type | POST `/cart/checkout` `{payment_method: stripe}` | Order created (status = Pending), redirect to Stripe, cart cleared |
+| fulfills order on success URL return | Order pending, mock provider returns success | GET `/cart/checkout/{order}/success?session_id=...` | Order status = Completed, provider fields populated, ticket(s) created |
+| does not fulfill on unpaid session | Order pending, mock provider returns failure | GET `/cart/checkout/{order}/success?session_id=...` | Order status remains Pending, no tickets created |
+| marks order as failed on cancel | Order pending | GET `/cart/checkout/{order}/cancel` | Order status = Failed, redirect to `/cart` |
+
+### 4.7 Unit Tests
 
 **File:** `tests/Unit/`
 
@@ -245,7 +269,7 @@ This ensures complete isolation between test cases.
 | ticket validation ID format is valid | None | Matches expected format |
 | user discoverability returns correct value | User with settings | Boolean based on settings |
 
-### 4.7 Architecture Tests
+### 4.8 Architecture Tests
 
 **File:** `tests/Architecture/`
 
@@ -265,7 +289,8 @@ This ensures complete isolation between test cases.
 | INT-F-001..010 | Integration tests (4.3) |
 | NTF-F-001..006 | Notification tests (4.4) |
 | TKT-F-001..012 | Ticketing tests (4.5) |
-| All domains | Architecture tests (4.7) |
+| SHP-F-003, SHP-F-015, SHP-F-016 | Shop/Payment tests (4.6) |
+| All domains | Architecture tests (4.8) |
 
 ---
 

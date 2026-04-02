@@ -49,6 +49,7 @@ use App\Domain\Seating\Models\SeatPlan;
 use App\Domain\Seating\Policies\SeatPlanPolicy;
 use App\Domain\Shop\Events\CartItemAdded;
 use App\Domain\Shop\Events\TicketPurchased;
+use App\Domain\Shop\Listeners\HandleStripeCheckoutCompleted;
 use App\Domain\Shop\Listeners\HandleTicketPurchasedWebhooks;
 use App\Domain\Shop\Models\GlobalPurchaseCondition;
 use App\Domain\Shop\Models\PaymentProviderCondition;
@@ -92,6 +93,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Cashier\Events\WebhookReceived;
 use Laravel\Telescope\TelescopeServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -196,6 +198,9 @@ class AppServiceProvider extends ServiceProvider
         EventFacade::listen(NewsArticlePublished::class, HandleNewsArticlePublishedWebhooks::class);
         EventFacade::listen(EventPublished::class, HandleEventPublishedWebhooks::class);
         EventFacade::listen(WebhookDispatched::class, SendWebhookPayload::class);
+
+        // Stripe webhook listener for checkout fulfillment
+        EventFacade::listen(WebhookReceived::class, HandleStripeCheckoutCompleted::class);
 
         // Webhook listeners for new user-action events
         EventFacade::listen(TicketPurchased::class, HandleTicketPurchasedWebhooks::class);

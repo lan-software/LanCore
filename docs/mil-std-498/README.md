@@ -77,6 +77,12 @@ MIL-STD-498 defines 22 Data Item Descriptions (DIDs) that standardize the record
 | [SPS](SPS.md) | Software Product Specification | Populated |
 | [SVD](SVD.md) | Software Version Description | Populated |
 
+### Traceability
+
+| DID | Document | Status |
+|-----|----------|--------|
+| [RTM](RTM.md) | Requirements Traceability Matrix | Populated |
+
 ---
 
 ## Status Legend

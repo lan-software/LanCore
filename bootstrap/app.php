@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+        $middleware->preventRequestForgery(except: ['stripe/*']);
 
         // Prepend globally so every request (web + API + health) gets an ID
         // and metrics are tracked before the response is sent.

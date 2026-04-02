@@ -244,7 +244,7 @@ vendor/bin/sail npm run types:check
 
 The following areas do not yet have comprehensive test coverage and are planned for pre-v1.0:
 
-- Shop/checkout flow (Stripe integration)
+- Shop/checkout flow (Stripe integration) — **partially addressed**: `StripeWebhookTest.php` covers webhook-based fulfillment (checkout.session.completed, idempotency, edge cases); `StripeCheckoutTest.php` covers the redirect-based checkout flow (order creation, success/cancel URL handling). Integration tests with live Stripe test mode remain manual.
 - News article CRUD
 - Announcement CRUD
 - Event CRUD
