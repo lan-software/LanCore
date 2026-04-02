@@ -1,0 +1,436 @@
+# Software Design Description (SDD)
+
+**Document Identifier:** LanCore-SDD-001
+**Version:** 0.1.0
+**Date:** 2026-04-02
+**Status:** Draft
+**Classification:** Unclassified
+
+### Author
+
+| Role | Name |
+|------|------|
+| Project Lead | Markus Kohn |
+
+---
+
+## 1. Scope
+
+### 1.1 Identification
+
+This Software Design Description (SDD) describes the design of the **LanCore** CSCI — a LAN Party & BYOD Event Management Platform.
+
+### 1.2 System Overview
+
+LanCore is a monolithic web application using Laravel 13 (backend), Vue.js 3 (frontend), and Inertia.js v2 (SPA bridge). It follows domain-driven design principles with an Actions pattern for business logic.
+
+### 1.3 Document Overview
+
+This document describes the architectural design, component structure, concept of execution, and detailed design of each domain module.
+
+---
+
+## 2. Referenced Documents
+
+- [SRS](SRS.md) — Software Requirements Specification
+- [DBDD](DBDD.md) — Database Design Description
+- [IDD](IDD.md) — Interface Design Description
+
+---
+
+## 3. CSCI-Wide Design Decisions
+
+### 3.1 Architectural Pattern
+
+**Domain-Driven Design with Actions Pattern:**
+
+LanCore departs from traditional Laravel "fat controller" patterns by organizing code into domain modules with explicit Action classes for business logic.
+
+```
+app/
+├── Domain/                    # Business domains (14 modules)
+│   ├── Event/
+│   │   ├── Actions/           # Business logic (CreateEvent, PublishEvent, etc.)
+│   │   ├── Controllers/       # HTTP layer (thin, delegates to Actions)
+│   │   ├── Events/            # Domain events (EventPublished)
+│   │   ├── Listeners/         # Event handlers
+│   │   ├── Requests/          # Form validation (CreateEventRequest)
+│   │   └── Policies/          # Authorization rules (EventPolicy)
+│   ├── Ticketing/
+│   ├── Shop/
+│   ├── Program/
+│   ├── Seating/
+│   ├── Sponsoring/
+│   ├── News/
+│   ├── Announcement/
+│   ├── Achievements/
+│   ├── Notification/
+│   ├── Integration/
+│   ├── Webhook/
+│   ├── Games/
+│   └── Competition/           # Planned
+├── Models/                    # Eloquent models (shared)
+├── Enums/                     # Application enums
+├── Http/
+│   ├── Controllers/           # Cross-cutting controllers (Dashboard, Welcome)
+│   └── Middleware/             # HTTP middleware
+├── Providers/                 # Service providers
+└── Services/                  # Cross-cutting services
+```
+
+### 3.2 Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Domain modules under `app/Domain/` | Isolates bounded contexts for independent evolution |
+| Actions pattern over service classes | Each action has a single responsibility; easier to test and trace |
+| Inertia.js over REST API + SPA | Eliminates API serialization layer; server-driven routing |
+| Eloquent over raw SQL | Type-safe, relationship-aware data access; N+1 prevention via eager loading |
+| Form Request validation | Decouples validation from controllers; reusable across routes |
+| Laravel Policies | Declarative authorization co-located with domain concerns |
+| Event/Listener pattern | Decouples side effects (notifications, webhooks) from primary operations |
+| JSONB for flexible data | Seat plans and banner images benefit from schemaless storage |
+| Laravel Octane/FrankenPHP | Application boot once, reuse across requests for performance |
+| Redis for caching | Tag-based invalidation, high throughput, shared cache across workers |
+
+### 3.3 Security Design
+
+- All user input validated via Form Request classes before reaching Actions
+- Authorization enforced at controller level via `$this->authorize()` and Policy classes
+- 24 Policy classes cover all domain entities
+- CSRF protection on all state-changing web routes
+- Stateless Bearer token auth for integration API (no session/cookies)
+- Passwords hashed with bcrypt (configurable rounds)
+- API tokens hashed before storage
+- Webhook payloads signed with HMAC-SHA256
+
+---
+
+## 4. CSCI Architectural Design
+
+### 4.1 Component Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Vue.js 3 Frontend                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐ │
+│  │  Pages   │ │Components│ │  Layouts │ │  Composables│ │
+│  │ (95+)    │ │ (shared) │ │          │ │             │ │
+│  └──────────┘ └──────────┘ └──────────┘ └────────────┘ │
+├─────────────────────────────────────────────────────────┤
+│                  Inertia.js v2 Bridge                    │
+├─────────────────────────────────────────────────────────┤
+│              Laravel 13 Backend (Octane)                  │
+│  ┌─────────────────────────────────────────────────────┐ │
+│  │                    HTTP Layer                        │ │
+│  │  Middleware → Routes → Controllers → Form Requests   │ │
+│  └───────────────────────┬─────────────────────────────┘ │
+│  ┌───────────────────────▼─────────────────────────────┐ │
+│  │                  Domain Layer                        │ │
+│  │  Actions → Models → Events → Listeners → Policies   │ │
+│  └───────────────────────┬─────────────────────────────┘ │
+│  ┌───────────────────────▼─────────────────────────────┐ │
+│  │              Infrastructure Layer                    │ │
+│  │  Eloquent ORM → Database │ Redis │ S3 │ Mail │ Queue│ │
+│  └─────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 4.2 Domain Modules (14)
+
+Each domain module follows a consistent internal structure:
+
+| Component | Responsibility |
+|-----------|---------------|
+| **Actions/** | Business logic operations (one class per operation) |
+| **Controllers/** | HTTP request handling, delegates to Actions, returns Inertia responses |
+| **Events/** | Domain events emitted by Actions |
+| **Listeners/** | Side-effect handlers (notifications, webhooks, achievement processing) |
+| **Requests/** | Form Request validation classes |
+| **Policies/** | Authorization rules per model |
+
+#### 4.2.1 Domain Module Inventory
+
+| Domain | Models | Actions | Controllers | Events | Listeners |
+|--------|--------|---------|-------------|--------|-----------|
+| Event | 4 | 7 | 3 | 1 | 1 |
+| Ticketing | 5 | 6+ | 5 | 0 | 0 |
+| Shop | 7 | 14 | 7 | 2 | 1 |
+| Program | 2 | 6 | 2 | 1 | 1 |
+| Seating | 1 | 3 | 2 | 0 | 0 |
+| Sponsoring | 2 | 6 | 4 | 0 | 0 |
+| News | 3 | 3 | 5 | 2 | 2 |
+| Announcement | 2 | 3 | 3 | 1 | 2 |
+| Achievements | 2 | 4 | 1 | 0 | 1 |
+| Notification | 3 | 0 | 4 | 1 | 0 |
+| Integration | 2 | 10 | 4 | 1 | 1 |
+| Webhook | 2 | 4 | 1 | 1 | 1 |
+| Games | 2 | 6 | 2 | 0 | 0 |
+| Competition | 0 | 0 | 0 | 0 | 0 |
+
+### 4.3 Concept of Execution
+
+#### 4.3.1 Request Lifecycle
+
+1. **FrankenPHP** receives HTTP request (Octane keeps application booted)
+2. **Middleware pipeline** processes request: AddRequestId → TrackHttpMetrics → HandleAppearance → Authentication → CSRF
+3. **Router** matches request to controller method
+4. **Controller** invokes Form Request validation, then calls Action
+5. **Action** executes business logic, dispatches domain events
+6. **Listeners** handle side effects asynchronously (queued) or synchronously
+7. **Controller** returns Inertia response (renders Vue page with props)
+8. **Inertia.js** client receives JSON, renders Vue component without full page reload
+
+#### 4.3.2 Event/Listener Flow
+
+```
+Action (e.g., CreateNewsArticle)
+  │
+  ├── dispatch(NewsArticlePublished)
+  │     │
+  │     ├── SendNewsNotification (queued)
+  │     │     ├── Check user notification preferences
+  │     │     ├── Send email to subscribed users
+  │     │     └── Send web push to subscribed users
+  │     │
+  │     └── HandleNewsArticlePublishedWebhooks (queued)
+  │           ├── Find webhooks subscribed to this event
+  │           ├── Build payload
+  │           └── dispatch(DispatchWebhooks)
+  │                 └── SendWebhookPayload (per webhook, queued)
+  │                       ├── Sign payload with HMAC
+  │                       ├── POST to webhook URL
+  │                       └── Record WebhookDelivery
+  │
+  └── return result to Controller
+```
+
+#### 4.3.3 Payment Flow
+
+```
+User → CartController (add items)
+  │
+  ├── ShopController → CreateCheckoutSession
+  │     │
+  │     ├── PaymentProviderManager → resolve provider
+  │     │
+  │     ├── StripePaymentProvider
+  │     │     ├── Create Stripe Checkout Session
+  │     │     └── Redirect to Stripe
+  │     │
+  │     └── OnSitePaymentProvider
+  │           └── Create pending order
+  │
+  ├── Stripe Webhook → FulfillOrder
+  │     ├── CreateOrder → create tickets
+  │     ├── dispatch(TicketPurchased)
+  │     └── HandleTicketPurchasedWebhooks
+  │
+  └── Admin manual fulfillment → FulfillOrder (same flow)
+```
+
+#### 4.3.4 SSO Authorization Flow
+
+```
+Integration App → redirect user to LanCore SSO endpoint
+  │
+  ├── User authenticates (if needed)
+  ├── GenerateSsoAuthorizationCode
+  │     └── Create time-limited code
+  ├── Redirect to integration callback URL with code
+  │
+  └── Integration → ExchangeSsoAuthorizationCode (API call)
+        ├── Validate code
+        ├── ResolveIntegrationUser
+        └── Return user data as JSON
+```
+
+### 4.4 Interface Design
+
+#### 4.4.1 Inertia.js Bridge
+
+Controllers return Inertia responses that serialize PHP data to JSON props consumed by Vue pages:
+
+```php
+// Controller
+return Inertia::render('events/Edit', [
+    'event' => $event->load('venue', 'programs'),
+    'venues' => Venue::all(),
+]);
+```
+
+```vue
+<!-- Vue Page -->
+<script setup>
+defineProps<{ event: Event; venues: Venue[] }>()
+</script>
+```
+
+#### 4.4.2 Wayfinder Route Bindings
+
+Laravel Wayfinder generates TypeScript functions for backend routes:
+
+```typescript
+import { show } from '@/actions/Domain/Event/Controllers/EventController'
+// Generates: /events/{event}
+show({ id: 1 })
+```
+
+---
+
+## 5. CSCI Detailed Design
+
+### 5.1 Middleware Pipeline
+
+| Order | Middleware | Purpose |
+|-------|-----------|---------|
+| 1 | AddRequestId | Assigns X-Request-ID header for tracing |
+| 2 | TrackHttpMetrics | Records Prometheus metrics |
+| 3 | HandleAppearance | Reads appearance/theme preference |
+| 4 | HandleInertiaRequests | Shares global data with Inertia (auth, flash, etc.) |
+| 5 | EncryptCookies | Cookie encryption |
+| 6 | StartSession | Session initialization |
+| 7 | VerifyCsrfToken | CSRF protection |
+| 8 | EnsureUserHasRole | Role-based route protection (alias: `role`) |
+| 9 | AuthenticateIntegration | Bearer token validation for API routes |
+
+### 5.2 Service Layer
+
+#### 5.2.1 ModelCacheService
+
+Provides distributed caching with Redis tag support:
+
+- Tag-based cache groups for efficient invalidation
+- Fallback registry pattern for cache stores without tag support
+- Group-based invalidation (e.g., flush all event caches)
+- Handles stale serialization gracefully
+
+#### 5.2.2 PaymentProviderManager
+
+Factory pattern for payment provider selection:
+
+- Resolves `StripePaymentProvider` or `OnSitePaymentProvider` based on configuration
+- Implements `PaymentProvider` contract
+- Returns `PaymentResult` objects
+
+#### 5.2.3 Contracts
+
+| Contract | Purpose |
+|----------|---------|
+| Purchasable | Defines purchasable items (tickets, add-ons) |
+| PurchasableDependency | Defines purchase dependencies |
+| PaymentProvider | Payment processing abstraction |
+| PaymentResult | Payment outcome encapsulation |
+
+### 5.3 Frontend Architecture
+
+#### 5.3.1 Page Components (95+)
+
+Organized under `resources/js/pages/`:
+
+| Area | Pages | Description |
+|------|-------|-------------|
+| Auth | 7 | Login, Register, ForgotPassword, ResetPassword, VerifyEmail, ConfirmPassword, TwoFactorChallenge |
+| Dashboard | 1 | Main dashboard |
+| Events | 5 | Index, Create, Edit, Public, Audit |
+| Venues | 3 | Index, Create, Edit |
+| Programs | 4 | Index, Create, Edit, Audit |
+| Ticket Types | 4 | Index, Create, Edit, Audit |
+| Ticket Categories | 4 | Index, Create, Edit, Audit |
+| Ticket Add-ons | 4 | Index, Create, Edit, Audit |
+| Tickets | 2 | Index, Show |
+| Admin Tickets | 2 | Index, Show |
+| Shop | 2 | Index, CheckoutSuccess |
+| Cart | 2 | Index, Checkout |
+| Orders | 2 | Index, Show |
+| Vouchers | 4 | Index, Create, Edit, Audit |
+| Purchase Requirements | 3 | Index, Create, Edit |
+| Global Conditions | 3 | Index, Create, Edit |
+| Payment Conditions | 3 | Index, Create, Edit |
+| Games | 3 | Index, Create, Edit |
+| Game Modes | 2 | Create, Edit |
+| Seating | 4 | Index, Create, Edit, Audit |
+| Sponsors | 4 | Index, Create, Edit, Audit |
+| Sponsor Levels | 4 | Index, Create, Edit, Audit |
+| News | 5 | Index, Create, Edit, Show, Audit |
+| News Comments | 2 | Index, Audit |
+| Announcements | 4 | Index, Create, Edit, Public |
+| Achievements | 3 | Index, Create, Edit |
+| Integrations | 3 | Index, Create, Edit |
+| Webhooks | 4 | Index, Create, Edit, Show |
+| Users | 2 | Index, Show |
+| Settings | 6 | Profile, Security, Notifications, TicketDiscovery, Achievements, Appearance |
+
+#### 5.3.2 UI Component Library
+
+Built on **reka-ui** (headless) + **Tailwind CSS v4**:
+
+| Component | Purpose |
+|-----------|---------|
+| Card, CardHeader, CardContent, CardFooter | Content containers |
+| Button, Badge, Switch | Interactive elements |
+| Dialog, Sheet, Alert | Overlays and feedback |
+| DataTable (TanStack) | Sortable, filterable tables |
+| RichTextEditor (TipTap) | Rich text editing for news/announcements |
+| BannerCarousel | Event banner rotation |
+| Skeleton, Spinner | Loading states |
+| Breadcrumb | Navigation context |
+| NavUser | User menu with account actions |
+
+#### 5.3.3 Frontend Libraries
+
+| Library | Version | Purpose |
+|---------|---------|---------|
+| @inertiajs/vue3 | ^2.3 | Server-driven SPA |
+| @tiptap/vue-3 | Latest | Rich text editor |
+| @tanstack/vue-table | ^8.21 | Advanced data tables |
+| reka-ui | ^2.9 | Headless UI components |
+| lucide-vue-next | Latest | Icon library |
+| vue-input-otp | Latest | OTP input for 2FA |
+| @alisaitteke/seatmap-canvas | ^2.7.1 | Seating visualization |
+| tailwindcss | ^4.2 | Utility CSS |
+
+### 5.4 Console Commands (21)
+
+| Category | Commands |
+|----------|----------|
+| Integration | CreateIntegrationAppCommand, CreateIntegrationTokenCommand, ListIntegrationAppsCommand, ListIntegrationTokensCommand, RevokeIntegrationTokenCommand |
+| Data Listing | ListEvents, ListVenues, ListPrograms, ListSponsors, ListSponsorLevels, ListTickets, ListTicketTypes, ListAddons, ListNews, ListGames, ListSeatPlans, ListUsers |
+| Administration | PromoteUserToAdmin, SeedDemoCommand |
+| Utilities | MigrateStorageCommand, TestPushNotificationCommand |
+
+---
+
+## 6. Requirements Traceability
+
+| SRS Requirement | Design Component |
+|----------------|-----------------|
+| EVT-F-* | app/Domain/Event/ |
+| TKT-F-* | app/Domain/Ticketing/ |
+| SHP-F-* | app/Domain/Shop/ |
+| PRG-F-* | app/Domain/Program/ |
+| SET-F-* | app/Domain/Seating/ |
+| SPO-F-* | app/Domain/Sponsoring/ |
+| NWS-F-* | app/Domain/News/ |
+| ANN-F-* | app/Domain/Announcement/ |
+| ACH-F-* | app/Domain/Achievements/ |
+| NTF-F-* | app/Domain/Notification/ |
+| INT-F-* | app/Domain/Integration/ |
+| WHK-F-* | app/Domain/Webhook/ |
+| GAM-F-* | app/Domain/Games/ |
+| USR-F-* | app/Models/User, app/Domain/ controllers |
+
+---
+
+## 7. Notes
+
+### 7.1 Acronyms
+
+| Term | Definition |
+|------|-----------|
+| DDD | Domain-Driven Design |
+| MVC | Model-View-Controller |
+| ORM | Object-Relational Mapping |
+| SPA | Single Page Application |
+| SSR | Server-Side Rendering |
+| CSCI | Computer Software Configuration Item |

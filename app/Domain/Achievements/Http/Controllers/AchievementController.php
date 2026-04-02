@@ -15,6 +15,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-ACH-001
+ * @see docs/mil-std-498/SRS.md ACH-F-001, ACH-F-005
+ */
 class AchievementController extends Controller
 {
     public function __construct(

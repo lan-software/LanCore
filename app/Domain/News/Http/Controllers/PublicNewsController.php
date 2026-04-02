@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-NWS-001
+ * @see docs/mil-std-498/SRS.md NWS-F-001, NWS-F-006
+ */
 class PublicNewsController extends Controller
 {
     public function show(Request $request, string $slug): Response

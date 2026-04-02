@@ -5,6 +5,9 @@ namespace App\Domain\Webhook\Policies;
 use App\Domain\Webhook\Models\Webhook;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007, WHK-F-007
+ */
 class WebhookPolicy
 {
     /**

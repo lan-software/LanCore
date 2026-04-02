@@ -11,6 +11,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-001
+ * @see docs/mil-std-498/SRS.md SHP-F-001, SHP-F-002
+ */
 #[Fillable(['user_id', 'event_id', 'voucher_code'])]
 class Cart extends Model
 {

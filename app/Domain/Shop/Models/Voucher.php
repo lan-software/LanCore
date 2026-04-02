@@ -12,6 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-005
+ * @see docs/mil-std-498/SRS.md SHP-F-007, SHP-F-008
+ */
 #[Fillable([
     'code', 'type', 'discount_amount', 'discount_percent',
     'max_uses', 'times_used', 'valid_from', 'valid_until',

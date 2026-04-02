@@ -11,6 +11,10 @@ use App\Domain\Integration\Models\IntegrationToken;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-INT-002
+ * @see docs/mil-std-498/SRS.md INT-F-002
+ */
 class IntegrationTokenController extends Controller
 {
     public function __construct(

@@ -4,6 +4,10 @@ namespace App\Domain\Integration\Actions;
 
 use App\Domain\Integration\Models\IntegrationToken;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-INT-002
+ * @see docs/mil-std-498/SRS.md INT-F-002
+ */
 class RotateIntegrationToken
 {
     public function __construct(

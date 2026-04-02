@@ -6,6 +6,10 @@ use App\Domain\Integration\Models\IntegrationApp;
 use App\Domain\Integration\Models\IntegrationToken;
 use Illuminate\Support\Str;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-INT-002
+ * @see docs/mil-std-498/SRS.md INT-F-002, INT-F-003
+ */
 class CreateIntegrationToken
 {
     /**

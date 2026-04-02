@@ -13,6 +13,9 @@ class PublishEvent
      * Publish an event after validating completeness requirements.
      *
      * @throws ValidationException
+     *
+     * @see docs/mil-std-498/SSS.md CAP-EVT-002, CAP-EVT-004
+     * @see docs/mil-std-498/SRS.md EVT-F-004, EVT-F-005
      */
     public function execute(Event $event): void
     {

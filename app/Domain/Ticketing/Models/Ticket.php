@@ -14,6 +14,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-TKT-005, CAP-TKT-006
+ * @see docs/mil-std-498/SRS.md TKT-F-004, TKT-F-005, TKT-F-006
+ */
 #[Fillable([
     'status', 'checked_in_at', 'validation_id',
     'ticket_type_id', 'event_id', 'order_id',

@@ -7,6 +7,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-INT-003
+ * @see docs/mil-std-498/SRS.md INT-F-004
+ */
 class GenerateSsoAuthorizationCode
 {
     /**

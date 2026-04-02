@@ -18,6 +18,10 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SPO-001, CAP-SPO-003
+ * @see docs/mil-std-498/SRS.md SPO-F-001, SPO-F-003, SPO-F-005
+ */
 class SponsorController extends Controller
 {
     public function __construct(

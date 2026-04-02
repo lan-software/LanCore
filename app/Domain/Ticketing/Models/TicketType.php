@@ -14,6 +14,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-TKT-001, CAP-TKT-003, CAP-TKT-008, CAP-TKT-009, CAP-TKT-010
+ * @see docs/mil-std-498/SRS.md TKT-F-001, TKT-F-009, TKT-F-011
+ */
 #[Fillable([
     'name', 'description', 'price', 'quota', 'max_per_user', 'seats_per_ticket',
     'is_row_ticket', 'is_seatable', 'is_hidden',

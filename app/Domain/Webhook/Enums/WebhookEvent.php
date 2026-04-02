@@ -2,6 +2,10 @@
 
 namespace App\Domain\Webhook\Enums;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-WHK-004
+ * @see docs/mil-std-498/SRS.md WHK-F-002
+ */
 enum WebhookEvent: string
 {
     case UserRegistered = 'user.registered';

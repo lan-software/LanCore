@@ -16,6 +16,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-WHK-001, CAP-WHK-003
+ * @see docs/mil-std-498/SRS.md WHK-F-001, WHK-F-004, WHK-F-006, WHK-F-007
+ */
 class WebhookController extends Controller
 {
     public function __construct(

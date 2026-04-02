@@ -1,0 +1,289 @@
+# Software Test Description (STD)
+
+**Document Identifier:** LanCore-STD-001
+**Version:** 0.1.0
+**Date:** 2026-04-02
+**Status:** Draft
+**Classification:** Unclassified
+
+### Author
+
+| Role | Name |
+|------|------|
+| Project Lead | Markus Kohn |
+
+---
+
+## 1. Scope
+
+### 1.1 Identification
+
+This Software Test Description (STD) describes the test cases and test procedures for the **LanCore** CSCI.
+
+### 1.2 System Overview
+
+Tests are implemented using Pest PHP v4 for backend tests and organized under `tests/Feature/` and `tests/Unit/`. Each test file uses Pest's `it()` / `test()` syntax with `expect()` assertions.
+
+### 1.3 Document Overview
+
+This document describes the test preparations, individual test cases, expected results, and evaluation criteria for LanCore qualification testing.
+
+---
+
+## 2. Referenced Documents
+
+- [STP](STP.md) — Software Test Plan
+- [STR](STR.md) — Software Test Report
+- [SRS](SRS.md) — Software Requirements Specification
+
+---
+
+## 3. Test Preparations
+
+### 3.1 Hardware Preparation
+
+No special hardware preparation required. Tests run on standard development machines or CI runners with Docker support.
+
+### 3.2 Software Preparation
+
+1. Clone repository and install dependencies:
+   ```bash
+   composer install
+   npm install
+   ```
+
+2. Configure test environment:
+   - Copy `.env.example` to `.env.testing`
+   - Set `DB_CONNECTION=sqlite` and `DB_DATABASE=:memory:`
+
+3. Start Sail environment:
+   ```bash
+   vendor/bin/sail up -d
+   ```
+
+### 3.3 Test Database
+
+Tests use the `RefreshDatabase` trait which:
+1. Runs all migrations before the first test
+2. Wraps each test in a database transaction
+3. Rolls back the transaction after each test
+
+This ensures complete isolation between test cases.
+
+---
+
+## 4. Test Descriptions
+
+### 4.1 Authentication Tests
+
+**File:** `tests/Feature/Auth/`
+
+#### 4.1.1 Registration
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| registration screen can be rendered | None | GET /register | 200 OK |
+| new users can register | No existing user | POST /register {name, email, password, password_confirmation} | 302 redirect, user created, authenticated |
+| registration fails with invalid email | None | POST /register {invalid email} | 422 validation error |
+| registration fails with short password | None | POST /register {password < 8 chars} | 422 validation error |
+
+#### 4.1.2 Login
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| login screen can be rendered | None | GET /login | 200 OK |
+| users can authenticate | User exists | POST /login {email, password} | 302 redirect, authenticated |
+| users cannot authenticate with invalid password | User exists | POST /login {wrong password} | 422 error |
+
+#### 4.1.3 Password Reset
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| reset password link screen can be rendered | None | GET /forgot-password | 200 OK |
+| reset password link can be requested | User exists | POST /forgot-password {email} | 302, reset email sent |
+| password can be reset with valid token | Reset token exists | POST /reset-password {token, email, password} | 302, password changed |
+
+#### 4.1.4 Email Verification
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| email verification screen can be rendered | Unverified user logged in | GET /verify-email | 200 OK |
+| email can be verified | Valid verification URL | GET /verify-email/{id}/{hash} | 302, email_verified_at set |
+
+#### 4.1.5 Two-Factor Authentication
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| 2FA can be enabled | Authenticated user | POST /user/two-factor-authentication | 200, secret generated |
+| 2FA challenge screen rendered | 2FA enabled, session requires confirmation | GET /two-factor-challenge | 200 OK |
+| 2FA can be confirmed with valid code | 2FA enabled | POST /two-factor-challenge {code} | 302, authenticated |
+| 2FA recovery codes work | 2FA enabled | POST /two-factor-challenge {recovery_code} | 302, authenticated |
+
+#### 4.1.6 Password Confirmation
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| confirm password screen can be rendered | Authenticated | GET /confirm-password | 200 OK |
+| password can be confirmed | Authenticated | POST /confirm-password {password} | 302 redirect |
+| incorrect password is rejected | Authenticated | POST /confirm-password {wrong} | 422 error |
+
+### 4.2 Settings Tests
+
+**File:** `tests/Feature/Settings/`
+
+#### 4.2.1 Profile
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| profile page is displayed | Authenticated | GET /settings/profile | 200 OK |
+| profile information can be updated | Authenticated | PATCH /settings/profile {name, email} | 302, user updated |
+| email verification reset on email change | Authenticated, verified | PATCH /settings/profile {new email} | email_verified_at = null |
+
+#### 4.2.2 Security
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| password can be updated | Authenticated | PUT /settings/security/password {current, new, confirm} | 302, password changed |
+| correct current password required | Authenticated | PUT /settings/security/password {wrong current} | 422 error |
+
+#### 4.2.3 Notifications
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| notification preferences page displayed | Authenticated | GET /settings/notifications | 200 OK |
+| preferences can be updated | Authenticated | PATCH /settings/notifications {channels} | 302, preferences saved |
+
+#### 4.2.4 Ticket Discovery
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| ticket discovery settings page displayed | Authenticated | GET /settings/ticket-discovery | 200 OK |
+| discovery settings can be updated | Authenticated | PATCH /settings/ticket-discovery {settings} | 302, settings saved |
+
+#### 4.2.5 Sidebar Favorites
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| favorites can be added | Authenticated | POST /settings/sidebar-favorites {item} | 200, favorite saved |
+| favorites can be removed | Authenticated, has favorites | DELETE /settings/sidebar-favorites/{id} | 200, favorite removed |
+
+### 4.3 Integration Tests
+
+**File:** `tests/Feature/Integration/`
+
+#### 4.3.1 Integration App Management
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| index page lists apps | Admin | GET /integrations | 200, apps listed |
+| app can be created | Admin | POST /integrations {name, description, callback_url} | 302, app created |
+| app can be updated | Admin, app exists | PUT /integrations/{id} {name} | 302, app updated |
+| app can be deleted | Admin, app exists | DELETE /integrations/{id} | 302, app deleted |
+| non-admin cannot manage apps | Regular user | GET /integrations | 403 forbidden |
+
+#### 4.3.2 Integration Tokens
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| token can be created | Admin, app exists | POST /integrations/{id}/tokens {name} | 302, plain token returned |
+| token can be rotated | Token exists | POST /integrations/{id}/tokens/{tid}/rotate | 302, new token |
+| token can be revoked | Token exists | DELETE /integrations/{id}/tokens/{tid} | 302, token deleted |
+
+#### 4.3.3 SSO Flow
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| SSO authorization redirects to callback | Authenticated, app exists | GET /integrations/{id}/sso/authorize | 302 to callback with code |
+| SSO code can be exchanged | Valid code | POST /api/integration/sso/exchange {code} | 200, user data |
+| expired code rejected | Expired code | POST /api/integration/sso/exchange {code} | 401 or 422 |
+
+#### 4.3.4 API Authentication
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| valid token authenticates | Token exists | GET /api/integration/user (Bearer token) | 200, user data |
+| invalid token rejected | None | GET /api/integration/user (bad token) | 401 |
+| expired token rejected | Expired token | GET /api/integration/user (expired) | 401 |
+
+#### 4.3.5 Webhook Subscriptions
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| webhook events synced on app create | Admin | POST /integrations {webhook_events} | Events stored |
+| webhook events updated | App exists | PUT /integrations/{id} {webhook_events} | Events updated |
+| webhook secret managed | Admin | POST/PUT /integrations {webhook_secret} | Secret stored |
+
+### 4.4 Notification Tests
+
+**File:** `tests/Feature/Notifications/`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| notification preferences created on registration | None | Register new user | Default preferences created |
+| mail notification sent when enabled | User with mail enabled | Publish news article | Mail queued |
+| mail notification not sent when disabled | User with mail disabled | Publish news article | No mail queued |
+| push subscription stored | Authenticated | POST push subscription | Subscription saved |
+| program subscription toggled | Authenticated, program exists | POST program subscription | Subscription created/removed |
+
+### 4.5 Ticketing Tests
+
+**File:** `tests/Feature/Ticketing/`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| ticket type audit trail recorded | Admin, ticket type exists | Update ticket type | Audit record created |
+| voucher can be created | Admin | POST voucher {code, type, value} | 302, voucher created |
+| voucher can be updated | Admin, voucher exists | PUT voucher {value} | 302, voucher updated |
+
+### 4.6 Unit Tests
+
+**File:** `tests/Unit/`
+
+| Test | Input | Expected Result |
+|------|-------|-----------------|
+| ticket validation ID generates unique string | None | Non-empty unique string |
+| ticket validation ID format is valid | None | Matches expected format |
+| user discoverability returns correct value | User with settings | Boolean based on settings |
+
+### 4.7 Architecture Tests
+
+**File:** `tests/Architecture/`
+
+| Test | Assertion |
+|------|-----------|
+| Domain structure | Domain modules follow expected directory structure |
+| No direct DB:: usage | Models use Eloquent, not DB facade |
+| Controller returns | Controllers return Inertia or redirect responses |
+
+---
+
+## 5. Requirements Traceability
+
+| SRS Requirement | Test Cases |
+|----------------|-----------|
+| USR-F-001..005 | AUTH-*, SET-* |
+| INT-F-001..010 | Integration tests (4.3) |
+| NTF-F-001..006 | Notification tests (4.4) |
+| TKT-F-001..012 | Ticketing tests (4.5) |
+| All domains | Architecture tests (4.7) |
+
+---
+
+## 6. Notes
+
+### 6.1 Test Naming Convention
+
+Tests use Pest's descriptive `it()` syntax:
+```php
+it('can create a new integration app', function () {
+    // ...
+});
+```
+
+### 6.2 Test Utilities
+
+- `actingAs($user)` — Authenticate as a specific user
+- `assertRedirect()` — Verify redirect response
+- `assertInertia()` — Verify Inertia page component and props
+- `assertDatabaseHas()` — Verify database state
+- `Mail::fake()`, `Event::fake()`, `Notification::fake()` — Mock side effects

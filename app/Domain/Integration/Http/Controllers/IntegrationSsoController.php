@@ -12,6 +12,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-INT-003
+ * @see docs/mil-std-498/SRS.md INT-F-004, INT-F-005
+ */
 class IntegrationSsoController extends Controller
 {
     public function __construct(

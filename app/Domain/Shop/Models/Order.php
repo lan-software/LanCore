@@ -14,6 +14,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-004
+ * @see docs/mil-std-498/SRS.md SHP-F-006
+ */
 #[Fillable([
     'payment_method', 'provider_session_id', 'provider_transaction_id',
     'status', 'subtotal', 'discount', 'total',

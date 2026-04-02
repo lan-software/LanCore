@@ -13,6 +13,10 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-NWS-003, CAP-NWS-004
+ * @see docs/mil-std-498/SRS.md NWS-F-003, NWS-F-004
+ */
 class NewsCommentController extends Controller
 {
     public function index(NewsCommentIndexRequest $request): Response

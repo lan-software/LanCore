@@ -5,6 +5,9 @@ namespace App\Domain\Games\Policies;
 use App\Domain\Games\Models\GameMode;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007, GAM-F-003
+ */
 class GameModePolicy
 {
     /**

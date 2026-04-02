@@ -5,6 +5,10 @@ namespace App\Domain\Event\Policies;
 use App\Domain\Event\Models\Event;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SSS.md SEC-007
+ * @see docs/mil-std-498/SRS.md EVT-F-003
+ */
 class EventPolicy
 {
     /**

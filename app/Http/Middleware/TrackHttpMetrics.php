@@ -18,6 +18,8 @@ use Symfony\Component\HttpFoundation\Response;
  *   metrics:http:duration_ms — field "{METHOD}_{ROUTE_NAME}", value float (EMA)
  *
  * Octane-safe: no shared state; all writes go directly to Redis.
+ *
+ * @see docs/mil-std-498/IRS.md IF-PROM-002
  */
 class TrackHttpMetrics
 {

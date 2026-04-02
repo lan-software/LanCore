@@ -15,6 +15,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-ANN-001, CAP-ANN-002
+ * @see docs/mil-std-498/SRS.md ANN-F-001, ANN-F-002, ANN-F-005
+ */
 class AnnouncementController extends Controller
 {
     public function __construct(

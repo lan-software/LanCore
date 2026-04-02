@@ -14,6 +14,10 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-007
+ * @see docs/mil-std-498/SRS.md SHP-F-010, SHP-F-014
+ */
 class PaymentProviderConditionController extends Controller
 {
     public function __construct(

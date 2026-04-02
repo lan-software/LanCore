@@ -7,6 +7,10 @@ use App\Domain\Venue\Models\Venue;
 use App\Domain\Venue\Models\VenueImage;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-EVT-003
+ * @see docs/mil-std-498/SRS.md EVT-F-006, EVT-F-007
+ */
 class CreateVenue
 {
     /**

@@ -6,6 +6,10 @@ use App\Domain\Integration\Models\IntegrationApp;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-INT-001
+ * @see docs/mil-std-498/SRS.md INT-F-001
+ */
 class CreateIntegrationApp
 {
     public function __construct(private readonly SyncIntegrationWebhooks $syncWebhooks) {}

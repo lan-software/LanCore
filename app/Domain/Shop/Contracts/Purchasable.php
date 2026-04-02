@@ -2,6 +2,9 @@
 
 namespace App\Domain\Shop\Contracts;
 
+/**
+ * @see docs/mil-std-498/SRS.md SHP-F-002
+ */
 interface Purchasable
 {
     /**

@@ -23,6 +23,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-EVT-001, CAP-EVT-002, CAP-EVT-005
+ * @see docs/mil-std-498/SRS.md EVT-F-002, EVT-F-004, EVT-F-010
+ */
 #[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_images', 'status', 'venue_id', 'primary_program_id', 'seat_capacity'])]
 class Event extends Model implements AuditableContract
 {

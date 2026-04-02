@@ -8,6 +8,10 @@ use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-004
+ * @see docs/mil-std-498/SRS.md SHP-F-006, SHP-F-014
+ */
 class OrderController extends Controller
 {
     public function index(OrderIndexRequest $request): Response

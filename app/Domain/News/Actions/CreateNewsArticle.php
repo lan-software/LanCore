@@ -7,6 +7,10 @@ use App\Domain\News\Models\NewsArticle;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-NWS-001
+ * @see docs/mil-std-498/SRS.md NWS-F-001
+ */
 class CreateNewsArticle
 {
     /**

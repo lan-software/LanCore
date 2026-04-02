@@ -5,6 +5,9 @@ namespace App\Domain\Achievements\Policies;
 use App\Domain\Achievements\Models\Achievement;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007, ACH-F-005
+ */
 class AchievementPolicy
 {
     /**

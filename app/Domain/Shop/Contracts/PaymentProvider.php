@@ -6,6 +6,9 @@ use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Models\Order;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SHP-F-005
+ */
 interface PaymentProvider
 {
     /**

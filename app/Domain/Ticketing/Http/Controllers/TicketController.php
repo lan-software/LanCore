@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-TKT-005, CAP-TKT-006
+ * @see docs/mil-std-498/SRS.md TKT-F-004, TKT-F-005, TKT-F-006
+ */
 class TicketController extends Controller
 {
     public function __construct(

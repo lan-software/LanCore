@@ -7,6 +7,10 @@ use App\Domain\Ticketing\Models\Ticket;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-TKT-005
+ * @see docs/mil-std-498/SRS.md TKT-F-004, TKT-F-006
+ */
 class UpdateTicketAssignments
 {
     public function updateManager(Ticket $ticket, ?User $manager, int $performedBy): Ticket

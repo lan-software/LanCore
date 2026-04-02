@@ -8,6 +8,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * @see docs/mil-std-498/SRS.md NWS-F-001, NWS-F-002
+ */
 class UpdateNewsArticle
 {
     /**

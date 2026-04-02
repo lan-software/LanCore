@@ -7,6 +7,9 @@ use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SRS.md SPO-F-005
+ */
 class SponsorLevelAuditController extends Controller
 {
     public function __invoke(SponsorLevel $sponsorLevel): Response

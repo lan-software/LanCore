@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @see docs/mil-std-498/SRS.md SHP-F-006
+ */
 class OrderLine extends Model
 {
     protected $guarded = [];

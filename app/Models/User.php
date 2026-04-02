@@ -24,6 +24,10 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-USR-001, CAP-USR-002, CAP-USR-003
+ * @see docs/mil-std-498/SRS.md USR-F-001, USR-F-002, USR-F-003, USR-F-006
+ */
 #[Fillable(['name', 'email', 'password', 'is_ticket_discoverable', 'ticket_discovery_allowlist', 'sidebar_favorites'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable

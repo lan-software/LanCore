@@ -5,6 +5,9 @@ namespace App\Domain\Integration\Actions;
 use App\Domain\Integration\Models\IntegrationApp;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md INT-F-005
+ */
 class ResolveIntegrationUser
 {
     /**

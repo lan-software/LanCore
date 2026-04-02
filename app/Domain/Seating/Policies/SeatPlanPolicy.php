@@ -5,6 +5,9 @@ namespace App\Domain\Seating\Policies;
 use App\Domain\Seating\Models\SeatPlan;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007, SET-F-004
+ */
 class SeatPlanPolicy
 {
     /**

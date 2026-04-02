@@ -14,6 +14,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-001, CAP-SHP-002, CAP-SHP-003
+ * @see docs/mil-std-498/SRS.md SHP-F-001, SHP-F-003, SHP-F-004
+ */
 class ShopController extends Controller
 {
     public function index(): Response

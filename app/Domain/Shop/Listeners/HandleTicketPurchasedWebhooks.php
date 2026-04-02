@@ -7,6 +7,10 @@ use App\Domain\Webhook\Actions\DispatchWebhooks;
 use App\Domain\Webhook\Enums\WebhookEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-WHK-001
+ * @see docs/mil-std-498/SRS.md SHP-F-012, WHK-F-005
+ */
 class HandleTicketPurchasedWebhooks implements ShouldQueue
 {
     public function __construct(private readonly DispatchWebhooks $dispatchWebhooks) {}

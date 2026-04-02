@@ -28,6 +28,10 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-001, CAP-SHP-008
+ * @see docs/mil-std-498/SRS.md SHP-F-001, SHP-F-002, SHP-F-011, SHP-F-013
+ */
 class CartController extends Controller
 {
     public function __construct(

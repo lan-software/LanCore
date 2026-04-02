@@ -13,6 +13,10 @@ use App\Models\User;
 use App\Notifications\OrderConfirmationNotification;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-004
+ * @see docs/mil-std-498/SRS.md SHP-F-006, SHP-F-012
+ */
 class FulfillOrder
 {
     public function execute(Order $order): void

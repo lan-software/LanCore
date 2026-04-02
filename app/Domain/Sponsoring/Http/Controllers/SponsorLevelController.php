@@ -10,6 +10,10 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SPO-002
+ * @see docs/mil-std-498/SRS.md SPO-F-002, SPO-F-005
+ */
 class SponsorLevelController extends Controller
 {
     public function index(): Response

@@ -5,6 +5,10 @@ namespace App\Domain\Ticketing\Actions;
 use App\Domain\Ticketing\Models\Addon;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-TKT-004
+ * @see docs/mil-std-498/SRS.md TKT-F-007
+ */
 class CreateAddon
 {
     /**

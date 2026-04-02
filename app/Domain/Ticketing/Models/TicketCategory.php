@@ -14,6 +14,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-TKT-002
+ * @see docs/mil-std-498/SRS.md TKT-F-002
+ */
 #[Fillable(['name', 'description', 'sort_order', 'event_id'])]
 class TicketCategory extends Model implements AuditableContract
 {

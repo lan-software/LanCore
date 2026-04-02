@@ -7,6 +7,10 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-009, INT-F-005
+ * @see docs/mil-std-498/IRS.md IF-INTAPI-002, IF-INTAPI-003
+ */
 class AuthenticateIntegration
 {
     /**

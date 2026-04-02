@@ -11,6 +11,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-NTF-001
+ * @see docs/mil-std-498/SRS.md NTF-F-001, NTF-F-002
+ */
 class NotificationSettingsController extends Controller
 {
     public function edit(Request $request): Response

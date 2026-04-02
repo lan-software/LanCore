@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-007
+ * @see docs/mil-std-498/SRS.md SHP-F-010
+ */
 #[Fillable([
     'name', 'description', 'content', 'acknowledgement_label',
     'is_required', 'is_active', 'requires_scroll', 'sort_order',

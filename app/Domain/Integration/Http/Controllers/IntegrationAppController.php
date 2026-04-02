@@ -15,6 +15,10 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-INT-001, CAP-INT-005
+ * @see docs/mil-std-498/SRS.md INT-F-001, INT-F-006, INT-F-009
+ */
 class IntegrationAppController extends Controller
 {
     public function __construct(

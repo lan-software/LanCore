@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @see docs/mil-std-498/SRS.md SHP-F-002
+ */
 #[Fillable(['cart_id', 'purchasable_type', 'purchasable_id', 'quantity'])]
 class CartItem extends Model
 {

@@ -6,6 +6,10 @@ use App\Domain\Program\Models\Program;
 use App\Domain\Program\Models\TimeSlot;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-PRG-001
+ * @see docs/mil-std-498/SRS.md PRG-F-001, PRG-F-006
+ */
 class UpdateProgram
 {
     /**

@@ -18,6 +18,10 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-EVT-001, CAP-EVT-002
+ * @see docs/mil-std-498/SRS.md EVT-F-001, EVT-F-003, EVT-F-004
+ */
 class EventController extends Controller
 {
     public function __construct(

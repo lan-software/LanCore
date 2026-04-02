@@ -5,6 +5,9 @@ namespace App\Domain\Sponsoring\Actions;
 use App\Domain\Sponsoring\Models\Sponsor;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @see docs/mil-std-498/SRS.md SPO-F-001, SPO-F-003, SPO-F-004
+ */
 class UpdateSponsor
 {
     /**

@@ -8,6 +8,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-NTF-002
+ * @see docs/mil-std-498/SRS.md NTF-F-003
+ */
 class PushSubscriptionController extends Controller
 {
     public function store(StorePushSubscriptionRequest $request): JsonResponse

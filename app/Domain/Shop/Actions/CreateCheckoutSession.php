@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Laravel\Cashier\Checkout;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-002
+ * @see docs/mil-std-498/SRS.md SHP-F-003
+ * @see docs/mil-std-498/IRS.md IF-STRIPE-002
+ */
 class CreateCheckoutSession
 {
     /**

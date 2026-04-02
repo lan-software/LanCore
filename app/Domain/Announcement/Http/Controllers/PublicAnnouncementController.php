@@ -10,6 +10,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-ANN-002
+ * @see docs/mil-std-498/SRS.md ANN-F-002
+ */
 class PublicAnnouncementController extends Controller
 {
     public function __invoke(Request $request, Event $event): Response

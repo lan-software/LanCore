@@ -16,6 +16,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-001, CAP-SHP-004
+ * @see docs/mil-std-498/SRS.md SHP-F-006, SHP-F-012
+ */
 class CreateOrder
 {
     public function __construct(

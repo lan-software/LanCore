@@ -5,6 +5,9 @@ namespace App\Domain\Program\Policies;
 use App\Domain\Program\Models\Program;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007
+ */
 class ProgramPolicy
 {
     /**

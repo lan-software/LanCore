@@ -8,6 +8,9 @@ use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SRS.md TKT-F-010
+ */
 class AdminTicketController extends Controller
 {
     public function index(AdminTicketIndexRequest $request): Response

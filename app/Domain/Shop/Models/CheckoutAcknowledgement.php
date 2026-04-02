@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-008
+ * @see docs/mil-std-498/SRS.md SHP-F-011
+ */
 #[Fillable([
     'user_id', 'acknowledgeable_type', 'acknowledgeable_id', 'acknowledgement_key', 'acknowledged_at',
 ])]

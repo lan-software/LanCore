@@ -5,6 +5,9 @@ namespace App\Domain\Sponsoring\Policies;
 use App\Domain\Sponsoring\Models\SponsorLevel;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007, SPO-F-004
+ */
 class SponsorLevelPolicy
 {
     /**

@@ -5,6 +5,9 @@ namespace App\Domain\Venue\Policies;
 use App\Domain\Venue\Models\Venue;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SSS.md SEC-007
+ */
 class VenuePolicy
 {
     /**

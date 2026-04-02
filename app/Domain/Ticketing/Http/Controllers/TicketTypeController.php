@@ -17,6 +17,10 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-TKT-001
+ * @see docs/mil-std-498/SRS.md TKT-F-001, TKT-F-008
+ */
 class TicketTypeController extends Controller
 {
     public function __construct(

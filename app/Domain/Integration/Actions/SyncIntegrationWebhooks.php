@@ -6,6 +6,10 @@ use App\Domain\Integration\Models\IntegrationApp;
 use App\Domain\Webhook\Enums\WebhookEvent;
 use App\Domain\Webhook\Models\Webhook;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-INT-004
+ * @see docs/mil-std-498/SRS.md INT-F-001
+ */
 class SyncIntegrationWebhooks
 {
     public function execute(IntegrationApp $app, ?string $announcementWebhookSecret = null, ?string $rolesWebhookSecret = null): void

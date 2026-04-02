@@ -5,6 +5,9 @@ namespace App\Domain\Announcement\Policies;
 use App\Domain\Announcement\Models\Announcement;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007, ANN-F-005
+ */
 class AnnouncementPolicy
 {
     /**

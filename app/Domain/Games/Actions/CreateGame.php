@@ -4,6 +4,10 @@ namespace App\Domain\Games\Actions;
 
 use App\Domain\Games\Models\Game;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-GAM-001
+ * @see docs/mil-std-498/SRS.md GAM-F-001
+ */
 class CreateGame
 {
     /**

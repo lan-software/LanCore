@@ -9,6 +9,9 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @see docs/mil-std-498/SRS.md INT-F-005, INT-F-008
+ */
 class IntegrationUserController extends Controller
 {
     public function __construct(

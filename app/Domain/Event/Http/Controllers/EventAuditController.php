@@ -7,6 +7,10 @@ use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-EVT-006
+ * @see docs/mil-std-498/SRS.md EVT-F-008
+ */
 class EventAuditController extends Controller
 {
     public function __invoke(Event $event): Response

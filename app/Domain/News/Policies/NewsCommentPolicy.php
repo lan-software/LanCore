@@ -5,6 +5,9 @@ namespace App\Domain\News\Policies;
 use App\Domain\News\Models\NewsComment;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007, NWS-F-007
+ */
 class NewsCommentPolicy
 {
     /**

@@ -6,6 +6,10 @@ use App\Domain\Integration\Models\IntegrationApp;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-INT-003
+ * @see docs/mil-std-498/SRS.md INT-F-004, INT-F-005
+ */
 class ExchangeSsoAuthorizationCode
 {
     public function __construct(

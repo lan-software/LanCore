@@ -5,6 +5,9 @@ namespace App\Domain\Integration\Policies;
 use App\Domain\Integration\Models\IntegrationApp;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007, INT-F-009
+ */
 class IntegrationAppPolicy
 {
     /**

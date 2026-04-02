@@ -6,6 +6,10 @@ use App\Domain\Shop\Contracts\PaymentProvider;
 use App\Domain\Shop\Enums\PaymentMethod;
 use InvalidArgumentException;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-002, CAP-SHP-003
+ * @see docs/mil-std-498/SRS.md SHP-F-005
+ */
 class PaymentProviderManager
 {
     /** @var array<string, PaymentProvider> */
