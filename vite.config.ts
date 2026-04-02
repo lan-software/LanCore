@@ -5,13 +5,16 @@ import laravel from 'laravel-vite-plugin';
 import { defineConfig } from 'vite';
 import { configDefaults } from 'vitest/config';
 
+const isVitest = !!process.env.VITEST;
+
 export default defineConfig({
     plugins: [
-        laravel({
-            input: ['resources/js/app.ts'],
-            ssr: 'resources/js/ssr.ts',
-            refresh: true,
-        }),
+        !isVitest &&
+            laravel({
+                input: ['resources/js/app.ts'],
+                ssr: 'resources/js/ssr.ts',
+                refresh: true,
+            }),
         tailwindcss(),
         vue({
             template: {
@@ -21,9 +24,10 @@ export default defineConfig({
                 },
             },
         }),
-        wayfinder({
-            formVariants: true,
-        }),
+        !isVitest &&
+            wayfinder({
+                formVariants: true,
+            }),
     ],
     test: {
         globals: true,

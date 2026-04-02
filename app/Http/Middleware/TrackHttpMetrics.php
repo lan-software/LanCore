@@ -36,17 +36,21 @@ class TrackHttpMetrics
 
     private function record(Request $request, Response $response, float $startTime): void
     {
-        $method = $request->method();
-        $statusCode = (string) $response->getStatusCode();
-        $durationMs = (microtime(true) - $startTime) * 1000;
+        try {
+            $method = $request->method();
+            $statusCode = (string) $response->getStatusCode();
+            $durationMs = (microtime(true) - $startTime) * 1000;
 
-        Redis::hIncrBy('metrics:http:requests', "{$method}_{$statusCode}", 1);
+            Redis::hIncrBy('metrics:http:requests', "{$method}_{$statusCode}", 1);
 
-        $routeName = $this->resolveRouteName($request);
-        $durationKey = "{$method}_{$routeName}";
-        $current = (float) (Redis::hGet('metrics:http:duration_ms', $durationKey) ?: 0);
-        $ema = $current === 0.0 ? $durationMs : 0.9 * $current + 0.1 * $durationMs;
-        Redis::hSet('metrics:http:duration_ms', $durationKey, round($ema, 2));
+            $routeName = $this->resolveRouteName($request);
+            $durationKey = "{$method}_{$routeName}";
+            $current = (float) (Redis::hGet('metrics:http:duration_ms', $durationKey) ?: 0);
+            $ema = $current === 0.0 ? $durationMs : 0.9 * $current + 0.1 * $durationMs;
+            Redis::hSet('metrics:http:duration_ms', $durationKey, round($ema, 2));
+        } catch (\RedisException) {
+            // Redis unavailable (e.g. CI/testing) — silently skip metrics
+        }
     }
 
     private function resolveRouteName(Request $request): string
