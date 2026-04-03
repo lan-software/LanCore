@@ -51,6 +51,11 @@ export default defineConfigWithVueTs(
                 'error',
                 {
                     groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+                    pathGroups: [
+                        { pattern: '@/actions/**', group: 'internal' },
+                        { pattern: '@/routes/**', group: 'internal' },
+                    ],
+                    pathGroupsExcludedImportTypes: [],
                     alphabetize: {
                         order: 'asc',
                         caseInsensitive: true,

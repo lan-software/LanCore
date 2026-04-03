@@ -30,8 +30,19 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+          composer install -q --no-ansi --no-interaction --no-progress --prefer-dist
           npm ci
+
+      - name: Setup Environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Generate Wayfinder Routes
+        run: php artisan wayfinder:generate
+        env:
+          CACHE_STORE: array
+          SESSION_DRIVER: array
 
       - name: Run Pint
         run: composer lint
