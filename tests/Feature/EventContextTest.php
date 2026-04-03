@@ -276,7 +276,7 @@ it('passes selectedEventId to announcement create page', function () {
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event->id])
-        ->get('/announcements/create')
+        ->get('/announcements-admin/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -289,7 +289,7 @@ it('passes null selectedEventId to announcement create page when no event contex
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/announcements/create')
+        ->get('/announcements-admin/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
