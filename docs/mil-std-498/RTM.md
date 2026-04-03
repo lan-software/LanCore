@@ -401,8 +401,8 @@ No gaps identified.
 | USR-F-009 | Sidebar favorites | `Settings/SidebarFavoriteController.php` | `Settings/SidebarFavoriteTest.php` (8 tests) | Covered |
 | USR-F-010 | Appearance/theme settings | HandleAppearance middleware | — | **Gap** |
 | USR-F-011 | Stripe Cashier billing customer | `App/Models/User.php` (Billable trait) | — | **Gap** |
-| USR-F-014 | Permission enum with 24 per-domain cases | `App/Enums/Permission.php` | `Unit/PermissionEnumTest.php` (7 tests) | Covered |
-| USR-F-015 | Static role-to-permission mapping via `Permission::forRole()` | `App/Enums/Permission.php` | `Unit/PermissionEnumTest.php` (7 tests) | Covered |
+| USR-F-014 | Domain-specific Permission enums (24 cases across 14 enums) | `App/Contracts/PermissionEnum.php`, `App/Enums/Permission.php`, `App/Domain/*/Enums/Permission.php` | `Unit/PermissionEnumTest.php` (7 tests) | Covered |
+| USR-F-015 | Static role-to-permission mapping via `RolePermissionMap::forRole()` | `App/Enums/RolePermissionMap.php` | `Unit/PermissionEnumTest.php` (7 tests) | Covered |
 | USR-F-016 | `HasPermissions` trait with `hasPermission()`, `hasAnyPermission()`, `allPermissions()` | `App/Concerns/HasPermissions.php` | `Unit/HasPermissionsTraitTest.php` (5 tests) | Covered |
 | USR-F-017 | Centralized `Gate::before()` superadmin bypass | `App/Providers/AppServiceProvider.php` | `Policies/RoleBasedPolicyAccessTest.php` (68 tests) | Covered |
 | USR-F-018 | Permissions shared via Inertia shared props | `App/Http/Middleware/HandleInertiaRequests.php` | `Policies/RoleBasedPolicyAccessTest.php` | Covered |

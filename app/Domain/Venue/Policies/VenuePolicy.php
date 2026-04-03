@@ -2,8 +2,8 @@
 
 namespace App\Domain\Venue\Policies;
 
+use App\Domain\Venue\Enums\Permission;
 use App\Domain\Venue\Models\Venue;
-use App\Enums\Permission;
 use App\Models\User;
 
 /**

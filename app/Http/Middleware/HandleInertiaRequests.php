@@ -2,9 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Contracts\PermissionEnum;
+use App\Domain\Event\Enums\Permission as EventPermission;
 use App\Domain\Event\Models\Event;
 use App\Domain\Integration\Models\IntegrationApp;
-use App\Enums\Permission;
+use App\Domain\Program\Enums\Permission as ProgramPermission;
+use App\Domain\Seating\Enums\Permission as SeatingPermission;
+use App\Domain\Ticketing\Enums\Permission as TicketingPermission;
 use App\Enums\RoleName;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -59,7 +63,7 @@ class HandleInertiaRequests extends Middleware
                 ]) : null,
             ],
             'permissions' => $user ? array_map(
-                fn (Permission $p) => $p->value,
+                fn (PermissionEnum $p) => $p->value,
                 $user->allPermissions(),
             ) : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
@@ -101,10 +105,10 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
 
         if (! $user || ! $user->hasAnyPermission(
-            Permission::ManageEvents,
-            Permission::ManagePrograms,
-            Permission::ManageTicketing,
-            Permission::ManageSeatPlans,
+            EventPermission::ManageEvents,
+            ProgramPermission::ManagePrograms,
+            TicketingPermission::ManageTicketing,
+            SeatingPermission::ManageSeatPlans,
         )) {
             return null;
         }

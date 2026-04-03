@@ -2,8 +2,8 @@
 
 namespace App\Domain\Achievements\Policies;
 
+use App\Domain\Achievements\Enums\Permission;
 use App\Domain\Achievements\Models\Achievement;
-use App\Enums\Permission;
 use App\Models\User;
 
 /**

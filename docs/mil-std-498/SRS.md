@@ -305,7 +305,8 @@ The LanCore CSCI shall support the following operational states:
 **Models:** User, Role
 **Controllers:** ProfileController, SecurityController, UserController, SidebarFavoriteController, TicketDiscoveryController, UserAchievementsController
 **Actions:** CreateNewUser, ResetUserPassword, UpdateUserAttributes, DeleteUser, ChangeRoles
-**Enums:** RoleName, Permission
+**Enums:** RoleName, Permission (cross-cutting), RolePermissionMap
+**Contracts:** PermissionEnum
 **Traits:** HasPermissions
 
 | Req ID | Requirement |
@@ -323,8 +324,8 @@ The LanCore CSCI shall support the following operational states:
 | USR-F-011 | The software shall integrate with Stripe Cashier for billing customer management |
 | USR-F-012 | The software shall store user address fields (phone, street, city, zip_code, country) on the users table |
 | USR-F-013 | The software shall enforce profile completeness (address + at least phone or email) via `hasCompleteProfile()` before allowing cart item additions |
-| USR-F-014 | The software shall define granular per-domain permissions via a `Permission` backed enum with 24 cases |
-| USR-F-015 | The software shall map permissions to roles statically via `Permission::forRole()` without database tables |
+| USR-F-014 | The software shall define granular per-domain permissions via domain-specific `Permission` enums (24 cases across 14 enums) implementing the `PermissionEnum` interface |
+| USR-F-015 | The software shall map permissions to roles statically via `RolePermissionMap::forRole()` without database tables |
 | USR-F-016 | The software shall provide `hasPermission()`, `hasAnyPermission()`, and `allPermissions()` methods on the User model via the `HasPermissions` trait |
 | USR-F-017 | The software shall centralize superadmin authorization bypass via a single `Gate::before()` callback in `AppServiceProvider`, removing per-policy `before()` methods |
 | USR-F-018 | The software shall share the authenticated user's resolved permissions with the frontend via Inertia shared props as a flat string array |

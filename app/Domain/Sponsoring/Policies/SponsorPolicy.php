@@ -2,8 +2,9 @@
 
 namespace App\Domain\Sponsoring\Policies;
 
+use App\Domain\Sponsoring\Enums\Permission;
 use App\Domain\Sponsoring\Models\Sponsor;
-use App\Enums\Permission;
+use App\Enums\Permission as AppPermission;
 use App\Models\User;
 
 /**
@@ -56,6 +57,6 @@ class SponsorPolicy
 
     public function viewAudit(User $user, Sponsor $sponsor): bool
     {
-        return $user->hasPermission(Permission::ViewAuditLogs);
+        return $user->hasPermission(AppPermission::ViewAuditLogs);
     }
 }

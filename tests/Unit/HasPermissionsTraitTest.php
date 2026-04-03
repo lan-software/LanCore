@@ -1,5 +1,10 @@
 <?php
 
+use App\Contracts\PermissionEnum;
+use App\Domain\Announcement\Enums\Permission as AnnouncementPermission;
+use App\Domain\News\Enums\Permission as NewsPermission;
+use App\Domain\Sponsoring\Enums\Permission as SponsoringPermission;
+use App\Domain\Venue\Enums\Permission as VenuePermission;
 use App\Enums\Permission;
 use App\Enums\RoleName;
 use App\Models\Role;
@@ -28,8 +33,8 @@ it('returns false for a permission the user role does not grant', function () {
 it('checks hasAnyPermission correctly', function () {
     $user = User::factory()->withRole(RoleName::Moderator)->create();
 
-    expect($user->hasAnyPermission(Permission::ManageUsers, Permission::ModerateNewsComments))->toBeTrue()
-        ->and($user->hasAnyPermission(Permission::ManageUsers, Permission::ManageVenues))->toBeFalse();
+    expect($user->hasAnyPermission(Permission::ManageUsers, NewsPermission::ModerateNewsComments))->toBeTrue()
+        ->and($user->hasAnyPermission(Permission::ManageUsers, VenuePermission::ManageVenues))->toBeFalse();
 });
 
 it('collects all permissions from multiple roles', function () {
@@ -40,9 +45,9 @@ it('collects all permissions from multiple roles', function () {
 
     $allPerms = $user->allPermissions();
 
-    expect($allPerms)->toContain(Permission::ModerateNewsComments)
-        ->and($allPerms)->toContain(Permission::ManageAnnouncements)
-        ->and($allPerms)->toContain(Permission::ManageAssignedSponsors)
+    expect($allPerms)->toContain(NewsPermission::ModerateNewsComments)
+        ->and($allPerms)->toContain(AnnouncementPermission::ManageAnnouncements)
+        ->and($allPerms)->toContain(SponsoringPermission::ManageAssignedSponsors)
         ->and($allPerms)->toHaveCount(3);
 });
 
@@ -53,7 +58,7 @@ it('deduplicates permissions from overlapping roles', function () {
     $user->load('roles');
 
     $allPerms = $user->allPermissions();
-    $values = array_map(fn (Permission $p) => $p->value, $allPerms);
+    $values = array_map(fn (PermissionEnum $p) => $p->value, $allPerms);
 
     expect(count($values))->toBe(count(array_unique($values)));
 });

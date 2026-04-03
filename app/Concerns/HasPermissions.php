@@ -2,14 +2,15 @@
 
 namespace App\Concerns;
 
-use App\Enums\Permission;
+use App\Contracts\PermissionEnum;
+use App\Enums\RolePermissionMap;
 
 trait HasPermissions
 {
-    public function hasPermission(Permission $permission): bool
+    public function hasPermission(PermissionEnum $permission): bool
     {
         foreach ($this->roles as $role) {
-            if (in_array($permission, Permission::forRole($role->name), true)) {
+            if (in_array($permission, RolePermissionMap::forRole($role->name), true)) {
                 return true;
             }
         }
@@ -17,7 +18,7 @@ trait HasPermissions
         return false;
     }
 
-    public function hasAnyPermission(Permission ...$permissions): bool
+    public function hasAnyPermission(PermissionEnum ...$permissions): bool
     {
         foreach ($permissions as $permission) {
             if ($this->hasPermission($permission)) {
@@ -31,14 +32,14 @@ trait HasPermissions
     /**
      * Collect all permissions from all of the user's roles (deduplicated).
      *
-     * @return array<int, Permission>
+     * @return array<int, PermissionEnum>
      */
     public function allPermissions(): array
     {
         $permissions = [];
 
         foreach ($this->roles as $role) {
-            foreach (Permission::forRole($role->name) as $permission) {
+            foreach (RolePermissionMap::forRole($role->name) as $permission) {
                 $permissions[$permission->value] = $permission;
             }
         }

@@ -2,8 +2,9 @@
 
 namespace App\Domain\Seating\Policies;
 
+use App\Domain\Seating\Enums\Permission;
 use App\Domain\Seating\Models\SeatPlan;
-use App\Enums\Permission;
+use App\Enums\Permission as AppPermission;
 use App\Models\User;
 
 /**
@@ -38,6 +39,6 @@ class SeatPlanPolicy
 
     public function viewAudit(User $user, SeatPlan $seatPlan): bool
     {
-        return $user->hasPermission(Permission::ViewAuditLogs);
+        return $user->hasPermission(AppPermission::ViewAuditLogs);
     }
 }

@@ -19,7 +19,7 @@ use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketType;
 use App\Domain\Venue\Models\Venue;
-use App\Enums\Permission;
+use App\Enums\Permission as AppPermission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +32,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        $showAdminStats = $user->hasPermission(Permission::ManageUsers);
+        $showAdminStats = $user->hasPermission(AppPermission::ManageUsers);
 
         $stats = [];
 

@@ -2,8 +2,9 @@
 
 namespace App\Domain\Program\Policies;
 
+use App\Domain\Program\Enums\Permission;
 use App\Domain\Program\Models\Program;
-use App\Enums\Permission;
+use App\Enums\Permission as AppPermission;
 use App\Models\User;
 
 /**
@@ -38,6 +39,6 @@ class ProgramPolicy
 
     public function viewAudit(User $user, Program $program): bool
     {
-        return $user->hasPermission(Permission::ViewAuditLogs);
+        return $user->hasPermission(AppPermission::ViewAuditLogs);
     }
 }

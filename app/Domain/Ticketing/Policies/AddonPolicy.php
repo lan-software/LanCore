@@ -2,8 +2,9 @@
 
 namespace App\Domain\Ticketing\Policies;
 
+use App\Domain\Ticketing\Enums\Permission;
 use App\Domain\Ticketing\Models\Addon;
-use App\Enums\Permission;
+use App\Enums\Permission as AppPermission;
 use App\Models\User;
 
 /**
@@ -39,6 +40,6 @@ class AddonPolicy
 
     public function viewAudit(User $user, Addon $addon): bool
     {
-        return $user->hasPermission(Permission::ViewAuditLogs);
+        return $user->hasPermission(AppPermission::ViewAuditLogs);
     }
 }

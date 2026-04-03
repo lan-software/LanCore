@@ -2,8 +2,8 @@
 
 namespace App\Domain\Integration\Policies;
 
+use App\Domain\Integration\Enums\Permission;
 use App\Domain\Integration\Models\IntegrationApp;
-use App\Enums\Permission;
 use App\Models\User;
 
 /**
