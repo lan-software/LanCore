@@ -22,6 +22,6 @@ test.describe('Authentication', () => {
     test('shows validation errors on empty login', async ({ page }) => {
         await page.goto('/login');
         await page.getByRole('button', { name: /log in/i }).click();
-        await expect(page.locator('[class*="error"], .text-red, [role="alert"]').first()).toBeVisible();
+        await expect(page.locator('[class*="text-red"]').first()).toBeVisible();
     });
 });
