@@ -163,10 +163,6 @@ See [RTM](RTM.md) Section 16 for the complete gap analysis. Summary:
 |--------|--------|-----------------|----------|
 | WHK-F-003 | Webhook | HMAC-SHA256 payload signing verification | **High** |
 | SHP-F-004 | Shop | On-site payment flow | **High** |
-| TKT-F-013 | Ticketing | Group ticket types (max_users_per_ticket) | Medium |
-| TKT-F-014 | Ticketing | Multi-user assignment via ticket_user pivot | Medium |
-| TKT-F-015 | Ticketing | Individual vs group check-in modes | Medium |
-| TKT-F-016 | Ticketing | Group ticket seat capacity calculation | Medium |
 | SHP-F-005 | Shop | PaymentProviderManager factory resolution | Medium |
 | PRG-F-004 | Program | ProgramTimeSlotApproaching event and notifications | Medium |
 | NTF-F-003 | Notification | Web Push subscription CRUD | Medium |
@@ -176,7 +172,7 @@ See [RTM](RTM.md) Section 16 for the complete gap analysis. Summary:
 | USR-F-010 | User | Appearance/theme settings | Low |
 | USR-F-011 | User | Stripe Cashier customer management | Low |
 
-**14 gaps out of 116 requirements = 87.9% requirement coverage**
+**10 gaps out of 116 requirements = 91.4% requirement coverage**
 
 ### 4.3 Known Test Issues
 
@@ -205,7 +201,7 @@ Coverage is collected via Xdebug and reported to Codecov. Current metrics reflec
 | Domain (SRS) | Requirements | Covered | Partial | Gap | Coverage |
 |-------------|-------------|---------|---------|-----|----------|
 | CSCI-EVT | 10 | 10 | 0 | 0 | **100%** |
-| CSCI-TKT | 16 | 10 | 0 | 5 | 63% |
+| CSCI-TKT | 16 | 14 | 0 | 1 | 88% |
 | CSCI-SHP | 16 | 12 | 1 | 3 | 75% |
 | CSCI-PRG | 7 | 6 | 0 | 1 | 86% |
 | CSCI-SET | 5 | 5 | 0 | 0 | **100%** |
@@ -218,7 +214,7 @@ Coverage is collected via Xdebug and reported to Codecov. Current metrics reflec
 | CSCI-WHK | 7 | 6 | 0 | 1 | 86% |
 | CSCI-GAM | 3 | 3 | 0 | 0 | **100%** |
 | CSCI-USR | 11 | 9 | 0 | 2 | 82% |
-| **Total** | **114** | **97** | **3** | **13** | **87.7%** |
+| **Total** | **116** | **101** | **3** | **11** | **89.7%** |
 
 ---
 
