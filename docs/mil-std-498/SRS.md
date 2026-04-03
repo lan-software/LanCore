@@ -89,10 +89,14 @@ The LanCore CSCI shall support the following operational states:
 | TKT-F-006 | The software shall support three ticket assignment roles: owner, manager, user |
 | TKT-F-007 | The software shall support ticket add-ons with pricing history tracked via pivot table |
 | TKT-F-008 | The software shall enforce TicketTypePolicy, TicketCategoryPolicy, and AddonPolicy |
-| TKT-F-009 | The software shall support seating/row ticket types linked to seat plans |
+| TKT-F-009 | ~~The software shall support seating/row ticket types linked to seat plans~~ **(Deprecated — superseded by TKT-F-013..016)** |
 | TKT-F-010 | The software shall provide admin ticket management views (AdminTicketController) |
 | TKT-F-011 | The software shall support ticket locking to prevent concurrent modifications |
 | TKT-F-012 | The software shall maintain audit trails for ticket types, categories, and add-ons |
+| TKT-F-013 | The software shall support group ticket types with a configurable `max_users_per_ticket` field (default 1) on TicketType |
+| TKT-F-014 | The software shall support multi-user ticket assignment via a `ticket_user` pivot table, replacing the singular `user_id` on tickets |
+| TKT-F-015 | The software shall support configurable check-in modes per ticket type (`individual` or `group`) via a `check_in_mode` field and CheckInMode enum |
+| TKT-F-016 | The software shall calculate seat capacity consumption as `seats_per_ticket × max_users_per_ticket`, reserved at purchase time |
 
 #### 3.2.3 Shop Domain (CSCI-SHP)
 

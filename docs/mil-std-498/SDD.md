@@ -154,7 +154,7 @@ Each domain module follows a consistent internal structure:
 | Domain | Models | Actions | Controllers | Events | Listeners |
 |--------|--------|---------|-------------|--------|-----------|
 | Event | 4 | 7 | 3 | 1 | 1 |
-| Ticketing | 5 | 6+ | 5 | 0 | 0 |
+| Ticketing | 5 | 8+ | 5 | 0 | 0 |
 | Shop | 7 | 14 | 7 | 2 | 2 |
 | Program | 2 | 6 | 2 | 1 | 1 |
 | Seating | 1 | 3 | 2 | 0 | 0 |
@@ -228,6 +228,35 @@ User → CartController (add items)
   │
   └── Admin manual fulfillment → FulfillOrder (same flow)
 ```
+
+#### 4.3.3a Group Ticket Design
+
+**Data Model:**
+- `TicketType` gains `max_users_per_ticket` (int, default 1) and `check_in_mode` (CheckInMode enum: `individual`|`group`)
+- `Ticket` no longer has a singular `user_id`; instead uses a `ticket_user` pivot table (BelongsToMany)
+- Each pivot row tracks `checked_in_at` for per-user check-in status
+- `is_row_ticket` is deprecated (column retained, removed from UI)
+
+**Seat Capacity Formula:**
+```
+total_seats_consumed = seats_per_ticket × max_users_per_ticket × quantity
+```
+Reserved at purchase time. Remaining capacity = `event.seat_capacity - Σ(total_seats_consumed) - Σ(addon_seats)`.
+
+**Check-In Flow:**
+```
+Individual Mode:
+  POST /tickets/{ticket}/check-in {user_id: N}
+    → Set ticket_user.checked_in_at for user N
+    → If ALL users now checked in → set ticket.status = CheckedIn
+
+Group Mode:
+  POST /tickets/{ticket}/check-in
+    → Set ticket_user.checked_in_at for ALL assigned users
+    → Set ticket.status = CheckedIn
+```
+
+**Enum:** `App\Domain\Ticketing\Enums\CheckInMode` (Individual, Group)
 
 #### 4.3.4 SSO Authorization Flow
 

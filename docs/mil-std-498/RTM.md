@@ -59,7 +59,11 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 | TKT-F-006 | Three assignment roles (owner, manager, user) | `Domain/Ticketing/Actions/UpdateTicketAssignments.php` | `Ticketing/TicketManagementTest.php` | Covered |
 | TKT-F-007 | Ticket add-ons with pricing history | `Domain/Ticketing/Models/Addon.php` | `Ticketing/TicketTypeCrudTest.php` | Partial |
 | TKT-F-008 | Policy enforcement (TicketType, Category, Addon) | Policies under `Domain/Ticketing/Policies/` | `Events/AccessTest.php`, `Ticketing/TicketTypeCrudTest.php` | Covered |
-| TKT-F-009 | Seating/row ticket types linked to seat plans | `Domain/Ticketing/Models/TicketType.php` (is_seatable, is_row_ticket) | — | **Gap** |
+| TKT-F-009 | ~~Seating/row ticket types linked to seat plans~~ **(Deprecated — superseded by TKT-F-013..016)** | — | — | Deprecated |
+| TKT-F-013 | Group ticket types with max_users_per_ticket | `Domain/Ticketing/Models/TicketType.php` | — | **Gap** |
+| TKT-F-014 | Multi-user assignment via ticket_user pivot | `Domain/Ticketing/Models/Ticket.php` | — | **Gap** |
+| TKT-F-015 | Individual vs group check-in modes | `Domain/Ticketing/Enums/CheckInMode.php`, `Domain/Ticketing/Actions/UpdateTicketAssignments.php` | — | **Gap** |
+| TKT-F-016 | Seat capacity = seats_per_ticket × max_users_per_ticket | `Domain/Event/Models/Event.php`, `Domain/Shop/Actions/` | — | **Gap** |
 | TKT-F-010 | Admin ticket management views | `Domain/Ticketing/Http/Controllers/AdminTicketController.php` | `Ticketing/AdminTicketControllerTest.php` (6 tests) | Covered |
 | TKT-F-011 | Ticket locking | `Domain/Ticketing/Actions/UpdateTicketType.php` (locked field handling) | `Ticketing/TicketTypeCrudTest.php` (locked fields test) | Covered |
 | TKT-F-012 | Audit trails for types, categories, add-ons | Audit controllers | `Domain/Ticketing/TicketTypeAuditTest.php` (3), `TicketCategoryAuditTest.php` (3), `AddonAuditTest.php` (3) | Covered |
@@ -92,13 +96,25 @@ File: tests/Feature/Ticketing/AddonPricingTest.php
 - it preserves historical price when add-on price changes
 ```
 
-**TKT-F-009: Seating/Row Ticket Types**
+**TKT-F-009: ~~Seating/Row Ticket Types~~ (Deprecated — superseded by TKT-F-013..016)**
+
+**TKT-F-013..016: Group Tickets**
 ```
-File: tests/Feature/Ticketing/SeatingTicketTest.php
-- it creates a seatable ticket type linked to a seat plan
-- it creates a row ticket type
-- it enforces seat capacity when selling seating tickets
-- it tracks seats_per_ticket for capacity calculation
+File: tests/Feature/Ticketing/GroupTicketTest.php
+- it creates a group ticket type with max_users_per_ticket and check_in_mode
+- it defaults max_users_per_ticket to 1 (backward compatibility)
+- it rejects max_users_per_ticket below 1
+- it assigns multiple users to a group ticket up to the limit
+- it rejects exceeding max_users_per_ticket
+- it removes an assigned user from a group ticket
+- it calculates seat consumption as seats_per_ticket × max_users_per_ticket
+- it validates seat capacity during checkout for group tickets
+- it performs individual check-in for one user on a group ticket
+- it marks ticket as CheckedIn when all users individually checked in
+- it performs group check-in marking all users at once
+- it allows owner to add users to their group ticket
+- it allows manager to add users to a group ticket
+- it denies non-owner/manager from adding users
 ```
 
 ---
@@ -412,7 +428,10 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | Req ID | Domain | Gap Description | Priority | Proposed Test File |
 |--------|--------|-----------------|----------|--------------------|
 | TKT-F-003 | Ticketing | Ticket group CRUD | Medium | `Ticketing/TicketGroupTest.php` |
-| TKT-F-009 | Ticketing | Seating ticket types | Medium | `Ticketing/SeatingTicketTest.php` |
+| TKT-F-013 | Ticketing | Group ticket types (max_users_per_ticket) | Medium | `Ticketing/GroupTicketTest.php` |
+| TKT-F-014 | Ticketing | Multi-user assignment (ticket_user pivot) | Medium | `Ticketing/GroupTicketTest.php` |
+| TKT-F-015 | Ticketing | Check-in modes (individual/group) | Medium | `Ticketing/GroupTicketTest.php` |
+| TKT-F-016 | Ticketing | Group ticket seat capacity calculation | Medium | `Ticketing/GroupTicketTest.php` |
 | SHP-F-004 | Shop | On-site payment flow | **High** | `Shop/OnSitePaymentTest.php` |
 | SHP-F-005 | Shop | PaymentProviderManager | Medium | `Shop/PaymentProviderManagerTest.php` |
 | SHP-F-013 | Shop | CartItemAdded event | Low | `Shop/CartItemEventTest.php` |
@@ -423,13 +442,15 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | USR-F-010 | User | Appearance settings | Low | `Settings/AppearanceTest.php` |
 | USR-F-011 | User | Stripe customer management | Low | `Shop/StripeCustomerTest.php` |
 
-**Total: 11 gaps out of 112 requirements (90.2% coverage by requirement count)**
+**Total: 14 gaps out of 116 requirements (87.9% coverage by requirement count)**
+
+*Note: TKT-F-009 deprecated and replaced by TKT-F-013..016 (4 new requirements). Net +3 requirements, +3 gaps.*
 
 ### Priority Order for Implementation
 
 1. **WHK-F-003** — Webhook HMAC signing (security-critical)
 2. **SHP-F-004** — On-site payment flow (core business logic)
-3. **TKT-F-009** — Seating ticket types (complex feature)
+3. **TKT-F-013..016** — Group tickets (complex feature)
 4. **SHP-F-005** — PaymentProviderManager (architecture)
 5. **PRG-F-004** — Time slot notifications (user-facing)
 6. **NTF-F-003** — Push subscriptions (user-facing)

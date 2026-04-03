@@ -224,7 +224,11 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | max_per_user | integer (nullable) | Per-user purchase limit |
 | sale_start | datetime (nullable) | Sales open date |
 | sale_end | datetime (nullable) | Sales close date |
-| is_seated | boolean | Seating flag |
+| seats_per_ticket | integer (default 1) | Physical seats consumed per ticket |
+| max_users_per_ticket | integer (default 1) | Maximum assignable users per ticket (group tickets) |
+| check_in_mode | varchar (default 'individual') | CheckInMode enum: 'individual' or 'group' |
+| is_row_ticket | boolean (deprecated) | Legacy row ticket flag — deprecated, retained for backward compatibility |
+| is_seatable | boolean | Seating flag |
 | is_locked | boolean | Lock flag |
 | created_at | timestamp | |
 | updated_at | timestamp | |
@@ -238,12 +242,27 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | event_id | bigint FK | References events.id |
 | owner_id | bigint FK (nullable) | References users.id (purchaser) |
 | manager_id | bigint FK (nullable) | References users.id (manager) |
-| user_id | bigint FK (nullable) | References users.id (attendee) |
 | order_id | bigint FK (nullable) | References orders.id |
 | status | varchar | TicketStatus enum |
 | validation_id | varchar (unique, nullable) | Check-in validation code |
+| checked_in_at | datetime (nullable) | Ticket-level check-in timestamp |
 | created_at | timestamp | |
 | updated_at | timestamp | |
+
+#### 4.4.2a ticket_user (pivot)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| ticket_id | bigint FK | References tickets.id (cascade delete) |
+| user_id | bigint FK | References users.id (cascade delete) |
+| checked_in_at | datetime (nullable) | Per-user check-in timestamp |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+**Unique constraint:** `(ticket_id, user_id)`
+
+**Design note:** Replaces the previous singular `user_id` column on `tickets`. For non-group tickets (`max_users_per_ticket = 1`), the pivot contains 0 or 1 rows. For group tickets, it contains up to `max_users_per_ticket` rows.
 
 #### 4.4.3 ticket_categories
 

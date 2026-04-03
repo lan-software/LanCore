@@ -74,9 +74,11 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-TKT-005 | The system shall track ticket statuses: available, assigned, used, checked_in |
 | CAP-TKT-006 | The system shall generate unique validation IDs for each ticket |
 | CAP-TKT-007 | The system shall support ticket assignment (owner, manager, user roles per ticket) |
-| CAP-TKT-008 | The system shall support seating row tickets linked to seat plans |
+| CAP-TKT-008 | ~~The system shall support seating row tickets linked to seat plans~~ **(Deprecated — superseded by CAP-TKT-011)** |
 | CAP-TKT-009 | The system shall support purchase windows (start/end dates for ticket sales) |
 | CAP-TKT-010 | The system shall support ticket locking mechanisms |
+| CAP-TKT-011 | The system shall support group tickets with configurable max users per ticket, where seat capacity is calculated as seats_per_ticket × max_users_per_ticket |
+| CAP-TKT-012 | The system shall support configurable check-in modes per ticket type: individual (per-user) or group (all users at once) |
 
 #### 3.2.3 Shop and Payments (CAP-SHP)
 
