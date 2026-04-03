@@ -125,9 +125,22 @@ Open your web browser and navigate to the LanCore instance URL provided by your 
 1. Navigate to **Tickets** in the sidebar
 2. View all your purchased tickets with:
    - Ticket type and event
-   - Status (assigned, checked-in)
+   - Status (active, checked-in)
    - Unique validation ID (for check-in)
 3. Tickets with add-ons show purchased extras
+
+#### 5.3.1 Group Tickets
+
+Group tickets allow a single ticket to grant access to multiple users:
+
+1. View a group ticket to see the list of assigned users and their check-in status
+2. As the ticket owner or manager, click **Add User** to assign additional users (up to the ticket's limit)
+3. Enter the user's email address to assign them
+4. Click **Remove** next to a user to unassign them
+5. Each assigned user can view the ticket in their own **Tickets** page under "Assigned Tickets"
+6. At check-in:
+   - **Individual mode:** Each user checks in separately with the ticket's validation ID
+   - **Group mode:** All assigned users are checked in together in a single scan
 
 ### 5.4 Reading News
 
@@ -253,6 +266,15 @@ Open your web browser and navigate to the LanCore instance URL provided by your 
 3. Optionally set: max per user, sale start/end dates, seating flag
 4. Create add-ons for optional extras
 
+#### 6.3.1 Configuring Group Tickets
+
+1. Set **Max Users per Ticket** to a value greater than 1 (e.g., 4 for a 4-person group ticket)
+2. When max users > 1, a **Check-in Mode** dropdown appears:
+   - **Individual:** Each assigned user checks in separately
+   - **Group:** All assigned users are checked in with a single scan
+3. Seat capacity is calculated as `seats per user × max users per ticket` — for example, 2 seats × 4 users = 8 seats reserved per ticket sold
+4. Once tickets have been sold (ticket type is locked), group settings cannot be changed
+
 ### 6.4 Program Scheduling
 
 1. Navigate to **Programs > Create** within an event context
@@ -313,6 +335,7 @@ Open your web browser and navigate to the LanCore instance URL provided by your 
 | Term | Definition |
 |------|-----------|
 | Add-on | An optional extra item purchasable with a ticket |
+| Group Ticket | A ticket type that allows multiple users to be assigned, purchased by one owner |
 | Voucher | A discount code for ticket purchases |
 | 2FA | Two-Factor Authentication using a time-based code |
 | Push Notification | A browser notification delivered even when the app is not open |

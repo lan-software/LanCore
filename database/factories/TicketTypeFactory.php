@@ -26,7 +26,9 @@ class TicketTypeFactory extends Factory
             'description' => fake()->sentence(),
             'price' => fake()->numberBetween(1500, 10000),
             'quota' => fake()->numberBetween(10, 200),
-            'seats_per_ticket' => 1,
+            'seats_per_user' => 1,
+            'max_users_per_ticket' => 1,
+            'check_in_mode' => 'individual',
             'is_row_ticket' => false,
             'is_seatable' => true,
             'is_hidden' => false,
@@ -46,11 +48,22 @@ class TicketTypeFactory extends Factory
         ]);
     }
 
+    public function groupTicket(int $maxUsers = 4, string $checkInMode = 'individual'): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'max_users_per_ticket' => $maxUsers,
+            'check_in_mode' => $checkInMode,
+        ]);
+    }
+
+    /**
+     * @deprecated Use groupTicket() instead. Row ticket logic is deprecated.
+     */
     public function rowTicket(int $seatsPerTicket = 5): static
     {
         return $this->state(fn (array $attributes): array => [
             'is_row_ticket' => true,
-            'seats_per_ticket' => $seatsPerTicket,
+            'seats_per_user' => $seatsPerTicket,
         ]);
     }
 

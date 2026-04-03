@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Form } from '@inertiajs/vue3';
-import { Armchair, Eye, EyeOff } from 'lucide-vue-next';
+import { Form, router } from '@inertiajs/vue3';
+import { Armchair, Eye, EyeOff, X } from 'lucide-vue-next';
 import { ref } from 'vue';
 import TicketController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketController';
 import InputError from '@/components/InputError.vue';
@@ -208,24 +208,96 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                 <p v-else class="text-sm">{{ ticket.manager?.name ?? '—' }}</p>
             </div>
 
-            <!-- Ticket User Assignment -->
+            <!-- Ticket Users -->
             <div class="space-y-1">
-                <p
-                    class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+                <div class="flex items-center gap-2">
+                    <p
+                        class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+                    >
+                        Assigned Users
+                    </p>
+                    <Badge
+                        v-if="
+                            ticket.ticket_type &&
+                            ticket.ticket_type.max_users_per_ticket > 1
+                        "
+                        variant="outline"
+                        class="text-xs"
+                    >
+                        Group ({{
+                            ticket.users?.length ?? 0
+                        }}/{{ ticket.ticket_type.max_users_per_ticket }})
+                    </Badge>
+                </div>
+
+                <!-- List of assigned users -->
+                <div
+                    v-if="ticket.users && ticket.users.length > 0"
+                    class="space-y-1"
                 >
-                    Ticket User
+                    <div
+                        v-for="user in ticket.users"
+                        :key="user.id"
+                        class="flex items-center justify-between rounded-md bg-muted px-2 py-1 text-sm"
+                    >
+                        <span>{{ user.name }} ({{ user.email }})</span>
+                        <div class="flex items-center gap-1">
+                            <Badge
+                                v-if="user.pivot?.checked_in_at"
+                                variant="secondary"
+                                class="text-xs"
+                            >
+                                Checked in
+                            </Badge>
+                            <button
+                                v-if="
+                                    canUpdateUser &&
+                                    !user.pivot?.checked_in_at
+                                "
+                                type="button"
+                                class="rounded p-0.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                                @click="
+                                    router.delete(
+                                        TicketController.removeUser({
+                                            ticket: ticket.id,
+                                            user: user.id,
+                                        }).url,
+                                    )
+                                "
+                            >
+                                <X class="size-3.5" />
+                                <span class="sr-only"
+                                    >Remove {{ user.name }}</span
+                                >
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p
+                    v-else
+                    class="text-sm text-muted-foreground"
+                >
+                    No users assigned
                 </p>
-                <div v-if="canUpdateUser">
+
+                <!-- Add user form (only when there's room for more users) -->
+                <div
+                    v-if="
+                        canUpdateUser &&
+                        ticket.ticket_type &&
+                        (ticket.users?.length ?? 0) <
+                            ticket.ticket_type.max_users_per_ticket
+                    "
+                >
                     <Form
-                        v-bind="TicketController.updateUser.form(ticket.id)"
-                        class="flex items-center gap-2"
+                        v-bind="TicketController.addUser.form(ticket.id)"
+                        class="mt-2 flex items-center gap-2"
                         v-slot="{ errors, processing, recentlySuccessful }"
                     >
                         <Input
                             name="user_email"
                             type="email"
-                            :default-value="ticket.ticket_user?.email ?? ''"
-                            placeholder="User email"
+                            placeholder="Add user by email"
                             class="h-8 text-sm"
                         />
                         <Button
@@ -235,20 +307,17 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                             :disabled="processing"
                             class="shrink-0"
                         >
-                            {{ processing ? '…' : 'Set' }}
+                            {{ processing ? '…' : 'Add' }}
                         </Button>
                         <p
                             v-if="recentlySuccessful"
                             class="text-xs text-muted-foreground"
                         >
-                            Saved
+                            Added
                         </p>
                         <InputError :message="errors.user_email" />
                     </Form>
                 </div>
-                <p v-else class="text-sm">
-                    {{ ticket.ticket_user?.name ?? '—' }}
-                </p>
             </div>
 
             <!-- Seat (placeholder for future implementation) -->

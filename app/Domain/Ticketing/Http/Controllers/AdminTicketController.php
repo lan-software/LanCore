@@ -53,7 +53,7 @@ class AdminTicketController extends Controller
             'order.user',
             'owner',
             'manager',
-            'ticketUser',
+            'users',
             'addons',
         ]);
 

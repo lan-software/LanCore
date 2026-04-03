@@ -33,7 +33,7 @@ class TicketPolicy
         return $user->isAdmin()
             || $ticket->owner_id === $user->id
             || $ticket->manager_id === $user->id
-            || $ticket->user_id === $user->id;
+            || $ticket->users->contains('id', $user->id);
     }
 
     public function updateManager(User $user, Ticket $ticket): bool

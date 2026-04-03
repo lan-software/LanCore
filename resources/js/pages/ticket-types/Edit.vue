@@ -195,28 +195,16 @@ function executeDelete() {
                     />
 
                     <div class="grid gap-2">
-                        <Label for="seats_per_ticket">Seats per Ticket</Label>
+                        <Label for="seats_per_user">Seats per User</Label>
                         <Input
-                            id="seats_per_ticket"
+                            id="seats_per_user"
                             type="number"
-                            name="seats_per_ticket"
-                            :default-value="String(ticketType.seats_per_ticket)"
+                            name="seats_per_user"
+                            :default-value="String(ticketType.seats_per_user)"
                             :disabled="ticketType.is_locked"
                             min="1"
                         />
-                        <InputError :message="errors.seats_per_ticket" />
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <Checkbox
-                            id="is_row_ticket"
-                            name="is_row_ticket"
-                            :default-value="ticketType.is_row_ticket"
-                            :disabled="ticketType.is_locked"
-                        />
-                        <Label for="is_row_ticket" class="cursor-pointer"
-                            >Row ticket</Label
-                        >
+                        <InputError :message="errors.seats_per_user" />
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -229,6 +217,59 @@ function executeDelete() {
                         <Label for="is_seatable" class="cursor-pointer"
                             >Seatable</Label
                         >
+                    </div>
+                </div>
+
+                <!-- Group Ticket -->
+                <div class="space-y-4">
+                    <Heading
+                        variant="small"
+                        title="Group Ticket"
+                        description="Allow multiple users per ticket. Total seats = seats per user x max users."
+                    />
+
+                    <div class="grid gap-2">
+                        <Label for="max_users_per_ticket"
+                            >Max Users per Ticket</Label
+                        >
+                        <Input
+                            id="max_users_per_ticket"
+                            type="number"
+                            name="max_users_per_ticket"
+                            :default-value="
+                                String(ticketType.max_users_per_ticket)
+                            "
+                            :disabled="ticketType.is_locked"
+                            min="1"
+                        />
+                        <InputError
+                            :message="errors.max_users_per_ticket"
+                        />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="check_in_mode">Check-in Mode</Label>
+                        <Select
+                            name="check_in_mode"
+                            :default-value="ticketType.check_in_mode"
+                            :disabled="ticketType.is_locked"
+                        >
+                            <SelectTrigger>
+                                <SelectValue
+                                    placeholder="Select check-in mode"
+                                />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="individual">
+                                    Individual (each user checks in
+                                    separately)
+                                </SelectItem>
+                                <SelectItem value="group">
+                                    Group (all users check in together)
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <InputError :message="errors.check_in_mode" />
                     </div>
                 </div>
 

@@ -51,8 +51,10 @@ class FulfillOrder
                         'order_id' => $order->id,
                         'owner_id' => $order->user_id,
                         'manager_id' => $order->user_id,
-                        'user_id' => $order->user_id,
                     ]);
+
+                    // Assign the purchaser as the first user on the ticket
+                    $ticket->users()->attach($order->user_id);
 
                     foreach ($item['addon_ids'] ?? [] as $addonId) {
                         $addon = Addon::findOrFail($addonId);

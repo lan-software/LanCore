@@ -160,8 +160,11 @@ export type TicketType = {
     price: number;
     quota: number;
     max_per_user: number | null;
-    seats_per_ticket: number;
-    is_row_ticket: boolean;
+    seats_per_user: number;
+    max_users_per_ticket: number;
+    check_in_mode: 'individual' | 'group';
+    /** @deprecated Retained for backward compatibility — not shown in UI */
+    is_row_ticket?: boolean;
     is_seatable: boolean;
     is_hidden: boolean;
     purchase_from: string | null;
@@ -311,7 +314,6 @@ export type Ticket = {
     order_id: number;
     owner_id: number;
     manager_id: number | null;
-    user_id: number | null;
     ticket_type?: TicketType;
     event?: {
         id: number;
@@ -324,7 +326,12 @@ export type Ticket = {
     order?: Order;
     owner?: { id: number; name: string; email: string };
     manager?: { id: number; name: string; email: string } | null;
-    ticket_user?: { id: number; name: string; email: string } | null;
+    users?: {
+        id: number;
+        name: string;
+        email: string;
+        pivot?: { checked_in_at: string | null };
+    }[];
     addons?: TicketAddon[];
     created_at: string;
     updated_at: string;

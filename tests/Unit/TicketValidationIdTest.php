@@ -20,7 +20,6 @@ test('ticket generates validation_id on creation', function () {
         'order_id' => $order->id,
         'owner_id' => $user->id,
         'manager_id' => $user->id,
-        'user_id' => $user->id,
     ]);
 
     expect($ticket->validation_id)->toBeString();

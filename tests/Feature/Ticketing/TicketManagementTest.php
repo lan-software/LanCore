@@ -103,7 +103,7 @@ it('allows owner to update ticket manager', function () {
     expect($ticket->fresh()->manager_id)->toBe($manager->id);
 });
 
-it('allows owner to update ticket user', function () {
+it('allows owner to add a user to their ticket', function () {
     $owner = User::factory()->withRole(RoleName::User)->create();
     $ticketUser = User::factory()->withRole(RoleName::User)->create();
     $event = Event::factory()->create();
@@ -118,12 +118,12 @@ it('allows owner to update ticket user', function () {
     ]);
 
     $this->actingAs($owner)
-        ->patch("/tickets/{$ticket->id}/user", [
+        ->post("/tickets/{$ticket->id}/users", [
             'user_email' => $ticketUser->email,
         ])
         ->assertRedirect();
 
-    expect($ticket->fresh()->user_id)->toBe($ticketUser->id);
+    expect($ticket->fresh()->users->pluck('id')->toArray())->toContain($ticketUser->id);
 });
 
 it('denies non-owners from updating ticket manager', function () {

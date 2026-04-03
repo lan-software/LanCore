@@ -158,6 +158,18 @@ LanCore is a ground-up rewrite providing:
 8. System generates ticket with unique validation ID
 9. Ticket purchase event triggers webhooks and notifications
 
+#### 5.2.2a Group Ticket Purchase and Assignment
+
+1. Admin creates a group ticket type with max users per ticket (e.g., 4) and a check-in mode (individual or group)
+2. User purchases a group ticket — seat capacity is reserved based on `seats_per_user × max_users_per_ticket`
+3. Purchaser (owner) can assign additional users to the ticket up to the configured limit
+4. Each assigned user appears in the ticket's user list with their own check-in status
+5. Owner or manager can add/remove assigned users before the event
+6. At check-in:
+   - **Individual mode:** Each user checks in independently; the ticket is fully checked in when all users have checked in
+   - **Group mode:** A single check-in action marks all assigned users as checked in simultaneously
+7. Companion apps (LanEntrance) can query per-user check-in status via the Integration API
+
 #### 5.2.3 News Publishing
 
 1. Admin creates a news article with rich text content (TipTap editor)
@@ -180,7 +192,9 @@ LanCore is a ground-up rewrite providing:
 1. Attendee arrives at venue with ticket validation ID
 2. Door staff uses companion app (LanEntrance) connected via Integration API
 3. Companion app validates ticket via API and marks as checked-in
-4. System updates ticket status from "assigned" to "checked_in"
+4. System updates ticket status from "active" to "checked_in"
+5. For group tickets with individual check-in: each user checks in separately; ticket status becomes "checked_in" when all users have checked in
+6. For group tickets with group check-in: a single scan checks in all assigned users simultaneously
 
 #### 5.2.6 Third-Party Integration
 
@@ -268,5 +282,6 @@ LanCore is a ground-up rewrite providing:
 | Seating Plan | A visual layout of physical seat positions at a venue |
 | Voucher | A discount code that can be applied during ticket checkout |
 | Add-on | An additional purchasable item attached to a ticket (e.g., t-shirt, meal) |
+| Group Ticket | A ticket that allows multiple users to gain entry, purchased by one owner and assignable to multiple attendees |
 | Webhook | An HTTP callback that delivers event notifications to external systems |
 | Integration App | A third-party application registered with LanCore for API access and SSO |

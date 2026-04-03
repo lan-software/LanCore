@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { Bell } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import {
     store as storePushSubscription,
     destroy as destroyPushSubscription,
+    dismiss as dismissPushPrompt,
 } from '@/actions/App/Domain/Notification/Http/Controllers/PushSubscriptionController';
 import { Button } from '@/components/ui/button';
 
@@ -14,7 +15,7 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
-const dismissed = ref(false);
+const dismissed = ref(page.props.pushPromptDismissed as boolean);
 const loading = ref(false);
 const subscribed = ref(page.props.pushSubscribed as boolean);
 const permissionState = ref<NotificationPermission>(
@@ -136,17 +137,32 @@ async function unsubscribe(): Promise<void> {
     }
 }
 
-function dismiss(): void {
+async function dismiss(): Promise<void> {
     dismissed.value = true;
+
+    await fetch(dismissPushPrompt().url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN':
+                (
+                    document.querySelector(
+                        'meta[name="csrf-token"]',
+                    ) as HTMLMetaElement | null
+                )?.content ?? '',
+        },
+    });
 }
 
 // Show the prompt when: not in settings mode, push is supported, user hasn't subscribed yet,
 // browser permission isn't denied, and user hasn't dismissed this session.
-const shouldShowPrompt =
-    !props.settingsMode &&
-    isPushSupported &&
-    !subscribed.value &&
-    permissionState.value !== 'denied';
+const shouldShowPrompt = computed(
+    () =>
+        !props.settingsMode &&
+        isPushSupported &&
+        !subscribed.value &&
+        permissionState.value !== 'denied',
+);
 </script>
 
 <template>

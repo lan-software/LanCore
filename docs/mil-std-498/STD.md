@@ -253,6 +253,10 @@ This ensures complete isolation between test cases.
 | mail notification sent when enabled | User with mail enabled | Publish news article | Mail queued |
 | mail notification not sent when disabled | User with mail disabled | Publish news article | No mail queued |
 | push subscription stored | Authenticated | POST push subscription | Subscription saved |
+| push prompt dismissed and session flag stored | Authenticated | POST /push-subscriptions/dismiss | 200, `dismissed: true`, session flag set |
+| pushPromptDismissed shared as false by default | Authenticated, no session flag | GET /dashboard | Inertia prop `pushPromptDismissed` = false |
+| pushPromptDismissed shared as true when session flag set | Authenticated, session flag set | GET /dashboard | Inertia prop `pushPromptDismissed` = true |
+| dismiss requires authentication | Unauthenticated | POST /push-subscriptions/dismiss | 401 Unauthorized |
 | program subscription toggled | Authenticated, program exists | POST program subscription | Subscription created/removed |
 
 ### 4.5 Ticketing Tests
@@ -264,6 +268,25 @@ This ensures complete isolation between test cases.
 | ticket type audit trail recorded | Admin, ticket type exists | Update ticket type | Audit record created |
 | voucher can be created | Admin | POST voucher {code, type, value} | 302, voucher created |
 | voucher can be updated | Admin, voucher exists | PUT voucher {value} | 302, voucher updated |
+
+#### 4.5.1 Group Ticket Tests
+
+**File:** `tests/Feature/Ticketing/GroupTicketTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| creates group ticket type | Admin | POST ticket-type {max_users_per_ticket: 4, check_in_mode: individual} | Ticket type created with group fields |
+| defaults max_users_per_ticket to 1 | Admin | POST ticket-type {} | max_users_per_ticket = 1 |
+| rejects max_users_per_ticket < 1 | Admin | POST ticket-type {max_users_per_ticket: 0} | Validation error |
+| assigns multiple users to group ticket | Owner, group ticket | POST ticket/{id}/users {user_email} | User added to pivot |
+| rejects exceeding max_users_per_ticket | Owner, group ticket at capacity | POST ticket/{id}/users | Validation error |
+| removes assigned user | Owner, group ticket with users | DELETE ticket/{id}/users/{user} | User removed from pivot |
+| calculates group ticket seat consumption | Event with seat_capacity | Purchase group ticket (2 seats × 4 users) | 8 seats consumed |
+| individual check-in for one user | Admin, group ticket (individual mode) | POST ticket/{id}/check-in {user_id} | User's checked_in_at set |
+| ticket checked in when all users done | Admin, all users checked in | POST ticket/{id}/check-in {last_user_id} | Ticket status = CheckedIn |
+| group check-in marks all users | Admin, group ticket (group mode) | POST ticket/{id}/check-in | All users' checked_in_at set, ticket status = CheckedIn |
+| owner can add users | Owner | POST ticket/{id}/users | 302, user added |
+| non-owner denied adding users | Non-owner, non-manager | POST ticket/{id}/users | 403 |
 
 ### 4.6 Shop and Payment Tests
 
@@ -330,7 +353,7 @@ This ensures complete isolation between test cases.
 | USR-F-001..005 | AUTH-*, SET-* |
 | INT-F-001..010 | Integration tests (4.3) |
 | NTF-F-001..006 | Notification tests (4.4) |
-| TKT-F-001..012 | Ticketing tests (4.5) |
+| TKT-F-001..016 | Ticketing tests (4.5, 4.5.1) |
 | SHP-F-003, SHP-F-015, SHP-F-016 | Shop/Payment tests (4.6) |
 | All domains | Architecture tests (4.8) |
 

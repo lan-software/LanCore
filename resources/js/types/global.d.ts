@@ -29,6 +29,7 @@ declare module '@inertiajs/core' {
                 label: string;
             }[];
             pushSubscribed: boolean;
+            pushPromptDismissed: boolean;
             unreadNotificationsCount: number;
             recentNotifications: AppNotification[];
             [key: string]: unknown;

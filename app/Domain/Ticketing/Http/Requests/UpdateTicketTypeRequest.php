@@ -2,7 +2,9 @@
 
 namespace App\Domain\Ticketing\Http\Requests;
 
+use App\Domain\Ticketing\Enums\CheckInMode;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateTicketTypeRequest extends FormRequest
 {
@@ -33,8 +35,9 @@ class UpdateTicketTypeRequest extends FormRequest
         if (! $isLocked) {
             $rules['price'] = ['required', 'integer', 'min:0'];
             $rules['quota'] = ['required', 'integer', 'min:1'];
-            $rules['seats_per_ticket'] = ['required', 'integer', 'min:1'];
-            $rules['is_row_ticket'] = ['sometimes', 'boolean'];
+            $rules['seats_per_user'] = ['required', 'integer', 'min:1'];
+            $rules['max_users_per_ticket'] = ['sometimes', 'integer', 'min:1'];
+            $rules['check_in_mode'] = ['sometimes', Rule::enum(CheckInMode::class)];
             $rules['is_seatable'] = ['sometimes', 'boolean'];
             $rules['event_id'] = ['required', 'integer', 'exists:events,id'];
         }
@@ -45,7 +48,6 @@ class UpdateTicketTypeRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'is_row_ticket' => $this->boolean('is_row_ticket'),
             'is_seatable' => $this->boolean('is_seatable'),
             'is_hidden' => $this->boolean('is_hidden'),
         ]);

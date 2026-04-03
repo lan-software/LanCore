@@ -109,9 +109,11 @@ class User extends Authenticatable
         return $this->hasMany(Ticket::class, 'manager_id');
     }
 
-    public function usableTickets(): HasMany
+    public function assignedTickets(): BelongsToMany
     {
-        return $this->hasMany(Ticket::class, 'user_id');
+        return $this->belongsToMany(Ticket::class, 'ticket_user')
+            ->withPivot('checked_in_at')
+            ->withTimestamps();
     }
 
     public function notificationPreference(): HasOne

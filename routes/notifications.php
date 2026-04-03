@@ -13,5 +13,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('notifications/archive-all', [NotificationController::class, 'archiveAll'])->name('notifications.archive-all');
 
     Route::post('push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
+    Route::post('push-subscriptions/dismiss', [PushSubscriptionController::class, 'dismiss'])->name('push-subscriptions.dismiss');
     Route::delete('push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
 });

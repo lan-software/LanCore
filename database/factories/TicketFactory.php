@@ -32,7 +32,6 @@ class TicketFactory extends Factory
             'order_id' => Order::factory(),
             'owner_id' => User::factory(),
             'manager_id' => null,
-            'user_id' => null,
         ];
     }
 

@@ -163,7 +163,6 @@ See [RTM](RTM.md) Section 16 for the complete gap analysis. Summary:
 |--------|--------|-----------------|----------|
 | WHK-F-003 | Webhook | HMAC-SHA256 payload signing verification | **High** |
 | SHP-F-004 | Shop | On-site payment flow | **High** |
-| TKT-F-009 | Ticketing | Seating/row ticket types linked to seat plans | Medium |
 | SHP-F-005 | Shop | PaymentProviderManager factory resolution | Medium |
 | PRG-F-004 | Program | ProgramTimeSlotApproaching event and notifications | Medium |
 | NTF-F-003 | Notification | Web Push subscription CRUD | Medium |
@@ -173,7 +172,7 @@ See [RTM](RTM.md) Section 16 for the complete gap analysis. Summary:
 | USR-F-010 | User | Appearance/theme settings | Low |
 | USR-F-011 | User | Stripe Cashier customer management | Low |
 
-**11 gaps out of 112 requirements = 90.2% requirement coverage**
+**10 gaps out of 117 requirements = 91.5% requirement coverage**
 
 ### 4.3 Known Test Issues
 
@@ -202,7 +201,7 @@ Coverage is collected via Xdebug and reported to Codecov. Current metrics reflec
 | Domain (SRS) | Requirements | Covered | Partial | Gap | Coverage |
 |-------------|-------------|---------|---------|-----|----------|
 | CSCI-EVT | 10 | 10 | 0 | 0 | **100%** |
-| CSCI-TKT | 12 | 10 | 0 | 2 | 83% |
+| CSCI-TKT | 16 | 14 | 0 | 1 | 88% |
 | CSCI-SHP | 16 | 12 | 1 | 3 | 75% |
 | CSCI-PRG | 7 | 6 | 0 | 1 | 86% |
 | CSCI-SET | 5 | 5 | 0 | 0 | **100%** |
@@ -210,12 +209,12 @@ Coverage is collected via Xdebug and reported to Codecov. Current metrics reflec
 | CSCI-NWS | 8 | 7 | 0 | 1 | 88% |
 | CSCI-ANN | 5 | 5 | 0 | 0 | **100%** |
 | CSCI-ACH | 5 | 5 | 0 | 0 | **100%** |
-| CSCI-NTF | 6 | 4 | 2 | 0 | 67% |
+| CSCI-NTF | 7 | 5 | 2 | 0 | 71% |
 | CSCI-INT | 10 | 10 | 0 | 0 | **100%** |
 | CSCI-WHK | 7 | 6 | 0 | 1 | 86% |
 | CSCI-GAM | 3 | 3 | 0 | 0 | **100%** |
 | CSCI-USR | 11 | 9 | 0 | 2 | 82% |
-| **Total** | **110** | **97** | **3** | **10** | **90.2%** |
+| **Total** | **117** | **102** | **3** | **11** | **89.7%** |
 
 ---
 

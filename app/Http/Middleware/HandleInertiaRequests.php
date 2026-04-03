@@ -74,6 +74,7 @@ class HandleInertiaRequests extends Middleware
                 ->values()
                 ->all(),
             'pushSubscribed' => fn () => $user ? $user->pushSubscriptions()->exists() : false,
+            'pushPromptDismissed' => fn () => (bool) $request->session()->get('push_prompt_dismissed', false),
             'unreadNotificationsCount' => fn () => $user ? $user->unreadNotifications()->whereNull('archived_at')->count() : 0,
             'recentNotifications' => fn () => $user
                 ? $user->notifications()->whereNull('archived_at')->latest()->limit(5)->get()->map(fn ($n) => [
