@@ -123,6 +123,7 @@ The LanCore CSCI shall support the following operational states:
 | SHP-F-014 | The software shall enforce OrderPolicy, VoucherPolicy, PurchaseRequirementPolicy, GlobalPurchaseConditionPolicy, PaymentProviderConditionPolicy |
 | SHP-F-015 | The software shall fulfill orders via Stripe `checkout.session.completed` webhook when the user does not return to the checkout success URL |
 | SHP-F-016 | The software shall ensure order fulfillment is idempotent — both the success URL redirect and the webhook may trigger fulfillment, but tickets shall only be created once |
+| SHP-F-017 | The software shall provide a user-facing "My Orders" view listing the authenticated user's orders with order details, line items, and associated tickets |
 
 #### 3.2.4 Program Domain (CSCI-PRG)
 

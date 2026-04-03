@@ -59,6 +59,7 @@ import { index as globalPurchaseConditionsIndex } from '@/routes/global-purchase
 import { index as integrationsIndex } from '@/routes/integrations';
 import { index as newsIndex } from '@/routes/news';
 import { index as newsCommentsIndex } from '@/routes/news/comments';
+import { index as myOrdersIndex } from '@/routes/my-orders';
 import { index as ordersIndex } from '@/routes/orders';
 import { index as paymentProviderConditionsIndex } from '@/routes/payment-provider-conditions';
 import { index as programsIndex } from '@/routes/programs';
@@ -103,6 +104,11 @@ const mainNavItems: NavItem[] = [
         href: ticketsIndex(),
         icon: Ticket,
     },
+    {
+        title: 'My Orders',
+        href: myOrdersIndex(),
+        icon: ShoppingCart,
+    },
 ];
 
 const allPinnableItems = computed<NavItem[]>(() => {
@@ -118,6 +124,12 @@ const allPinnableItems = computed<NavItem[]>(() => {
             title: 'My Tickets',
             href: ticketsIndex(),
             icon: Ticket,
+        },
+        {
+            id: 'my-orders',
+            title: 'My Orders',
+            href: myOrdersIndex(),
+            icon: ShoppingCart,
         },
     ];
 

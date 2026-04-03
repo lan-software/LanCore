@@ -303,7 +303,19 @@ This ensures complete isolation between test cases.
 | prevents confirming on non-on-site orders | Admin, pending Stripe order | PATCH /orders/{order}/confirm-payment | 302, session error |
 | prevents confirming already completed orders | Admin, completed on-site order | PATCH /orders/{order}/confirm-payment | 302, session error |
 
-#### 4.6.2 Stripe Webhook Processing
+#### 4.6.2 User Order Views
+
+**File:** `tests/Feature/Shop/UserOrderControllerTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| shows the user their own orders | User with 3 orders, other user has 2 | GET /my-orders | 200, Inertia 'my-orders/Index', 3 orders |
+| does not show other users orders | User with 0 orders, other user has 2 | GET /my-orders | 200, 0 orders |
+| shows order detail for own order | User owns order | GET /my-orders/{order} | 200, Inertia 'my-orders/Show', correct order |
+| denies viewing another users order | User does not own order | GET /my-orders/{order} | 403 Forbidden |
+| requires authentication | Unauthenticated | GET /my-orders | 302 redirect to login |
+
+#### 4.6.3 Stripe Webhook Processing
 
 **File:** `tests/Feature/Shop/StripeWebhookTest.php`
 

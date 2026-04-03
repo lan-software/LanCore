@@ -24,7 +24,7 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 - **Gap** — No test coverage exists for this requirement
 
 **Statistics:**
-- Total SRS Requirements: 113
+- Total SRS Requirements: 114
 - Total Test Files: 109
 - Total Test Cases: 749
 
@@ -139,6 +139,7 @@ File: tests/Feature/Ticketing/GroupTicketTest.php
 | SHP-F-014 | Policy enforcement (Order, Voucher, etc.) | Policies under `Domain/Shop/Policies/` | `Shop/OrderControllerTest.php` | Partial |
 | SHP-F-015 | Stripe webhook fulfillment | `Domain/Shop/Listeners/HandleStripeCheckoutCompleted.php` | `Shop/StripeWebhookTest.php` (4 tests) | Covered |
 | SHP-F-016 | Idempotent order fulfillment | `Domain/Shop/Actions/FulfillOrder.php` | `Shop/StripeWebhookTest.php` (duplicate test) | Covered |
+| SHP-F-017 | User-facing "My Orders" views | `Domain/Shop/Http/Controllers/UserOrderController.php` | `Shop/UserOrderControllerTest.php` (5 tests) | Covered |
 
 ### Shop Gaps — Proposed Tests
 
@@ -430,7 +431,7 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | USR-F-010 | User | Appearance settings | Low | `Settings/AppearanceTest.php` |
 | USR-F-011 | User | Stripe customer management | Low | `Shop/StripeCustomerTest.php` |
 
-**Total: 9 gaps out of 117 requirements (92.3% coverage by requirement count)**
+**Total: 9 gaps out of 118 requirements (92.4% coverage by requirement count)**
 
 *Note: TKT-F-009 deprecated and replaced by TKT-F-013..016 (4 new requirements, all now covered).*
 
