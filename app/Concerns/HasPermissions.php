@@ -2,22 +2,27 @@
 
 namespace App\Concerns;
 
-use App\Enums\Permission;
+use App\Contracts\PermissionEnum;
+use App\Enums\RolePermissionMap;
 
+/**
+ * @see docs/mil-std-498/SRS.md USR-F-016
+ */
 trait HasPermissions
 {
-    public function hasPermission(Permission $permission): bool
-    {
-        foreach ($this->roles as $role) {
-            if (in_array($permission, Permission::forRole($role->name), true)) {
-                return true;
-            }
-        }
+    /**
+     * @var array<string, true>|null
+     */
+    private ?array $resolvedPermissions = null;
 
-        return false;
+    public function hasPermission(PermissionEnum $permission): bool
+    {
+        $this->resolvedPermissions ??= $this->resolvePermissions();
+
+        return isset($this->resolvedPermissions[$permission->value]);
     }
 
-    public function hasAnyPermission(Permission ...$permissions): bool
+    public function hasAnyPermission(PermissionEnum ...$permissions): bool
     {
         foreach ($permissions as $permission) {
             if ($this->hasPermission($permission)) {
@@ -31,18 +36,34 @@ trait HasPermissions
     /**
      * Collect all permissions from all of the user's roles (deduplicated).
      *
-     * @return array<int, Permission>
+     * @return array<int, PermissionEnum>
      */
     public function allPermissions(): array
     {
         $permissions = [];
 
         foreach ($this->roles as $role) {
-            foreach (Permission::forRole($role->name) as $permission) {
+            foreach (RolePermissionMap::forRole($role->name) as $permission) {
                 $permissions[$permission->value] = $permission;
             }
         }
 
         return array_values($permissions);
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    private function resolvePermissions(): array
+    {
+        $permissions = [];
+
+        foreach ($this->roles as $role) {
+            foreach (RolePermissionMap::forRole($role->name) as $permission) {
+                $permissions[$permission->value] = true;
+            }
+        }
+
+        return $permissions;
     }
 }

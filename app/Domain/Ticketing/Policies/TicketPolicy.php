@@ -2,8 +2,8 @@
 
 namespace App\Domain\Ticketing\Policies;
 
+use App\Domain\Ticketing\Enums\Permission;
 use App\Domain\Ticketing\Models\Ticket;
-use App\Enums\Permission;
 use App\Models\User;
 
 /**

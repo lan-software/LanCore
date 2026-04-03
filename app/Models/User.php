@@ -75,6 +75,9 @@ class User extends Authenticatable
         return $this->roles->contains('name', $role);
     }
 
+    /**
+     * @deprecated Use hasPermission() instead. Will be removed in a future release.
+     */
     public function isAdmin(): bool
     {
         return $this->hasRole(RoleName::Admin) || $this->hasRole(RoleName::Superadmin);
@@ -95,6 +98,9 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    /**
+     * @deprecated Use hasPermission() instead. Will be removed in a future release.
+     */
     public function isSponsorManager(): bool
     {
         return $this->hasRole(RoleName::SponsorManager);

@@ -110,20 +110,20 @@ Authorization uses a static enum-based permission system with no database tables
 
 ```
 RoleName Enum (5 cases)
-  └── Permission::forRole() mapping
-       └── HasPermissions trait (on User model)
+  └── RolePermissionMap::forRole() mapping
+       └── HasPermissions trait (on User model, with request-scoped cache)
             └── Policy classes (check $user->hasPermission())
 ```
 
-**Permission Enum** (`app/Enums/Permission.php`): Defines 24 per-domain permission cases (e.g., `ManageEvents`, `ManageTicketing`, `ViewOrders`). Targeted splits exist where a domain requires finer control (e.g., `ViewOrders` vs `ManageOrders`, `CheckInTickets` vs `ManageTicketing`).
+**Domain Permission Enums**: Each domain defines its own `Permission` enum implementing `App\Contracts\PermissionEnum`. Cross-cutting user management permissions (`ManageUsers`, `SyncUserRoles`, `DeleteUsers`) remain in `app/Enums/Permission.php`. Audit permissions (`ViewAuditLogs`) live in `app/Enums/AuditPermission.php`. Domain-specific permissions live inside their domain (e.g., `App\Domain\Ticketing\Enums\Permission` defines `ManageTicketing` and `CheckInTickets`). This keeps permissions co-located with their domain, following the project's domain-driven design structure. Targeted splits exist where a domain requires finer control (e.g., `ViewOrders` vs `ManageOrders`, `CheckInTickets` vs `ManageTicketing`).
 
-**Static Role Mapping** (`Permission::forRole()`): Each `RoleName` maps to a fixed set of `Permission` cases. Superadmin receives `Permission::cases()` (all). Admin receives all except `SyncUserRoles` and `DeleteUsers`. Moderator receives content moderation permissions only. User receives none (authorization relies on ownership checks).
+**Static Role Mapping** (`app/Enums/RolePermissionMap.php`): Each `RoleName` maps to a fixed set of `PermissionEnum` cases via `RolePermissionMap::forRole()`. Superadmin receives `RolePermissionMap::all()` (every permission across all domains). Admin receives all except `SyncUserRoles` and `DeleteUsers`. Moderator receives content moderation permissions only. User receives none (authorization relies on ownership checks).
 
-**HasPermissions Trait** (`app/Concerns/HasPermissions.php`): Provides `hasPermission(Permission)`, `hasAnyPermission(Permission...)`, and `allPermissions()` methods on the User model. Resolves permissions by iterating loaded roles and collecting from `Permission::forRole()`.
+**HasPermissions Trait** (`app/Concerns/HasPermissions.php`): Provides `hasPermission(PermissionEnum)`, `hasAnyPermission(PermissionEnum...)`, and `allPermissions()` methods on the User model. Resolves permissions by iterating loaded roles and collecting from `RolePermissionMap::forRole()`. Accepts any enum implementing the `PermissionEnum` interface. Resolved permissions are cached on the user instance within a request lifecycle via a `$resolvedPermissions` property, avoiding repeated array rebuilds.
 
 **Centralized Superadmin Bypass** (`AppServiceProvider::configurePolicies()`): A single `Gate::before()` callback grants superadmin access to all policy checks, eliminating the repeated `before()` method previously present in every policy class.
 
-**Frontend Integration**: `HandleInertiaRequests` shares the user's resolved permissions as a flat string array via Inertia shared props. The `usePermissions()` composable (`resources/js/composables/usePermissions.ts`) provides `can()` and `canAny()` helpers for template-level permission checks.
+**Frontend Integration**: `HandleInertiaRequests` shares the user's resolved permissions as a flat string array via Inertia shared props. The `usePermissions()` composable (`resources/js/composables/usePermissions.ts`) provides typed `can(PermissionValue)` and `canAny(PermissionValue...)` helpers backed by a `Permission` TypeScript constant object (`resources/js/types/permissions.ts`) for compile-time safety against typos.
 
 #### 3.3.2 Role-Permission Matrix
 
@@ -527,7 +527,7 @@ Built on **reka-ui** (headless) + **Tailwind CSS v4**:
 | WHK-F-* | app/Domain/Webhook/ |
 | GAM-F-* | app/Domain/Games/ |
 | USR-F-001..013 | app/Models/User, app/Domain/ controllers |
-| USR-F-014..020 | app/Enums/Permission.php, app/Concerns/HasPermissions.php, app/Providers/AppServiceProvider.php, resources/js/composables/usePermissions.ts |
+| USR-F-014..020 | app/Contracts/PermissionEnum.php, app/Enums/Permission.php, app/Enums/RolePermissionMap.php, app/Domain/*/Enums/Permission.php, app/Concerns/HasPermissions.php, app/Providers/AppServiceProvider.php, resources/js/composables/usePermissions.ts |
 
 ---
 

@@ -2,8 +2,9 @@
 
 namespace App\Domain\Event\Policies;
 
+use App\Domain\Event\Enums\Permission;
 use App\Domain\Event\Models\Event;
-use App\Enums\Permission;
+use App\Enums\AuditPermission;
 use App\Models\User;
 
 /**
@@ -44,6 +45,6 @@ class EventPolicy
 
     public function viewAudit(User $user, Event $event): bool
     {
-        return $user->hasPermission(Permission::ViewAuditLogs);
+        return $user->hasPermission(AuditPermission::ViewAuditLogs);
     }
 }

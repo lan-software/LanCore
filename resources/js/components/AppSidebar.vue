@@ -33,6 +33,7 @@ import { computed } from 'vue';
 import { toggle as toggleFavoriteAction } from '@/actions/App/Http/Controllers/Settings/SidebarFavoriteController';
 import { usePermissions } from '@/composables/usePermissions';
 import AppLogo from '@/components/AppLogo.vue';
+import { Permission } from '@/types';
 import EventSelector from '@/components/EventSelector.vue';
 import NavFavorites from '@/components/NavFavorites.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -121,7 +122,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         },
     ];
 
-    if (can('manage_users')) {
+    if (can(Permission.ManageUsers)) {
         items.push({
             id: 'users',
             title: 'Users',
@@ -130,7 +131,9 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (canAny('manage_news_articles', 'moderate_news_comments')) {
+    if (
+        canAny(Permission.ManageNewsArticles, Permission.ModerateNewsComments)
+    ) {
         items.push(
             {
                 id: 'news-articles',
@@ -147,7 +150,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         );
     }
 
-    if (can('manage_achievements')) {
+    if (can(Permission.ManageAchievements)) {
         items.push({
             id: 'achievements',
             title: 'Achievements',
@@ -156,7 +159,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (can('manage_announcements')) {
+    if (can(Permission.ManageAnnouncements)) {
         items.push({
             id: 'announcements',
             title: 'Announcements',
@@ -165,7 +168,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (can('manage_events')) {
+    if (can(Permission.ManageEvents)) {
         items.push({
             id: 'events',
             title: 'Events',
@@ -174,7 +177,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (can('manage_programs')) {
+    if (can(Permission.ManagePrograms)) {
         items.push({
             id: 'programs',
             title: 'Programs',
@@ -183,7 +186,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (can('manage_venues')) {
+    if (can(Permission.ManageVenues)) {
         items.push({
             id: 'venues',
             title: 'Venues',
@@ -192,7 +195,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (can('manage_games')) {
+    if (can(Permission.ManageGames)) {
         items.push({
             id: 'games',
             title: 'Games',
@@ -201,7 +204,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (can('manage_sponsors')) {
+    if (can(Permission.ManageSponsors)) {
         items.push(
             {
                 id: 'sponsors',
@@ -218,7 +221,10 @@ const allPinnableItems = computed<NavItem[]>(() => {
         );
     }
 
-    if (!can('manage_sponsors') && can('manage_assigned_sponsors')) {
+    if (
+        !can(Permission.ManageSponsors) &&
+        can(Permission.ManageAssignedSponsors)
+    ) {
         items.push({
             id: 'my-sponsors',
             title: 'My Sponsors',
@@ -227,7 +233,10 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (can('manage_sponsor_levels') && !can('manage_sponsors')) {
+    if (
+        can(Permission.ManageSponsorLevels) &&
+        !can(Permission.ManageSponsors)
+    ) {
         items.push({
             id: 'sponsor-levels',
             title: 'Sponsor Levels',
@@ -236,7 +245,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (can('manage_ticketing')) {
+    if (can(Permission.ManageTicketing)) {
         items.push(
             {
                 id: 'ticket-types',
@@ -265,7 +274,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         );
     }
 
-    if (can('manage_seat_plans')) {
+    if (can(Permission.ManageSeatPlans)) {
         items.push({
             id: 'seat-plans',
             title: 'Seat Plans',
@@ -274,7 +283,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (can('manage_webhooks')) {
+    if (can(Permission.ManageWebhooks)) {
         items.push({
             id: 'webhooks',
             title: 'Webhooks',
@@ -283,7 +292,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (can('manage_integrations')) {
+    if (can(Permission.ManageIntegrations)) {
         items.push({
             id: 'integrations',
             title: 'Integrations',
@@ -292,7 +301,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         });
     }
 
-    if (canAny('view_orders', 'manage_orders')) {
+    if (canAny(Permission.ViewOrders, Permission.ManageOrders)) {
         items.push(
             {
                 id: 'orders',
@@ -309,7 +318,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
         );
     }
 
-    if (can('manage_shop_conditions')) {
+    if (can(Permission.ManageShopConditions)) {
         items.push(
             {
                 id: 'purchase-requirements',
@@ -374,7 +383,7 @@ function toggleFavorite(itemId: string): void {
             <NavFavorites :all-items="allPinnableItems" />
 
             <!-- Administration -->
-            <SidebarGroup v-if="can('manage_users')">
+            <SidebarGroup v-if="can(Permission.ManageUsers)">
                 <SidebarGroupLabel>Administration</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -402,7 +411,12 @@ function toggleFavorite(itemId: string): void {
 
             <!-- News Domain -->
             <SidebarGroup
-                v-if="canAny('manage_news_articles', 'moderate_news_comments')"
+                v-if="
+                    canAny(
+                        Permission.ManageNewsArticles,
+                        Permission.ModerateNewsComments,
+                    )
+                "
             >
                 <SidebarGroupLabel>News</SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -448,7 +462,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Achievements Domain -->
-            <SidebarGroup v-if="can('manage_achievements')">
+            <SidebarGroup v-if="can(Permission.ManageAchievements)">
                 <SidebarGroupLabel>Achievements</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -475,7 +489,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Announcement Domain -->
-            <SidebarGroup v-if="can('manage_announcements')">
+            <SidebarGroup v-if="can(Permission.ManageAnnouncements)">
                 <SidebarGroupLabel>Announcement</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -502,7 +516,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Event Domain -->
-            <SidebarGroup v-if="can('manage_events')">
+            <SidebarGroup v-if="can(Permission.ManageEvents)">
                 <SidebarGroupLabel>Event</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -529,7 +543,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Program Domain -->
-            <SidebarGroup v-if="can('manage_programs')">
+            <SidebarGroup v-if="can(Permission.ManagePrograms)">
                 <SidebarGroupLabel>Program</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -556,7 +570,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Venue Domain -->
-            <SidebarGroup v-if="can('manage_venues')">
+            <SidebarGroup v-if="can(Permission.ManageVenues)">
                 <SidebarGroupLabel>Venue</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -583,7 +597,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Games Domain -->
-            <SidebarGroup v-if="can('manage_games')">
+            <SidebarGroup v-if="can(Permission.ManageGames)">
                 <SidebarGroupLabel>Games</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -611,12 +625,17 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Sponsoring Domain -->
             <SidebarGroup
-                v-if="canAny('manage_sponsors', 'manage_assigned_sponsors')"
+                v-if="
+                    canAny(
+                        Permission.ManageSponsors,
+                        Permission.ManageAssignedSponsors,
+                    )
+                "
             >
                 <SidebarGroupLabel>Sponsoring</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
-                        <SidebarMenuItem v-if="can('manage_sponsors')">
+                        <SidebarMenuItem v-if="can(Permission.ManageSponsors)">
                             <SidebarMenuButton as-child>
                                 <Link :href="sponsorsIndex()">
                                     <Handshake />
@@ -636,8 +655,8 @@ function toggleFavorite(itemId: string): void {
                         </SidebarMenuItem>
                         <SidebarMenuItem
                             v-if="
-                                !can('manage_sponsors') &&
-                                can('manage_assigned_sponsors')
+                                !can(Permission.ManageSponsors) &&
+                                can(Permission.ManageAssignedSponsors)
                             "
                         >
                             <SidebarMenuButton as-child>
@@ -657,7 +676,9 @@ function toggleFavorite(itemId: string): void {
                                 <Pin v-else class="size-4" />
                             </SidebarMenuAction>
                         </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can('manage_sponsor_levels')">
+                        <SidebarMenuItem
+                            v-if="can(Permission.ManageSponsorLevels)"
+                        >
                             <SidebarMenuButton as-child>
                                 <Link :href="sponsorLevelsIndex()">
                                     <Palette />
@@ -680,7 +701,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Ticketing Domain -->
-            <SidebarGroup v-if="can('manage_ticketing')">
+            <SidebarGroup v-if="can(Permission.ManageTicketing)">
                 <SidebarGroupLabel>Ticketing</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -761,7 +782,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Competition Domain -->
-            <SidebarGroup v-if="can('manage_events')">
+            <SidebarGroup v-if="can(Permission.ManageEvents)">
                 <SidebarGroupLabel>Competition</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -777,7 +798,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Orchestration Domain -->
-            <SidebarGroup v-if="can('manage_events')">
+            <SidebarGroup v-if="can(Permission.ManageEvents)">
                 <SidebarGroupLabel>Orchestration</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -793,7 +814,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Seating Domain -->
-            <SidebarGroup v-if="can('manage_seat_plans')">
+            <SidebarGroup v-if="can(Permission.ManageSeatPlans)">
                 <SidebarGroupLabel>Seating</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -820,7 +841,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Webhook Domain -->
-            <SidebarGroup v-if="can('manage_webhooks')">
+            <SidebarGroup v-if="can(Permission.ManageWebhooks)">
                 <SidebarGroupLabel>Webhooks</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -847,7 +868,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Integration Domain -->
-            <SidebarGroup v-if="can('manage_integrations')">
+            <SidebarGroup v-if="can(Permission.ManageIntegrations)">
                 <SidebarGroupLabel>Integrations</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -877,10 +898,10 @@ function toggleFavorite(itemId: string): void {
             <SidebarGroup
                 v-if="
                     canAny(
-                        'view_orders',
-                        'manage_orders',
-                        'manage_vouchers',
-                        'manage_shop_conditions',
+                        Permission.ViewOrders,
+                        Permission.ManageOrders,
+                        Permission.ManageVouchers,
+                        Permission.ManageShopConditions,
                     )
                 "
             >

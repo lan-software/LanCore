@@ -440,12 +440,12 @@ This ensures complete isolation between test cases.
 
 | Test | Input | Expected Result |
 |------|-------|-----------------|
-| superadmin gets all permissions | `Permission::forRole(Superadmin)` | Equals `Permission::cases()` |
-| admin excludes SyncUserRoles and DeleteUsers | `Permission::forRole(Admin)` | Does not contain `SyncUserRoles`, `DeleteUsers` |
-| admin gets all other permissions | `Permission::forRole(Admin)` | Contains all 21 admin-level permissions |
-| moderator gets content moderation only | `Permission::forRole(Moderator)` | Exactly `[ModerateNewsComments, ManageAnnouncements]` |
-| sponsor manager gets assigned sponsors only | `Permission::forRole(SponsorManager)` | Exactly `[ManageAssignedSponsors]` |
-| regular user gets no permissions | `Permission::forRole(User)` | Empty array |
+| superadmin gets all permissions | `RolePermissionMap::forRole(Superadmin)` | Equals `RolePermissionMap::all()` |
+| admin excludes SyncUserRoles and DeleteUsers | `RolePermissionMap::forRole(Admin)` | Does not contain `SyncUserRoles`, `DeleteUsers` |
+| admin gets all other permissions | `RolePermissionMap::forRole(Admin)` | Contains all 21 admin-level permissions |
+| moderator gets content moderation only | `RolePermissionMap::forRole(Moderator)` | Exactly `[ModerateNewsComments, ManageAnnouncements]` |
+| sponsor manager gets assigned sponsors only | `RolePermissionMap::forRole(SponsorManager)` | Exactly `[ManageAssignedSponsors]` |
+| regular user gets no permissions | `RolePermissionMap::forRole(User)` | Empty array |
 | every RoleName case is covered | All `RoleName::cases()` | Each returns a valid array |
 
 #### 4.13.2 HasPermissions Trait Unit Tests
@@ -473,6 +473,15 @@ This ensures complete isolation between test cases.
 | regular user blocked from all admin routes | User | 16 admin index routes | 403 Forbidden (16 datasets) |
 | sponsor manager views sponsors list | SponsorManager | `/sponsors` | 200 OK |
 | sponsor manager blocked from other routes | SponsorManager | `/achievements-admin`, `/events`, `/venues`, etc. | 403 Forbidden (7 datasets) |
+
+#### 4.13.4 Permission Architecture Tests
+
+**File:** `tests/Unit/PermissionArchitectureTest.php`
+
+| Test | Assertion |
+|------|-----------|
+| every permission enum case is registered | All cases from `app/Domain/*/Enums/Permission.php`, `app/Enums/Permission.php`, and `app/Enums/AuditPermission.php` appear in `RolePermissionMap::all()` |
+| no duplicate permission values | No two enum cases across all permission enums share the same string value |
 
 ### 4.14 Architecture Tests
 

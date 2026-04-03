@@ -2,7 +2,7 @@
 
 namespace App\Domain\Shop\Policies;
 
-use App\Enums\Permission;
+use App\Domain\Shop\Enums\Permission;
 use App\Models\User;
 
 /**

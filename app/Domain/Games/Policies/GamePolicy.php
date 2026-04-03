@@ -2,8 +2,8 @@
 
 namespace App\Domain\Games\Policies;
 
+use App\Domain\Games\Enums\Permission;
 use App\Domain\Games\Models\Game;
-use App\Enums\Permission;
 use App\Models\User;
 
 /**
