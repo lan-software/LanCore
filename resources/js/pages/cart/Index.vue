@@ -203,9 +203,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         <p
                                             class="text-sm text-muted-foreground"
                                         >
-                                            {{
-                                                formatPrice(item.unit_price)
-                                            }}
+                                            {{ formatPrice(item.unit_price) }}
                                             each
                                         </p>
                                     </div>
@@ -290,9 +288,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         <p
                                             class="text-sm text-muted-foreground"
                                         >
-                                            {{
-                                                formatPrice(item.unit_price)
-                                            }}
+                                            {{ formatPrice(item.unit_price) }}
                                             each
                                         </p>
                                     </div>

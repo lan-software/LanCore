@@ -307,9 +307,7 @@ function updateCartQuantity(
                                                 {{ tt.ticket_category.name }}
                                             </p>
                                             <p>
-                                                {{
-                                                    tt.seats_per_ticket
-                                                }}
+                                                {{ tt.seats_per_ticket }}
                                                 seat(s) per ticket
                                             </p>
                                             <p
@@ -318,9 +316,7 @@ function updateCartQuantity(
                                                     undefined
                                                 "
                                             >
-                                                {{
-                                                    tt.remaining_quota
-                                                }}
+                                                {{ tt.remaining_quota }}
                                                 remaining
                                             </p>
                                         </div>
