@@ -105,8 +105,7 @@ export const columns: ColumnDef<Order>[] = [
                 row.original.payment_method === 'on_site' &&
                 row.original.paid_at === null;
 
-            const label =
-                status.charAt(0).toUpperCase() + status.slice(1);
+            const label = status.charAt(0).toUpperCase() + status.slice(1);
 
             const badges = [
                 h(
