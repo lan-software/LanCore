@@ -182,17 +182,12 @@ const breadcrumbs: BreadcrumbItem[] = [
                             default-value="1"
                             placeholder="1"
                         />
-                        <InputError
-                            :message="errors.max_users_per_ticket"
-                        />
+                        <InputError :message="errors.max_users_per_ticket" />
                     </div>
 
                     <div class="grid gap-2">
                         <Label for="check_in_mode">Check-in Mode</Label>
-                        <Select
-                            name="check_in_mode"
-                            default-value="individual"
-                        >
+                        <Select name="check_in_mode" default-value="individual">
                             <SelectTrigger>
                                 <SelectValue
                                     placeholder="Select check-in mode"
@@ -200,8 +195,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="individual">
-                                    Individual (each user checks in
-                                    separately)
+                                    Individual (each user checks in separately)
                                 </SelectItem>
                                 <SelectItem value="group">
                                     Group (all users check in together)

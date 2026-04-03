@@ -242,9 +242,7 @@ function executeDelete() {
                             :disabled="ticketType.is_locked"
                             min="1"
                         />
-                        <InputError
-                            :message="errors.max_users_per_ticket"
-                        />
+                        <InputError :message="errors.max_users_per_ticket" />
                     </div>
 
                     <div class="grid gap-2">
@@ -261,8 +259,7 @@ function executeDelete() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="individual">
-                                    Individual (each user checks in
-                                    separately)
+                                    Individual (each user checks in separately)
                                 </SelectItem>
                                 <SelectItem value="group">
                                     Group (all users check in together)

@@ -118,8 +118,8 @@ LanCore/
 │   └── Architecture/             # Architecture tests
 ├── .github/
 │   └── workflows/                # CI/CD pipelines
-│       ├── tests.yml             # Backend tests
-│       ├── frontend-tests.yml    # Frontend tests
+│       ├── tests.yml             # Backend tests + coverage
+│       ├── frontend-tests.yml    # Frontend tests + coverage + E2E
 │       ├── lint.yml              # Code linting
 │       └── docker-publish.yml    # Docker image build
 ├── composer.json                 # PHP dependencies
@@ -183,7 +183,7 @@ vendor/bin/sail artisan db:seed --class=SeedDemoCommand
 # Build multi-architecture image
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  -f docker/frankenphp/Dockerfile \
+  -f Dockerfile \
   -t ghcr.io/<org>/lancore:latest \
   --push .
 ```
@@ -213,7 +213,8 @@ docker buildx build \
 |------|---------|---------|
 | Node Setup | `actions/setup-node@v4` (Node 22) | Runtime |
 | Dependencies | `npm ci` | Install packages |
-| Tests | `npm test` (with `LARAVEL_BYPASS_ENV_CHECK=1`) | Vue component tests |
+| Tests | `npm run test:coverage` (with `LARAVEL_BYPASS_ENV_CHECK=1`) | Vue component tests with coverage |
+| Coverage | `codecov/codecov-action@v5` | Upload frontend coverage to Codecov |
 
 **Playwright Job:**
 
@@ -254,7 +255,7 @@ docker buildx build \
 
 | Service | Used By | Purpose |
 |---------|---------|---------|
-| Codecov | `tests.yml` | Coverage trend tracking |
+| Codecov | `tests.yml`, `frontend-tests.yml` | Coverage trend tracking (backend + frontend) |
 | GitHub Container Registry | `docker-publish.yml` | Docker image hosting |
 | GitHub Actions | All workflows | CI/CD execution platform |
 

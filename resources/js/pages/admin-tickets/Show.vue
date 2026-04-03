@@ -281,11 +281,7 @@ const statusVariant: Record<
                                 >
                                     Checked in
                                 </Badge>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    as-child
-                                >
+                                <Button variant="outline" size="sm" as-child>
                                     <Link :href="userShow(user.id).url"
                                         >View User</Link
                                     >

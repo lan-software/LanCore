@@ -31,9 +31,16 @@ jobs:
         run: npm ci
 
       - name: Run Vitest
-        run: npm test
+        run: npm run test:coverage
         env:
           LARAVEL_BYPASS_ENV_CHECK: 1
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: frontend
+          slug: lan-software/LanCore
 
   playwright:
     name: Playwright (E2E Tests)

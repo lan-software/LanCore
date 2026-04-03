@@ -224,9 +224,9 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                         variant="outline"
                         class="text-xs"
                     >
-                        Group ({{
-                            ticket.users?.length ?? 0
-                        }}/{{ ticket.ticket_type.max_users_per_ticket }})
+                        Group ({{ ticket.users?.length ?? 0 }}/{{
+                            ticket.ticket_type.max_users_per_ticket
+                        }})
                     </Badge>
                 </div>
 
@@ -251,8 +251,7 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                             </Badge>
                             <button
                                 v-if="
-                                    canUpdateUser &&
-                                    !user.pivot?.checked_in_at
+                                    canUpdateUser && !user.pivot?.checked_in_at
                                 "
                                 type="button"
                                 class="rounded p-0.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
@@ -273,10 +272,7 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                         </div>
                     </div>
                 </div>
-                <p
-                    v-else
-                    class="text-sm text-muted-foreground"
-                >
+                <p v-else class="text-sm text-muted-foreground">
                     No users assigned
                 </p>
 
