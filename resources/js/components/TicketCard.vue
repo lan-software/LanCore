@@ -257,8 +257,15 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                     No users assigned
                 </p>
 
-                <!-- Add user form -->
-                <div v-if="canUpdateUser">
+                <!-- Add user form (only when there's room for more users) -->
+                <div
+                    v-if="
+                        canUpdateUser &&
+                        ticket.ticket_type &&
+                        (ticket.users?.length ?? 0) <
+                            ticket.ticket_type.max_users_per_ticket
+                    "
+                >
                     <Form
                         v-bind="TicketController.addUser.form(ticket.id)"
                         class="mt-2 flex items-center gap-2"
