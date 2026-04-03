@@ -432,7 +432,49 @@ This ensures complete isolation between test cases.
 | allows admins to delete an achievement | Admin, achievement exists | DELETE /achievements-admin/{id} | 302, deleted |
 | validates color format | Admin | POST /achievements-admin {color: invalid} | 422 validation error |
 
-### 4.13 Architecture Tests
+### 4.13 Permission System Tests
+
+#### 4.13.1 Permission Enum Unit Tests
+
+**File:** `tests/Unit/PermissionEnumTest.php`
+
+| Test | Input | Expected Result |
+|------|-------|-----------------|
+| superadmin gets all permissions | `Permission::forRole(Superadmin)` | Equals `Permission::cases()` |
+| admin excludes SyncUserRoles and DeleteUsers | `Permission::forRole(Admin)` | Does not contain `SyncUserRoles`, `DeleteUsers` |
+| admin gets all other permissions | `Permission::forRole(Admin)` | Contains all 21 admin-level permissions |
+| moderator gets content moderation only | `Permission::forRole(Moderator)` | Exactly `[ModerateNewsComments, ManageAnnouncements]` |
+| sponsor manager gets assigned sponsors only | `Permission::forRole(SponsorManager)` | Exactly `[ManageAssignedSponsors]` |
+| regular user gets no permissions | `Permission::forRole(User)` | Empty array |
+| every RoleName case is covered | All `RoleName::cases()` | Each returns a valid array |
+
+#### 4.13.2 HasPermissions Trait Unit Tests
+
+**File:** `tests/Unit/HasPermissionsTraitTest.php`
+
+| Test | Preconditions | Expected Result |
+|------|--------------|-----------------|
+| returns true for granted permission | Admin role | `hasPermission(ManageUsers)` is true |
+| returns false for non-granted permission | User role | `hasPermission(ManageUsers)` is false |
+| hasAnyPermission checks correctly | Moderator role | True for `(ManageUsers, ModerateNewsComments)`, false for `(ManageUsers, ManageVenues)` |
+| collects permissions from multiple roles | Moderator + SponsorManager | `allPermissions()` contains 3 permissions |
+| deduplicates overlapping role permissions | Admin + Moderator | No duplicate values in `allPermissions()` |
+
+#### 4.13.3 Role-Based Policy Access Tests
+
+**File:** `tests/Feature/Policies/RoleBasedPolicyAccessTest.php`
+
+| Test | Role | Routes | Expected Result |
+|------|------|--------|-----------------|
+| superadmin accesses all admin routes | Superadmin | 16 admin index routes | 200 OK (16 datasets) |
+| admin accesses all admin routes | Admin | 16 admin index routes | 200 OK (16 datasets) |
+| moderator accesses content routes | Moderator | `/announcements-admin`, `/news-admin/comments` | 200 OK (2 datasets) |
+| moderator blocked from non-content routes | Moderator | `/achievements-admin`, `/events`, `/venues`, etc. | 403 Forbidden (10 datasets) |
+| regular user blocked from all admin routes | User | 16 admin index routes | 403 Forbidden (16 datasets) |
+| sponsor manager views sponsors list | SponsorManager | `/sponsors` | 200 OK |
+| sponsor manager blocked from other routes | SponsorManager | `/achievements-admin`, `/events`, `/venues`, etc. | 403 Forbidden (7 datasets) |
+
+### 4.14 Architecture Tests
 
 **File:** `tests/Architecture/`
 
@@ -442,7 +484,7 @@ This ensures complete isolation between test cases.
 | No direct DB:: usage | Models use Eloquent, not DB facade |
 | Controller returns | Controllers return Inertia or redirect responses |
 
-### 4.14 CI Pipeline Verification
+### 4.15 CI Pipeline Verification
 
 **Scope:** GitHub Actions workflows (`.github/workflows/`)
 
@@ -461,6 +503,7 @@ This ensures complete isolation between test cases.
 | SRS Requirement | Test Cases |
 |----------------|-----------|
 | USR-F-001..005 | AUTH-*, SET-* |
+| USR-F-014..020 | Permission system tests (4.13) |
 | INT-F-001..010 | Integration tests (4.3) |
 | NTF-F-001..006 | Notification tests (4.4) |
 | ACH-F-001..007 | Achievement CRUD tests (4.12), notification tests (4.4.1) |

@@ -3,6 +3,7 @@
 namespace App\Domain\Shop\Policies;
 
 use App\Domain\Shop\Models\Order;
+use App\Enums\Permission;
 use App\Models\User;
 
 /**
@@ -11,27 +12,18 @@ use App\Models\User;
  */
 class OrderPolicy
 {
-    public function before(User $user): ?bool
-    {
-        if ($user->isSuperadmin()) {
-            return true;
-        }
-
-        return null;
-    }
-
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ViewOrders);
     }
 
     public function view(User $user, Order $order): bool
     {
-        return $user->isAdmin() || $order->user_id === $user->id;
+        return $user->hasPermission(Permission::ViewOrders) || $order->user_id === $user->id;
     }
 
     public function confirmPayment(User $user, Order $order): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageOrders);
     }
 }

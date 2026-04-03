@@ -97,12 +97,62 @@ app/
 
 - All user input validated via Form Request classes before reaching Actions
 - Authorization enforced at controller level via `$this->authorize()` and Policy classes
-- 24 Policy classes cover all domain entities
+- 24 Policy classes cover all domain entities, each checking granular permissions via `$user->hasPermission()`
 - CSRF protection on all state-changing web routes
 - Stateless Bearer token auth for integration API (no session/cookies)
 - Passwords hashed with bcrypt (configurable rounds)
 - API tokens hashed before storage
 - Webhook payloads signed with HMAC-SHA256
+
+#### 3.3.1 Permission Architecture
+
+Authorization uses a static enum-based permission system with no database tables for permissions. The architecture has four layers:
+
+```
+RoleName Enum (5 cases)
+  └── Permission::forRole() mapping
+       └── HasPermissions trait (on User model)
+            └── Policy classes (check $user->hasPermission())
+```
+
+**Permission Enum** (`app/Enums/Permission.php`): Defines 24 per-domain permission cases (e.g., `ManageEvents`, `ManageTicketing`, `ViewOrders`). Targeted splits exist where a domain requires finer control (e.g., `ViewOrders` vs `ManageOrders`, `CheckInTickets` vs `ManageTicketing`).
+
+**Static Role Mapping** (`Permission::forRole()`): Each `RoleName` maps to a fixed set of `Permission` cases. Superadmin receives `Permission::cases()` (all). Admin receives all except `SyncUserRoles` and `DeleteUsers`. Moderator receives content moderation permissions only. User receives none (authorization relies on ownership checks).
+
+**HasPermissions Trait** (`app/Concerns/HasPermissions.php`): Provides `hasPermission(Permission)`, `hasAnyPermission(Permission...)`, and `allPermissions()` methods on the User model. Resolves permissions by iterating loaded roles and collecting from `Permission::forRole()`.
+
+**Centralized Superadmin Bypass** (`AppServiceProvider::configurePolicies()`): A single `Gate::before()` callback grants superadmin access to all policy checks, eliminating the repeated `before()` method previously present in every policy class.
+
+**Frontend Integration**: `HandleInertiaRequests` shares the user's resolved permissions as a flat string array via Inertia shared props. The `usePermissions()` composable (`resources/js/composables/usePermissions.ts`) provides `can()` and `canAny()` helpers for template-level permission checks.
+
+#### 3.3.2 Role-Permission Matrix
+
+| Permission | User | Moderator | SponsorManager | Admin | Superadmin |
+|------------|:----:|:---------:|:--------------:|:-----:|:----------:|
+| ManageAchievements | | | | X | X |
+| ManageAnnouncements | | X | | X | X |
+| ManageNewsArticles | | | | X | X |
+| ModerateNewsComments | | X | | X | X |
+| ManageEvents | | | | X | X |
+| ManagePrograms | | | | X | X |
+| ManageGames | | | | X | X |
+| ManageVenues | | | | X | X |
+| ManageSeatPlans | | | | X | X |
+| ManageTicketing | | | | X | X |
+| CheckInTickets | | | | X | X |
+| ViewOrders | | | | X | X |
+| ManageOrders | | | | X | X |
+| ManageVouchers | | | | X | X |
+| ManageShopConditions | | | | X | X |
+| ManageSponsors | | | | X | X |
+| ManageSponsorLevels | | | | X | X |
+| ManageAssignedSponsors | | | X | | X |
+| ManageIntegrations | | | | X | X |
+| ManageWebhooks | | | | X | X |
+| ManageUsers | | | | X | X |
+| ViewAuditLogs | | | | X | X |
+| SyncUserRoles | | | | | X |
+| DeleteUsers | | | | | X |
 
 ---
 
@@ -476,7 +526,8 @@ Built on **reka-ui** (headless) + **Tailwind CSS v4**:
 | INT-F-* | app/Domain/Integration/ |
 | WHK-F-* | app/Domain/Webhook/ |
 | GAM-F-* | app/Domain/Games/ |
-| USR-F-* | app/Models/User, app/Domain/ controllers |
+| USR-F-001..013 | app/Models/User, app/Domain/ controllers |
+| USR-F-014..020 | app/Enums/Permission.php, app/Concerns/HasPermissions.php, app/Providers/AppServiceProvider.php, resources/js/composables/usePermissions.ts |
 
 ---
 

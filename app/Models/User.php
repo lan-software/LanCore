@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Concerns\HasPermissions;
 use App\Domain\Achievements\Models\Achievement;
 use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Notification\Models\NotificationPreference;
@@ -33,7 +34,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use Billable, HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use Billable, HasFactory, HasPermissions, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * Check if the user has a complete profile (address + contact) required for purchases.

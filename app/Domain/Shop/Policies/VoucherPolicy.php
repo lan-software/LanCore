@@ -3,6 +3,7 @@
 namespace App\Domain\Shop\Policies;
 
 use App\Domain\Shop\Models\Voucher;
+use App\Enums\Permission;
 use App\Models\User;
 
 /**
@@ -11,42 +12,33 @@ use App\Models\User;
  */
 class VoucherPolicy
 {
-    public function before(User $user): ?bool
-    {
-        if ($user->isSuperadmin()) {
-            return true;
-        }
-
-        return null;
-    }
-
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageVouchers);
     }
 
     public function view(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageVouchers);
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageVouchers);
     }
 
     public function update(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageVouchers);
     }
 
     public function delete(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageVouchers);
     }
 
     public function viewAudit(User $user, Voucher $voucher): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ViewAuditLogs);
     }
 }

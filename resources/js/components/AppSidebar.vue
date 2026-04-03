@@ -31,6 +31,7 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { toggle as toggleFavoriteAction } from '@/actions/App/Http/Controllers/Settings/SidebarFavoriteController';
+import { usePermissions } from '@/composables/usePermissions';
 import AppLogo from '@/components/AppLogo.vue';
 import EventSelector from '@/components/EventSelector.vue';
 import NavFavorites from '@/components/NavFavorites.vue';
@@ -78,20 +79,7 @@ import { index as webhooksIndex } from '@/routes/webhooks';
 import type { NavItem } from '@/types';
 
 const page = usePage();
-
-const isAdmin = computed(() => {
-    const roles: { name: string }[] = page.props.auth?.user?.roles ?? [];
-
-    return roles.some(
-        (role) => role.name === 'admin' || role.name === 'superadmin',
-    );
-});
-
-const isSponsorManager = computed(() => {
-    const roles: { name: string }[] = page.props.auth?.user?.roles ?? [];
-
-    return roles.some((role) => role.name === 'sponsor_manager');
-});
+const { can, canAny } = usePermissions();
 
 const mainNavItems: NavItem[] = [
     {
@@ -133,9 +121,17 @@ const allPinnableItems = computed<NavItem[]>(() => {
         },
     ];
 
-    if (isAdmin.value) {
+    if (can('manage_users')) {
+        items.push({
+            id: 'users',
+            title: 'Users',
+            href: usersIndex(),
+            icon: Users,
+        });
+    }
+
+    if (canAny('manage_news_articles', 'moderate_news_comments')) {
         items.push(
-            { id: 'users', title: 'Users', href: usersIndex(), icon: Users },
             {
                 id: 'news-articles',
                 title: 'Articles',
@@ -148,37 +144,65 @@ const allPinnableItems = computed<NavItem[]>(() => {
                 href: newsCommentsIndex(),
                 icon: MessageSquare,
             },
-            {
-                id: 'achievements',
-                title: 'Achievements',
-                href: achievementsIndex(),
-                icon: Trophy,
-            },
-            {
-                id: 'announcements',
-                title: 'Announcements',
-                href: announcementsIndex(),
-                icon: Megaphone,
-            },
-            {
-                id: 'events',
-                title: 'Events',
-                href: eventsIndex(),
-                icon: Calendar,
-            },
-            {
-                id: 'programs',
-                title: 'Programs',
-                href: programsIndex(),
-                icon: ClipboardList,
-            },
-            {
-                id: 'venues',
-                title: 'Venues',
-                href: venuesIndex(),
-                icon: MapPin,
-            },
-            { id: 'games', title: 'Games', href: gamesIndex(), icon: Gamepad2 },
+        );
+    }
+
+    if (can('manage_achievements')) {
+        items.push({
+            id: 'achievements',
+            title: 'Achievements',
+            href: achievementsIndex(),
+            icon: Trophy,
+        });
+    }
+
+    if (can('manage_announcements')) {
+        items.push({
+            id: 'announcements',
+            title: 'Announcements',
+            href: announcementsIndex(),
+            icon: Megaphone,
+        });
+    }
+
+    if (can('manage_events')) {
+        items.push({
+            id: 'events',
+            title: 'Events',
+            href: eventsIndex(),
+            icon: Calendar,
+        });
+    }
+
+    if (can('manage_programs')) {
+        items.push({
+            id: 'programs',
+            title: 'Programs',
+            href: programsIndex(),
+            icon: ClipboardList,
+        });
+    }
+
+    if (can('manage_venues')) {
+        items.push({
+            id: 'venues',
+            title: 'Venues',
+            href: venuesIndex(),
+            icon: MapPin,
+        });
+    }
+
+    if (can('manage_games')) {
+        items.push({
+            id: 'games',
+            title: 'Games',
+            href: gamesIndex(),
+            icon: Gamepad2,
+        });
+    }
+
+    if (can('manage_sponsors')) {
+        items.push(
             {
                 id: 'sponsors',
                 title: 'Sponsors',
@@ -191,6 +215,29 @@ const allPinnableItems = computed<NavItem[]>(() => {
                 href: sponsorLevelsIndex(),
                 icon: Palette,
             },
+        );
+    }
+
+    if (!can('manage_sponsors') && can('manage_assigned_sponsors')) {
+        items.push({
+            id: 'my-sponsors',
+            title: 'My Sponsors',
+            href: sponsorsIndex(),
+            icon: Handshake,
+        });
+    }
+
+    if (can('manage_sponsor_levels') && !can('manage_sponsors')) {
+        items.push({
+            id: 'sponsor-levels',
+            title: 'Sponsor Levels',
+            href: sponsorLevelsIndex(),
+            icon: Palette,
+        });
+    }
+
+    if (can('manage_ticketing')) {
+        items.push(
             {
                 id: 'ticket-types',
                 title: 'Ticket Types',
@@ -215,24 +262,38 @@ const allPinnableItems = computed<NavItem[]>(() => {
                 href: vouchersIndex(),
                 icon: Gift,
             },
-            {
-                id: 'seat-plans',
-                title: 'Seat Plans',
-                href: seatPlansIndex(),
-                icon: Grid2x2,
-            },
-            {
-                id: 'webhooks',
-                title: 'Webhooks',
-                href: webhooksIndex(),
-                icon: Webhook,
-            },
-            {
-                id: 'integrations',
-                title: 'Integrations',
-                href: integrationsIndex(),
-                icon: Cog,
-            },
+        );
+    }
+
+    if (can('manage_seat_plans')) {
+        items.push({
+            id: 'seat-plans',
+            title: 'Seat Plans',
+            href: seatPlansIndex(),
+            icon: Grid2x2,
+        });
+    }
+
+    if (can('manage_webhooks')) {
+        items.push({
+            id: 'webhooks',
+            title: 'Webhooks',
+            href: webhooksIndex(),
+            icon: Webhook,
+        });
+    }
+
+    if (can('manage_integrations')) {
+        items.push({
+            id: 'integrations',
+            title: 'Integrations',
+            href: integrationsIndex(),
+            icon: Cog,
+        });
+    }
+
+    if (canAny('view_orders', 'manage_orders')) {
+        items.push(
             {
                 id: 'orders',
                 title: 'Orders',
@@ -245,6 +306,11 @@ const allPinnableItems = computed<NavItem[]>(() => {
                 href: adminTicketsIndex(),
                 icon: TicketCheck,
             },
+        );
+    }
+
+    if (can('manage_shop_conditions')) {
+        items.push(
             {
                 id: 'purchase-requirements',
                 title: 'Purchase Requirements',
@@ -264,15 +330,6 @@ const allPinnableItems = computed<NavItem[]>(() => {
                 icon: CreditCard,
             },
         );
-    }
-
-    if (!isAdmin.value && isSponsorManager.value) {
-        items.push({
-            id: 'my-sponsors',
-            title: 'My Sponsors',
-            href: sponsorsIndex(),
-            icon: Handshake,
-        });
     }
 
     return items;
@@ -317,7 +374,7 @@ function toggleFavorite(itemId: string): void {
             <NavFavorites :all-items="allPinnableItems" />
 
             <!-- Administration -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_users')">
                 <SidebarGroupLabel>Administration</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -344,7 +401,9 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- News Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup
+                v-if="canAny('manage_news_articles', 'moderate_news_comments')"
+            >
                 <SidebarGroupLabel>News</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -389,7 +448,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Achievements Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_achievements')">
                 <SidebarGroupLabel>Achievements</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -416,7 +475,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Announcement Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_announcements')">
                 <SidebarGroupLabel>Announcement</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -443,7 +502,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Event Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_events')">
                 <SidebarGroupLabel>Event</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -470,7 +529,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Program Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_programs')">
                 <SidebarGroupLabel>Program</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -497,7 +556,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Venue Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_venues')">
                 <SidebarGroupLabel>Venue</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -524,7 +583,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Games Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_games')">
                 <SidebarGroupLabel>Games</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -551,11 +610,13 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Sponsoring Domain -->
-            <SidebarGroup v-if="isAdmin || isSponsorManager">
+            <SidebarGroup
+                v-if="canAny('manage_sponsors', 'manage_assigned_sponsors')"
+            >
                 <SidebarGroupLabel>Sponsoring</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
-                        <SidebarMenuItem v-if="isAdmin">
+                        <SidebarMenuItem v-if="can('manage_sponsors')">
                             <SidebarMenuButton as-child>
                                 <Link :href="sponsorsIndex()">
                                     <Handshake />
@@ -573,7 +634,12 @@ function toggleFavorite(itemId: string): void {
                                 <Pin v-else class="size-4" />
                             </SidebarMenuAction>
                         </SidebarMenuItem>
-                        <SidebarMenuItem v-if="!isAdmin && isSponsorManager">
+                        <SidebarMenuItem
+                            v-if="
+                                !can('manage_sponsors') &&
+                                can('manage_assigned_sponsors')
+                            "
+                        >
                             <SidebarMenuButton as-child>
                                 <Link :href="sponsorsIndex()">
                                     <Handshake />
@@ -591,7 +657,7 @@ function toggleFavorite(itemId: string): void {
                                 <Pin v-else class="size-4" />
                             </SidebarMenuAction>
                         </SidebarMenuItem>
-                        <SidebarMenuItem v-if="isAdmin">
+                        <SidebarMenuItem v-if="can('manage_sponsor_levels')">
                             <SidebarMenuButton as-child>
                                 <Link :href="sponsorLevelsIndex()">
                                     <Palette />
@@ -614,7 +680,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Ticketing Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_ticketing')">
                 <SidebarGroupLabel>Ticketing</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -695,7 +761,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Competition Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_events')">
                 <SidebarGroupLabel>Competition</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -711,7 +777,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Orchestration Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_events')">
                 <SidebarGroupLabel>Orchestration</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -727,7 +793,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Seating Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_seat_plans')">
                 <SidebarGroupLabel>Seating</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -754,7 +820,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Webhook Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_webhooks')">
                 <SidebarGroupLabel>Webhooks</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -781,7 +847,7 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Integration Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup v-if="can('manage_integrations')">
                 <SidebarGroupLabel>Integrations</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
@@ -808,7 +874,16 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Shop Domain -->
-            <SidebarGroup v-if="isAdmin">
+            <SidebarGroup
+                v-if="
+                    canAny(
+                        'view_orders',
+                        'manage_orders',
+                        'manage_vouchers',
+                        'manage_shop_conditions',
+                    )
+                "
+            >
                 <SidebarGroupLabel>Shop</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>

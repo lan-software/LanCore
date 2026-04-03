@@ -77,7 +77,7 @@ interface DashboardStats {
 
 defineProps<{
     stats: DashboardStats;
-    isAdmin: boolean;
+    showAdminStats: boolean;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -132,7 +132,7 @@ function formatCents(cents: number): string {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4">
-            <template v-if="isAdmin">
+            <template v-if="showAdminStats">
                 <!-- Entity Counts -->
                 <div>
                     <h2 class="mb-3 text-lg font-semibold">Overview</h2>

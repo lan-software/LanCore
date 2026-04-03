@@ -38,7 +38,7 @@ test('non-admin users see dashboard without stats', function () {
         ->assertInertia(
             fn ($page) => $page
                 ->component('Dashboard')
-                ->where('isAdmin', false)
+                ->where('showAdminStats', false)
                 ->where('stats', [])
         );
 });
@@ -55,7 +55,7 @@ test('admin users see dashboard with stats', function () {
         ->assertInertia(
             fn ($page) => $page
                 ->component('Dashboard')
-                ->where('isAdmin', true)
+                ->where('showAdminStats', true)
                 ->has('stats.counts')
                 ->has('stats.events')
                 ->has('stats.tickets')

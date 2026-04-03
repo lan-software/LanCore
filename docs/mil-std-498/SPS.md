@@ -60,7 +60,8 @@ LanCore/
 │   │   ├── Ticketing/            # Ticket types and assignments
 │   │   ├── Venue/                # Venue management
 │   │   └── Webhook/              # Webhook delivery
-│   ├── Enums/                    # Application enums (11)
+│   ├── Concerns/                 # Reusable traits (HasPermissions, HasModelCache)
+│   ├── Enums/                    # Application enums (12, incl. Permission)
 │   ├── Http/
 │   │   ├── Controllers/          # Cross-cutting controllers
 │   │   └── Middleware/           # HTTP middleware (7)

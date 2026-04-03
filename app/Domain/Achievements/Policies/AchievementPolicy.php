@@ -3,6 +3,7 @@
 namespace App\Domain\Achievements\Policies;
 
 use App\Domain\Achievements\Models\Achievement;
+use App\Enums\Permission;
 use App\Models\User;
 
 /**
@@ -10,40 +11,28 @@ use App\Models\User;
  */
 class AchievementPolicy
 {
-    /**
-     * Superadmin bypasses all authorization checks.
-     */
-    public function before(User $user): ?bool
-    {
-        if ($user->isSuperadmin()) {
-            return true;
-        }
-
-        return null;
-    }
-
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageAchievements);
     }
 
     public function view(User $user, Achievement $achievement): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageAchievements);
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageAchievements);
     }
 
     public function update(User $user, Achievement $achievement): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageAchievements);
     }
 
     public function delete(User $user, Achievement $achievement): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageAchievements);
     }
 }

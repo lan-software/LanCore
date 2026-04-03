@@ -3,6 +3,7 @@
 namespace App\Domain\News\Policies;
 
 use App\Domain\News\Models\NewsArticle;
+use App\Enums\Permission;
 use App\Models\User;
 
 /**
@@ -10,45 +11,33 @@ use App\Models\User;
  */
 class NewsArticlePolicy
 {
-    /**
-     * Superadmin bypasses all authorization checks.
-     */
-    public function before(User $user): ?bool
-    {
-        if ($user->isSuperadmin()) {
-            return true;
-        }
-
-        return null;
-    }
-
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageNewsArticles);
     }
 
     public function view(User $user, NewsArticle $article): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageNewsArticles);
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageNewsArticles);
     }
 
     public function update(User $user, NewsArticle $article): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageNewsArticles);
     }
 
     public function delete(User $user, NewsArticle $article): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageNewsArticles);
     }
 
     public function viewAudit(User $user, NewsArticle $article): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ViewAuditLogs);
     }
 }

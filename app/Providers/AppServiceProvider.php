@@ -135,6 +135,12 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configurePolicies(): void
     {
+        Gate::before(function (User $user, string $ability) {
+            if ($user->isSuperadmin()) {
+                return true;
+            }
+        });
+
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Achievement::class, AchievementPolicy::class);
         Gate::policy(Announcement::class, AnnouncementPolicy::class);

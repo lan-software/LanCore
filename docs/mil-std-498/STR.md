@@ -45,8 +45,8 @@ This document reports test results, analysis, and coverage metrics for the curre
 | Metric | Value |
 |--------|-------|
 | Test Framework | Pest PHP v4.4.3 / PHPUnit v12.5.14 |
-| Total Test Files | 118 |
-| Total Test Cases | 754 |
+| Total Test Files | 121 |
+| Total Test Cases | 834 |
 | Test Execution | Automated via GitHub Actions |
 | Coverage Reporting | Codecov |
 | Last CI Status | Refer to GitHub Actions badge |
@@ -76,8 +76,9 @@ This document reports test results, analysis, and coverage metrics for the curre
 | Audit Trails | 9 | 27 | Pass |
 | Commands (Artisan) | 14 | 66 | Pass |
 | Dashboard/Context | 2 | 25 | Pass |
+| Policies/Permissions | 3 | 80 | Pass |
 | Infrastructure (Cache, Storage, Monitoring) | 4 | 20 | Pass |
-| Unit Tests | 3 | 8 | Pass |
+| Unit Tests | 5 | 20 | Pass |
 
 ### 3.3 CI/CD Pipeline Results
 

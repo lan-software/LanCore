@@ -24,9 +24,9 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 - **Gap** — No test coverage exists for this requirement
 
 **Statistics:**
-- Total SRS Requirements: 121
-- Total Test Files: 118
-- Total Test Cases: 754
+- Total SRS Requirements: 128
+- Total Test Files: 121
+- Total Test Cases: 834
 
 ---
 
@@ -395,12 +395,19 @@ No gaps identified.
 | USR-F-003 | TOTP 2FA with recovery codes | Fortify | `Auth/TwoFactorChallengeTest.php` (2 tests) | Covered |
 | USR-F-004 | Password reset via email | Fortify | `Auth/PasswordResetTest.php` (5 tests) | Covered |
 | USR-F-005 | Password confirmation | Fortify | `Auth/PasswordConfirmationTest.php` (2 tests) | Covered |
-| USR-F-006 | Role-based access (Admin, Superadmin, SponsorManager) | `App/Models/User.php` | `Actions/User/ChangeRolesTest.php` (5 tests) | Covered |
+| USR-F-006 | Role-based access (User, Moderator, Admin, Superadmin, SponsorManager) | `App/Enums/RoleName.php`, `App/Models/User.php` | `Actions/User/ChangeRolesTest.php` (5 tests) | Covered |
 | USR-F-007 | UserRolesChanged + UserAttributesUpdated events | Events | `Actions/User/UpdateUserAttributesTest.php` (2), `Webhook/WebhookTest.php` | Covered |
 | USR-F-008 | Ticket discovery settings | `Settings/TicketDiscoveryController.php` | `Settings/TicketDiscoveryTest.php` (9 tests) | Covered |
 | USR-F-009 | Sidebar favorites | `Settings/SidebarFavoriteController.php` | `Settings/SidebarFavoriteTest.php` (8 tests) | Covered |
 | USR-F-010 | Appearance/theme settings | HandleAppearance middleware | — | **Gap** |
 | USR-F-011 | Stripe Cashier billing customer | `App/Models/User.php` (Billable trait) | — | **Gap** |
+| USR-F-014 | Permission enum with 24 per-domain cases | `App/Enums/Permission.php` | `Unit/PermissionEnumTest.php` (7 tests) | Covered |
+| USR-F-015 | Static role-to-permission mapping via `Permission::forRole()` | `App/Enums/Permission.php` | `Unit/PermissionEnumTest.php` (7 tests) | Covered |
+| USR-F-016 | `HasPermissions` trait with `hasPermission()`, `hasAnyPermission()`, `allPermissions()` | `App/Concerns/HasPermissions.php` | `Unit/HasPermissionsTraitTest.php` (5 tests) | Covered |
+| USR-F-017 | Centralized `Gate::before()` superadmin bypass | `App/Providers/AppServiceProvider.php` | `Policies/RoleBasedPolicyAccessTest.php` (68 tests) | Covered |
+| USR-F-018 | Permissions shared via Inertia shared props | `App/Http/Middleware/HandleInertiaRequests.php` | `Policies/RoleBasedPolicyAccessTest.php` | Covered |
+| USR-F-019 | `usePermissions()` Vue composable | `resources/js/composables/usePermissions.ts` | — | **Gap** |
+| USR-F-020 | Permission-based sidebar navigation rendering | `resources/js/components/AppSidebar.vue` | — | **Gap** |
 
 ### User Management Gaps — Proposed Tests
 
@@ -434,8 +441,10 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | NTF-F-003 | Notification | Push subscription CRUD | Medium | `Notification/PushSubscriptionTest.php` |
 | USR-F-010 | User | Appearance settings | Low | `Settings/AppearanceTest.php` |
 | USR-F-011 | User | Stripe customer management | Low | `Shop/StripeCustomerTest.php` |
+| USR-F-019 | User | `usePermissions()` composable (frontend) | Low | `composables/usePermissions.test.ts` |
+| USR-F-020 | User | Permission-based sidebar rendering (frontend) | Low | `components/AppSidebar.test.ts` |
 
-**Total: 8 gaps out of 121 requirements (93.4% coverage by requirement count)**
+**Total: 10 gaps out of 128 requirements (92.2% coverage by requirement count)**
 
 *Note: TKT-F-009 deprecated and replaced by TKT-F-013..016 (4 new requirements, all now covered).*
 
@@ -449,3 +458,5 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 6. **SHP-F-013** — CartItemAdded event (event architecture)
 7. **USR-F-010** — Appearance settings (UI preference)
 8. **USR-F-011** — Stripe customer (payment infrastructure)
+9. **USR-F-019** — usePermissions composable (frontend unit test)
+10. **USR-F-020** — Permission-based sidebar rendering (frontend component test)

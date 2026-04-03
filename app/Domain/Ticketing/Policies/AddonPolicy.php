@@ -3,6 +3,7 @@
 namespace App\Domain\Ticketing\Policies;
 
 use App\Domain\Ticketing\Models\Addon;
+use App\Enums\Permission;
 use App\Models\User;
 
 /**
@@ -11,45 +12,33 @@ use App\Models\User;
  */
 class AddonPolicy
 {
-    /**
-     * Superadmin bypasses all authorization checks.
-     */
-    public function before(User $user): ?bool
-    {
-        if ($user->isSuperadmin()) {
-            return true;
-        }
-
-        return null;
-    }
-
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageTicketing);
     }
 
     public function view(User $user, Addon $addon): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageTicketing);
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageTicketing);
     }
 
     public function update(User $user, Addon $addon): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageTicketing);
     }
 
     public function delete(User $user, Addon $addon): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageTicketing);
     }
 
     public function viewAudit(User $user, Addon $addon): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ViewAuditLogs);
     }
 }

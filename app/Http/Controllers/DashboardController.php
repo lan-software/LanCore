@@ -19,6 +19,7 @@ use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketType;
 use App\Domain\Venue\Models\Venue;
+use App\Enums\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -31,17 +32,17 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        $isAdmin = $user->isAdmin();
+        $showAdminStats = $user->hasPermission(Permission::ManageUsers);
 
         $stats = [];
 
-        if ($isAdmin) {
+        if ($showAdminStats) {
             $stats = $this->getAdminStats();
         }
 
         return Inertia::render('Dashboard', [
             'stats' => $stats,
-            'isAdmin' => $isAdmin,
+            'showAdminStats' => $showAdminStats,
         ]);
     }
 

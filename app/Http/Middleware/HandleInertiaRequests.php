@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Domain\Event\Models\Event;
 use App\Domain\Integration\Models\IntegrationApp;
+use App\Enums\Permission;
 use App\Enums\RoleName;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -57,6 +58,10 @@ class HandleInertiaRequests extends Middleware
                     ])->values()->all(),
                 ]) : null,
             ],
+            'permissions' => $user ? array_map(
+                fn (Permission $p) => $p->value,
+                $user->allPermissions(),
+            ) : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'sidebarFavorites' => $user ? ($user->sidebar_favorites ?? []) : [],
             'eventContext' => fn () => $this->eventContext($request),
@@ -95,7 +100,12 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
 
-        if (! $user || ! $user->isAdmin()) {
+        if (! $user || ! $user->hasAnyPermission(
+            Permission::ManageEvents,
+            Permission::ManagePrograms,
+            Permission::ManageTicketing,
+            Permission::ManageSeatPlans,
+        )) {
             return null;
         }
 

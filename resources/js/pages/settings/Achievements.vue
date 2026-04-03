@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { Trophy, ExternalLink } from 'lucide-vue-next';
-import { defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import UserAchievementsController from '@/actions/App/Http/Controllers/Settings/UserAchievementsController';
 import Heading from '@/components/Heading.vue';
@@ -20,9 +20,25 @@ type EarnedAchievement = {
     };
 };
 
-defineProps<{
-    achievements: EarnedAchievement[];
+type AchievementSummary = {
+    id: number;
+    name: string;
+    color: string;
+    icon: string;
+};
+
+const props = defineProps<{
+    earnedAchievements: EarnedAchievement[];
+    allAchievements: AchievementSummary[];
 }>();
+
+const earnedIds = computed(
+    () => new Set(props.earnedAchievements.map((a) => a.id)),
+);
+
+const unearnedAchievements = computed(() =>
+    props.allAchievements.filter((a) => !earnedIds.value.has(a.id)),
+);
 
 const breadcrumbItems: BreadcrumbItem[] = [
     {
@@ -80,11 +96,23 @@ function formatDate(dateString: string): string {
                 />
 
                 <div
-                    v-if="achievements.length > 0"
+                    class="flex items-center gap-2 rounded-lg border bg-card px-4 py-3 shadow-sm"
+                >
+                    <Trophy class="size-5 text-muted-foreground" />
+                    <p class="text-sm font-medium">
+                        {{ earnedAchievements.length }}
+                        <span class="text-muted-foreground">
+                            out of {{ allAchievements.length }}
+                        </span>
+                    </p>
+                </div>
+
+                <div
+                    v-if="earnedAchievements.length > 0"
                     class="grid grid-cols-2 gap-4 sm:grid-cols-3"
                 >
                     <div
-                        v-for="achievement in achievements"
+                        v-for="achievement in earnedAchievements"
                         :key="achievement.id"
                         class="flex flex-col items-center gap-3 rounded-xl border bg-card p-5 text-center shadow-sm"
                     >
@@ -117,7 +145,36 @@ function formatDate(dateString: string): string {
                 </div>
 
                 <div
-                    v-else
+                    v-if="unearnedAchievements.length > 0"
+                    class="grid grid-cols-2 gap-4 sm:grid-cols-3"
+                >
+                    <div
+                        v-for="achievement in unearnedAchievements"
+                        :key="achievement.id"
+                        class="flex flex-col items-center gap-3 rounded-xl border border-dashed bg-muted/30 p-5 text-center opacity-50"
+                    >
+                        <div
+                            class="flex size-14 shrink-0 items-center justify-center rounded-full bg-muted"
+                        >
+                            <component
+                                :is="resolveIcon(achievement.icon)"
+                                class="size-7 text-muted-foreground"
+                            />
+                        </div>
+
+                        <p
+                            class="text-sm leading-tight font-semibold text-muted-foreground"
+                        >
+                            {{ achievement.name }}
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    v-if="
+                        earnedAchievements.length === 0 &&
+                        unearnedAchievements.length === 0
+                    "
                     class="flex flex-col items-center gap-3 rounded-xl border border-dashed py-12 text-center"
                 >
                     <div

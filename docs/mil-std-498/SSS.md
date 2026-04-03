@@ -192,7 +192,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | Req ID | Requirement |
 |--------|------------|
 | CAP-USR-001 | The system shall support user registration with email verification |
-| CAP-USR-002 | The system shall support role-based access: Admin, Superadmin, SponsorManager |
+| CAP-USR-002 | The system shall support role-based access with five static roles: User, Moderator, Admin, Superadmin, SponsorManager |
 | CAP-USR-003 | The system shall support two-factor authentication (TOTP) |
 | CAP-USR-004 | The system shall support password reset via email |
 | CAP-USR-005 | The system shall support user profile management (name, email, phone, address) |
@@ -246,6 +246,9 @@ See [IRS](IRS.md) for detailed interface requirements.
 | SEC-006 | CSRF protection shall be enforced on all state-changing requests |
 | SEC-007 | Authorization shall be enforced via Laravel Policies on all domain entities |
 | SEC-008 | The system shall support role-based access control with 24 authorization policies |
+| SEC-011 | Authorization shall use a static enum-based permission system mapping permissions to roles, with per-domain granularity |
+| SEC-012 | Superadmin role shall bypass all authorization checks via a centralized Gate::before() callback |
+| SEC-013 | User permissions shall be shared with the frontend via Inertia.js shared props for UI-level access control |
 | SEC-009 | Integration API routes shall use stateless Bearer token authentication |
 | SEC-010 | The system shall track unique request IDs for audit and debugging |
 
