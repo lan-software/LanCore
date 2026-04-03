@@ -68,6 +68,20 @@ class IntegrationAppController extends Controller
         return Inertia::render('integrations/CreateLanBrackets');
     }
 
+    public function createLanShout(): Response
+    {
+        $this->authorize('create', IntegrationApp::class);
+
+        return Inertia::render('integrations/CreateLanShout');
+    }
+
+    public function createLanHelp(): Response
+    {
+        $this->authorize('create', IntegrationApp::class);
+
+        return Inertia::render('integrations/CreateLanHelp');
+    }
+
     public function store(StoreIntegrationAppRequest $request): RedirectResponse
     {
         $this->authorize('create', IntegrationApp::class);

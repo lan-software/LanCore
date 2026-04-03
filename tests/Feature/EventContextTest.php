@@ -241,3 +241,31 @@ it('passes null selectedEventId when no event context is set', function () {
                 ->where('selectedEventId', null)
         );
 });
+
+it('passes selectedEventId to sponsor create page', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $event = Event::factory()->create();
+
+    $this->actingAs($admin)
+        ->withSession(['selected_event_id' => $event->id])
+        ->get('/sponsors/create')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('sponsors/Create')
+                ->where('selectedEventId', $event->id)
+        );
+});
+
+it('passes null selectedEventId to sponsor create page when no event context is set', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->get('/sponsors/create')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('sponsors/Create')
+                ->where('selectedEventId', null)
+        );
+});

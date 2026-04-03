@@ -40,7 +40,8 @@ class CompetitionController extends Controller
             });
         }
 
-        if ($eventId = $request->validated('event_id')) {
+        $eventId = $request->validated('event_id') ?? $request->session()->get('selected_event_id');
+        if ($eventId) {
             $query->where('event_id', $eventId);
         }
 
@@ -67,6 +68,7 @@ class CompetitionController extends Controller
         return Inertia::render('competitions/Create', [
             'games' => Game::where('is_active', true)->with('gameModes')->get(),
             'events' => Event::orderByDesc('start_date')->get(['id', 'name', 'start_date']),
+            'selectedEventId' => session('selected_event_id'),
         ]);
     }
 

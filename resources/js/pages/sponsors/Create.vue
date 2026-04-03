@@ -21,9 +21,10 @@ import { index as sponsorsRoute } from '@/routes/sponsors';
 import type { BreadcrumbItem } from '@/types';
 import type { SponsorLevel } from '@/types/domain';
 
-defineProps<{
+const props = defineProps<{
     sponsorLevels: SponsorLevel[];
     events: { id: number; name: string }[];
+    selectedEventId?: number | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -154,6 +155,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 :id="`event-${event.id}`"
                                 name="event_ids[]"
                                 :value="event.id"
+                                :default-checked="
+                                    props.selectedEventId === event.id
+                                "
                             />
                             <Label
                                 :for="`event-${event.id}`"

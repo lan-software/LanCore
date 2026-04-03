@@ -187,6 +187,24 @@ it('displays the LanBrackets create page for admins', function () {
         ->assertInertia(fn ($page) => $page->component('integrations/CreateLanBrackets'));
 });
 
+it('displays the LanShout create page for admins', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->get('/integrations/create/lanshout')
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page->component('integrations/CreateLanShout'));
+});
+
+it('displays the LanHelp create page for admins', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->get('/integrations/create/lanhelp')
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page->component('integrations/CreateLanHelp'));
+});
+
 it('creates a LanBrackets integration with prepopulated data', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
@@ -210,4 +228,52 @@ it('creates a LanBrackets integration with prepopulated data', function () {
     expect($app->nav_label)->toBe('Brackets');
     expect($app->nav_icon)->toBe('swords');
     expect($app->allowed_scopes)->toBe(['user:read', 'user:email', 'user:roles']);
+});
+
+it('creates a LanShout integration with prepopulated data', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->post('/integrations', [
+            'name' => 'LanShout',
+            'slug' => 'lanshout',
+            'description' => 'Real-time chat and communication platform',
+            'callback_url' => 'http://localhost:82/auth/lancore/callback',
+            'nav_url' => 'http://localhost:82',
+            'nav_label' => 'Shout',
+            'nav_icon' => 'megaphone',
+            'allowed_scopes' => ['user:read', 'user:email', 'user:roles'],
+            'is_active' => true,
+        ])
+        ->assertRedirect('/integrations');
+
+    $app = IntegrationApp::where('slug', 'lanshout')->first();
+    expect($app)->not->toBeNull();
+    expect($app->name)->toBe('LanShout');
+    expect($app->nav_label)->toBe('Shout');
+    expect($app->nav_icon)->toBe('megaphone');
+});
+
+it('creates a LanHelp integration with prepopulated data', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->post('/integrations', [
+            'name' => 'LanHelp',
+            'slug' => 'lanhelp',
+            'description' => 'Help desk and support ticket system',
+            'callback_url' => 'http://localhost:83/auth/lancore/callback',
+            'nav_url' => 'http://localhost:83',
+            'nav_label' => 'Help',
+            'nav_icon' => 'life-buoy',
+            'allowed_scopes' => ['user:read', 'user:email', 'user:roles'],
+            'is_active' => true,
+        ])
+        ->assertRedirect('/integrations');
+
+    $app = IntegrationApp::where('slug', 'lanhelp')->first();
+    expect($app)->not->toBeNull();
+    expect($app->name)->toBe('LanHelp');
+    expect($app->nav_label)->toBe('Help');
+    expect($app->nav_icon)->toBe('life-buoy');
 });

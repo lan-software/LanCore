@@ -19,9 +19,10 @@ import { index as competitionsRoute } from '@/routes/competitions';
 import type { BreadcrumbItem } from '@/types';
 import type { Game, Event } from '@/types/domain';
 
-defineProps<{
+const props = defineProps<{
     games: Game[];
     events: { id: number; name: string; start_date: string }[];
+    selectedEventId?: number | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -169,20 +170,29 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                         <div class="grid gap-2">
                             <Label for="event_id">Event</Label>
-                            <select
-                                id="event_id"
+                            <Select
                                 name="event_id"
-                                class="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                :default-value="
+                                    props.selectedEventId
+                                        ? String(props.selectedEventId)
+                                        : undefined
+                                "
                             >
-                                <option value="">None</option>
-                                <option
-                                    v-for="event in events"
-                                    :key="event.id"
-                                    :value="event.id"
-                                >
-                                    {{ event.name }}
-                                </option>
-                            </select>
+                                <SelectTrigger>
+                                    <SelectValue
+                                        placeholder="Select an event"
+                                    />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem
+                                        v-for="event in events"
+                                        :key="event.id"
+                                        :value="String(event.id)"
+                                    >
+                                        {{ event.name }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
                             <InputError :message="errors.event_id" />
                         </div>
                     </div>

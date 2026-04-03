@@ -70,6 +70,7 @@ class SponsorController extends Controller
         return Inertia::render('sponsors/Create', [
             'sponsorLevels' => SponsorLevel::dropdownOptions(),
             'events' => Event::dropdownOptions(),
+            'selectedEventId' => session('selected_event_id'),
         ]);
     }
 

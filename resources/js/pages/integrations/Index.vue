@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ChevronDown, Plus, Swords } from 'lucide-vue-next';
+import { ChevronDown, LifeBuoy, Megaphone, Plus, Swords } from 'lucide-vue-next';
 import {
     edit,
     create as integrationCreate,
     createLanBrackets,
+    createLanShout,
+    createLanHelp,
 } from '@/actions/App/Domain/Integration/Http/Controllers/IntegrationAppController';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
@@ -109,6 +111,18 @@ const { setSearch, setPerPage } = useDataTable(
                                 <Link :href="createLanBrackets().url">
                                     <Swords class="mr-2 size-4" />
                                     Add LanBrackets
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem as-child>
+                                <Link :href="createLanShout().url">
+                                    <Megaphone class="mr-2 size-4" />
+                                    Add LanShout
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem as-child>
+                                <Link :href="createLanHelp().url">
+                                    <LifeBuoy class="mr-2 size-4" />
+                                    Add LanHelp
                                 </Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
