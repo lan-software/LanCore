@@ -208,24 +208,66 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                 <p v-else class="text-sm">{{ ticket.manager?.name ?? '—' }}</p>
             </div>
 
-            <!-- Ticket User Assignment -->
+            <!-- Ticket Users -->
             <div class="space-y-1">
-                <p
-                    class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+                <div class="flex items-center gap-2">
+                    <p
+                        class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+                    >
+                        Assigned Users
+                    </p>
+                    <Badge
+                        v-if="
+                            ticket.ticket_type &&
+                            ticket.ticket_type.max_users_per_ticket > 1
+                        "
+                        variant="outline"
+                        class="text-xs"
+                    >
+                        Group ({{
+                            ticket.users?.length ?? 0
+                        }}/{{ ticket.ticket_type.max_users_per_ticket }})
+                    </Badge>
+                </div>
+
+                <!-- List of assigned users -->
+                <div
+                    v-if="ticket.users && ticket.users.length > 0"
+                    class="space-y-1"
                 >
-                    Ticket User
+                    <div
+                        v-for="user in ticket.users"
+                        :key="user.id"
+                        class="flex items-center justify-between rounded-md bg-muted px-2 py-1 text-sm"
+                    >
+                        <span>{{ user.name }} ({{ user.email }})</span>
+                        <Badge
+                            v-if="user.pivot?.checked_in_at"
+                            variant="secondary"
+                            class="text-xs"
+                        >
+                            Checked in
+                        </Badge>
+                    </div>
+                </div>
+                <p
+                    v-else
+                    class="text-sm text-muted-foreground"
+                >
+                    No users assigned
                 </p>
+
+                <!-- Add user form -->
                 <div v-if="canUpdateUser">
                     <Form
-                        v-bind="TicketController.updateUser.form(ticket.id)"
-                        class="flex items-center gap-2"
+                        v-bind="TicketController.addUser.form(ticket.id)"
+                        class="mt-2 flex items-center gap-2"
                         v-slot="{ errors, processing, recentlySuccessful }"
                     >
                         <Input
                             name="user_email"
                             type="email"
-                            :default-value="ticket.ticket_user?.email ?? ''"
-                            placeholder="User email"
+                            placeholder="Add user by email"
                             class="h-8 text-sm"
                         />
                         <Button
@@ -235,20 +277,17 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                             :disabled="processing"
                             class="shrink-0"
                         >
-                            {{ processing ? '…' : 'Set' }}
+                            {{ processing ? '…' : 'Add' }}
                         </Button>
                         <p
                             v-if="recentlySuccessful"
                             class="text-xs text-muted-foreground"
                         >
-                            Saved
+                            Added
                         </p>
                         <InputError :message="errors.user_email" />
                     </Form>
                 </div>
-                <p v-else class="text-sm">
-                    {{ ticket.ticket_user?.name ?? '—' }}
-                </p>
             </div>
 
             <!-- Seat (placeholder for future implementation) -->

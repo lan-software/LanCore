@@ -162,6 +162,56 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </div>
                 </div>
 
+                <!-- Group Ticket -->
+                <div class="space-y-4">
+                    <Heading
+                        variant="small"
+                        title="Group Ticket"
+                        description="Allow multiple users per ticket. Total seats = seats per ticket x max users."
+                    />
+
+                    <div class="grid gap-2">
+                        <Label for="max_users_per_ticket"
+                            >Max Users per Ticket</Label
+                        >
+                        <Input
+                            id="max_users_per_ticket"
+                            type="number"
+                            name="max_users_per_ticket"
+                            min="1"
+                            default-value="1"
+                            placeholder="1"
+                        />
+                        <InputError
+                            :message="errors.max_users_per_ticket"
+                        />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="check_in_mode">Check-in Mode</Label>
+                        <Select
+                            name="check_in_mode"
+                            default-value="individual"
+                        >
+                            <SelectTrigger>
+                                <SelectValue
+                                    placeholder="Select check-in mode"
+                                />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="individual">
+                                    Individual (each user checks in
+                                    separately)
+                                </SelectItem>
+                                <SelectItem value="group">
+                                    Group (all users check in together)
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <InputError :message="errors.check_in_mode" />
+                    </div>
+                </div>
+
                 <!-- Purchase Window -->
                 <div class="space-y-4">
                     <Heading

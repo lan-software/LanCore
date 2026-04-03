@@ -243,26 +243,55 @@ const statusVariant: Record<
                 </CardContent>
             </Card>
 
-            <!-- Assigned User -->
-            <Card v-if="ticket.ticket_user">
+            <!-- Assigned Users -->
+            <Card v-if="ticket.users && ticket.users.length > 0">
                 <CardHeader>
-                    <CardTitle>Assigned User</CardTitle>
+                    <div class="flex items-center gap-2">
+                        <CardTitle>Assigned Users</CardTitle>
+                        <Badge
+                            v-if="
+                                ticket.ticket_type &&
+                                ticket.ticket_type.max_users_per_ticket > 1
+                            "
+                            variant="outline"
+                        >
+                            {{ ticket.users.length }}/{{
+                                ticket.ticket_type.max_users_per_ticket
+                            }}
+                        </Badge>
+                    </div>
                 </CardHeader>
                 <CardContent>
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="font-medium">
-                                {{ ticket.ticket_user.name }}
-                            </p>
-                            <p class="text-sm text-muted-foreground">
-                                {{ ticket.ticket_user.email }}
-                            </p>
+                    <div class="space-y-3">
+                        <div
+                            v-for="user in ticket.users"
+                            :key="user.id"
+                            class="flex items-center justify-between"
+                        >
+                            <div>
+                                <p class="font-medium">{{ user.name }}</p>
+                                <p class="text-sm text-muted-foreground">
+                                    {{ user.email }}
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <Badge
+                                    v-if="user.pivot?.checked_in_at"
+                                    variant="secondary"
+                                >
+                                    Checked in
+                                </Badge>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    as-child
+                                >
+                                    <Link :href="userShow(user.id).url"
+                                        >View User</Link
+                                    >
+                                </Button>
+                            </div>
                         </div>
-                        <Button variant="outline" size="sm" as-child>
-                            <Link :href="userShow(ticket.ticket_user.id).url"
-                                >View User</Link
-                            >
-                        </Button>
                     </div>
                 </CardContent>
             </Card>

@@ -12,7 +12,7 @@ import type { Ticket } from '@/types/domain';
 defineProps<{
     ownedTickets: Ticket[];
     managedTickets: Ticket[];
-    usableTickets: Ticket[];
+    assignedTickets: Ticket[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -83,11 +83,11 @@ const breadcrumbs: BreadcrumbItem[] = [
             <div class="space-y-3">
                 <h2 class="text-lg font-semibold">Assigned Tickets</h2>
                 <div
-                    v-if="usableTickets.length > 0"
+                    v-if="assignedTickets.length > 0"
                     class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
                 >
                     <TicketCard
-                        v-for="ticket in usableTickets"
+                        v-for="ticket in assignedTickets"
                         :key="ticket.id"
                         :ticket="ticket"
                     />
