@@ -17,16 +17,16 @@ RUN composer install \
     --ignore-platform-reqs
 
 COPY . .
-RUN composer dump-autoload --optimize --classmap-authoritative
-
-# Generate Wayfinder TypeScript files (actions/, routes/) so the frontend
-# build stage has them. These are git-ignored generated artefacts.
 RUN mkdir -p bootstrap/cache \
         storage/framework/sessions \
         storage/framework/views \
         storage/framework/cache \
-        storage/logs \
-    && APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+        storage/logs
+RUN composer dump-autoload --optimize --classmap-authoritative
+
+# Generate Wayfinder TypeScript files (actions/, routes/) so the frontend
+# build stage has them. These are git-ignored generated artefacts.
+RUN APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
     APP_ENV=local \
     DB_CONNECTION=sqlite \
     DB_DATABASE=:memory: \
