@@ -226,6 +226,7 @@ The LanCore CSCI shall support the following operational states:
 | NTF-F-004 | The software shall support program-specific notification subscriptions |
 | NTF-F-005 | The software shall support notification archiving with archived_at timestamp |
 | NTF-F-006 | The software shall deliver notifications via: database, mail, web push channels |
+| NTF-F-007 | The software shall allow users to dismiss the push notification prompt; dismissal shall persist for the duration of the login session and reset upon logout |
 
 #### 3.2.11 Integration Domain (CSCI-INT)
 

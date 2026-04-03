@@ -253,6 +253,10 @@ This ensures complete isolation between test cases.
 | mail notification sent when enabled | User with mail enabled | Publish news article | Mail queued |
 | mail notification not sent when disabled | User with mail disabled | Publish news article | No mail queued |
 | push subscription stored | Authenticated | POST push subscription | Subscription saved |
+| push prompt dismissed and session flag stored | Authenticated | POST /push-subscriptions/dismiss | 200, `dismissed: true`, session flag set |
+| pushPromptDismissed shared as false by default | Authenticated, no session flag | GET /dashboard | Inertia prop `pushPromptDismissed` = false |
+| pushPromptDismissed shared as true when session flag set | Authenticated, session flag set | GET /dashboard | Inertia prop `pushPromptDismissed` = true |
+| dismiss requires authentication | Unauthenticated | POST /push-subscriptions/dismiss | 401 Unauthorized |
 | program subscription toggled | Authenticated, program exists | POST program subscription | Subscription created/removed |
 
 ### 4.5 Ticketing Tests

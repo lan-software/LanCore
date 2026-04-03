@@ -316,7 +316,7 @@ show({ id: 1 })
 | 1 | AddRequestId | Assigns X-Request-ID header for tracing |
 | 2 | TrackHttpMetrics | Records Prometheus metrics |
 | 3 | HandleAppearance | Reads appearance/theme preference |
-| 4 | HandleInertiaRequests | Shares global data with Inertia (auth, flash, etc.) |
+| 4 | HandleInertiaRequests | Shares global data with Inertia (auth, flash, push prompt dismissal, etc.) |
 | 5 | EncryptCookies | Cookie encryption |
 | 6 | StartSession | Session initialization |
 | 7 | VerifyCsrfToken | CSRF protection |

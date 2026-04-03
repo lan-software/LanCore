@@ -172,7 +172,7 @@ See [RTM](RTM.md) Section 16 for the complete gap analysis. Summary:
 | USR-F-010 | User | Appearance/theme settings | Low |
 | USR-F-011 | User | Stripe Cashier customer management | Low |
 
-**10 gaps out of 116 requirements = 91.4% requirement coverage**
+**10 gaps out of 117 requirements = 91.5% requirement coverage**
 
 ### 4.3 Known Test Issues
 
@@ -209,12 +209,12 @@ Coverage is collected via Xdebug and reported to Codecov. Current metrics reflec
 | CSCI-NWS | 8 | 7 | 0 | 1 | 88% |
 | CSCI-ANN | 5 | 5 | 0 | 0 | **100%** |
 | CSCI-ACH | 5 | 5 | 0 | 0 | **100%** |
-| CSCI-NTF | 6 | 4 | 2 | 0 | 67% |
+| CSCI-NTF | 7 | 5 | 2 | 0 | 71% |
 | CSCI-INT | 10 | 10 | 0 | 0 | **100%** |
 | CSCI-WHK | 7 | 6 | 0 | 1 | 86% |
 | CSCI-GAM | 3 | 3 | 0 | 0 | **100%** |
 | CSCI-USR | 11 | 9 | 0 | 2 | 82% |
-| **Total** | **116** | **101** | **3** | **11** | **89.7%** |
+| **Total** | **117** | **102** | **3** | **11** | **89.7%** |
 
 ---
 

@@ -3,6 +3,7 @@
 /**
  * @see docs/mil-std-498/SSS.md CAP-NTF-002
  * @see docs/mil-std-498/SRS.md NTF-F-003
+ * @see docs/mil-std-498/SRS.md NTF-F-007
  */
 
 use App\Domain\Notification\Models\PushSubscription;
@@ -164,6 +165,45 @@ it('rejects invalid content encoding', function () {
         ])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('content_encoding');
+});
+
+it('dismisses the push prompt and stores flag in session', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson('/push-subscriptions/dismiss')
+        ->assertSuccessful()
+        ->assertJson(['dismissed' => true]);
+
+    expect(session('push_prompt_dismissed'))->toBeTrue();
+});
+
+it('shares pushPromptDismissed as false by default', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page->where('pushPromptDismissed', false)
+        );
+});
+
+it('shares pushPromptDismissed as true when session flag is set', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->withSession(['push_prompt_dismissed' => true])
+        ->get('/dashboard')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page->where('pushPromptDismissed', true)
+        );
+});
+
+it('requires authentication to dismiss the push prompt', function () {
+    $this->postJson('/push-subscriptions/dismiss')
+        ->assertUnauthorized();
 });
 
 it('allows a user to have multiple subscriptions for different endpoints', function () {

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 /**
  * @see docs/mil-std-498/SSS.md CAP-NTF-002
  * @see docs/mil-std-498/SRS.md NTF-F-003
+ * @see docs/mil-std-498/SRS.md NTF-F-007
  */
 class PushSubscriptionController extends Controller
 {
@@ -43,5 +44,12 @@ class PushSubscriptionController extends Controller
             ->delete();
 
         return response()->json(['subscribed' => false]);
+    }
+
+    public function dismiss(Request $request): JsonResponse
+    {
+        $request->session()->put('push_prompt_dismissed', true);
+
+        return response()->json(['dismissed' => true]);
     }
 }

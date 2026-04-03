@@ -24,7 +24,7 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 - **Gap** — No test coverage exists for this requirement
 
 **Statistics:**
-- Total SRS Requirements: 112
+- Total SRS Requirements: 113
 - Total Test Files: 109
 - Total Test Cases: 749
 
@@ -307,6 +307,7 @@ No gaps identified.
 | NTF-F-004 | Program notification subscriptions | `Domain/Notification/Http/Controllers/ProgramSubscriptionController.php` | `Notification/ProgramSubscriptionTest.php` (4 tests) | Covered |
 | NTF-F-005 | Notification archiving | `Domain/Notification/Http/Controllers/NotificationController.php` | `Notification/NotificationControllerTest.php` (12 tests) | Covered |
 | NTF-F-006 | Delivery via database, mail, web push | Notification classes | `Notification/NewsArticleNotificationTest.php` | Partial |
+| NTF-F-007 | Session-scoped push prompt dismissal | `Domain/Notification/Http/Controllers/PushSubscriptionController.php`, `Http/Middleware/HandleInertiaRequests.php` | `Notification/PushSubscriptionCrudTest.php` (4 tests) | Covered |
 
 ### Notification Gaps — Proposed Tests
 
@@ -438,7 +439,7 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | USR-F-010 | User | Appearance settings | Low | `Settings/AppearanceTest.php` |
 | USR-F-011 | User | Stripe customer management | Low | `Shop/StripeCustomerTest.php` |
 
-**Total: 10 gaps out of 116 requirements (91.4% coverage by requirement count)**
+**Total: 10 gaps out of 117 requirements (91.5% coverage by requirement count)**
 
 *Note: TKT-F-009 deprecated and replaced by TKT-F-013..016 (4 new requirements, all now covered).*
 
