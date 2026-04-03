@@ -39,7 +39,7 @@ class EventController extends Controller
         $query = Event::with('venue');
 
         if ($search = $request->validated('search')) {
-            $query->where('name', 'ilike', "%{$search}%");
+            $query->whereLike('name', "%{$search}%");
         }
 
         if ($status = $request->validated('status')) {

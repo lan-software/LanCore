@@ -35,7 +35,7 @@ class ProgramController extends Controller
         $query = Program::with('event');
 
         if ($search = $request->validated('search')) {
-            $query->where('name', 'ilike', "%{$search}%");
+            $query->whereLike('name', "%{$search}%");
         }
 
         $eventId = $request->validated('event_id') ?? $request->session()->get('selected_event_id');

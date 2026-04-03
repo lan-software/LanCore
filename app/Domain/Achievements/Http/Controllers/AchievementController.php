@@ -34,7 +34,7 @@ class AchievementController extends Controller
         $query = Achievement::withCount('users');
 
         if ($search = $request->input('search')) {
-            $query->where('name', 'ilike', "%{$search}%");
+            $query->whereLike('name', "%{$search}%");
         }
 
         $sortColumn = $request->input('sort', 'created_at');

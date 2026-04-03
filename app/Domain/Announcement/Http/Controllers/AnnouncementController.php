@@ -35,7 +35,7 @@ class AnnouncementController extends Controller
             ->withCount('dismissedByUsers');
 
         if ($search = $request->input('search')) {
-            $query->where('title', 'ilike', "%{$search}%");
+            $query->whereLike('title', "%{$search}%");
         }
 
         $sortColumn = $request->input('sort', 'created_at');

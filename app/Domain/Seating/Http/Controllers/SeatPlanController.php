@@ -40,8 +40,8 @@ class SeatPlanController extends Controller
 
         if ($search = $request->validated('search')) {
             $query->where(function ($q) use ($search): void {
-                $q->where('name', 'ilike', "%{$search}%")
-                    ->orWhereHas('event', fn ($eq) => $eq->where('name', 'ilike', "%{$search}%"));
+                $q->whereLike('name', "%{$search}%")
+                    ->orWhereHas('event', fn ($eq) => $eq->whereLike('name', "%{$search}%"));
             });
         }
 

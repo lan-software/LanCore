@@ -34,8 +34,8 @@ class GameController extends Controller
 
         if ($search = $request->validated('search')) {
             $query->where(function ($q) use ($search): void {
-                $q->where('name', 'ilike', "%{$search}%")
-                    ->orWhere('publisher', 'ilike', "%{$search}%");
+                $q->whereLike('name', "%{$search}%")
+                    ->orWhereLike('publisher', "%{$search}%");
             });
         }
 

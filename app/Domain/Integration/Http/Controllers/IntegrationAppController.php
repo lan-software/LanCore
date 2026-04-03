@@ -35,8 +35,8 @@ class IntegrationAppController extends Controller
 
         if ($search = $request->validated('search')) {
             $query->where(function ($q) use ($search): void {
-                $q->where('name', 'ilike', "%{$search}%")
-                    ->orWhere('slug', 'ilike', "%{$search}%");
+                $q->whereLike('name', "%{$search}%")
+                    ->orWhereLike('slug', "%{$search}%");
             });
         }
 

@@ -21,9 +21,9 @@ class AdminTicketController extends Controller
 
         if ($search = $request->validated('search')) {
             $query->where(function ($q) use ($search) {
-                $q->where('validation_id', 'ilike', "%{$search}%")
-                    ->orWhereHas('owner', fn ($q) => $q->where('name', 'ilike', "%{$search}%")->orWhere('email', 'ilike', "%{$search}%"))
-                    ->orWhereHas('ticketType', fn ($q) => $q->where('name', 'ilike', "%{$search}%"));
+                $q->whereLike('validation_id', "%{$search}%")
+                    ->orWhereHas('owner', fn ($q) => $q->whereLike('name', "%{$search}%")->orWhereLike('email', "%{$search}%"))
+                    ->orWhereHas('ticketType', fn ($q) => $q->whereLike('name', "%{$search}%"));
             });
         }
 

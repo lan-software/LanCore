@@ -34,7 +34,7 @@ class VenueController extends Controller
         $query = Venue::with('address');
 
         if ($search = $request->validated('search')) {
-            $query->where('name', 'ilike', "%{$search}%");
+            $query->whereLike('name', "%{$search}%");
         }
 
         $sortColumn = $request->validated('sort') ?? 'name';

@@ -66,8 +66,12 @@ class PrometheusServiceProvider extends ServiceProvider
             ->label('method')
             ->label('status_code')
             ->value(function (): array {
-                /** @var array<string, string> $raw */
-                $raw = Redis::hGetAll('metrics:http:requests');
+                try {
+                    /** @var array<string, string> $raw */
+                    $raw = Redis::hGetAll('metrics:http:requests');
+                } catch (\RedisException) {
+                    return [];
+                }
 
                 if (empty($raw)) {
                     return [];
@@ -89,8 +93,12 @@ class PrometheusServiceProvider extends ServiceProvider
             ->label('method')
             ->label('route')
             ->value(function (): array {
-                /** @var array<string, string> $raw */
-                $raw = Redis::hGetAll('metrics:http:duration_ms');
+                try {
+                    /** @var array<string, string> $raw */
+                    $raw = Redis::hGetAll('metrics:http:duration_ms');
+                } catch (\RedisException) {
+                    return [];
+                }
 
                 if (empty($raw)) {
                     return [];

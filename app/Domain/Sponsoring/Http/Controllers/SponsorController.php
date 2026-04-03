@@ -47,7 +47,7 @@ class SponsorController extends Controller
         }
 
         if ($search = $request->validated('search')) {
-            $query->where('name', 'ilike', "%{$search}%");
+            $query->whereLike('name', "%{$search}%");
         }
 
         $sortColumn = $request->validated('sort') ?? 'created_at';

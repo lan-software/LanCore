@@ -39,7 +39,7 @@ class TicketCategoryController extends Controller
         }
 
         if ($search = $request->validated('search')) {
-            $query->where('name', 'ilike', "%{$search}%");
+            $query->whereLike('name', "%{$search}%");
         }
 
         $sortColumn = $request->validated('sort') ?? 'sort_order';

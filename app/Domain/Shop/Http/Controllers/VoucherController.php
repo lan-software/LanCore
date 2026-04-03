@@ -39,7 +39,7 @@ class VoucherController extends Controller
         }
 
         if ($search = $request->validated('search')) {
-            $query->where('code', 'ilike', "%{$search}%");
+            $query->whereLike('code', "%{$search}%");
         }
 
         $sortColumn = $request->validated('sort') ?? 'created_at';

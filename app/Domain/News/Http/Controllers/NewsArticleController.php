@@ -35,8 +35,8 @@ class NewsArticleController extends Controller
 
         if ($search = $request->validated('search')) {
             $query->where(fn ($q) => $q
-                ->where('title', 'ilike', "%{$search}%")
-                ->orWhere('summary', 'ilike', "%{$search}%"));
+                ->whereLike('title', "%{$search}%")
+                ->orWhereLike('summary', "%{$search}%"));
         }
 
         if ($visibility = $request->validated('visibility')) {

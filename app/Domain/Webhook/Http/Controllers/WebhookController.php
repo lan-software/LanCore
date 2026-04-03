@@ -35,8 +35,8 @@ class WebhookController extends Controller
         $query = Webhook::query();
 
         if ($search = $request->input('search')) {
-            $query->where('name', 'ilike', "%{$search}%")
-                ->orWhere('url', 'ilike', "%{$search}%");
+            $query->whereLike('name', "%{$search}%")
+                ->orWhereLike('url', "%{$search}%");
         }
 
         $sortColumn = $request->input('sort', 'created_at');

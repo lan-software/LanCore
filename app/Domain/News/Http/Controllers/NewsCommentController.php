@@ -27,8 +27,8 @@ class NewsCommentController extends Controller
 
         if ($search = $request->validated('search')) {
             $query->where(fn ($q) => $q
-                ->where('content', 'ilike', "%{$search}%")
-                ->orWhereHas('user', fn ($u) => $u->where('name', 'ilike', "%{$search}%")));
+                ->whereLike('content', "%{$search}%")
+                ->orWhereHas('user', fn ($u) => $u->whereLike('name', "%{$search}%")));
         }
 
         if ($articleId = $request->validated('article_id')) {
