@@ -209,18 +209,6 @@ function executeDelete() {
 
                     <div class="flex items-center gap-2">
                         <Checkbox
-                            id="is_row_ticket"
-                            name="is_row_ticket"
-                            :default-value="ticketType.is_row_ticket"
-                            :disabled="ticketType.is_locked"
-                        />
-                        <Label for="is_row_ticket" class="cursor-pointer"
-                            >Row ticket</Label
-                        >
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <Checkbox
                             id="is_seatable"
                             name="is_seatable"
                             :default-value="ticketType.is_seatable"

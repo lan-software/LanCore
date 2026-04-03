@@ -161,7 +161,8 @@ export type TicketType = {
     quota: number;
     max_per_user: number | null;
     seats_per_ticket: number;
-    is_row_ticket: boolean;
+    /** @deprecated Retained for backward compatibility — not shown in UI */
+    is_row_ticket?: boolean;
     is_seatable: boolean;
     is_hidden: boolean;
     purchase_from: string | null;

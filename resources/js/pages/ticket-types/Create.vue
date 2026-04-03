@@ -155,13 +155,6 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <Checkbox id="is_row_ticket" name="is_row_ticket" />
-                        <Label for="is_row_ticket" class="cursor-pointer"
-                            >Row ticket</Label
-                        >
-                    </div>
-
-                    <div class="flex items-center gap-2">
                         <Checkbox id="is_seatable" name="is_seatable" />
                         <Label for="is_seatable" class="cursor-pointer"
                             >Seatable</Label

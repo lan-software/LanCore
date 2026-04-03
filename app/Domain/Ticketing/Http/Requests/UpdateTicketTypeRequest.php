@@ -34,7 +34,6 @@ class UpdateTicketTypeRequest extends FormRequest
             $rules['price'] = ['required', 'integer', 'min:0'];
             $rules['quota'] = ['required', 'integer', 'min:1'];
             $rules['seats_per_ticket'] = ['required', 'integer', 'min:1'];
-            $rules['is_row_ticket'] = ['sometimes', 'boolean'];
             $rules['is_seatable'] = ['sometimes', 'boolean'];
             $rules['event_id'] = ['required', 'integer', 'exists:events,id'];
         }
@@ -45,7 +44,6 @@ class UpdateTicketTypeRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'is_row_ticket' => $this->boolean('is_row_ticket'),
             'is_seatable' => $this->boolean('is_seatable'),
             'is_hidden' => $this->boolean('is_hidden'),
         ]);

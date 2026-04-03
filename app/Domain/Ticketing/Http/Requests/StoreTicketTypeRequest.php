@@ -23,7 +23,6 @@ class StoreTicketTypeRequest extends FormRequest
             'quota' => ['required', 'integer', 'min:1'],
             'max_per_user' => ['nullable', 'integer', 'min:1'],
             'seats_per_ticket' => ['required', 'integer', 'min:1'],
-            'is_row_ticket' => ['sometimes', 'boolean'],
             'is_seatable' => ['sometimes', 'boolean'],
             'is_hidden' => ['sometimes', 'boolean'],
             'purchase_from' => ['nullable', 'date'],
@@ -37,7 +36,6 @@ class StoreTicketTypeRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'is_row_ticket' => $this->boolean('is_row_ticket'),
             'is_seatable' => $this->boolean('is_seatable'),
             'is_hidden' => $this->boolean('is_hidden'),
         ]);

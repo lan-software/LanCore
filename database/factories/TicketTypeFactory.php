@@ -46,6 +46,9 @@ class TicketTypeFactory extends Factory
         ]);
     }
 
+    /**
+     * @deprecated Use groupTicket() instead. Row ticket logic is deprecated.
+     */
     public function rowTicket(int $seatsPerTicket = 5): static
     {
         return $this->state(fn (array $attributes): array => [
