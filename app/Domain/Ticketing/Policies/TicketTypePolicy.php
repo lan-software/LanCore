@@ -2,9 +2,8 @@
 
 namespace App\Domain\Ticketing\Policies;
 
-use App\Domain\Ticketing\Enums\Permission;
 use App\Domain\Ticketing\Models\TicketType;
-use App\Enums\Permission as AppPermission;
+use App\Enums\Permission;
 use App\Models\User;
 
 /**
@@ -40,6 +39,6 @@ class TicketTypePolicy
 
     public function viewAudit(User $user, TicketType $ticketType): bool
     {
-        return $user->hasPermission(AppPermission::ViewAuditLogs);
+        return $user->hasPermission(Permission::ViewAuditLogs);
     }
 }

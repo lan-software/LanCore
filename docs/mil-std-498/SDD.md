@@ -110,16 +110,16 @@ Authorization uses a static enum-based permission system with no database tables
 
 ```
 RoleName Enum (5 cases)
-  └── RolePermissionMap::forRole() mapping
+  └── Permission::forRole() mapping
        └── HasPermissions trait (on User model)
             └── Policy classes (check $user->hasPermission())
 ```
 
-**Domain Permission Enums**: Each domain defines its own `Permission` enum implementing `App\Contracts\PermissionEnum`. Cross-cutting permissions (`ManageUsers`, `SyncUserRoles`, `DeleteUsers`, `ViewAuditLogs`) remain in `app/Enums/Permission.php`. Domain-specific permissions live inside their domain (e.g., `App\Domain\Ticketing\Enums\Permission` defines `ManageTicketing` and `CheckInTickets`). This keeps permissions co-located with their domain, following the project's domain-driven design structure. Targeted splits exist where a domain requires finer control (e.g., `ViewOrders` vs `ManageOrders`, `CheckInTickets` vs `ManageTicketing`).
+**Permission Enum** (`app/Enums/Permission.php`): Defines 24 per-domain permission cases (e.g., `ManageEvents`, `ManageTicketing`, `ViewOrders`). Targeted splits exist where a domain requires finer control (e.g., `ViewOrders` vs `ManageOrders`, `CheckInTickets` vs `ManageTicketing`).
 
-**Static Role Mapping** (`app/Enums/RolePermissionMap.php`): Each `RoleName` maps to a fixed set of `PermissionEnum` cases via `RolePermissionMap::forRole()`. Superadmin receives `RolePermissionMap::all()` (every permission across all domains). Admin receives all except `SyncUserRoles` and `DeleteUsers`. Moderator receives content moderation permissions only. User receives none (authorization relies on ownership checks).
+**Static Role Mapping** (`Permission::forRole()`): Each `RoleName` maps to a fixed set of `Permission` cases. Superadmin receives `Permission::cases()` (all). Admin receives all except `SyncUserRoles` and `DeleteUsers`. Moderator receives content moderation permissions only. User receives none (authorization relies on ownership checks).
 
-**HasPermissions Trait** (`app/Concerns/HasPermissions.php`): Provides `hasPermission(PermissionEnum)`, `hasAnyPermission(PermissionEnum...)`, and `allPermissions()` methods on the User model. Resolves permissions by iterating loaded roles and collecting from `RolePermissionMap::forRole()`. Accepts any enum implementing the `PermissionEnum` interface.
+**HasPermissions Trait** (`app/Concerns/HasPermissions.php`): Provides `hasPermission(Permission)`, `hasAnyPermission(Permission...)`, and `allPermissions()` methods on the User model. Resolves permissions by iterating loaded roles and collecting from `Permission::forRole()`.
 
 **Centralized Superadmin Bypass** (`AppServiceProvider::configurePolicies()`): A single `Gate::before()` callback grants superadmin access to all policy checks, eliminating the repeated `before()` method previously present in every policy class.
 
@@ -527,7 +527,7 @@ Built on **reka-ui** (headless) + **Tailwind CSS v4**:
 | WHK-F-* | app/Domain/Webhook/ |
 | GAM-F-* | app/Domain/Games/ |
 | USR-F-001..013 | app/Models/User, app/Domain/ controllers |
-| USR-F-014..020 | app/Contracts/PermissionEnum.php, app/Enums/Permission.php, app/Enums/RolePermissionMap.php, app/Domain/*/Enums/Permission.php, app/Concerns/HasPermissions.php, app/Providers/AppServiceProvider.php, resources/js/composables/usePermissions.ts |
+| USR-F-014..020 | app/Enums/Permission.php, app/Concerns/HasPermissions.php, app/Providers/AppServiceProvider.php, resources/js/composables/usePermissions.ts |
 
 ---
 

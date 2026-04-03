@@ -2,9 +2,8 @@
 
 namespace App\Domain\Shop\Policies;
 
-use App\Domain\Shop\Enums\Permission;
 use App\Domain\Shop\Models\Voucher;
-use App\Enums\Permission as AppPermission;
+use App\Enums\Permission;
 use App\Models\User;
 
 /**
@@ -40,6 +39,6 @@ class VoucherPolicy
 
     public function viewAudit(User $user, Voucher $voucher): bool
     {
-        return $user->hasPermission(AppPermission::ViewAuditLogs);
+        return $user->hasPermission(Permission::ViewAuditLogs);
     }
 }

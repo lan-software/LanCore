@@ -2,8 +2,8 @@
 
 namespace App\Domain\Announcement\Policies;
 
-use App\Domain\Announcement\Enums\Permission;
 use App\Domain\Announcement\Models\Announcement;
+use App\Enums\Permission;
 use App\Models\User;
 
 /**

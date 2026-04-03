@@ -2,8 +2,8 @@
 
 namespace App\Domain\Webhook\Policies;
 
-use App\Domain\Webhook\Enums\Permission;
 use App\Domain\Webhook\Models\Webhook;
+use App\Enums\Permission;
 use App\Models\User;
 
 /**

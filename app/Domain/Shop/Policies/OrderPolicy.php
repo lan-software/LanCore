@@ -2,8 +2,8 @@
 
 namespace App\Domain\Shop\Policies;
 
-use App\Domain\Shop\Enums\Permission;
 use App\Domain\Shop\Models\Order;
+use App\Enums\Permission;
 use App\Models\User;
 
 /**

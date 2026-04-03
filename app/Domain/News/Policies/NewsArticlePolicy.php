@@ -2,9 +2,8 @@
 
 namespace App\Domain\News\Policies;
 
-use App\Domain\News\Enums\Permission;
 use App\Domain\News\Models\NewsArticle;
-use App\Enums\Permission as AppPermission;
+use App\Enums\Permission;
 use App\Models\User;
 
 /**
@@ -39,6 +38,6 @@ class NewsArticlePolicy
 
     public function viewAudit(User $user, NewsArticle $article): bool
     {
-        return $user->hasPermission(AppPermission::ViewAuditLogs);
+        return $user->hasPermission(Permission::ViewAuditLogs);
     }
 }

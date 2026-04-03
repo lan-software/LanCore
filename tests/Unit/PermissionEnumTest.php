@@ -1,32 +1,26 @@
 <?php
 
-use App\Domain\Announcement\Enums\Permission as AnnouncementPermission;
-use App\Domain\News\Enums\Permission as NewsPermission;
-use App\Domain\Sponsoring\Enums\Permission as SponsoringPermission;
 use App\Enums\Permission;
 use App\Enums\RoleName;
-use App\Enums\RolePermissionMap;
 
 it('grants superadmin all permissions', function () {
-    $permissions = RolePermissionMap::forRole(RoleName::Superadmin);
+    $permissions = Permission::forRole(RoleName::Superadmin);
 
-    expect($permissions)->toEqual(RolePermissionMap::all());
+    expect($permissions)->toEqual(Permission::cases());
 });
 
 it('excludes SyncUserRoles and DeleteUsers from admin', function () {
-    $permissions = RolePermissionMap::forRole(RoleName::Admin);
+    $permissions = Permission::forRole(RoleName::Admin);
 
     expect($permissions)->not->toContain(Permission::SyncUserRoles)
         ->and($permissions)->not->toContain(Permission::DeleteUsers);
 });
 
-it('gives admin all other permissions except superadmin-only and sponsor-manager-only', function () {
-    $adminPerms = RolePermissionMap::forRole(RoleName::Admin);
-    $excluded = [Permission::SyncUserRoles, Permission::DeleteUsers, SponsoringPermission::ManageAssignedSponsors];
-
+it('gives admin all other permissions', function () {
+    $adminPerms = Permission::forRole(RoleName::Admin);
     $expected = array_filter(
-        RolePermissionMap::all(),
-        fn ($p) => ! in_array($p, $excluded, true),
+        Permission::cases(),
+        fn (Permission $p) => ! in_array($p, [Permission::SyncUserRoles, Permission::DeleteUsers, Permission::ManageAssignedSponsors], true),
     );
 
     foreach ($expected as $perm) {
@@ -35,28 +29,28 @@ it('gives admin all other permissions except superadmin-only and sponsor-manager
 });
 
 it('gives moderator only content moderation permissions', function () {
-    $permissions = RolePermissionMap::forRole(RoleName::Moderator);
+    $permissions = Permission::forRole(RoleName::Moderator);
 
-    expect($permissions)->toContain(NewsPermission::ModerateNewsComments)
-        ->and($permissions)->toContain(AnnouncementPermission::ManageAnnouncements)
+    expect($permissions)->toContain(Permission::ModerateNewsComments)
+        ->and($permissions)->toContain(Permission::ManageAnnouncements)
         ->and($permissions)->toHaveCount(2);
 });
 
 it('gives sponsor manager only assigned sponsors permission', function () {
-    $permissions = RolePermissionMap::forRole(RoleName::SponsorManager);
+    $permissions = Permission::forRole(RoleName::SponsorManager);
 
-    expect($permissions)->toEqual([SponsoringPermission::ManageAssignedSponsors]);
+    expect($permissions)->toEqual([Permission::ManageAssignedSponsors]);
 });
 
 it('gives regular user no permissions', function () {
-    $permissions = RolePermissionMap::forRole(RoleName::User);
+    $permissions = Permission::forRole(RoleName::User);
 
     expect($permissions)->toBeEmpty();
 });
 
 it('covers every RoleName case', function () {
     foreach (RoleName::cases() as $role) {
-        $result = RolePermissionMap::forRole($role);
+        $result = Permission::forRole($role);
         expect($result)->toBeArray();
     }
 });
