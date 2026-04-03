@@ -155,7 +155,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 :id="`event-${event.id}`"
                                 name="event_ids[]"
                                 :value="event.id"
-                                :default-checked="
+                                :default-value="
                                     props.selectedEventId === event.id
                                 "
                             />

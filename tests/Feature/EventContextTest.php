@@ -269,3 +269,31 @@ it('passes null selectedEventId to sponsor create page when no event context is 
                 ->where('selectedEventId', null)
         );
 });
+
+it('passes selectedEventId to announcement create page', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $event = Event::factory()->create();
+
+    $this->actingAs($admin)
+        ->withSession(['selected_event_id' => $event->id])
+        ->get('/announcements/create')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('announcements/Create')
+                ->where('selectedEventId', $event->id)
+        );
+});
+
+it('passes null selectedEventId to announcement create page when no event context is set', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->get('/announcements/create')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('announcements/Create')
+                ->where('selectedEventId', null)
+        );
+});

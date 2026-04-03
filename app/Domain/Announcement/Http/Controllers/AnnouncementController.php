@@ -56,6 +56,7 @@ class AnnouncementController extends Controller
 
         return Inertia::render('announcements/Create', [
             'events' => Event::query()->orderByDesc('start_date')->get(['id', 'name']),
+            'selectedEventId' => session('selected_event_id'),
         ]);
     }
 

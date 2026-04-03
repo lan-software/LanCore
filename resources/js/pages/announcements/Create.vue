@@ -21,8 +21,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { index as announcementsRoute } from '@/routes/announcements';
 import type { BreadcrumbItem } from '@/types';
 
-defineProps<{
+const props = defineProps<{
     events: { id: number; name: string }[];
+    selectedEventId?: number | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -37,7 +38,7 @@ const form = useForm({
     title: '',
     description: '',
     priority: 'normal',
-    event_id: '',
+    event_id: props.selectedEventId ? String(props.selectedEventId) : '',
     publish_now: false,
 });
 
