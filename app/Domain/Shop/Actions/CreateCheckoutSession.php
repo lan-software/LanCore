@@ -131,7 +131,7 @@ class CreateCheckoutSession
 
         foreach ($items as $item) {
             $ticketType = TicketType::findOrFail($item['ticket_type_id']);
-            $totalSeatsNeeded += $ticketType->seats_per_ticket * $item['quantity'];
+            $totalSeatsNeeded += $ticketType->totalSeatsConsumed() * $item['quantity'];
 
             foreach ($item['addon_ids'] ?? [] as $addonId) {
                 $addon = Addon::findOrFail($addonId);

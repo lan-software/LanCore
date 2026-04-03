@@ -5,6 +5,7 @@ namespace App\Domain\Ticketing\Models;
 use App\Domain\Event\Models\Event;
 use App\Domain\Shop\Concerns\InteractsWithShop;
 use App\Domain\Shop\Contracts\Purchasable;
+use App\Domain\Ticketing\Enums\CheckInMode;
 use Database\Factories\TicketTypeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,11 +16,12 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @see docs/mil-std-498/SSS.md CAP-TKT-001, CAP-TKT-003, CAP-TKT-008, CAP-TKT-009, CAP-TKT-010
- * @see docs/mil-std-498/SRS.md TKT-F-001, TKT-F-009, TKT-F-011
+ * @see docs/mil-std-498/SSS.md CAP-TKT-001, CAP-TKT-003, CAP-TKT-009, CAP-TKT-010, CAP-TKT-011, CAP-TKT-012
+ * @see docs/mil-std-498/SRS.md TKT-F-001, TKT-F-011, TKT-F-013, TKT-F-015
  */
 #[Fillable([
     'name', 'description', 'price', 'quota', 'max_per_user', 'seats_per_ticket',
+    'max_users_per_ticket', 'check_in_mode',
     'is_row_ticket', 'is_seatable', 'is_hidden',
     'purchase_from', 'purchase_until', 'is_locked',
     'event_id', 'ticket_category_id', 'ticket_group_id',
@@ -48,6 +50,8 @@ class TicketType extends Model implements AuditableContract, Purchasable
             'quota' => 'integer',
             'max_per_user' => 'integer',
             'seats_per_ticket' => 'integer',
+            'max_users_per_ticket' => 'integer',
+            'check_in_mode' => CheckInMode::class,
             'is_row_ticket' => 'boolean',
             'is_seatable' => 'boolean',
             'is_hidden' => 'boolean',
@@ -75,6 +79,16 @@ class TicketType extends Model implements AuditableContract, Purchasable
     public function tickets(): HasMany
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function isGroupTicket(): bool
+    {
+        return $this->max_users_per_ticket > 1;
+    }
+
+    public function totalSeatsConsumed(): int
+    {
+        return $this->seats_per_ticket * $this->max_users_per_ticket;
     }
 
     public function isAvailableForPurchase(): bool

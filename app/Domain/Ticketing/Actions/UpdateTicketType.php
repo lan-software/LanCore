@@ -21,6 +21,8 @@ class UpdateTicketType
                 unset(
                     $attributes['price'],
                     $attributes['seats_per_ticket'],
+                    $attributes['max_users_per_ticket'],
+                    $attributes['check_in_mode'],
                     $attributes['is_seatable'],
                     $attributes['event_id'],
                 );

@@ -27,6 +27,8 @@ class TicketTypeFactory extends Factory
             'price' => fake()->numberBetween(1500, 10000),
             'quota' => fake()->numberBetween(10, 200),
             'seats_per_ticket' => 1,
+            'max_users_per_ticket' => 1,
+            'check_in_mode' => 'individual',
             'is_row_ticket' => false,
             'is_seatable' => true,
             'is_hidden' => false,
@@ -43,6 +45,14 @@ class TicketTypeFactory extends Factory
     {
         return $this->state(fn (array $attributes): array => [
             'is_hidden' => true,
+        ]);
+    }
+
+    public function groupTicket(int $maxUsers = 4, string $checkInMode = 'individual'): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'max_users_per_ticket' => $maxUsers,
+            'check_in_mode' => $checkInMode,
         ]);
     }
 

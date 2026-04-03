@@ -105,16 +105,17 @@ class Event extends Model implements AuditableContract
             return PHP_INT_MAX;
         }
 
-        $ticketSeats = $this->tickets()
+        $ticketSeats = (int) $this->tickets()
             ->join('ticket_types', 'tickets.ticket_type_id', '=', 'ticket_types.id')
-            ->sum('ticket_types.seats_per_ticket');
+            ->selectRaw('COALESCE(SUM(ticket_types.seats_per_ticket * ticket_types.max_users_per_ticket), 0) as total')
+            ->value('total');
 
         $addonSeats = $this->tickets()
             ->join('ticket_ticket_addon', 'tickets.id', '=', 'ticket_ticket_addon.ticket_id')
             ->join('ticket_addons', 'ticket_ticket_addon.ticket_addon_id', '=', 'ticket_addons.id')
             ->sum('ticket_addons.seats_consumed');
 
-        return max(0, $this->seat_capacity - (int) $ticketSeats - (int) $addonSeats);
+        return max(0, $this->seat_capacity - $ticketSeats - (int) $addonSeats);
     }
 
     /**
