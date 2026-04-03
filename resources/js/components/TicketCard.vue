@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Form } from '@inertiajs/vue3';
-import { Armchair, Eye, EyeOff } from 'lucide-vue-next';
+import { Form, router } from '@inertiajs/vue3';
+import { Armchair, Eye, EyeOff, X } from 'lucide-vue-next';
 import { ref } from 'vue';
 import TicketController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketController';
 import InputError from '@/components/InputError.vue';
@@ -241,13 +241,36 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                         class="flex items-center justify-between rounded-md bg-muted px-2 py-1 text-sm"
                     >
                         <span>{{ user.name }} ({{ user.email }})</span>
-                        <Badge
-                            v-if="user.pivot?.checked_in_at"
-                            variant="secondary"
-                            class="text-xs"
-                        >
-                            Checked in
-                        </Badge>
+                        <div class="flex items-center gap-1">
+                            <Badge
+                                v-if="user.pivot?.checked_in_at"
+                                variant="secondary"
+                                class="text-xs"
+                            >
+                                Checked in
+                            </Badge>
+                            <button
+                                v-if="
+                                    canUpdateUser &&
+                                    !user.pivot?.checked_in_at
+                                "
+                                type="button"
+                                class="rounded p-0.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                                @click="
+                                    router.delete(
+                                        TicketController.removeUser({
+                                            ticket: ticket.id,
+                                            user: user.id,
+                                        }).url,
+                                    )
+                                "
+                            >
+                                <X class="size-3.5" />
+                                <span class="sr-only"
+                                    >Remove {{ user.name }}</span
+                                >
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <p
