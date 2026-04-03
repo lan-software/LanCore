@@ -24,6 +24,87 @@ export type GameMode = {
     updated_at: string;
 };
 
+// Competition Domain
+
+export type CompetitionStatus =
+    | 'draft'
+    | 'registration_open'
+    | 'registration_closed'
+    | 'running'
+    | 'finished'
+    | 'archived';
+
+export type CompetitionType = 'tournament' | 'league' | 'race';
+
+export type Competition = {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    type: CompetitionType;
+    stage_type: string;
+    status: CompetitionStatus;
+    team_size: number | null;
+    max_teams: number | null;
+    registration_opens_at: string | null;
+    registration_closes_at: string | null;
+    starts_at: string | null;
+    ends_at: string | null;
+    event_id: number | null;
+    event?: { id: number; name: string } | null;
+    game_id: number | null;
+    game?: Game | null;
+    game_mode_id: number | null;
+    game_mode?: GameMode | null;
+    teams?: CompetitionTeam[];
+    teams_count?: number;
+    lanbrackets_id: number | null;
+    lanbrackets_share_token: string | null;
+    settings: Record<string, unknown> | null;
+    metadata: Record<string, unknown> | null;
+    created_at: string;
+    updated_at: string;
+};
+
+export type CompetitionTeam = {
+    id: number;
+    competition_id: number;
+    name: string;
+    tag: string | null;
+    captain_user_id: number | null;
+    captain?: { id: number; name: string } | null;
+    lanbrackets_id: number | null;
+    active_members?: CompetitionTeamMember[];
+    active_members_count?: number;
+    created_at: string;
+    updated_at: string;
+};
+
+export type CompetitionTeamMember = {
+    id: number;
+    team_id: number;
+    user_id: number;
+    user?: { id: number; name: string; email: string };
+    joined_at: string | null;
+    left_at: string | null;
+    created_at: string;
+    updated_at: string;
+};
+
+export type MatchResultProof = {
+    id: number;
+    competition_id: number;
+    lanbrackets_match_id: number;
+    submitted_by_user_id: number;
+    submitted_by_team_id: number | null;
+    screenshot_path: string;
+    scores: { participant_id: number; score: number }[];
+    is_disputed: boolean;
+    resolved_at: string | null;
+    created_at: string;
+    updated_at: string;
+};
+
 export type Address = {
     id: number;
     street: string;

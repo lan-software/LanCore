@@ -18,6 +18,9 @@ export const Permission = {
     // Events (app/Domain/Event/Enums/Permission.php)
     ManageEvents: 'manage_events',
 
+    // Competitions (app/Domain/Competition/Enums/Permission.php)
+    ManageCompetitions: 'manage_competitions',
+
     // Games (app/Domain/Games/Enums/Permission.php)
     ManageGames: 'manage_games',
 

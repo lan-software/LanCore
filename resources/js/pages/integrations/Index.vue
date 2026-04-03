@@ -1,11 +1,20 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Plus } from 'lucide-vue-next';
-import { edit } from '@/actions/App/Domain/Integration/Http/Controllers/IntegrationAppController';
-import { create as integrationCreate } from '@/actions/App/Domain/Integration/Http/Controllers/IntegrationAppController';
+import { ChevronDown, Plus, Swords } from 'lucide-vue-next';
+import {
+    edit,
+    create as integrationCreate,
+    createLanBrackets,
+} from '@/actions/App/Domain/Integration/Http/Controllers/IntegrationAppController';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -79,12 +88,32 @@ const { setSearch, setPerPage } = useDataTable(
                     title="Integrations"
                     description="Manage first-party integration apps and API tokens"
                 />
-                <Link :href="integrationCreate().url">
-                    <Button>
-                        <Plus class="size-4" />
-                        Add Integration
+                <div class="flex">
+                    <Button as-child class="rounded-r-none">
+                        <Link :href="integrationCreate().url">
+                            <Plus class="size-4" />
+                            Add Integration
+                        </Link>
                     </Button>
-                </Link>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button
+                                variant="default"
+                                class="rounded-l-none border-l border-primary-foreground/20 px-2"
+                            >
+                                <ChevronDown class="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem as-child>
+                                <Link :href="createLanBrackets().url">
+                                    <Swords class="mr-2 size-4" />
+                                    Add LanBrackets
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
 
             <!-- Filters -->

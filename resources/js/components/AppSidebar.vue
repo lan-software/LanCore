@@ -22,6 +22,7 @@ import {
     Rows3,
     ShieldCheck,
     ShoppingCart,
+    Swords,
     Tag,
     Ticket,
     TicketCheck,
@@ -53,6 +54,8 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard, home } from '@/routes';
 import { index as achievementsIndex } from '@/routes/achievements';
+import { index as competitionsIndex } from '@/routes/competitions';
+import { index as myCompetitionsIndex } from '@/routes/my-competitions';
 import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import { index as announcementsIndex } from '@/routes/announcements';
 import { index as eventsIndex } from '@/routes/events';
@@ -98,6 +101,11 @@ const mainNavItems: NavItem[] = [
         href: myOrdersIndex(),
         icon: ShoppingCart,
     },
+    {
+        title: 'My Competitions',
+        href: myCompetitionsIndex(),
+        icon: Swords,
+    },
 ];
 
 const allPinnableItems = computed<NavItem[]>(() => {
@@ -119,6 +127,12 @@ const allPinnableItems = computed<NavItem[]>(() => {
             title: 'My Orders',
             href: myOrdersIndex(),
             icon: ShoppingCart,
+        },
+        {
+            id: 'my-competitions',
+            title: 'My Competitions',
+            href: myCompetitionsIndex(),
+            icon: Swords,
         },
     ];
 
@@ -192,6 +206,15 @@ const allPinnableItems = computed<NavItem[]>(() => {
             title: 'Venues',
             href: venuesIndex(),
             icon: MapPin,
+        });
+    }
+
+    if (can(Permission.ManageCompetitions)) {
+        items.push({
+            id: 'competitions',
+            title: 'Competitions',
+            href: competitionsIndex(),
+            icon: Swords,
         });
     }
 
@@ -782,16 +805,27 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Competition Domain -->
-            <SidebarGroup v-if="can(Permission.ManageEvents)">
+            <SidebarGroup v-if="can(Permission.ManageCompetitions)">
                 <SidebarGroupLabel>Competition</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <SidebarMenuButton
-                                class="pointer-events-none text-sidebar-foreground/50"
-                            >
-                                <span>Coming soon</span>
+                            <SidebarMenuButton as-child>
+                                <Link :href="competitionsIndex()">
+                                    <Swords />
+                                    <span>Competitions</span>
+                                </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('competitions')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('competitions')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>

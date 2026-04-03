@@ -374,7 +374,26 @@ No gaps identified.
 
 ---
 
-## 15. Venue Domain (CSCI-VEN)
+## 15. Competition Domain (CSCI-COMP)
+
+| Req ID | Requirement | Source | Test File(s) | Status |
+|--------|-------------|--------|--------------|--------|
+| COMP-F-001 | Competition creation with name, type, stage_type, references | `Domain/Competition/Actions/CreateCompetition.php` | `Competition/CompetitionCrudTest.php` | Covered |
+| COMP-F-002 | ManageCompetitions permission enforcement | `Domain/Competition/Policies/CompetitionPolicy.php` | `Competition/CompetitionCrudTest.php` | Covered |
+| COMP-F-003 | Competition lifecycle transitions | `Domain/Competition/Actions/UpdateCompetition.php` | `Competition/CompetitionCrudTest.php` | Covered |
+| COMP-F-004 | Competition deletion (draft/archived) | `Domain/Competition/Actions/DeleteCompetition.php` | `Competition/CompetitionCrudTest.php` | Covered |
+| COMP-F-005 | Team creation with captain | `Domain/Competition/Actions/CreateTeam.php` | `Competition/TeamTest.php` | Covered |
+| COMP-F-006 | Team joining with capacity validation | `Domain/Competition/Actions/JoinTeam.php` | `Competition/TeamTest.php` | Covered |
+| COMP-F-007 | Team leaving with captain succession | `Domain/Competition/Actions/LeaveTeam.php` | `Competition/TeamTest.php` | Covered |
+| COMP-F-008 | Match result submission with proof | `Domain/Competition/Actions/SubmitMatchResult.php` | — | Pending |
+| COMP-F-009 | LanBrackets webhook handling | `Domain/Competition/Actions/HandleLanBracketsWebhook.php` | `Competition/LanBracketsWebhookTest.php` | Covered |
+| COMP-F-010 | Competition sync to LanBrackets | `Domain/Competition/Jobs/SyncCompetitionToLanBrackets.php` | — | Pending |
+| COMP-F-011 | Teams sync to LanBrackets | `Domain/Competition/Jobs/SyncTeamsToLanBrackets.php` | — | Pending |
+| COMP-F-012 | User-facing competition views | `Domain/Competition/Http/Controllers/UserCompetitionController.php` | `Competition/UserCompetitionTest.php` | Covered |
+
+---
+
+## 16. Venue Domain (CSCI-VEN)
 
 | Req ID | Requirement | Source | Test File(s) | Status |
 |--------|-------------|--------|--------------|--------|

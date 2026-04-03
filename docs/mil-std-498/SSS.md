@@ -187,7 +187,17 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-GAM-001 | The system shall maintain a game catalog with descriptions |
 | CAP-GAM-002 | The system shall support game modes with team sizes and parameters |
 
-#### 3.2.14 User Management (CAP-USR)
+#### 3.2.14 Competition (CAP-COMP)
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-COMP-001 | The system shall support competition management with lifecycle states (draft, registration, running, finished, archived) |
+| CAP-COMP-002 | The system shall support team registration with captain and member roles |
+| CAP-COMP-003 | The system shall integrate with LanBrackets for bracket/match management via REST API |
+| CAP-COMP-004 | The system shall support match result submission with screenshot proof |
+| CAP-COMP-005 | The system shall receive webhook notifications from LanBrackets for competition status updates |
+
+#### 3.2.15 User Management (CAP-USR)
 
 | Req ID | Requirement |
 |--------|------------|

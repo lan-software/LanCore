@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Competition\Http\Controllers\LanBracketsWebhookController;
 use App\Domain\Integration\Http\Controllers\IntegrationSsoController;
 use App\Domain\Integration\Http\Controllers\IntegrationUserController;
 use Illuminate\Support\Facades\Route;
@@ -21,3 +22,10 @@ Route::prefix('api/integration')
         Route::post('user/resolve', [IntegrationUserController::class, 'resolve'])->name('api.integration.user.resolve');
         Route::post('sso/exchange', [IntegrationSsoController::class, 'exchange'])->name('api.integration.sso.exchange');
     });
+
+/*
+|--------------------------------------------------------------------------
+| Webhook Routes (HMAC authenticated, stateless)
+|--------------------------------------------------------------------------
+*/
+Route::post('webhooks/lanbrackets', LanBracketsWebhookController::class)->name('webhooks.lanbrackets');

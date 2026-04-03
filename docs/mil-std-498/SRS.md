@@ -287,7 +287,31 @@ The LanCore CSCI shall support the following operational states:
 | GAM-F-002 | The software shall support game modes with: name, team size, parameters |
 | GAM-F-003 | The software shall enforce GamePolicy and GameModePolicy |
 
-#### 3.2.14 Venue Domain (CSCI-VEN)
+#### 3.2.14 Competition Domain (CSCI-COMP)
+
+**Models:** Competition, CompetitionTeam, CompetitionTeamMember, MatchResultProof
+**Controllers:** CompetitionController, UserCompetitionController, TeamController, MatchResultController, LanBracketsWebhookController
+**Actions:** CreateCompetition, UpdateCompetition, DeleteCompetition, CreateTeam, JoinTeam, LeaveTeam, SubmitMatchResult, HandleLanBracketsWebhook
+**Jobs:** SyncCompetitionToLanBrackets, SyncTeamsToLanBrackets
+**Policies:** CompetitionPolicy, CompetitionTeamPolicy, MatchResultProofPolicy
+**Services:** LanBracketsClient
+
+| Req ID | Requirement |
+|--------|------------|
+| COMP-F-001 | The software shall support competition creation with: name, type, stage_type, team_size, max_teams, event/game references |
+| COMP-F-002 | The software shall enforce CompetitionPolicy with ManageCompetitions permission for admin CRUD |
+| COMP-F-003 | The software shall support competition lifecycle transitions: Draft → RegistrationOpen → RegistrationClosed → Running → Finished → Archived |
+| COMP-F-004 | The software shall support competition deletion (draft/archived only) |
+| COMP-F-005 | The software shall support team creation with captain assignment during registration |
+| COMP-F-006 | The software shall support team joining with capacity validation |
+| COMP-F-007 | The software shall support team leaving with captain succession |
+| COMP-F-008 | The software shall support match result submission with screenshot proof upload, proxied to LanBrackets API |
+| COMP-F-009 | The software shall handle LanBrackets webhooks (competition.completed, match.result_reported) with HMAC signature verification |
+| COMP-F-010 | The software shall sync competitions to LanBrackets via queued job with external_reference_id mapping |
+| COMP-F-011 | The software shall sync teams as participants to LanBrackets when registration closes |
+| COMP-F-012 | The software shall provide user-facing competition views scoped to team membership only |
+
+#### 3.2.15 Venue Domain (CSCI-VEN)
 
 **Models:** Venue, VenueImage, Address
 **Controllers:** VenueController

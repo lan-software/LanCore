@@ -68,7 +68,7 @@ app/
 │   ├── Integration/
 │   ├── Webhook/
 │   ├── Games/
-│   └── Competition/           # Planned
+│   └── Competition/           # LanBrackets integration, team management
 ├── Models/                    # Eloquent models (shared)
 ├── Enums/                     # Application enums
 ├── Http/
@@ -217,7 +217,7 @@ Each domain module follows a consistent internal structure:
 | Integration | 2 | 10 | 4 | 1 | 1 |
 | Webhook | 2 | 4 | 1 | 1 | 2 |
 | Games | 2 | 6 | 2 | 0 | 0 |
-| Competition | 0 | 0 | 0 | 0 | 0 |
+| Competition | 4 | 8 | 5 | 0 | 0 |
 
 ### 4.3 Concept of Execution
 

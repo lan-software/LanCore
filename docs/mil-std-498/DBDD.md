@@ -493,7 +493,77 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | created_at | timestamp | |
 | updated_at | timestamp | |
 
-### 4.8 Seating
+### 4.8 Competition
+
+#### 4.8.1 competitions
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| name | varchar | Competition name |
+| slug | varchar (unique) | URL-friendly identifier |
+| description | text (nullable) | Description |
+| event_id | bigint FK (nullable) | References events.id |
+| game_id | bigint FK (nullable) | References games.id |
+| game_mode_id | bigint FK (nullable) | References game_modes.id |
+| type | varchar | CompetitionType enum (tournament, league, race) |
+| stage_type | varchar | StageType enum (single_elimination, etc.) |
+| status | varchar | CompetitionStatus enum (draft, registration_open, etc.) |
+| team_size | integer (nullable) | Players per team |
+| max_teams | integer (nullable) | Maximum number of teams |
+| registration_opens_at | timestamp (nullable) | Registration window start |
+| registration_closes_at | timestamp (nullable) | Registration window end |
+| starts_at | timestamp (nullable) | Competition start time |
+| ends_at | timestamp (nullable) | Competition end time |
+| lanbrackets_id | bigint (nullable) | Foreign ID in LanBrackets |
+| lanbrackets_share_token | varchar (nullable) | Bracket view share token |
+| settings | jsonb (nullable) | Configuration (result_submission_mode, etc.) |
+| metadata | jsonb (nullable) | Arbitrary metadata |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+#### 4.8.2 competition_teams
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| competition_id | bigint FK | References competitions.id (cascade) |
+| name | varchar | Team name (unique per competition) |
+| tag | varchar(10) (nullable) | Short team tag |
+| captain_user_id | bigint FK (nullable) | References users.id |
+| lanbrackets_id | bigint (nullable) | Foreign ID in LanBrackets |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+#### 4.8.3 competition_team_members
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| team_id | bigint FK | References competition_teams.id (cascade) |
+| user_id | bigint FK | References users.id (cascade) |
+| joined_at | timestamp | When user joined the team |
+| left_at | timestamp (nullable) | When user left (null = active) |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+#### 4.8.4 match_result_proofs
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| competition_id | bigint FK | References competitions.id (cascade) |
+| lanbrackets_match_id | bigint | Match ID in LanBrackets |
+| submitted_by_user_id | bigint FK | References users.id |
+| submitted_by_team_id | bigint FK (nullable) | References competition_teams.id |
+| screenshot_path | varchar | S3 file path to proof screenshot |
+| scores | jsonb | Reported scores array |
+| is_disputed | boolean | Whether the other side disputes this result |
+| resolved_at | timestamp (nullable) | When dispute was resolved |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+### 4.9 Seating
 
 #### 4.8.1 seat_plans
 

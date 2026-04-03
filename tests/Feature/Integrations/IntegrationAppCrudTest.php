@@ -171,3 +171,43 @@ it('forbids regular users from deleting', function () {
 
     expect(IntegrationApp::find($app->id))->not->toBeNull();
 });
+
+/*
+|--------------------------------------------------------------------------
+| Crafted Create — LanBrackets
+|--------------------------------------------------------------------------
+*/
+
+it('displays the LanBrackets create page for admins', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->get('/integrations/create/lanbrackets')
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page->component('integrations/CreateLanBrackets'));
+});
+
+it('creates a LanBrackets integration with prepopulated data', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->post('/integrations', [
+            'name' => 'LanBrackets',
+            'slug' => 'lanbrackets',
+            'description' => 'Tournament bracket management system',
+            'callback_url' => 'http://localhost:81/auth/callback',
+            'nav_url' => 'http://localhost:81',
+            'nav_label' => 'Brackets',
+            'nav_icon' => 'swords',
+            'allowed_scopes' => ['user:read', 'user:email', 'user:roles'],
+            'is_active' => true,
+        ])
+        ->assertRedirect('/integrations');
+
+    $app = IntegrationApp::where('slug', 'lanbrackets')->first();
+    expect($app)->not->toBeNull();
+    expect($app->name)->toBe('LanBrackets');
+    expect($app->nav_label)->toBe('Brackets');
+    expect($app->nav_icon)->toBe('swords');
+    expect($app->allowed_scopes)->toBe(['user:read', 'user:email', 'user:roles']);
+});
