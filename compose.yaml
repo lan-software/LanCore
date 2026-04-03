@@ -144,8 +144,7 @@ networks:
     lanparty:
         external: true
     infrastructure:
-        name: infrastructure
-        driver: bridge
+        external: true
 
 volumes:
     sail-pgsql:
