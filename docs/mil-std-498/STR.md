@@ -162,7 +162,7 @@ See [RTM](RTM.md) Section 16 for the complete gap analysis. Summary:
 | Req ID | Domain | Gap Description | Priority |
 |--------|--------|-----------------|----------|
 | WHK-F-003 | Webhook | HMAC-SHA256 payload signing verification | **High** |
-| SHP-F-004 | Shop | On-site payment flow | **High** |
+| ~~SHP-F-004~~ | ~~Shop~~ | ~~On-site payment flow~~ | ~~Covered~~ |
 | SHP-F-005 | Shop | PaymentProviderManager factory resolution | Medium |
 | PRG-F-004 | Program | ProgramTimeSlotApproaching event and notifications | Medium |
 | NTF-F-003 | Notification | Web Push subscription CRUD | Medium |
@@ -172,7 +172,7 @@ See [RTM](RTM.md) Section 16 for the complete gap analysis. Summary:
 | USR-F-010 | User | Appearance/theme settings | Low |
 | USR-F-011 | User | Stripe Cashier customer management | Low |
 
-**10 gaps out of 117 requirements = 91.5% requirement coverage**
+**9 gaps out of 117 requirements = 92.3% requirement coverage**
 
 ### 4.3 Known Test Issues
 
@@ -202,7 +202,7 @@ Coverage is collected via Xdebug and reported to Codecov. Current metrics reflec
 |-------------|-------------|---------|---------|-----|----------|
 | CSCI-EVT | 10 | 10 | 0 | 0 | **100%** |
 | CSCI-TKT | 16 | 14 | 0 | 1 | 88% |
-| CSCI-SHP | 16 | 12 | 1 | 3 | 75% |
+| CSCI-SHP | 16 | 13 | 1 | 2 | 81% |
 | CSCI-PRG | 7 | 6 | 0 | 1 | 86% |
 | CSCI-SET | 5 | 5 | 0 | 0 | **100%** |
 | CSCI-SPO | 5 | 5 | 0 | 0 | **100%** |
@@ -214,7 +214,7 @@ Coverage is collected via Xdebug and reported to Codecov. Current metrics reflec
 | CSCI-WHK | 7 | 6 | 0 | 1 | 86% |
 | CSCI-GAM | 3 | 3 | 0 | 0 | **100%** |
 | CSCI-USR | 11 | 9 | 0 | 2 | 82% |
-| **Total** | **117** | **102** | **3** | **11** | **89.7%** |
+| **Total** | **117** | **103** | **3** | **10** | **90.6%** |
 
 ---
 
@@ -223,7 +223,7 @@ Coverage is collected via Xdebug and reported to Codecov. Current metrics reflec
 ### 6.1 Immediate Priority — Security-Critical
 
 1. **WHK-F-003:** Add tests for webhook HMAC-SHA256 payload signing
-2. **SHP-F-004:** Add tests for on-site payment complete flow
+2. ~~**SHP-F-004:** Add tests for on-site payment complete flow~~ (Covered)
 
 ### 6.2 Pre-Alpha — Feature Completeness
 

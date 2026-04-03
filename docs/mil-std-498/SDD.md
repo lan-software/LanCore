@@ -243,6 +243,13 @@ total_seats_consumed = seats_per_user × max_users_per_ticket × quantity
 ```
 Reserved at purchase time. Remaining capacity = `event.seat_capacity - Σ(total_seats_consumed) - Σ(addon_seats)`.
 
+**On-Site Payment Flow:**
+```
+User Checkout (on_site) → Order created (Pending) → User sees "Pay at venue"
+Admin → orders/Show → "Confirm Payment Received" → FulfillOrder → Completed + Tickets issued
+```
+On-site orders are NOT immediately fulfilled. They remain `Pending` until an admin confirms payment via `OrderController.confirmPayment()`, which calls `FulfillOrder.execute()` to create tickets and send the order confirmation notification.
+
 **Check-In Flow:**
 ```
 Individual Mode:

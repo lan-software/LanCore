@@ -2,18 +2,26 @@
 
 namespace App\Domain\Shop\Http\Controllers;
 
+use App\Domain\Shop\Actions\FulfillOrder;
+use App\Domain\Shop\Enums\OrderStatus;
+use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Http\Requests\OrderIndexRequest;
 use App\Domain\Shop\Models\Order;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 /**
  * @see docs/mil-std-498/SSS.md CAP-SHP-004
- * @see docs/mil-std-498/SRS.md SHP-F-006, SHP-F-014
+ * @see docs/mil-std-498/SRS.md SHP-F-004, SHP-F-006, SHP-F-014
  */
 class OrderController extends Controller
 {
+    public function __construct(
+        private readonly FulfillOrder $fulfillOrder,
+    ) {}
+
     public function index(OrderIndexRequest $request): Response
     {
         $this->authorize('viewAny', Order::class);
@@ -63,5 +71,22 @@ class OrderController extends Controller
         return Inertia::render('orders/Show', [
             'order' => $order,
         ]);
+    }
+
+    public function confirmPayment(Order $order): RedirectResponse
+    {
+        $this->authorize('confirmPayment', $order);
+
+        if ($order->status !== OrderStatus::Pending) {
+            return back()->withErrors(['order' => 'This order is not pending.']);
+        }
+
+        if ($order->payment_method !== PaymentMethod::OnSite) {
+            return back()->withErrors(['order' => 'Only on-site orders can be manually confirmed.']);
+        }
+
+        $this->fulfillOrder->execute($order);
+
+        return back();
     }
 }

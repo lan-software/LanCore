@@ -110,7 +110,7 @@ The LanCore CSCI shall support the following operational states:
 | SHP-F-001 | The software shall maintain one cart per user per event |
 | SHP-F-002 | The software shall support polymorphic cart items (tickets, add-ons via Purchasable interface) |
 | SHP-F-003 | The software shall create Stripe Checkout sessions via StripePaymentProvider |
-| SHP-F-004 | The software shall support on-site payment via OnSitePaymentProvider |
+| SHP-F-004 | The software shall support on-site payment via OnSitePaymentProvider; orders remain pending until admin confirms payment received, which triggers fulfillment |
 | SHP-F-005 | The software shall select payment provider via PaymentProviderManager factory |
 | SHP-F-006 | The software shall track order statuses: pending, confirmed, failed, refunded, cancelled |
 | SHP-F-007 | The software shall support vouchers with types: fixed_amount, percentage |

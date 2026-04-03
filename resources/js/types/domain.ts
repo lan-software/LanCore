@@ -263,7 +263,7 @@ export type PaymentProviderCondition = {
     updated_at: string;
 };
 
-export type OrderStatus = 'Pending' | 'Completed' | 'Failed' | 'Refunded';
+export type OrderStatus = 'pending' | 'completed' | 'failed' | 'refunded';
 
 export type PaymentMethod = 'stripe' | 'on_site';
 

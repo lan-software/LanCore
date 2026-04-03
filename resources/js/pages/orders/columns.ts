@@ -51,10 +51,10 @@ const statusVariant: Record<
     string,
     'default' | 'secondary' | 'destructive' | 'outline'
 > = {
-    Completed: 'default',
-    Pending: 'outline',
-    Failed: 'destructive',
-    Refunded: 'secondary',
+    completed: 'default',
+    pending: 'outline',
+    failed: 'destructive',
+    refunded: 'secondary',
 };
 
 export const columns: ColumnDef<Order>[] = [
@@ -101,12 +101,35 @@ export const columns: ColumnDef<Order>[] = [
         header: sortableHeader('Status'),
         cell: ({ row }) => {
             const status = row.getValue<string>('status');
+            const isAwaitingPayment =
+                status === 'pending' &&
+                row.original.payment_method === 'on_site';
 
-            return h(
-                Badge,
-                { variant: statusVariant[status] ?? 'outline' },
-                () => status,
-            );
+            const label =
+                status.charAt(0).toUpperCase() + status.slice(1);
+
+            const badges = [
+                h(
+                    Badge,
+                    { variant: statusVariant[status] ?? 'outline' },
+                    () => label,
+                ),
+            ];
+
+            if (isAwaitingPayment) {
+                badges.push(
+                    h(
+                        Badge,
+                        {
+                            variant: 'outline',
+                            class: 'ml-1 border-amber-500 text-amber-600',
+                        },
+                        () => 'Awaiting Payment',
+                    ),
+                );
+            }
+
+            return h('div', { class: 'flex items-center gap-1' }, badges);
         },
     },
     {

@@ -161,7 +161,7 @@ LanCore is a ground-up rewrite providing:
 #### 5.2.2a Group Ticket Purchase and Assignment
 
 1. Admin creates a group ticket type with max users per ticket (e.g., 4) and a check-in mode (individual or group)
-2. User purchases a group ticket — seat capacity is reserved based on `seats_per_user × max_users_per_ticket`
+2. User purchases a group ticket — seat capacity is reserved based on `seats_per_user × max_users_per_ticket` (on-site orders stay pending until admin confirms payment)
 3. Purchaser (owner) can assign additional users to the ticket up to the configured limit
 4. Each assigned user appears in the ticket's user list with their own check-in status
 5. Owner or manager can add/remove assigned users before the event

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { edit as eventEdit } from '@/actions/App/Domain/Event/Http/Controllers/EventController';
 import OrderController from '@/actions/App/Domain/Shop/Http/Controllers/OrderController';
 import { show as adminTicketShow } from '@/actions/App/Domain/Ticketing/Http/Controllers/AdminTicketController';
@@ -61,10 +61,10 @@ const statusVariant: Record<
     string,
     'default' | 'secondary' | 'destructive' | 'outline'
 > = {
-    Completed: 'default',
-    Pending: 'outline',
-    Failed: 'destructive',
-    Refunded: 'secondary',
+    completed: 'default',
+    pending: 'outline',
+    failed: 'destructive',
+    refunded: 'secondary',
 };
 </script>
 
@@ -105,8 +105,28 @@ const statusVariant: Record<
                                     :variant="
                                         statusVariant[order.status] ?? 'outline'
                                     "
+                                    class="capitalize"
                                     >{{ order.status }}</Badge
                                 >
+                                <Button
+                                    v-if="
+                                        order.status === 'pending' &&
+                                        order.payment_method === 'on_site'
+                                    "
+                                    size="sm"
+                                    class="ml-2"
+                                    @click="
+                                        router.patch(
+                                            OrderController.confirmPayment(
+                                                order.id,
+                                            ).url,
+                                            {},
+                                            { preserveScroll: true },
+                                        )
+                                    "
+                                >
+                                    Confirm Payment Received
+                                </Button>
                             </dd>
                         </div>
                         <div>

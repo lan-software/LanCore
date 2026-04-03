@@ -32,7 +32,8 @@ class OnSitePaymentProvider implements PaymentProvider
     public function initiate(User $user, Order $order): PaymentResult
     {
         // On-site orders are fulfilled immediately — tickets are issued,
-        // but payment happens physically at the event.
+        // but payment is collected at the venue. paid_at remains null
+        // until an admin confirms payment was received.
         $this->fulfillOrder->execute($order);
 
         return PaymentResult::completed(

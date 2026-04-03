@@ -126,7 +126,7 @@ File: tests/Feature/Ticketing/GroupTicketTest.php
 | SHP-F-001 | One cart per user per event | `Domain/Shop/Models/Cart.php` | `Cart/CartTest.php` (21 tests) | Covered |
 | SHP-F-002 | Polymorphic cart items (Purchasable) | `Domain/Shop/Models/CartItem.php` | `Cart/CartTest.php` | Covered |
 | SHP-F-003 | Stripe Checkout sessions | `Domain/Shop/PaymentProviders/StripePaymentProvider.php` | `Shop/StripeCheckoutTest.php` (4 tests) | Covered |
-| SHP-F-004 | On-site payment | `Domain/Shop/PaymentProviders/OnSitePaymentProvider.php` | — | **Gap** |
+| SHP-F-004 | On-site payment with admin confirmation | `Domain/Shop/PaymentProviders/OnSitePaymentProvider.php`, `Domain/Shop/Http/Controllers/OrderController.php` | `Shop/OnSitePaymentTest.php` (6 tests) | Covered |
 | SHP-F-005 | PaymentProviderManager factory | `Domain/Shop/PaymentProviders/PaymentProviderManager.php` | — | **Gap** |
 | SHP-F-006 | Order status tracking | `Domain/Shop/Models/Order.php` | `Shop/OrderControllerTest.php` (6 tests) | Covered |
 | SHP-F-007 | Vouchers (fixed_amount, percentage) | `Domain/Shop/Actions/CreateVoucher.php` | `Ticketing/VoucherCrudTest.php` (7 tests) | Covered |
@@ -141,15 +141,6 @@ File: tests/Feature/Ticketing/GroupTicketTest.php
 | SHP-F-016 | Idempotent order fulfillment | `Domain/Shop/Actions/FulfillOrder.php` | `Shop/StripeWebhookTest.php` (duplicate test) | Covered |
 
 ### Shop Gaps — Proposed Tests
-
-**SHP-F-004: On-Site Payment**
-```
-File: tests/Feature/Shop/OnSitePaymentTest.php
-- it creates an order with on-site payment method
-- it marks on-site order as pending (not immediately fulfilled)
-- it allows admin to manually fulfill an on-site order
-- it prevents double fulfillment of on-site orders
-```
 
 **SHP-F-005: PaymentProviderManager**
 ```
@@ -429,7 +420,7 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | Req ID | Domain | Gap Description | Priority | Proposed Test File |
 |--------|--------|-----------------|----------|--------------------|
 | TKT-F-003 | Ticketing | Ticket group CRUD | Medium | `Ticketing/TicketGroupTest.php` |
-| SHP-F-004 | Shop | On-site payment flow | **High** | `Shop/OnSitePaymentTest.php` |
+| ~~SHP-F-004~~ | ~~Shop~~ | ~~On-site payment flow~~ | — | ~~Covered~~ |
 | SHP-F-005 | Shop | PaymentProviderManager | Medium | `Shop/PaymentProviderManagerTest.php` |
 | SHP-F-013 | Shop | CartItemAdded event | Low | `Shop/CartItemEventTest.php` |
 | PRG-F-004 | Program | Time slot approaching notification | Medium | `Programs/ProgramTimeSlotNotificationTest.php` |
@@ -439,15 +430,14 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | USR-F-010 | User | Appearance settings | Low | `Settings/AppearanceTest.php` |
 | USR-F-011 | User | Stripe customer management | Low | `Shop/StripeCustomerTest.php` |
 
-**Total: 10 gaps out of 117 requirements (91.5% coverage by requirement count)**
+**Total: 9 gaps out of 117 requirements (92.3% coverage by requirement count)**
 
 *Note: TKT-F-009 deprecated and replaced by TKT-F-013..016 (4 new requirements, all now covered).*
 
 ### Priority Order for Implementation
 
 1. **WHK-F-003** — Webhook HMAC signing (security-critical)
-2. **SHP-F-004** — On-site payment flow (core business logic)
-3. **TKT-F-013..016** — Group tickets (complex feature)
+2. **TKT-F-013..016** — Group tickets (complex feature)
 4. **SHP-F-005** — PaymentProviderManager (architecture)
 5. **PRG-F-004** — Time slot notifications (user-facing)
 6. **NTF-F-003** — Push subscriptions (user-facing)

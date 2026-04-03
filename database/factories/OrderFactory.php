@@ -50,4 +50,11 @@ class OrderFactory extends Factory
             'status' => OrderStatus::Failed,
         ]);
     }
+
+    public function onSite(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'payment_method' => PaymentMethod::OnSite,
+        ]);
+    }
 }

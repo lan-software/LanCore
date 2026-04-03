@@ -290,7 +290,20 @@ This ensures complete isolation between test cases.
 
 ### 4.6 Shop and Payment Tests
 
-#### 4.6.1 Stripe Webhook Processing
+#### 4.6.1 On-Site Payment Flow
+
+**File:** `tests/Feature/Shop/OnSitePaymentTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| creates on-site order that stays pending | User, event, ticket type | Order::factory()->pending()->onSite() | Order status = Pending, payment_method = on_site, 0 tickets |
+| shows pending message on checkout success | User, pending on-site order | GET /cart/checkout/{order}/success | 200, Inertia 'shop/CheckoutSuccess', status = pending |
+| admin confirms payment on pending on-site order | Admin, pending on-site order with metadata + order lines | PATCH /orders/{order}/confirm-payment | 302, order Completed, tickets created |
+| prevents non-admin from confirming payment | Regular user, pending on-site order | PATCH /orders/{order}/confirm-payment | 403 Forbidden |
+| prevents confirming on non-on-site orders | Admin, pending Stripe order | PATCH /orders/{order}/confirm-payment | 302, session error |
+| prevents confirming already completed orders | Admin, completed on-site order | PATCH /orders/{order}/confirm-payment | 302, session error |
+
+#### 4.6.2 Stripe Webhook Processing
 
 **File:** `tests/Feature/Shop/StripeWebhookTest.php`
 
