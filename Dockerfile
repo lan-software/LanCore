@@ -47,6 +47,7 @@ COPY . .
 # Overlay with Wayfinder-generated TypeScript (git-ignored, produced in the deps stage)
 COPY --from=deps /app/resources/js/actions ./resources/js/actions
 COPY --from=deps /app/resources/js/routes ./resources/js/routes
+COPY --from=deps /app/resources/js/wayfinder ./resources/js/wayfinder
 
 # Vite plugin calls `php artisan wayfinder:generate --with-form` at startup.
 # Types are already present above; stub php so the plugin call exits cleanly.
