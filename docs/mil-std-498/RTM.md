@@ -24,9 +24,9 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 - **Gap** — No test coverage exists for this requirement
 
 **Statistics:**
-- Total SRS Requirements: 114
-- Total Test Files: 109
-- Total Test Cases: 749
+- Total SRS Requirements: 121
+- Total Test Files: 118
+- Total Test Cases: 754
 
 ---
 
@@ -57,8 +57,8 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 | TKT-F-004 | Ticket status tracking (active, checked_in, cancelled) | `Domain/Ticketing/Models/Ticket.php` | `Ticketing/TicketManagementTest.php` (6 tests) | Partial |
 | TKT-F-005 | Unique validation IDs | `Domain/Ticketing/Models/Ticket.php` (generateValidationId) | `Ticketing/TicketValidationIdTest.php` (3 tests), `Unit/TicketValidationIdTest.php` (3 tests) | Covered |
 | TKT-F-006 | Three assignment roles (owner, manager, user) | `Domain/Ticketing/Actions/UpdateTicketAssignments.php` | `Ticketing/TicketManagementTest.php` | Covered |
-| TKT-F-007 | Ticket add-ons with pricing history | `Domain/Ticketing/Models/Addon.php` | `Ticketing/TicketTypeCrudTest.php` | Partial |
-| TKT-F-008 | Policy enforcement (TicketType, Category, Addon) | Policies under `Domain/Ticketing/Policies/` | `Events/AccessTest.php`, `Ticketing/TicketTypeCrudTest.php` | Covered |
+| TKT-F-007 | Ticket add-ons with pricing history | `Domain/Ticketing/Models/Addon.php` | `Ticketing/AddonCrudTest.php`, `Ticketing/TicketTypeCrudTest.php` | Covered |
+| TKT-F-008 | Policy enforcement (Ticket, TicketType, Category, Addon) | Policies under `Domain/Ticketing/Policies/` | `Events/AccessTest.php`, `Ticketing/TicketTypeCrudTest.php`, `Ticketing/TicketCategoryCrudTest.php`, `Ticketing/AddonCrudTest.php` | Covered |
 | TKT-F-009 | ~~Seating/row ticket types linked to seat plans~~ **(Deprecated — superseded by TKT-F-013..016)** | — | — | Deprecated |
 | TKT-F-013 | Group ticket types with max_users_per_ticket | `Domain/Ticketing/Models/TicketType.php` | `Ticketing/GroupTicketTest.php` (4 tests) | Covered |
 | TKT-F-014 | Multi-user assignment via ticket_user pivot | `Domain/Ticketing/Models/Ticket.php` | `Ticketing/GroupTicketTest.php` (3 tests) | Covered |
@@ -280,10 +280,12 @@ No gaps identified.
 | Req ID | Requirement | Source | Test File(s) | Status |
 |--------|-------------|--------|--------------|--------|
 | ACH-F-001 | Achievement definitions with name, description, icon | `Domain/Achievements/Actions/CreateAchievement.php` | `Achievements/AchievementCrudTest.php` (9 tests) | Covered |
-| ACH-F-002 | Event-based triggers via AchievementEvent | `Domain/Achievements/Models/AchievementEvent.php` | `Achievements/AchievementGrantingTest.php` (5 tests) | Covered |
+| ACH-F-002 | Event-based triggers via AchievementEvent | `Domain/Achievements/Models/AchievementEvent.php` | `Achievements/AchievementGrantingTest.php` (7 tests) | Covered |
 | ACH-F-003 | ProcessAchievements listener | `Domain/Achievements/Listeners/ProcessAchievements.php` | `Achievements/AchievementGrantingTest.php` | Covered |
 | ACH-F-004 | Achievement-to-user with earned_at | `Domain/Achievements/Actions/GrantAchievement.php` | `Achievements/AchievementGrantingTest.php` | Covered |
 | ACH-F-005 | AchievementPolicy | `Domain/Achievements/Policies/AchievementPolicy.php` | `Achievements/AchievementCrudTest.php` | Covered |
+| ACH-F-006 | AchievementEarnedNotification with achievement details | `Notifications/AchievementEarnedNotification.php` | `Achievements/AchievementGrantingTest.php` (7 tests) | Covered |
+| ACH-F-007 | Achievement notification display in frontend | `components/NotificationBell.vue`, `pages/notifications/Index.vue`, `pages/notifications/Archive.vue` | `Achievements/AchievementGrantingTest.php` | Covered |
 
 No gaps identified.
 
@@ -296,7 +298,7 @@ No gaps identified.
 | NTF-F-001 | Per-user preferences with mail/push toggles | `Domain/Notification/Models/NotificationPreference.php` | `Notification/NotificationPreferencesTest.php` (5 tests) | Covered |
 | NTF-F-002 | Categories: news, events, comments, programs, announcements | `Domain/Notification/Models/NotificationPreference.php` | `Notification/NotificationPreferencesTest.php` | Covered |
 | NTF-F-003 | Web Push subscriptions | `Domain/Notification/Http/Controllers/PushSubscriptionController.php` | `Commands/TestPushNotificationCommandTest.php` (10 tests) | Partial |
-| NTF-F-004 | Program notification subscriptions | `Domain/Notification/Http/Controllers/ProgramSubscriptionController.php` | `Notification/ProgramSubscriptionTest.php` (4 tests) | Covered |
+| NTF-F-004 | Program notification subscriptions | `Domain/Notification/Http/Controllers/ProgramSubscriptionController.php` | `Notification/ProgramSubscriptionTest.php` (4 tests), `Notification/ProgramSubscriptionExtendedTest.php` | Covered |
 | NTF-F-005 | Notification archiving | `Domain/Notification/Http/Controllers/NotificationController.php` | `Notification/NotificationControllerTest.php` (12 tests) | Covered |
 | NTF-F-006 | Delivery via database, mail, web push | Notification classes | `Notification/NewsArticleNotificationTest.php` | Partial |
 | NTF-F-007 | Session-scoped push prompt dismissal | `Domain/Notification/Http/Controllers/PushSubscriptionController.php`, `Http/Middleware/HandleInertiaRequests.php` | `Notification/PushSubscriptionCrudTest.php` (4 tests) | Covered |
@@ -350,22 +352,13 @@ No gaps identified.
 |--------|-------------|--------|--------------|--------|
 | WHK-F-001 | Webhook registration with URL, events, secret | `Domain/Webhook/Actions/CreateWebhook.php` | `Webhook/WebhookTest.php` (27 tests) | Covered |
 | WHK-F-002 | 8 webhook event types | `Domain/Webhook/Enums/WebhookEvent.php` | `Webhook/WebhookTest.php` | Covered |
-| WHK-F-003 | HMAC-SHA256 payload signing | `Domain/Webhook/Listeners/SendWebhookPayload.php` | — | **Gap** |
+| WHK-F-003 | HMAC-SHA256 payload signing | `Domain/Webhook/Listeners/SendWebhookPayload.php` | `Webhook/WebhookSignatureTest.php` | Covered |
 | WHK-F-004 | Delivery tracking (status, duration, body) | `Domain/Webhook/Models/WebhookDelivery.php` | `Webhook/WebhookTest.php` | Covered |
 | WHK-F-005 | Async dispatch via queued listener | `Domain/Webhook/Listeners/SendWebhookPayload.php` | `Webhook/WebhookTest.php` | Covered |
 | WHK-F-006 | Sent count per webhook | `Domain/Webhook/Models/Webhook.php` | `Webhook/WebhookTest.php` | Covered |
 | WHK-F-007 | WebhookPolicy | `Domain/Webhook/Policies/WebhookPolicy.php` | `Webhook/WebhookTest.php` | Covered |
 
-### Webhook Gaps — Proposed Tests
-
-**WHK-F-003: HMAC Signature Verification**
-```
-File: tests/Feature/Webhook/WebhookSignatureTest.php
-- it signs webhook payload with HMAC-SHA256 using webhook secret
-- it includes signature in X-LanCore-Signature header
-- it generates different signatures for different secrets
-- it generates consistent signature for same payload and secret
-```
+No gaps identified.
 
 ---
 
@@ -381,7 +374,19 @@ No gaps identified.
 
 ---
 
-## 15. User Management (CSCI-USR)
+## 15. Venue Domain (CSCI-VEN)
+
+| Req ID | Requirement | Source | Test File(s) | Status |
+|--------|-------------|--------|--------------|--------|
+| VEN-F-001 | Venue CRUD with address | `Domain/Venue/Actions/CreateVenue.php`, `UpdateVenue.php`, `DeleteVenue.php` | `Venues/VenueCrudTest.php` (12 tests) | Covered |
+| VEN-F-002 | Venue images with alt text and sort order | `Domain/Venue/Models/VenueImage.php` | `Venues/VenueCrudTest.php` | Covered |
+| VEN-F-003 | VenuePolicy authorization | `Domain/Venue/Policies/VenuePolicy.php` | `Venues/AccessTest.php` (4 tests) | Covered |
+
+No gaps identified.
+
+---
+
+## 16. User Management (CSCI-USR)
 
 | Req ID | Requirement | Source | Test File(s) | Status |
 |--------|-------------|--------|--------------|--------|
@@ -416,7 +421,7 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 
 ---
 
-## 16. Gap Summary
+## 17. Gap Summary
 
 | Req ID | Domain | Gap Description | Priority | Proposed Test File |
 |--------|--------|-----------------|----------|--------------------|
@@ -427,23 +432,20 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | PRG-F-004 | Program | Time slot approaching notification | Medium | `Programs/ProgramTimeSlotNotificationTest.php` |
 | NWS-F-006 | News | NewsArticleRead analytics event | Low | `News/NewsArticleReadTest.php` |
 | NTF-F-003 | Notification | Push subscription CRUD | Medium | `Notification/PushSubscriptionTest.php` |
-| WHK-F-003 | Webhook | HMAC payload signing | **High** | `Webhook/WebhookSignatureTest.php` |
 | USR-F-010 | User | Appearance settings | Low | `Settings/AppearanceTest.php` |
 | USR-F-011 | User | Stripe customer management | Low | `Shop/StripeCustomerTest.php` |
 
-**Total: 9 gaps out of 118 requirements (92.4% coverage by requirement count)**
+**Total: 8 gaps out of 121 requirements (93.4% coverage by requirement count)**
 
 *Note: TKT-F-009 deprecated and replaced by TKT-F-013..016 (4 new requirements, all now covered).*
 
 ### Priority Order for Implementation
 
-1. **WHK-F-003** — Webhook HMAC signing (security-critical)
-2. **TKT-F-013..016** — Group tickets (complex feature)
-4. **SHP-F-005** — PaymentProviderManager (architecture)
-5. **PRG-F-004** — Time slot notifications (user-facing)
-6. **NTF-F-003** — Push subscriptions (user-facing)
-7. **TKT-F-003** — Ticket groups (feature completeness)
-8. **NWS-F-006** — Article read analytics (analytics)
-9. **SHP-F-013** — CartItemAdded event (event architecture)
-10. **USR-F-010** — Appearance settings (UI preference)
-11. **USR-F-011** — Stripe customer (payment infrastructure)
+1. **SHP-F-005** — PaymentProviderManager (architecture)
+2. **PRG-F-004** — Time slot notifications (user-facing)
+3. **NTF-F-003** — Push subscriptions (user-facing)
+4. **TKT-F-003** — Ticket groups (feature completeness)
+5. **NWS-F-006** — Article read analytics (analytics)
+6. **SHP-F-013** — CartItemAdded event (event architecture)
+7. **USR-F-010** — Appearance settings (UI preference)
+8. **USR-F-011** — Stripe customer (payment infrastructure)

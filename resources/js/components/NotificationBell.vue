@@ -58,6 +58,10 @@ function notificationLabel(notification: AppNotification): string {
         return 'Your roles have changed';
     }
 
+    if (type === 'AchievementEarnedNotification' && data.name) {
+        return `Achievement unlocked: ${data.name}`;
+    }
+
     return 'New notification';
 }
 

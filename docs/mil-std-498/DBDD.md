@@ -325,6 +325,7 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | provider_session_id | varchar (nullable) | Payment provider session ID (Stripe: checkout session) |
 | provider_transaction_id | varchar (nullable) | Payment provider transaction ID (Stripe: payment intent) |
 | metadata | text (nullable) | JSON-encoded fulfillment data (ticket types, quantities, addon IDs) |
+| paid_at | timestamp (nullable) | Timestamp when payment was confirmed (on-site payments) |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 
@@ -423,6 +424,17 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | acknowledgeable_type | varchar | Polymorphic type |
 | acknowledgeable_id | bigint | Polymorphic ID |
 | acknowledged_at | timestamp | When acknowledged |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+#### 4.5.10 purchase_requirement_purchasable (pivot)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| purchase_requirement_id | bigint FK | References purchase_requirements.id |
+| purchasable_type | varchar | Polymorphic type (e.g., TicketType) |
+| purchasable_id | bigint | Polymorphic ID |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 

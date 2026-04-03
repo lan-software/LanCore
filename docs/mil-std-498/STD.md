@@ -259,6 +259,15 @@ This ensures complete isolation between test cases.
 | dismiss requires authentication | Unauthenticated | POST /push-subscriptions/dismiss | 401 Unauthorized |
 | program subscription toggled | Authenticated, program exists | POST program subscription | Subscription created/removed |
 
+### 4.4.1 Achievement Notification Tests
+
+**File:** `tests/Feature/Achievements/AchievementGrantingTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| sends a notification with achievement details | User, active achievement | GrantAchievement action | Notification data contains achievement_id, name, description, color, icon |
+| falls back to description when notification_text is null | User, achievement with null notification_text | GrantAchievement action | Notification description equals achievement description |
+
 ### 4.5 Ticketing Tests
 
 **File:** `tests/Feature/Ticketing/`
@@ -347,7 +356,83 @@ This ensures complete isolation between test cases.
 | ticket validation ID format is valid | None | Matches expected format |
 | user discoverability returns correct value | User with settings | Boolean based on settings |
 
-### 4.8 Architecture Tests
+### 4.8 Venue Tests
+
+**File:** `tests/Feature/Venues/`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| allows admins to store a new venue | Admin | POST /venues {name, address} | 302, venue created |
+| allows admins to update a venue | Admin, venue exists | PATCH /venues/{id} | 302, venue updated |
+| allows admins to delete a venue | Admin, venue exists | DELETE /venues/{id} | 302, venue deleted |
+| stores venue images when creating | Admin | POST /venues with images | Images stored in S3 |
+| deletes removed images from storage | Admin, venue with images | PATCH /venues/{id} (remove image) | Image deleted from S3 |
+| forbids users from creating venues | Regular user | POST /venues | 403 Forbidden |
+| returns paginated venues for admins | Admin | GET /venues | 200, paginated list |
+| filters venues by search term | Admin | GET /venues?search=arena | Filtered results |
+
+### 4.9 Game Tests
+
+**File:** `tests/Feature/Games/`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| allows admins to store a new game | Admin | POST /games {name, slug} | 302, game created |
+| allows admins to update a game | Admin, game exists | PATCH /games/{id} | 302, game updated |
+| allows admins to delete a game | Admin, game exists | DELETE /games/{id} | 302, game deleted, modes cascaded |
+| allows admins to store a new game mode | Admin, game exists | POST /games/{id}/modes | 302, mode created |
+| allows admins to update a game mode | Admin, mode exists | PATCH /games/{id}/modes/{modeId} | 302, mode updated |
+| allows admins to delete a game mode | Admin, mode exists | DELETE /games/{id}/modes/{modeId} | 302, mode deleted |
+| validates slug uniqueness | Admin | POST /games {duplicate slug} | 422 validation error |
+| forbids users from creating games | Regular user | POST /games | 403 Forbidden |
+
+### 4.10 Sponsor Tests
+
+**File:** `tests/Feature/Sponsors/`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| allows admins to store a new sponsor | Admin | POST /sponsors {name} | 302, sponsor created |
+| allows admins to store a sponsor with events | Admin | POST /sponsors {name, event_ids} | Sponsor with event associations |
+| allows admins to update a sponsor | Admin, sponsor exists | PATCH /sponsors/{id} | 302, sponsor updated |
+| allows admins to delete a sponsor | Admin, sponsor exists | DELETE /sponsors/{id} | 302, sponsor deleted |
+| allows sponsor managers to edit their own | SponsorManager, assigned | GET /sponsors/{id} | 200, edit page |
+| forbids sponsor managers from editing unassigned | SponsorManager, not assigned | GET /sponsors/{id} | 403 Forbidden |
+| allows admins to store a sponsor level | Admin | POST /sponsor-levels | 302, level created |
+| auto-increments sort order on store | Admin | POST /sponsor-levels | sort_order auto-incremented |
+| allows admins to update a sponsor level | Admin, level exists | PATCH /sponsor-levels/{id} | 302, level updated |
+| allows admins to delete a sponsor level | Admin, level exists | DELETE /sponsor-levels/{id} | 302, level deleted |
+
+### 4.11 Seating Tests
+
+**File:** `tests/Feature/Seating/`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| allows admins to store a new seat plan | Admin, event exists | POST /seat-plans {name, event_id, data} | 302, seat plan created |
+| validates data is valid JSON | Admin | POST /seat-plans {invalid data} | 422 validation error |
+| allows admins to update a seat plan | Admin, seat plan exists | PATCH /seat-plans/{id} | 302, updated |
+| allows admins to delete a seat plan | Admin, seat plan exists | DELETE /seat-plans/{id} | 302, deleted |
+| stores blocks with seats and labels as JSON | — | Factory create | JSONB data stored correctly |
+| belongs to an event | — | SeatPlan model | Relationship correct |
+| cascades deletion when event is deleted | Event with seat plans | DELETE event | Seat plans cascade deleted |
+| allows searching seat plans by name | Admin | GET /seat-plans?search=Main | Filtered results |
+
+### 4.12 Achievement CRUD Tests
+
+**File:** `tests/Feature/Achievements/AchievementCrudTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| allows admins to view achievements index | Admin | GET /achievements-admin | 200, list displayed |
+| prevents regular users from viewing | Regular user | GET /achievements-admin | 403 Forbidden |
+| allows admins to store a new achievement | Admin | POST /achievements-admin {name, description} | 302, achievement created |
+| validates required fields when storing | Admin | POST /achievements-admin {} | 422 validation error |
+| allows admins to update an achievement | Admin, achievement exists | PATCH /achievements-admin/{id} | 302, updated |
+| allows admins to delete an achievement | Admin, achievement exists | DELETE /achievements-admin/{id} | 302, deleted |
+| validates color format | Admin | POST /achievements-admin {color: invalid} | 422 validation error |
+
+### 4.13 Architecture Tests
 
 **File:** `tests/Architecture/`
 
@@ -357,7 +442,7 @@ This ensures complete isolation between test cases.
 | No direct DB:: usage | Models use Eloquent, not DB facade |
 | Controller returns | Controllers return Inertia or redirect responses |
 
-### 4.9 CI Pipeline Verification
+### 4.14 CI Pipeline Verification
 
 **Scope:** GitHub Actions workflows (`.github/workflows/`)
 
@@ -378,9 +463,14 @@ This ensures complete isolation between test cases.
 | USR-F-001..005 | AUTH-*, SET-* |
 | INT-F-001..010 | Integration tests (4.3) |
 | NTF-F-001..006 | Notification tests (4.4) |
+| ACH-F-001..007 | Achievement CRUD tests (4.12), notification tests (4.4.1) |
 | TKT-F-001..016 | Ticketing tests (4.5, 4.5.1) |
 | SHP-F-003, SHP-F-015, SHP-F-016 | Shop/Payment tests (4.6) |
-| All domains | Architecture tests (4.8) |
+| VEN-F-001..003 | Venue tests (4.8) |
+| GAM-F-001..003 | Game tests (4.9) |
+| SPO-F-001..005 | Sponsor tests (4.10) |
+| SET-F-001..005 | Seating tests (4.11) |
+| All domains | Architecture tests (4.13) |
 
 ---
 

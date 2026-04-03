@@ -92,6 +92,57 @@ it('does not grant inactive achievements', function () {
     Notification::assertNothingSent();
 });
 
+it('sends a notification with achievement details', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+    $achievement = Achievement::factory()->create([
+        'name' => 'First Steps',
+        'description' => 'Welcome to the platform!',
+        'notification_text' => 'You just earned your first achievement!',
+        'color' => '#10b981',
+        'icon' => 'star',
+    ]);
+
+    $grantAction = app(GrantAchievement::class);
+    $grantAction->execute($user, $achievement);
+
+    Notification::assertSentTo($user, AchievementEarnedNotification::class, function ($notification) use ($user, $achievement) {
+        $data = $notification->toArray($user);
+
+        expect($data)->toHaveKeys(['achievement_id', 'name', 'description', 'color', 'icon'])
+            ->and($data['achievement_id'])->toBe($achievement->id)
+            ->and($data['name'])->toBe('First Steps')
+            ->and($data['description'])->toBe('You just earned your first achievement!')
+            ->and($data['color'])->toBe('#10b981')
+            ->and($data['icon'])->toBe('star');
+
+        return true;
+    });
+});
+
+it('falls back to description when notification_text is null', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+    $achievement = Achievement::factory()->create([
+        'name' => 'Explorer',
+        'description' => 'You explored the app!',
+        'notification_text' => null,
+    ]);
+
+    $grantAction = app(GrantAchievement::class);
+    $grantAction->execute($user, $achievement);
+
+    Notification::assertSentTo($user, AchievementEarnedNotification::class, function ($notification) use ($user) {
+        $data = $notification->toArray($user);
+
+        expect($data['description'])->toBe('You explored the app!');
+
+        return true;
+    });
+});
+
 it('only grants achievements linked to the fired event', function () {
     Notification::fake();
 

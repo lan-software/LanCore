@@ -153,18 +153,19 @@ Each domain module follows a consistent internal structure:
 
 | Domain | Models | Actions | Controllers | Events | Listeners |
 |--------|--------|---------|-------------|--------|-----------|
-| Event | 4 | 7 | 3 | 1 | 1 |
-| Ticketing | 5 | 8+ | 5 | 0 | 0 |
-| Shop | 7 | 14 | 7 | 2 | 2 |
+| Event | 1 | 5 | 3 | 1 | 1 |
+| Venue | 3 | 3 | 1 | 0 | 0 |
+| Ticketing | 5 | 10 | 8 | 0 | 0 |
+| Shop | 9 | 15 | 9 | 2 | 2 |
 | Program | 2 | 6 | 2 | 1 | 1 |
 | Seating | 1 | 3 | 2 | 0 | 0 |
 | Sponsoring | 2 | 6 | 4 | 0 | 0 |
 | News | 3 | 3 | 5 | 2 | 2 |
-| Announcement | 2 | 3 | 3 | 1 | 2 |
+| Announcement | 1 | 3 | 3 | 2 | 2 |
 | Achievements | 2 | 4 | 1 | 0 | 1 |
-| Notification | 3 | 0 | 4 | 1 | 0 |
+| Notification | 3 | 0 | 4 | 6 | 4 |
 | Integration | 2 | 10 | 4 | 1 | 1 |
-| Webhook | 2 | 4 | 1 | 1 | 1 |
+| Webhook | 2 | 4 | 1 | 1 | 2 |
 | Games | 2 | 6 | 2 | 0 | 0 |
 | Competition | 0 | 0 | 0 | 0 | 0 |
 
@@ -429,6 +430,10 @@ Built on **reka-ui** (headless) + **Tailwind CSS v4**:
 | Skeleton, Spinner | Loading states |
 | Breadcrumb | Navigation context |
 | NavUser | User menu with account actions |
+| NotificationBell | Real-time notification indicator and dropdown |
+| PushNotificationPrompt | Web push subscription prompt |
+| SeatMapCanvas | Canvas-based seat plan rendering |
+| TicketCard | Ticket display with validation and status |
 
 #### 5.3.3 Frontend Libraries
 

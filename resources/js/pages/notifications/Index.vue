@@ -65,6 +65,10 @@ function notificationLabel(notification: AppNotification): string {
         return 'Your roles have changed';
     }
 
+    if (type === 'AchievementEarnedNotification' && data.name) {
+        return `Achievement unlocked: ${data.name}`;
+    }
+
     return 'New notification';
 }
 
@@ -77,6 +81,10 @@ function notificationDescription(notification: AppNotification): string | null {
         Array.isArray(data.changed_attributes)
     ) {
         return `Updated fields: ${(data.changed_attributes as string[]).join(', ')}`;
+    }
+
+    if (type === 'AchievementEarnedNotification' && data.description) {
+        return data.description as string;
     }
 
     return null;

@@ -2,6 +2,9 @@
 
 namespace App\Domain\Sponsoring\Http\Controllers;
 
+use App\Domain\Sponsoring\Actions\CreateSponsorLevel;
+use App\Domain\Sponsoring\Actions\DeleteSponsorLevel;
+use App\Domain\Sponsoring\Actions\UpdateSponsorLevel;
 use App\Domain\Sponsoring\Http\Requests\StoreSponsorLevelRequest;
 use App\Domain\Sponsoring\Http\Requests\UpdateSponsorLevelRequest;
 use App\Domain\Sponsoring\Models\SponsorLevel;
@@ -16,6 +19,12 @@ use Inertia\Response;
  */
 class SponsorLevelController extends Controller
 {
+    public function __construct(
+        private readonly CreateSponsorLevel $createSponsorLevel,
+        private readonly UpdateSponsorLevel $updateSponsorLevel,
+        private readonly DeleteSponsorLevel $deleteSponsorLevel,
+    ) {}
+
     public function index(): Response
     {
         $this->authorize('viewAny', SponsorLevel::class);
@@ -40,12 +49,7 @@ class SponsorLevelController extends Controller
     {
         $this->authorize('create', SponsorLevel::class);
 
-        $maxOrder = SponsorLevel::max('sort_order') ?? -1;
-
-        SponsorLevel::create([
-            ...$request->validated(),
-            'sort_order' => $maxOrder + 1,
-        ]);
+        $this->createSponsorLevel->execute($request->validated());
 
         return redirect()->route('sponsor-levels.index');
     }
@@ -63,7 +67,7 @@ class SponsorLevelController extends Controller
     {
         $this->authorize('update', $sponsorLevel);
 
-        $sponsorLevel->fill($request->validated())->save();
+        $this->updateSponsorLevel->execute($sponsorLevel, $request->validated());
 
         return back();
     }
@@ -72,7 +76,7 @@ class SponsorLevelController extends Controller
     {
         $this->authorize('delete', $sponsorLevel);
 
-        $sponsorLevel->delete();
+        $this->deleteSponsorLevel->execute($sponsorLevel);
 
         return redirect()->route('sponsor-levels.index');
     }

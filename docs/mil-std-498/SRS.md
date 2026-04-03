@@ -22,7 +22,7 @@ This Software Requirements Specification (SRS) specifies the requirements for th
 
 ### 1.2 System Overview
 
-LanCore is a monolithic web application comprising a Laravel 13 backend and a Vue.js 3 frontend connected via Inertia.js v2. It is organized into 14 domain modules, each encapsulating a bounded context of the event management domain.
+LanCore is a monolithic web application comprising a Laravel 13 backend and a Vue.js 3 frontend connected via Inertia.js v2. It is organized into 15 domain modules, each encapsulating a bounded context of the event management domain.
 
 ### 1.3 Document Overview
 
@@ -56,9 +56,9 @@ The LanCore CSCI shall support the following operational states:
 
 #### 3.2.1 Event Domain (CSCI-EVT)
 
-**Models:** Event, Venue, VenueImage, Address
-**Controllers:** EventController, PublicEventController, EventAuditController, VenueController
-**Actions:** CreateEvent, UpdateEvent, PublishEvent, UnpublishEvent, DeleteEvent, CreateVenue, UpdateVenue, DeleteVenue
+**Models:** Event
+**Controllers:** EventController, PublicEventController, EventAuditController
+**Actions:** CreateEvent, UpdateEvent, PublishEvent, UnpublishEvent, DeleteEvent
 
 | Req ID | Requirement |
 |--------|------------|
@@ -67,8 +67,8 @@ The LanCore CSCI shall support the following operational states:
 | EVT-F-003 | The software shall enforce EventPolicy authorization on all event operations |
 | EVT-F-004 | The software shall support event status transitions: draft → published, published → draft |
 | EVT-F-005 | The software shall emit EventPublished event on publication, triggering HandleEventPublishedWebhooks listener |
-| EVT-F-006 | The software shall support venues with: name, description, and associated Address (street, city, state, country) |
-| EVT-F-007 | The software shall support venue images with alt text and sort ordering |
+| EVT-F-006 | The software shall support venues with: name, description, and associated Address (street, city, state, country) *(implemented in Venue Domain, see §3.2.15)* |
+| EVT-F-007 | The software shall support venue images with alt text and sort ordering *(implemented in Venue Domain, see §3.2.15)* |
 | EVT-F-008 | The software shall provide audit trail views for events via EventAuditController |
 | EVT-F-009 | The software shall provide public event listing via PublicEventController |
 | EVT-F-010 | The software shall support a primary program assignment per event |
@@ -76,8 +76,9 @@ The LanCore CSCI shall support the following operational states:
 #### 3.2.2 Ticketing Domain (CSCI-TKT)
 
 **Models:** Ticket, TicketType, TicketCategory, TicketGroup, Addon
-**Controllers:** TicketController, AdminTicketController, TicketTypeController, TicketCategoryController, AddonController
-**Actions:** CreateTicketType, UpdateTicketType, DeleteTicketType, CreateTicketCategory, CreateAddon, UpdateTicketAssignments
+**Controllers:** TicketController, AdminTicketController, TicketTypeController, TicketCategoryController, AddonController, TicketTypeAuditController, TicketCategoryAuditController, AddonAuditController
+**Actions:** CreateTicketType, UpdateTicketType, DeleteTicketType, CreateTicketCategory, UpdateTicketCategory, DeleteTicketCategory, CreateAddon, UpdateAddon, DeleteAddon, UpdateTicketAssignments
+**Enums:** TicketStatus, CheckInMode
 
 | Req ID | Requirement |
 |--------|------------|
@@ -88,7 +89,7 @@ The LanCore CSCI shall support the following operational states:
 | TKT-F-005 | The software shall generate unique validation IDs per ticket (TicketValidationId) |
 | TKT-F-006 | The software shall support three ticket assignment roles: owner, manager, user |
 | TKT-F-007 | The software shall support ticket add-ons with pricing history tracked via pivot table |
-| TKT-F-008 | The software shall enforce TicketTypePolicy, TicketCategoryPolicy, and AddonPolicy |
+| TKT-F-008 | The software shall enforce TicketPolicy, TicketTypePolicy, TicketCategoryPolicy, and AddonPolicy |
 | TKT-F-009 | ~~The software shall support seating/row ticket types linked to seat plans~~ **(Deprecated — superseded by TKT-F-013..016)** |
 | TKT-F-010 | The software shall provide admin ticket management views (AdminTicketController) |
 | TKT-F-011 | The software shall support ticket locking to prevent concurrent modifications |
@@ -101,9 +102,11 @@ The LanCore CSCI shall support the following operational states:
 #### 3.2.3 Shop Domain (CSCI-SHP)
 
 **Models:** Order, OrderLine, Cart, CartItem, Voucher, PurchaseRequirement, GlobalPurchaseCondition, PaymentProviderCondition, CheckoutAcknowledgement
-**Controllers:** ShopController, CartController, OrderController, VoucherController, PurchaseRequirementController, GlobalPurchaseConditionController, PaymentProviderConditionController
-**Actions:** CreateCheckoutSession, FulfillOrder, CreateOrder, CreateVoucher, UpdateVoucher, DeleteVoucher
+**Controllers:** ShopController, CartController, OrderController, VoucherController, VoucherAuditController, PurchaseRequirementController, GlobalPurchaseConditionController, PaymentProviderConditionController, UserOrderController
+**Actions:** CreateCheckoutSession, FulfillOrder, CreateOrder, CreateVoucher, UpdateVoucher, DeleteVoucher, CreatePurchaseRequirement, UpdatePurchaseRequirement, DeletePurchaseRequirement, CreateGlobalPurchaseCondition, UpdateGlobalPurchaseCondition, DeleteGlobalPurchaseCondition, CreatePaymentProviderCondition, UpdatePaymentProviderCondition, DeletePaymentProviderCondition
 **Payment Providers:** StripePaymentProvider, OnSitePaymentProvider, PaymentProviderManager
+**Contracts:** Purchasable, PurchasableDependency, PaymentProvider, PaymentResult
+**Concerns:** InteractsWithShop
 
 | Req ID | Requirement |
 |--------|------------|
@@ -188,9 +191,10 @@ The LanCore CSCI shall support the following operational states:
 
 #### 3.2.8 Announcement Domain (CSCI-ANN)
 
-**Models:** Announcement, AnnouncementDismissal
+**Models:** Announcement
 **Controllers:** AnnouncementController, PublicAnnouncementController, AnnouncementDismissalController
 **Actions:** CreateAnnouncement, UpdateAnnouncement, DeleteAnnouncement
+**Events:** AnnouncementPublished, AnnouncementsViewed
 
 | Req ID | Requirement |
 |--------|------------|
@@ -213,11 +217,15 @@ The LanCore CSCI shall support the following operational states:
 | ACH-F-003 | The software shall automatically process achievements via ProcessAchievements listener |
 | ACH-F-004 | The software shall track achievement-to-user assignments with earned_at timestamp |
 | ACH-F-005 | The software shall enforce AchievementPolicy |
+| ACH-F-006 | The software shall send an AchievementEarnedNotification containing achievement name, description, color, and icon when a user earns an achievement |
+| ACH-F-007 | The software shall display achievement notification details (name and description) in NotificationBell, notifications/Index, and notifications/Archive Vue components |
 
 #### 3.2.10 Notification Domain (CSCI-NTF)
 
 **Models:** NotificationPreference, ProgramNotificationSubscription, PushSubscription
 **Controllers:** NotificationController, NotificationSettingsController, ProgramSubscriptionController, PushSubscriptionController
+**Events:** NotificationPreferencesUpdated, NotificationsArchived, ProfileUpdated, TicketDiscoverySettingsUpdated, UserAttributesUpdated, UserRolesChanged
+**Listeners:** HandleProfileUpdatedWebhooks, HandleUserRolesChangedWebhooks, SendUserAttributesUpdatedNotification, SendUserRolesChangedNotification
 
 | Req ID | Requirement |
 |--------|------------|
@@ -255,7 +263,7 @@ The LanCore CSCI shall support the following operational states:
 **Controllers:** WebhookController
 **Actions:** CreateWebhook, UpdateWebhook, DeleteWebhook, DispatchWebhooks
 **Events:** WebhookDispatched
-**Listeners:** SendWebhookPayload
+**Listeners:** SendWebhookPayload, HandleUserRegisteredWebhooks
 
 | Req ID | Requirement |
 |--------|------------|
@@ -279,7 +287,20 @@ The LanCore CSCI shall support the following operational states:
 | GAM-F-002 | The software shall support game modes with: name, team size, parameters |
 | GAM-F-003 | The software shall enforce GamePolicy and GameModePolicy |
 
-#### 3.2.14 User Management (CSCI-USR)
+#### 3.2.14 Venue Domain (CSCI-VEN)
+
+**Models:** Venue, VenueImage, Address
+**Controllers:** VenueController
+**Actions:** CreateVenue, UpdateVenue, DeleteVenue
+**Policies:** VenuePolicy
+
+| Req ID | Requirement |
+|--------|------------|
+| VEN-F-001 | The software shall support venues with: name, description, and associated Address (street, city, state, country) |
+| VEN-F-002 | The software shall support venue images with alt text and sort ordering |
+| VEN-F-003 | The software shall enforce VenuePolicy authorization on all venue operations |
+
+#### 3.2.15 User Management (CSCI-USR)
 
 **Models:** User, Role
 **Controllers:** ProfileController, SecurityController, UserController, SidebarFavoriteController, TicketDiscoveryController, UserAchievementsController

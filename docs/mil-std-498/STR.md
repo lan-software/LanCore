@@ -45,8 +45,8 @@ This document reports test results, analysis, and coverage metrics for the curre
 | Metric | Value |
 |--------|-------|
 | Test Framework | Pest PHP v4.4.3 / PHPUnit v12.5.14 |
-| Total Test Files | 109 |
-| Total Test Cases | 749 |
+| Total Test Files | 118 |
+| Total Test Cases | 754 |
 | Test Execution | Automated via GitHub Actions |
 | Coverage Reporting | Codecov |
 | Last CI Status | Refer to GitHub Actions badge |
@@ -68,11 +68,11 @@ This document reports test results, analysis, and coverage metrics for the curre
 | Sponsors (CSCI-SPO) | 3 | 28 | Pass |
 | News (CSCI-NWS) | 5 | 50 | Pass |
 | Announcements (CSCI-ANN) | 2 | 20 | Pass |
-| Achievements (CSCI-ACH) | 2 | 14 | Pass |
+| Achievements (CSCI-ACH) | 2 | 16 | Pass |
 | Games (CSCI-GAM) | 3 | 22 | Pass |
 | Notifications (CSCI-NTF) | 4 | 31 | Pass |
 | Integrations (CSCI-INT) | 6 | 103 | Pass |
-| Webhooks (CSCI-WHK) | 1 | 27 | Pass |
+| Webhooks (CSCI-WHK) | 2 | 27 | Pass |
 | Audit Trails | 9 | 27 | Pass |
 | Commands (Artisan) | 14 | 66 | Pass |
 | Dashboard/Context | 2 | 25 | Pass |
@@ -151,18 +151,16 @@ All four CI pipelines were failing on `main` as of 2026-04-03. Root causes and r
 | Programs | High | 20 | CRUD, time slots, primary assignment, sponsor integration |
 | Seating | High | 20 | CRUD, JSONB storage, event association, validation |
 | Games | High | 22 | CRUD, modes, access control |
-| Achievements | High | 14 | CRUD, granting, event triggers, deduplication |
+| Achievements | High | 16 | CRUD, granting, event triggers, deduplication, notification payload |
 | Venues | High | 19 | CRUD, images, access control |
 | Audit Trails | High | 27 | 9 audit test files across all major domains |
 
 ### 4.2 Identified Gaps
 
-See [RTM](RTM.md) Section 16 for the complete gap analysis. Summary:
+See [RTM](RTM.md) Section 17 for the complete gap analysis. Summary:
 
 | Req ID | Domain | Gap Description | Priority |
 |--------|--------|-----------------|----------|
-| WHK-F-003 | Webhook | HMAC-SHA256 payload signing verification | **High** |
-| ~~SHP-F-004~~ | ~~Shop~~ | ~~On-site payment flow~~ | ~~Covered~~ |
 | SHP-F-005 | Shop | PaymentProviderManager factory resolution | Medium |
 | PRG-F-004 | Program | ProgramTimeSlotApproaching event and notifications | Medium |
 | NTF-F-003 | Notification | Web Push subscription CRUD | Medium |
@@ -172,7 +170,7 @@ See [RTM](RTM.md) Section 16 for the complete gap analysis. Summary:
 | USR-F-010 | User | Appearance/theme settings | Low |
 | USR-F-011 | User | Stripe Cashier customer management | Low |
 
-**9 gaps out of 118 requirements = 92.4% requirement coverage**
+**8 gaps out of 121 requirements = 93.4% requirement coverage**
 
 ### 4.3 Known Test Issues
 
@@ -201,6 +199,7 @@ Coverage is collected via Xdebug and reported to Codecov. Current metrics reflec
 | Domain (SRS) | Requirements | Covered | Partial | Gap | Coverage |
 |-------------|-------------|---------|---------|-----|----------|
 | CSCI-EVT | 10 | 10 | 0 | 0 | **100%** |
+| CSCI-VEN | 3 | 3 | 0 | 0 | **100%** |
 | CSCI-TKT | 16 | 14 | 0 | 1 | 88% |
 | CSCI-SHP | 17 | 14 | 1 | 2 | 82% |
 | CSCI-PRG | 7 | 6 | 0 | 1 | 86% |
@@ -208,29 +207,23 @@ Coverage is collected via Xdebug and reported to Codecov. Current metrics reflec
 | CSCI-SPO | 5 | 5 | 0 | 0 | **100%** |
 | CSCI-NWS | 8 | 7 | 0 | 1 | 88% |
 | CSCI-ANN | 5 | 5 | 0 | 0 | **100%** |
-| CSCI-ACH | 5 | 5 | 0 | 0 | **100%** |
+| CSCI-ACH | 7 | 7 | 0 | 0 | **100%** |
 | CSCI-NTF | 7 | 5 | 2 | 0 | 71% |
 | CSCI-INT | 10 | 10 | 0 | 0 | **100%** |
-| CSCI-WHK | 7 | 6 | 0 | 1 | 86% |
+| CSCI-WHK | 7 | 7 | 0 | 0 | **100%** |
 | CSCI-GAM | 3 | 3 | 0 | 0 | **100%** |
 | CSCI-USR | 11 | 9 | 0 | 2 | 82% |
-| **Total** | **118** | **104** | **3** | **10** | **90.7%** |
+| **Total** | **121** | **110** | **3** | **8** | **93.4%** |
 
 ---
 
 ## 6. Recommendations
 
-### 6.1 Immediate Priority — Security-Critical
+### 6.1 Pre-Alpha — Feature Completeness
 
-1. **WHK-F-003:** Add tests for webhook HMAC-SHA256 payload signing
-2. ~~**SHP-F-004:** Add tests for on-site payment complete flow~~ (Covered)
-
-### 6.2 Pre-Alpha — Feature Completeness
-
-3. **TKT-F-009:** Add tests for seating/row ticket types
-4. **SHP-F-005:** Add tests for PaymentProviderManager factory
-5. **PRG-F-004:** Add tests for time slot approaching notifications
-6. **NTF-F-003:** Add tests for push subscription management
+1. **SHP-F-005:** Add tests for PaymentProviderManager factory
+2. **PRG-F-004:** Add tests for time slot approaching notifications
+3. **NTF-F-003:** Add tests for push subscription management
 
 ### 6.3 Pre-v1.0 — Full Coverage
 
