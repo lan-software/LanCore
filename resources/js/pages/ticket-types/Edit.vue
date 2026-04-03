@@ -195,16 +195,16 @@ function executeDelete() {
                     />
 
                     <div class="grid gap-2">
-                        <Label for="seats_per_ticket">Seats per Ticket</Label>
+                        <Label for="seats_per_user">Seats per User</Label>
                         <Input
-                            id="seats_per_ticket"
+                            id="seats_per_user"
                             type="number"
-                            name="seats_per_ticket"
-                            :default-value="String(ticketType.seats_per_ticket)"
+                            name="seats_per_user"
+                            :default-value="String(ticketType.seats_per_user)"
                             :disabled="ticketType.is_locked"
                             min="1"
                         />
-                        <InputError :message="errors.seats_per_ticket" />
+                        <InputError :message="errors.seats_per_user" />
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -225,7 +225,7 @@ function executeDelete() {
                     <Heading
                         variant="small"
                         title="Group Ticket"
-                        description="Allow multiple users per ticket. Total seats = seats per ticket x max users."
+                        description="Allow multiple users per ticket. Total seats = seats per user x max users."
                     />
 
                     <div class="grid gap-2">

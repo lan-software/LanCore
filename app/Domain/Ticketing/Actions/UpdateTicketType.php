@@ -20,7 +20,7 @@ class UpdateTicketType
             if ($ticketType->is_locked) {
                 unset(
                     $attributes['price'],
-                    $attributes['seats_per_ticket'],
+                    $attributes['seats_per_user'],
                     $attributes['max_users_per_ticket'],
                     $attributes['check_in_mode'],
                     $attributes['is_seatable'],

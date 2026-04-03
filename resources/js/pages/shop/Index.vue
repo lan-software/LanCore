@@ -307,8 +307,8 @@ function updateCartQuantity(
                                                 {{ tt.ticket_category.name }}
                                             </p>
                                             <p>
-                                                {{ tt.seats_per_ticket }}
-                                                seat(s) per ticket
+                                                {{ tt.seats_per_user }}
+                                                seat(s) per user
                                             </p>
                                             <p
                                                 v-if="

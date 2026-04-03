@@ -24,7 +24,7 @@ class StoreTicketTypeRequest extends FormRequest
             'price' => ['required', 'integer', 'min:0'],
             'quota' => ['required', 'integer', 'min:1'],
             'max_per_user' => ['nullable', 'integer', 'min:1'],
-            'seats_per_ticket' => ['required', 'integer', 'min:1'],
+            'seats_per_user' => ['required', 'integer', 'min:1'],
             'max_users_per_ticket' => ['sometimes', 'integer', 'min:1'],
             'check_in_mode' => ['sometimes', Rule::enum(CheckInMode::class)],
             'is_seatable' => ['sometimes', 'boolean'],

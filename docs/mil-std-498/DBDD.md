@@ -224,7 +224,7 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | max_per_user | integer (nullable) | Per-user purchase limit |
 | sale_start | datetime (nullable) | Sales open date |
 | sale_end | datetime (nullable) | Sales close date |
-| seats_per_ticket | integer (default 1) | Physical seats consumed per ticket |
+| seats_per_user | integer (default 1) | Physical seats consumed per user on the ticket |
 | max_users_per_ticket | integer (default 1) | Maximum assignable users per ticket (group tickets) |
 | check_in_mode | varchar (default 'individual') | CheckInMode enum: 'individual' or 'group' |
 | is_row_ticket | boolean (deprecated) | Legacy row ticket flag — deprecated, retained for backward compatibility |

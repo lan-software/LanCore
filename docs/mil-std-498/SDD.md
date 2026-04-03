@@ -239,7 +239,7 @@ User → CartController (add items)
 
 **Seat Capacity Formula:**
 ```
-total_seats_consumed = seats_per_ticket × max_users_per_ticket × quantity
+total_seats_consumed = seats_per_user × max_users_per_ticket × quantity
 ```
 Reserved at purchase time. Remaining capacity = `event.seat_capacity - Σ(total_seats_consumed) - Σ(addon_seats)`.
 

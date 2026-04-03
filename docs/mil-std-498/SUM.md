@@ -272,7 +272,7 @@ Group tickets allow a single ticket to grant access to multiple users:
 2. When max users > 1, a **Check-in Mode** dropdown appears:
    - **Individual:** Each assigned user checks in separately
    - **Group:** All assigned users are checked in with a single scan
-3. Seat capacity is calculated as `seats per ticket × max users per ticket` — for example, 2 seats × 4 users = 8 seats reserved per ticket sold
+3. Seat capacity is calculated as `seats per user × max users per ticket` — for example, 2 seats × 4 users = 8 seats reserved per ticket sold
 4. Once tickets have been sold (ticket type is locked), group settings cannot be changed
 
 ### 6.4 Program Scheduling

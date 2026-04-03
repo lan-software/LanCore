@@ -160,7 +160,7 @@ export type TicketType = {
     price: number;
     quota: number;
     max_per_user: number | null;
-    seats_per_ticket: number;
+    seats_per_user: number;
     max_users_per_ticket: number;
     check_in_mode: 'individual' | 'group';
     /** @deprecated Retained for backward compatibility — not shown in UI */

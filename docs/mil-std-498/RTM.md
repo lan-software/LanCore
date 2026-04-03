@@ -63,7 +63,7 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 | TKT-F-013 | Group ticket types with max_users_per_ticket | `Domain/Ticketing/Models/TicketType.php` | `Ticketing/GroupTicketTest.php` (4 tests) | Covered |
 | TKT-F-014 | Multi-user assignment via ticket_user pivot | `Domain/Ticketing/Models/Ticket.php` | `Ticketing/GroupTicketTest.php` (3 tests) | Covered |
 | TKT-F-015 | Individual vs group check-in modes | `Domain/Ticketing/Enums/CheckInMode.php`, `Domain/Ticketing/Actions/UpdateTicketAssignments.php` | `Ticketing/GroupTicketTest.php` (3 tests) | Covered |
-| TKT-F-016 | Seat capacity = seats_per_ticket × max_users_per_ticket | `Domain/Event/Models/Event.php`, `Domain/Shop/Actions/` | `Ticketing/GroupTicketTest.php` (2 tests) | Covered |
+| TKT-F-016 | Seat capacity = seats_per_user × max_users_per_ticket | `Domain/Event/Models/Event.php`, `Domain/Shop/Actions/` | `Ticketing/GroupTicketTest.php` (2 tests) | Covered |
 | TKT-F-010 | Admin ticket management views | `Domain/Ticketing/Http/Controllers/AdminTicketController.php` | `Ticketing/AdminTicketControllerTest.php` (6 tests) | Covered |
 | TKT-F-011 | Ticket locking | `Domain/Ticketing/Actions/UpdateTicketType.php` (locked field handling) | `Ticketing/TicketTypeCrudTest.php` (locked fields test) | Covered |
 | TKT-F-012 | Audit trails for types, categories, add-ons | Audit controllers | `Domain/Ticketing/TicketTypeAuditTest.php` (3), `TicketCategoryAuditTest.php` (3), `AddonAuditTest.php` (3) | Covered |
@@ -107,7 +107,7 @@ File: tests/Feature/Ticketing/GroupTicketTest.php
 - it assigns multiple users to a group ticket up to the limit
 - it rejects exceeding max_users_per_ticket
 - it removes an assigned user from a group ticket
-- it calculates seat consumption as seats_per_ticket × max_users_per_ticket
+- it calculates seat consumption as seats_per_user × max_users_per_ticket
 - it validates seat capacity during checkout for group tickets
 - it performs individual check-in for one user on a group ticket
 - it marks ticket as CheckedIn when all users individually checked in

@@ -28,7 +28,7 @@ it('creates a group ticket type with max_users_per_ticket and check_in_mode', fu
             'name' => 'Team Ticket',
             'price' => 8000,
             'quota' => 50,
-            'seats_per_ticket' => 2,
+            'seats_per_user' => 2,
             'max_users_per_ticket' => 4,
             'check_in_mode' => 'group',
             'is_seatable' => true,
@@ -61,7 +61,7 @@ it('rejects max_users_per_ticket below 1', function () {
             'name' => 'Invalid',
             'price' => 1000,
             'quota' => 10,
-            'seats_per_ticket' => 1,
+            'seats_per_user' => 1,
             'max_users_per_ticket' => 0,
             'event_id' => $event->id,
         ])
@@ -168,9 +168,9 @@ it('removes an assigned user from a group ticket', function () {
 
 // ---- Seat Capacity ----
 
-it('calculates seat consumption as seats_per_ticket times max_users_per_ticket', function () {
+it('calculates seat consumption as seats_per_user times max_users_per_ticket', function () {
     $ticketType = TicketType::factory()->create([
-        'seats_per_ticket' => 2,
+        'seats_per_user' => 2,
         'max_users_per_ticket' => 4,
     ]);
 
@@ -182,7 +182,7 @@ it('validates seat capacity during checkout for group tickets', function () {
     $event = Event::factory()->create(['seat_capacity' => 10]);
     $ticketType = TicketType::factory()->groupTicket(4)->create([
         'event_id' => $event->id,
-        'seats_per_ticket' => 2,
+        'seats_per_user' => 2,
     ]);
 
     // Each ticket consumes 2 * 4 = 8 seats

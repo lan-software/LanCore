@@ -77,7 +77,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-TKT-008 | ~~The system shall support seating row tickets linked to seat plans~~ **(Deprecated — superseded by CAP-TKT-011)** |
 | CAP-TKT-009 | The system shall support purchase windows (start/end dates for ticket sales) |
 | CAP-TKT-010 | The system shall support ticket locking mechanisms |
-| CAP-TKT-011 | The system shall support group tickets with configurable max users per ticket, where seat capacity is calculated as seats_per_ticket × max_users_per_ticket |
+| CAP-TKT-011 | The system shall support group tickets with configurable max users per ticket, where seat capacity is calculated as seats_per_user × max_users_per_ticket |
 | CAP-TKT-012 | The system shall support configurable check-in modes per ticket type: individual (per-user) or group (all users at once) |
 
 #### 3.2.3 Shop and Payments (CAP-SHP)

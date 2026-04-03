@@ -96,7 +96,7 @@ The LanCore CSCI shall support the following operational states:
 | TKT-F-013 | The software shall support group ticket types with a configurable `max_users_per_ticket` field (default 1) on TicketType |
 | TKT-F-014 | The software shall support multi-user ticket assignment via a `ticket_user` pivot table, replacing the singular `user_id` on tickets |
 | TKT-F-015 | The software shall support configurable check-in modes per ticket type (`individual` or `group`) via a `check_in_mode` field and CheckInMode enum |
-| TKT-F-016 | The software shall calculate seat capacity consumption as `seats_per_ticket × max_users_per_ticket`, reserved at purchase time |
+| TKT-F-016 | The software shall calculate seat capacity consumption as `seats_per_user × max_users_per_ticket`, reserved at purchase time |
 
 #### 3.2.3 Shop Domain (CSCI-SHP)
 

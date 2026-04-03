@@ -20,7 +20,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @see docs/mil-std-498/SRS.md TKT-F-001, TKT-F-011, TKT-F-013, TKT-F-015
  */
 #[Fillable([
-    'name', 'description', 'price', 'quota', 'max_per_user', 'seats_per_ticket',
+    'name', 'description', 'price', 'quota', 'max_per_user', 'seats_per_user',
     'max_users_per_ticket', 'check_in_mode',
     'is_row_ticket', 'is_seatable', 'is_hidden',
     'purchase_from', 'purchase_until', 'is_locked',
@@ -49,7 +49,7 @@ class TicketType extends Model implements AuditableContract, Purchasable
             'price' => 'integer',
             'quota' => 'integer',
             'max_per_user' => 'integer',
-            'seats_per_ticket' => 'integer',
+            'seats_per_user' => 'integer',
             'max_users_per_ticket' => 'integer',
             'check_in_mode' => CheckInMode::class,
             'is_row_ticket' => 'boolean',
@@ -88,7 +88,7 @@ class TicketType extends Model implements AuditableContract, Purchasable
 
     public function totalSeatsConsumed(): int
     {
-        return $this->seats_per_ticket * $this->max_users_per_ticket;
+        return $this->seats_per_user * $this->max_users_per_ticket;
     }
 
     public function isAvailableForPurchase(): bool

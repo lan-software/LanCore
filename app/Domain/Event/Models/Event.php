@@ -107,7 +107,7 @@ class Event extends Model implements AuditableContract
 
         $ticketSeats = (int) $this->tickets()
             ->join('ticket_types', 'tickets.ticket_type_id', '=', 'ticket_types.id')
-            ->selectRaw('COALESCE(SUM(ticket_types.seats_per_ticket * ticket_types.max_users_per_ticket), 0) as total')
+            ->selectRaw('COALESCE(SUM(ticket_types.seats_per_user * ticket_types.max_users_per_ticket), 0) as total')
             ->value('total');
 
         $addonSeats = $this->tickets()
