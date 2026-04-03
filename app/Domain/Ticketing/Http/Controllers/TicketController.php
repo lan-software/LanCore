@@ -43,7 +43,7 @@ class TicketController extends Controller
                 $query->where('manager_id', '!=', $user->id)
                     ->orWhereNull('manager_id');
             })
-            ->with(['ticketType', 'event', 'addons', 'order'])
+            ->with(['ticketType', 'event', 'owner', 'users', 'addons', 'order'])
             ->get();
 
         return Inertia::render('tickets/Index', [

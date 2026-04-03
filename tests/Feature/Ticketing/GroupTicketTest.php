@@ -330,6 +330,64 @@ it('allows manager to add users to a group ticket', function () {
         ->assertRedirect();
 });
 
+it('allows assigned users to see all other assigned users on the ticket', function () {
+    $owner = User::factory()->withRole(RoleName::User)->create();
+    $event = Event::factory()->create();
+    $ticketType = TicketType::factory()->groupTicket(3)->create(['event_id' => $event->id]);
+    $order = Order::factory()->create(['user_id' => $owner->id, 'event_id' => $event->id]);
+
+    $ticket = Ticket::factory()->create([
+        'owner_id' => $owner->id,
+        'ticket_type_id' => $ticketType->id,
+        'event_id' => $event->id,
+        'order_id' => $order->id,
+    ]);
+
+    $users = User::factory()->withRole(RoleName::User)->count(3)->create();
+    foreach ($users as $user) {
+        $ticket->users()->attach($user->id);
+    }
+
+    // An assigned user views the ticket — should see all 3 assigned users
+    $this->actingAs($users[0])
+        ->get("/tickets/{$ticket->id}")
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('tickets/Show')
+                ->has('ticket.users', 3)
+        );
+});
+
+it('shows assigned tickets with users in the index view', function () {
+    $owner = User::factory()->withRole(RoleName::User)->create();
+    $assignedUser = User::factory()->withRole(RoleName::User)->create();
+    $event = Event::factory()->create();
+    $ticketType = TicketType::factory()->groupTicket(3)->create(['event_id' => $event->id]);
+    $order = Order::factory()->create(['user_id' => $owner->id, 'event_id' => $event->id]);
+
+    $ticket = Ticket::factory()->create([
+        'owner_id' => $owner->id,
+        'ticket_type_id' => $ticketType->id,
+        'event_id' => $event->id,
+        'order_id' => $order->id,
+    ]);
+
+    $otherUser = User::factory()->withRole(RoleName::User)->create();
+    $ticket->users()->attach([$assignedUser->id, $otherUser->id]);
+
+    // The assigned user views the tickets index — should see the ticket with users loaded
+    $this->actingAs($assignedUser)
+        ->get('/tickets')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('tickets/Index')
+                ->has('assignedTickets', 1)
+                ->has('assignedTickets.0.users', 2)
+        );
+});
+
 it('denies non-owner/manager from adding users', function () {
     $owner = User::factory()->withRole(RoleName::User)->create();
     $other = User::factory()->withRole(RoleName::User)->create();
