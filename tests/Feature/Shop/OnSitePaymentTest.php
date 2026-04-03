@@ -6,6 +6,7 @@
  */
 
 use App\Domain\Event\Models\Event;
+use App\Domain\Shop\Actions\FulfillOrder;
 use App\Domain\Shop\Enums\OrderStatus;
 use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Models\Order;
@@ -20,7 +21,7 @@ beforeEach(function () {
     Role::updateOrCreate(['name' => RoleName::Superadmin->value], ['label' => 'Superadmin']);
 });
 
-it('creates an on-site order that stays pending', function () {
+it('fulfills an on-site order immediately with tickets but without paid_at', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
     $event = Event::factory()->create(['status' => 'published']);
     $ticketType = TicketType::factory()->create([
@@ -30,39 +31,70 @@ it('creates an on-site order that stays pending', function () {
         'purchase_until' => now()->addDay(),
     ]);
 
-    $order = Order::factory()->pending()->onSite()->create([
+    $order = Order::factory()->onSite()->create([
         'user_id' => $user->id,
         'event_id' => $event->id,
+        'status' => OrderStatus::Completed,
         'subtotal' => 2500,
         'total' => 2500,
-        'metadata' => json_encode([
-            ['ticket_type_id' => $ticketType->id, 'quantity' => 1, 'addon_ids' => []],
-        ]),
     ]);
 
-    expect($order->status)->toBe(OrderStatus::Pending);
+    expect($order->status)->toBe(OrderStatus::Completed);
     expect($order->payment_method)->toBe(PaymentMethod::OnSite);
-    expect($order->tickets)->toHaveCount(0);
+    expect($order->paid_at)->toBeNull();
 });
 
-it('shows pending message on checkout success for on-site orders', function () {
+it('allows admin to confirm payment on an on-site order', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $order = Order::factory()->onSite()->create([
+        'status' => OrderStatus::Completed,
+        'paid_at' => null,
+    ]);
+
+    $this->actingAs($admin)
+        ->patch("/orders/{$order->id}/confirm-payment")
+        ->assertRedirect();
+
+    $order->refresh();
+    expect($order->paid_at)->not->toBeNull();
+});
+
+it('prevents non-admin from confirming payment', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
-    $order = Order::factory()->pending()->onSite()->create([
-        'user_id' => $user->id,
+    $order = Order::factory()->onSite()->create([
+        'paid_at' => null,
     ]);
 
     $this->actingAs($user)
-        ->get("/cart/checkout/{$order->id}/success")
-        ->assertSuccessful()
-        ->assertInertia(
-            fn ($page) => $page
-                ->component('shop/CheckoutSuccess')
-                ->where('order.status', 'pending')
-        );
+        ->patch("/orders/{$order->id}/confirm-payment")
+        ->assertForbidden();
 });
 
-it('allows admin to confirm payment on a pending on-site order', function () {
+it('prevents confirming payment on non-on-site orders', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $order = Order::factory()->create([
+        'payment_method' => PaymentMethod::Stripe,
+    ]);
+
+    $this->actingAs($admin)
+        ->patch("/orders/{$order->id}/confirm-payment")
+        ->assertRedirect()
+        ->assertSessionHasErrors('order');
+});
+
+it('prevents confirming payment on already paid orders', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $order = Order::factory()->onSite()->create([
+        'paid_at' => now(),
+    ]);
+
+    $this->actingAs($admin)
+        ->patch("/orders/{$order->id}/confirm-payment")
+        ->assertRedirect()
+        ->assertSessionHasErrors('order');
+});
+
+it('sets paid_at automatically for stripe orders during fulfillment', function () {
     $user = User::factory()->create();
     $event = Event::factory()->create(['status' => 'published']);
     $ticketType = TicketType::factory()->create([
@@ -72,9 +104,10 @@ it('allows admin to confirm payment on a pending on-site order', function () {
         'purchase_until' => now()->addDay(),
     ]);
 
-    $order = Order::factory()->pending()->onSite()->create([
+    $order = Order::factory()->pending()->create([
         'user_id' => $user->id,
         'event_id' => $event->id,
+        'payment_method' => PaymentMethod::Stripe,
         'subtotal' => 2500,
         'total' => 2500,
         'metadata' => json_encode([
@@ -91,46 +124,9 @@ it('allows admin to confirm payment on a pending on-site order', function () {
         'total_price' => 2500,
     ]);
 
-    $this->actingAs($admin)
-        ->patch("/orders/{$order->id}/confirm-payment")
-        ->assertRedirect();
+    app(FulfillOrder::class)->execute($order);
 
     $order->refresh();
     expect($order->status)->toBe(OrderStatus::Completed);
-    expect($order->tickets)->toHaveCount(1);
-});
-
-it('prevents non-admin from confirming payment', function () {
-    $user = User::factory()->withRole(RoleName::User)->create();
-    $order = Order::factory()->pending()->onSite()->create([
-        'user_id' => $user->id,
-    ]);
-
-    $this->actingAs($user)
-        ->patch("/orders/{$order->id}/confirm-payment")
-        ->assertForbidden();
-});
-
-it('prevents confirming payment on non-on-site orders', function () {
-    $admin = User::factory()->withRole(RoleName::Admin)->create();
-    $order = Order::factory()->pending()->create([
-        'payment_method' => PaymentMethod::Stripe,
-    ]);
-
-    $this->actingAs($admin)
-        ->patch("/orders/{$order->id}/confirm-payment")
-        ->assertRedirect()
-        ->assertSessionHasErrors('order');
-});
-
-it('prevents confirming payment on already completed orders', function () {
-    $admin = User::factory()->withRole(RoleName::Admin)->create();
-    $order = Order::factory()->onSite()->create([
-        'status' => OrderStatus::Completed,
-    ]);
-
-    $this->actingAs($admin)
-        ->patch("/orders/{$order->id}/confirm-payment")
-        ->assertRedirect()
-        ->assertSessionHasErrors('order');
+    expect($order->paid_at)->not->toBeNull();
 });

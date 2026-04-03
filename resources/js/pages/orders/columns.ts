@@ -102,8 +102,8 @@ export const columns: ColumnDef<Order>[] = [
         cell: ({ row }) => {
             const status = row.getValue<string>('status');
             const isAwaitingPayment =
-                status === 'pending' &&
-                row.original.payment_method === 'on_site';
+                row.original.payment_method === 'on_site' &&
+                row.original.paid_at === null;
 
             const label =
                 status.charAt(0).toUpperCase() + status.slice(1);

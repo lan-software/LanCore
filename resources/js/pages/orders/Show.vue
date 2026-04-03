@@ -110,8 +110,8 @@ const statusVariant: Record<
                                 >
                                 <Button
                                     v-if="
-                                        order.status === 'pending' &&
-                                        order.payment_method === 'on_site'
+                                        order.payment_method === 'on_site' &&
+                                        order.paid_at === null
                                     "
                                     size="sm"
                                     class="ml-2"

@@ -3,6 +3,7 @@
 namespace App\Domain\Shop\Actions;
 
 use App\Domain\Shop\Enums\OrderStatus;
+use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Events\TicketPurchased;
 use App\Domain\Shop\Models\Order;
 use App\Domain\Ticketing\Enums\TicketStatus;
@@ -26,9 +27,14 @@ class FulfillOrder
         }
 
         DB::transaction(function () use ($order): void {
-            $order->update([
-                'status' => OrderStatus::Completed,
-            ]);
+            $updateData = ['status' => OrderStatus::Completed];
+
+            // Stripe orders are paid when fulfilled; on-site orders need admin confirmation.
+            if ($order->payment_method !== PaymentMethod::OnSite) {
+                $updateData['paid_at'] = now();
+            }
+
+            $order->update($updateData);
 
             $items = json_decode($order->metadata ?? '[]', true);
 

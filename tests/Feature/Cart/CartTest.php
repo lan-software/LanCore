@@ -463,10 +463,11 @@ it('can checkout with on-site payment method', function () {
 
     $order = Order::where('user_id', $user->id)->first();
     expect($order)->not->toBeNull();
-    expect($order->status)->toBe(OrderStatus::Pending);
+    expect($order->status)->toBe(OrderStatus::Completed);
     expect($order->payment_method->value)->toBe('on_site');
     expect($order->total)->toBe(2500);
-    expect($order->tickets)->toHaveCount(0);
+    expect($order->paid_at)->toBeNull();
+    expect($order->tickets)->toHaveCount(1);
 });
 
 it('clears the cart after successful on-site checkout', function () {

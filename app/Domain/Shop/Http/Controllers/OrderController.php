@@ -2,8 +2,6 @@
 
 namespace App\Domain\Shop\Http\Controllers;
 
-use App\Domain\Shop\Actions\FulfillOrder;
-use App\Domain\Shop\Enums\OrderStatus;
 use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Http\Requests\OrderIndexRequest;
 use App\Domain\Shop\Models\Order;
@@ -18,10 +16,6 @@ use Inertia\Response;
  */
 class OrderController extends Controller
 {
-    public function __construct(
-        private readonly FulfillOrder $fulfillOrder,
-    ) {}
-
     public function index(OrderIndexRequest $request): Response
     {
         $this->authorize('viewAny', Order::class);
@@ -77,15 +71,15 @@ class OrderController extends Controller
     {
         $this->authorize('confirmPayment', $order);
 
-        if ($order->status !== OrderStatus::Pending) {
-            return back()->withErrors(['order' => 'This order is not pending.']);
-        }
-
         if ($order->payment_method !== PaymentMethod::OnSite) {
             return back()->withErrors(['order' => 'Only on-site orders can be manually confirmed.']);
         }
 
-        $this->fulfillOrder->execute($order);
+        if ($order->paid_at !== null) {
+            return back()->withErrors(['order' => 'This order has already been marked as paid.']);
+        }
+
+        $order->update(['paid_at' => now()]);
 
         return back();
     }

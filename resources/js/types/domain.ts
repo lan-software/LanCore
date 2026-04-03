@@ -273,6 +273,7 @@ export type Order = {
     provider_session_id: string | null;
     provider_transaction_id: string | null;
     status: OrderStatus;
+    paid_at: string | null;
     subtotal: number;
     discount: number;
     total: number;
