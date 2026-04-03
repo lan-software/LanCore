@@ -83,6 +83,15 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                     </p>
                 </div>
                 <Badge
+                    v-if="
+                        ticket.order?.payment_method === 'on_site' &&
+                        ticket.order?.paid_at === null
+                    "
+                    variant="outline"
+                    class="shrink-0 border-amber-500 text-amber-600"
+                    >Pay on Site</Badge
+                >
+                <Badge
                     :variant="statusVariant(ticket.status)"
                     class="shrink-0"
                     >{{ ticket.status }}</Badge

@@ -26,7 +26,7 @@ class EnsureUserHasRole
             abort(403);
         }
 
-        $user->loadMissingRelation('roles');
+        $user->loadMissing('roles');
 
         foreach ($roles as $roleName) {
             $role = RoleName::tryFrom($roleName);
