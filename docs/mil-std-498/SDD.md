@@ -217,7 +217,21 @@ Each domain module follows a consistent internal structure:
 | Integration | 2 | 10 | 4 | 1 | 1 |
 | Webhook | 2 | 4 | 1 | 1 | 2 |
 | Games | 2 | 6 | 2 | 0 | 0 |
-| Competition | 4 | 8 | 5 | 0 | 0 |
+| Competition | 4 | 8 | 5 | 2 | 0 |
+| Orchestration | 3 | 12 | 3 | 0 | 2 |
+| Api | 0 | 0 | 0 | 0 | 0 |
+
+#### 4.2.2 Orchestration Architecture
+
+The Orchestration domain manages automated game server assignment and match config deployment. It uses a **Strategy pattern** via `MatchHandlerContract` — each game engine (CS2/Source 2 via TMT2, future engines) has a concrete handler implementation.
+
+**Server Selection Algorithm:** When processing a job, `SelectServerForMatch` queries available servers for the required game, ordered by allocation priority (Competition=1 > Flexible=2 > Casual=3), with pessimistic locking (`lockForUpdate()`) to prevent race conditions in concurrent processing.
+
+**Cross-Domain Event Integration:** The Competition domain emits `MatchReadyForOrchestration` events (triggered by LanBrackets `bracket.generated` and `match.result_reported` webhooks). The Orchestration domain listens and creates queued jobs. Match readiness is determined by checking that all participant slots are filled in the LanBrackets match data.
+
+**Automated Pipeline:** TMT2 `MATCH_END` webhook → LanCore auto-reports to LanBrackets → LanBrackets progresses bracket → LanBrackets sends `match.result_reported` webhook → LanCore orchestrates next-round matches. Zero manual intervention for multi-round tournaments.
+
+**MatchHandler Feature System:** Handlers can implement optional feature interfaces (e.g., `SupportsChatFeature`) to provide capabilities beyond core match handling. Features are detected via `instanceof` checks at runtime.
 
 ### 4.3 Concept of Execution
 

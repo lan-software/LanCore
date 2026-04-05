@@ -54,7 +54,32 @@ LanCore is deployed as a Docker container stack, making installation consistent 
 | Docker Image (GHCR) | Pull pre-built image from GitHub Container Registry | Available |
 | Source Build | Clone repo and build with Sail | Available |
 
-### 3.3 Quick Start (Docker Compose)
+### 3.3 Quick Start (Development with Shared Infrastructure)
+
+```bash
+# 1. Clone the monorepo
+git clone <repository-url> lan-software && cd lan-software
+
+# 2. Start shared infrastructure (PostgreSQL, Redis, Mailpit, Mockserver)
+./platform/dev/setup.sh
+
+# 3. Set up LanCore
+cd LanCore
+cp .env.example .env
+vendor/bin/sail up -d
+vendor/bin/sail artisan key:generate
+vendor/bin/sail artisan webpush:vapid
+vendor/bin/sail artisan migrate
+vendor/bin/sail artisan db:seed
+
+# 4. (Optional) Start additional apps
+cd ../LanBrackets && cp .env.example .env && vendor/bin/sail up -d && vendor/bin/sail artisan key:generate && vendor/bin/sail artisan migrate
+# etc.
+```
+
+The `.env.example` is pre-configured for the shared infrastructure — no manual editing of database, Redis, or mail settings is needed.
+
+### 3.4 Quick Start (Production Docker Compose)
 
 ```bash
 # 1. Create deployment directory

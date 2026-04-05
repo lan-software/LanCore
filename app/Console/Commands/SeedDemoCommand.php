@@ -60,10 +60,12 @@ class SeedDemoCommand extends Command
             $this->attempt('Ticketing', $results, fn () => $this->seedTicketing($events));
             $this->attempt('Programs', $results, fn () => $this->seedPrograms($events));
             $this->attempt('Sponsors', $results, fn () => $this->seedSponsors($events));
+            $this->attempt('Competitions', $results, fn () => $this->seedCompetitions($events));
         } else {
             $results['Ticketing'] = 'Skipped — events not seeded';
             $results['Programs'] = 'Skipped — events not seeded';
             $results['Sponsors'] = 'Skipped — events not seeded';
+            $results['Competitions'] = 'Skipped — events not seeded';
         }
 
         $this->attempt('News', $results, fn () => $this->seedNews());
@@ -608,6 +610,216 @@ class SeedDemoCommand extends Command
                 $sponsor1->managers()->attach($sponsorManager->id);
                 $sponsor4->managers()->attach($sponsorManager->id);
             }
+        });
+
+        return true;
+    }
+
+    /**
+     * @param  array{published: Event, draft: Event, past: Event}  $events
+     */
+    private function seedCompetitions(array $events): bool
+    {
+        if (Competition::query()->where('name', 'CS2 Main Tournament')->exists()) {
+            return false;
+        }
+
+        $this->components->task('Seeding competitions & teams', function () use ($events): void {
+            $publishedEvent = $events['published'];
+
+            $cs2 = Game::query()->where('slug', 'counter-strike-2')->first();
+            $cs2Competitive = $cs2?->gameModes()->where('slug', '5v5-competitive')->first();
+
+            $rocketLeague = Game::query()->where('slug', 'rocket-league')->first();
+            $rl3v3 = $rocketLeague?->gameModes()->where('slug', '3v3-standard')->first();
+
+            $tableTennis = Game::query()->where('slug', 'table-tennis')->first();
+            $tt1v1 = $tableTennis?->gameModes()->where('slug', '1v1-singles')->first();
+
+            $users = User::query()->where('email', '!=', 'superadmin@example.com')
+                ->inRandomOrder()
+                ->limit(40)
+                ->get();
+
+            // --- CS2 Main Tournament: 8 teams, single elimination, registration closed ---
+            $cs2Tournament = Competition::create([
+                'name' => 'CS2 Main Tournament',
+                'slug' => 'cs2-main-tournament',
+                'description' => 'The flagship Counter-Strike 2 tournament of Summer LAN 2026. 8 teams battle for glory in a single elimination bracket.',
+                'event_id' => $publishedEvent->id,
+                'game_id' => $cs2?->id,
+                'game_mode_id' => $cs2Competitive?->id,
+                'type' => CompetitionType::Tournament,
+                'stage_type' => StageType::SingleElimination,
+                'status' => CompetitionStatus::RegistrationClosed,
+                'team_size' => 5,
+                'max_teams' => 8,
+                'registration_opens_at' => '2026-05-01 00:00:00',
+                'registration_closes_at' => '2026-07-10 23:59:59',
+                'starts_at' => '2026-07-15 18:00:00',
+                'ends_at' => '2026-07-17 20:00:00',
+                'settings' => ['result_submission_mode' => ResultSubmissionMode::ParticipantsWithProof->value],
+            ]);
+
+            $cs2TeamNames = [
+                ['name' => 'Neon Vipers', 'tag' => 'NV'],
+                ['name' => 'Digital Storm', 'tag' => 'DS'],
+                ['name' => 'Frag Hunters', 'tag' => 'FH'],
+                ['name' => 'Pixel Pirates', 'tag' => 'PP'],
+                ['name' => 'Byte Force', 'tag' => 'BF'],
+                ['name' => 'Shadow Ops', 'tag' => 'SO'],
+                ['name' => 'Lag Lords', 'tag' => 'LL'],
+                ['name' => 'Clutch Kings', 'tag' => 'CK'],
+            ];
+
+            $userIndex = 0;
+            foreach ($cs2TeamNames as $teamData) {
+                $captain = $users[$userIndex] ?? User::factory()->create();
+                $team = CompetitionTeam::create([
+                    'competition_id' => $cs2Tournament->id,
+                    'name' => $teamData['name'],
+                    'tag' => $teamData['tag'],
+                    'captain_user_id' => $captain->id,
+                ]);
+
+                CompetitionTeamMember::create([
+                    'team_id' => $team->id,
+                    'user_id' => $captain->id,
+                    'joined_at' => now()->subDays(rand(10, 30)),
+                ]);
+
+                for ($i = 1; $i < 5; $i++) {
+                    $userIndex++;
+                    $member = $users[$userIndex] ?? User::factory()->create();
+                    CompetitionTeamMember::create([
+                        'team_id' => $team->id,
+                        'user_id' => $member->id,
+                        'joined_at' => now()->subDays(rand(5, 25)),
+                    ]);
+                }
+
+                $userIndex++;
+            }
+
+            // --- CS2 Wingman: 2v2, round robin, registration open ---
+            $cs2Wingman = Competition::create([
+                'name' => 'CS2 Wingman Cup',
+                'slug' => 'cs2-wingman-cup',
+                'description' => '2v2 Wingman side tournament. Casual fun between main matches.',
+                'event_id' => $publishedEvent->id,
+                'game_id' => $cs2?->id,
+                'game_mode_id' => $cs2?->gameModes()->where('slug', '2v2-wingman')->first()?->id,
+                'type' => CompetitionType::Tournament,
+                'stage_type' => StageType::RoundRobin,
+                'status' => CompetitionStatus::RegistrationOpen,
+                'team_size' => 2,
+                'max_teams' => 8,
+                'registration_opens_at' => '2026-06-01 00:00:00',
+                'registration_closes_at' => '2026-07-14 23:59:59',
+                'starts_at' => '2026-07-16 10:00:00',
+                'ends_at' => '2026-07-16 18:00:00',
+            ]);
+
+            $wingmanTeams = [
+                ['name' => 'Double Trouble', 'tag' => 'DT'],
+                ['name' => 'Two of a Kind', 'tag' => '2K'],
+                ['name' => 'Duo Queue', 'tag' => 'DQ'],
+            ];
+
+            foreach ($wingmanTeams as $teamData) {
+                $captain = User::factory()->create();
+                $team = CompetitionTeam::create([
+                    'competition_id' => $cs2Wingman->id,
+                    'name' => $teamData['name'],
+                    'tag' => $teamData['tag'],
+                    'captain_user_id' => $captain->id,
+                ]);
+
+                CompetitionTeamMember::create([
+                    'team_id' => $team->id,
+                    'user_id' => $captain->id,
+                    'joined_at' => now()->subDays(rand(3, 14)),
+                ]);
+
+                $partner = User::factory()->create();
+                CompetitionTeamMember::create([
+                    'team_id' => $team->id,
+                    'user_id' => $partner->id,
+                    'joined_at' => now()->subDays(rand(1, 10)),
+                ]);
+            }
+
+            // --- Rocket League: 3v3, group stage, draft ---
+            Competition::create([
+                'name' => 'Rocket League Showdown',
+                'slug' => 'rocket-league-showdown',
+                'description' => '3v3 Rocket League tournament with group stage into single elimination playoffs.',
+                'event_id' => $publishedEvent->id,
+                'game_id' => $rocketLeague?->id,
+                'game_mode_id' => $rl3v3?->id,
+                'type' => CompetitionType::Tournament,
+                'stage_type' => StageType::GroupStage,
+                'status' => CompetitionStatus::Draft,
+                'team_size' => 3,
+                'max_teams' => 6,
+                'starts_at' => '2026-07-17 10:00:00',
+                'ends_at' => '2026-07-17 18:00:00',
+            ]);
+
+            // --- Table Tennis: 1v1, single elimination, registration open ---
+            $ttTournament = Competition::create([
+                'name' => 'Table Tennis Championship',
+                'slug' => 'table-tennis-championship',
+                'description' => '1v1 single elimination table tennis. Take a break from the screen!',
+                'event_id' => $publishedEvent->id,
+                'game_id' => $tableTennis?->id,
+                'game_mode_id' => $tt1v1?->id,
+                'type' => CompetitionType::Tournament,
+                'stage_type' => StageType::SingleElimination,
+                'status' => CompetitionStatus::RegistrationOpen,
+                'team_size' => 1,
+                'max_teams' => 16,
+                'registration_opens_at' => '2026-06-15 00:00:00',
+                'registration_closes_at' => '2026-07-15 12:00:00',
+                'starts_at' => '2026-07-16 10:00:00',
+                'ends_at' => '2026-07-16 14:00:00',
+            ]);
+
+            $soloPlayers = User::query()->inRandomOrder()->limit(6)->get();
+            foreach ($soloPlayers as $player) {
+                $team = CompetitionTeam::create([
+                    'competition_id' => $ttTournament->id,
+                    'name' => $player->name,
+                    'tag' => null,
+                    'captain_user_id' => $player->id,
+                ]);
+
+                CompetitionTeamMember::create([
+                    'team_id' => $team->id,
+                    'user_id' => $player->id,
+                    'joined_at' => now()->subDays(rand(1, 14)),
+                ]);
+            }
+
+            // --- Past event: finished competition ---
+            $pastEvent = $events['past'];
+            Competition::create([
+                'name' => 'Winter LAN CS2 Cup',
+                'slug' => 'winter-lan-cs2-cup',
+                'description' => 'The CS2 tournament from Winter LAN 2025. What a final!',
+                'event_id' => $pastEvent->id,
+                'game_id' => $cs2?->id,
+                'game_mode_id' => $cs2Competitive?->id,
+                'type' => CompetitionType::Tournament,
+                'stage_type' => StageType::SingleElimination,
+                'status' => CompetitionStatus::Finished,
+                'team_size' => 5,
+                'max_teams' => 4,
+                'registration_opens_at' => '2025-12-01 00:00:00',
+                'registration_closes_at' => '2025-12-26 23:59:59',
+                'starts_at' => '2025-12-27 16:00:00',
+                'ends_at' => '2025-12-28 20:00:00',
+            ]);
         });
 
         return true;

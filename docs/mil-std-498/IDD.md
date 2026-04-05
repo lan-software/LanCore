@@ -393,6 +393,85 @@ Uses minishlink/web-push library with VAPID authentication:
 3. POST to subscriber's push endpoint
 4. Handle expired subscriptions (remove on 410 Gone)
 
+### 3.8 LanBrackets Integration
+
+#### 3.8.1 Outbound (LanCore → LanBrackets)
+
+LanCore communicates with LanBrackets via `LanBracketsClient` (REST API, bearer token auth).
+
+**Key operations:**
+- `POST /api/v1/competitions` — Create competition with external_reference_id
+- `POST /api/v1/competitions/{id}/participants/bulk` — Sync teams as participants
+- `GET /api/v1/competitions/{id}/stages/{stageId}/matches` — Fetch stage matches
+- `POST /api/v1/competitions/{id}/matches/{matchId}/result` — Report match result
+
+**Configuration:** `config/lanbrackets.php` — base_url, token, webhook_secret, timeout, retries
+
+#### 3.8.2 Inbound (LanBrackets → LanCore)
+
+LanBrackets sends webhooks to `POST /webhooks/lanbrackets` with HMAC-SHA256 signature verification.
+
+**Events handled:**
+- `competition.completed` — Marks competition as Finished
+- `match.result_reported` — Resolves match result proofs, triggers orchestration for next-round matches
+- `bracket.generated` — Triggers orchestration for first-round matches with all participants set
+
+### 3.9 TMT2 Integration
+
+#### 3.9.1 Outbound (LanCore → TMT2)
+
+LanCore communicates with TMT2 via `Tmt2Client` (REST API, bearer token auth).
+
+**Key operations:**
+- `POST /api/matches` — Create match with game server, teams, map pool, election steps, webhook URL
+- `GET /api/matches/{id}` — Get match state
+- `PATCH /api/matches/{id}` — Update match
+- `DELETE /api/matches/{id}` — Stop match supervision (executes end rcon commands)
+- `POST /api/login` — Validate token / health check
+
+**Configuration:** `config/tmt2.php` — base_url, token, timeout, retries
+
+#### 3.9.2 Inbound (TMT2 → LanCore)
+
+TMT2 sends webhooks to `POST /webhooks/tmt2/{orchestrationJob}` for each match event.
+
+**Events handled:**
+- `MATCH_END` — Auto-reports result to LanBrackets, completes orchestration job, releases server
+- `CHAT` — Stores player chat messages via SupportsChatFeature
+- `MAP_START`, `MAP_END`, `ROUND_END` — Logged for observability (future: live score updates)
+
+**Payload format** (TMT2 webhook):
+```json
+{
+  "type": "MATCH_END",
+  "timestamp": "2026-04-05T14:30:00Z",
+  "matchId": "tmt2-uuid",
+  "matchPassthrough": "lancore-orchestration-job-id",
+  "wonMapsTeamA": 2,
+  "wonMapsTeamB": 1,
+  "winnerTeam": { "name": "Team Alpha", "passthrough": "lb-participant-1" }
+}
+```
+
+### 3.10 MatchHandlerContract Interface
+
+Internal extensibility interface for game-specific match handlers.
+
+```php
+interface MatchHandlerContract {
+    public function supports(Game $game): bool;
+    public function deploy(GameServer $server, array $matchConfig): void;
+    public function teardown(GameServer $server, array $matchConfig): void;
+    public function healthCheck(GameServer $server): bool;
+}
+```
+
+**Optional feature interfaces:**
+- `SupportsChatFeature` — `handleChatMessage(OrchestrationJob $job, array $chatData): void`
+
+**Registered implementations:**
+- `Tmt2MatchHandler` — CS2/Source 2 engine games via TMT2 API
+
 ---
 
 ## 4. Requirements Traceability
@@ -405,6 +484,8 @@ Uses minishlink/web-push library with VAPID authentication:
 | IF-STRIPE-* | Section 3.4 |
 | IF-PUSH-* | Section 3.7 |
 | IF-S3-* | Section 3.6 |
+| IF-LANBRACKETS-* | Section 3.8 |
+| IF-TMT2-* | Section 3.9 |
 
 ---
 

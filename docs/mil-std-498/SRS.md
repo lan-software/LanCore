@@ -306,7 +306,7 @@ The LanCore CSCI shall support the following operational states:
 | COMP-F-006 | The software shall support team joining with capacity validation |
 | COMP-F-007 | The software shall support team leaving with captain succession |
 | COMP-F-008 | The software shall support match result submission with screenshot proof upload, proxied to LanBrackets API |
-| COMP-F-009 | The software shall handle LanBrackets webhooks (competition.completed, match.result_reported) with HMAC signature verification |
+| COMP-F-009 | The software shall handle LanBrackets webhooks (competition.completed, match.result_reported, bracket.generated) with HMAC signature verification |
 | COMP-F-010 | The software shall sync competitions to LanBrackets via queued job with external_reference_id mapping |
 | COMP-F-011 | The software shall sync teams as participants to LanBrackets when registration closes |
 | COMP-F-012 | The software shall provide user-facing competition views scoped to team membership only |
@@ -355,6 +355,46 @@ The LanCore CSCI shall support the following operational states:
 | USR-F-018 | The software shall share the authenticated user's resolved permissions with the frontend via Inertia shared props as a flat string array |
 | USR-F-019 | The software shall provide a `usePermissions()` Vue composable exposing typed `can(PermissionValue)` and `canAny(PermissionValue...)` helper functions backed by a `Permission` TypeScript constant object for compile-time safety |
 | USR-F-020 | The software shall render sidebar navigation sections conditionally based on the user's resolved permissions |
+
+#### 3.2.16 Orchestration Domain (CSCI-ORC)
+
+**Models:** GameServer, OrchestrationJob, MatchChatMessage
+**Controllers:** GameServerController, OrchestrationJobController, Tmt2WebhookController
+**Actions:** CreateGameServer, UpdateGameServer, DeleteGameServer, SelectServerForMatch, ResolveMatchHandler, ProcessOrchestrationJob, CompleteOrchestrationJob, ReleaseGameServer, RetryOrchestrationJob, CancelOrchestrationJob, ForceReleaseGameServer, HandleTmt2Webhook
+**Enums:** GameServerStatus, GameServerAllocationType, OrchestrationJobStatus, Permission
+**Contracts:** MatchHandlerContract, SupportsChatFeature
+**Handlers:** Tmt2MatchHandler
+**Listeners:** HandleMatchReadyForOrchestration, HandleMatchCompleted
+**Jobs:** ProcessMatchOrchestration
+**Policies:** GameServerPolicy, OrchestrationJobPolicy
+**Events (in Competition domain):** MatchReadyForOrchestration, MatchCompleted
+
+| Req ID | Requirement |
+|--------|------------|
+| ORC-F-001 | The software shall provide CRUD operations for game servers via GameServerController with ManageGameServers permission |
+| ORC-F-002 | The software shall store game servers with: name, host, port, game_id, game_mode_id, status, allocation_type, encrypted credentials, metadata |
+| ORC-F-003 | The software shall enforce GameServerPolicy and OrchestrationJobPolicy with ManageGameServers and ViewOrchestration permissions |
+| ORC-F-004 | The software shall support game server allocation types: Competition (reserved for matches), Casual (pooled for casual play), Flexible (both) |
+| ORC-F-005 | The software shall select available servers in priority order: Competition > Flexible > Casual, with pessimistic locking to prevent race conditions |
+| ORC-F-006 | The software shall create orchestration jobs from MatchReadyForOrchestration events emitted by the Competition domain |
+| ORC-F-007 | The software shall process orchestration jobs via queued workers (ProcessMatchOrchestration) on a dedicated orchestration queue with retry logic (3 tries, 10s backoff) |
+| ORC-F-008 | The software shall deploy match configs via MatchHandlerContract implementations resolved per game, with TMT2 as the first concrete handler for CS2/Source 2 games |
+| ORC-F-009 | The software shall track orchestration job lifecycle: Pending → SelectingServer → Deploying → Active → Completed/Failed/Cancelled |
+| ORC-F-010 | The software shall release game servers (set status to Available) upon match completion or job failure |
+| ORC-F-011 | The software shall prevent duplicate orchestration jobs per competition+match pair via unique database constraint |
+| ORC-F-012 | The software shall support MatchHandler feature interfaces (SupportsChatFeature) for optional capabilities like in-game chat capture via MatchChatMessage model |
+| ORC-F-013 | The software shall receive TMT2 webhooks per orchestration job and auto-report MATCH_END results to LanBrackets for automated bracket progression |
+| ORC-F-014 | The software shall support admin manual controls: retry failed jobs, cancel pending/failed jobs, force-release in-use servers |
+| ORC-F-015 | The software shall display server connection info (IP:port, password) to match participants when the orchestration job is active |
+
+#### 3.2.17 Api Domain (CSCI-API)
+
+**Clients:** Tmt2Client
+
+| Req ID | Requirement |
+|--------|------------|
+| API-F-001 | The software shall provide an HTTP client for TMT2 REST API with bearer token authentication, retries, and feature flag (tmt2.enabled) |
+| API-F-002 | The software shall support TMT2 match lifecycle operations: create, get, update, delete matches via Tmt2Client |
 
 ### 3.3 CSCI External Interface Requirements
 

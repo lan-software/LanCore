@@ -608,3 +608,70 @@ export type WebhookDelivery = {
     succeeded: boolean;
     fired_at: string;
 };
+
+// Orchestration Domain
+
+export type GameServerStatus = 'available' | 'in_use' | 'offline' | 'maintenance';
+
+export type GameServerAllocationType = 'competition' | 'casual' | 'flexible';
+
+export type OrchestrationJobStatus =
+    | 'pending'
+    | 'selecting_server'
+    | 'deploying'
+    | 'active'
+    | 'completed'
+    | 'failed'
+    | 'cancelled';
+
+export type GameServer = {
+    id: number;
+    name: string;
+    host: string;
+    port: number;
+    game_id: number;
+    game_mode_id: number | null;
+    status: GameServerStatus;
+    allocation_type: GameServerAllocationType;
+    credentials: Record<string, unknown> | null;
+    metadata: Record<string, unknown> | null;
+    game?: Game;
+    game_mode?: GameMode | null;
+    active_orchestration_job?: OrchestrationJob | null;
+    created_at: string;
+    updated_at: string;
+};
+
+export type OrchestrationJob = {
+    id: number;
+    game_server_id: number | null;
+    competition_id: number;
+    lanbrackets_match_id: number;
+    game_id: number;
+    game_mode_id: number | null;
+    status: OrchestrationJobStatus;
+    match_config: Record<string, unknown> | null;
+    match_handler: string | null;
+    error_message: string | null;
+    attempts: number;
+    started_at: string | null;
+    completed_at: string | null;
+    game_server?: GameServer | null;
+    competition?: Competition;
+    game?: Game;
+    game_mode?: GameMode | null;
+    chat_messages?: MatchChatMessage[];
+    created_at: string;
+    updated_at: string;
+};
+
+export type MatchChatMessage = {
+    id: number;
+    orchestration_job_id: number;
+    steam_id: string;
+    player_name: string;
+    message: string;
+    is_team_chat: boolean;
+    timestamp: string;
+    created_at: string;
+};

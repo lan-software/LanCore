@@ -57,6 +57,10 @@ export const Permission = {
 
     // Webhooks (app/Domain/Webhook/Enums/Permission.php)
     ManageWebhooks: 'manage_webhooks',
+
+    // Orchestration (app/Domain/Orchestration/Enums/Permission.php)
+    ManageGameServers: 'manage_game_servers',
+    ViewOrchestration: 'view_orchestration',
 } as const;
 
 export type PermissionValue = (typeof Permission)[keyof typeof Permission];

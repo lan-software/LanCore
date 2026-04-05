@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useInitials } from '@/composables/useInitials';
 import type { User } from '@/types';
@@ -7,10 +8,12 @@ import type { User } from '@/types';
 type Props = {
     user: User;
     showEmail?: boolean;
+    hideDetailsOnMobile?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
     showEmail: false,
+    hideDetailsOnMobile: false,
 });
 
 const { getInitials } = useInitials();
@@ -29,7 +32,12 @@ const showAvatar = computed(
         </AvatarFallback>
     </Avatar>
 
-    <div class="grid flex-1 text-left text-sm leading-tight">
+    <div
+        :class="cn(
+            'grid flex-1 text-left text-sm leading-tight',
+            props.hideDetailsOnMobile && 'hidden sm:grid',
+        )"
+    >
         <span class="truncate font-medium">{{ user.name }}</span>
         <span v-if="showEmail" class="truncate text-xs text-muted-foreground">{{
             user.email

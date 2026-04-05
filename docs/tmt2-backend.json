@@ -1,0 +1,3085 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"TMatchState": {
+				"type": "string",
+				"enum": ["ELECTION", "MATCH_MAP", "FINISHED"],
+				"description": "Possible match states."
+			},
+			"ITeam": {
+				"description": "Team.",
+				"properties": {
+					"passthrough": {
+						"type": "string",
+						"description": "Passthrough data to identify team in other systems.\nWill be present in every response/webhook."
+					},
+					"name": {
+						"type": "string",
+						"description": "Team name."
+					},
+					"advantage": {
+						"type": "number",
+						"format": "double",
+						"description": "Advantage in map wins, useful for double elimination tournament finals."
+					},
+					"playerSteamIds64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "Steam ids of players in \"Steam ID 64\" format. Will be forced into this team."
+					}
+				},
+				"required": ["name", "advantage"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IFixedMap": {
+				"description": "Play on a fixed map. Map will not be removed from the map pool.",
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": ["FIXED"],
+						"nullable": false
+					},
+					"fixed": {
+						"type": "string",
+						"description": "The name of the map, e.g. de_anubis."
+					}
+				},
+				"required": ["mode", "fixed"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TWho": {
+				"type": "string",
+				"enum": ["TEAM_A", "TEAM_B", "TEAM_X", "TEAM_Y"]
+			},
+			"IPickMap": {
+				"description": "Pick a map from the map pool.",
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": ["PICK"],
+						"nullable": false
+					},
+					"who": {
+						"$ref": "#/components/schemas/TWho"
+					}
+				},
+				"required": ["mode", "who"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IAgreeOrRandomMap": {
+				"description": "Either pick a random map from the map pool. Or let both teams agree on a map from the map pool.",
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": ["RANDOM_PICK", "AGREE"]
+					}
+				},
+				"required": ["mode"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TSideFixed": {
+				"type": "string",
+				"enum": [
+					"TEAM_A_CT",
+					"TEAM_A_T",
+					"TEAM_B_CT",
+					"TEAM_B_T",
+					"TEAM_X_CT",
+					"TEAM_X_T",
+					"TEAM_Y_CT",
+					"TEAM_Y_T"
+				]
+			},
+			"IFixedSide": {
+				"description": "Use fixed starting sides.",
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": ["FIXED"],
+						"nullable": false
+					},
+					"fixed": {
+						"$ref": "#/components/schemas/TSideFixed"
+					}
+				},
+				"required": ["mode", "fixed"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IPickSide": {
+				"description": "Let one team choose its starting side.",
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": ["PICK"],
+						"nullable": false
+					},
+					"who": {
+						"$ref": "#/components/schemas/TWho"
+					}
+				},
+				"required": ["mode", "who"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IRandomOrKnifeSide": {
+				"description": "Either randomly set starting sides. Or do a knife round befor the map starts and let the winner decide.",
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": ["RANDOM", "KNIFE"]
+					}
+				},
+				"required": ["mode"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IElectionStepAdd": {
+				"description": "Election steps which will result in a match map that will be played.",
+				"properties": {
+					"map": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/IFixedMap"
+							},
+							{
+								"$ref": "#/components/schemas/IPickMap"
+							},
+							{
+								"$ref": "#/components/schemas/IAgreeOrRandomMap"
+							}
+						]
+					},
+					"side": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/IFixedSide"
+							},
+							{
+								"$ref": "#/components/schemas/IPickSide"
+							},
+							{
+								"$ref": "#/components/schemas/IRandomOrKnifeSide"
+							}
+						]
+					}
+				},
+				"required": ["map", "side"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IRandomMapBan": {
+				"description": "Randomly ban a map from the map pool.",
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": ["RANDOM_BAN"],
+						"nullable": false
+					}
+				},
+				"required": ["mode"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IBanMap": {
+				"description": "Ban a map from the map pool.",
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": ["BAN"],
+						"nullable": false
+					},
+					"who": {
+						"$ref": "#/components/schemas/TWho"
+					}
+				},
+				"required": ["mode", "who"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IElectionStepSkip": {
+				"description": "Election steps which will remove a map from the map pool.",
+				"properties": {
+					"map": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/IRandomMapBan"
+							},
+							{
+								"$ref": "#/components/schemas/IBanMap"
+							}
+						]
+					}
+				},
+				"required": ["map"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IElectionStep": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/IElectionStepAdd"
+					},
+					{
+						"$ref": "#/components/schemas/IElectionStepSkip"
+					}
+				],
+				"description": "Election step to either add map to the list of match maps. Or to remove a map from the map pool."
+			},
+			"TElectionState": {
+				"type": "string",
+				"enum": ["NOT_STARTED", "IN_PROGRESS", "FINISHED"]
+			},
+			"TTeamAB": {
+				"type": "string",
+				"enum": ["TEAM_A", "TEAM_B"]
+			},
+			"TStep": {
+				"type": "string",
+				"enum": ["MAP", "SIDE"]
+			},
+			"IElection": {
+				"properties": {
+					"state": {
+						"$ref": "#/components/schemas/TElectionState"
+					},
+					"teamX": {
+						"$ref": "#/components/schemas/TTeamAB"
+					},
+					"teamY": {
+						"$ref": "#/components/schemas/TTeamAB"
+					},
+					"remainingMaps": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "Will be the same as the mapPool from the match, but will shrink when maps get picked, banned or randomly chosen."
+					},
+					"currentStep": {
+						"type": "number",
+						"format": "double",
+						"description": "Index of the current electionSteps of the match."
+					},
+					"currentSubStep": {
+						"$ref": "#/components/schemas/TStep",
+						"description": "Toggles between MAP and SIDE"
+					},
+					"currentStepMap": {
+						"type": "string",
+						"description": "Current set map of the current selection step."
+					},
+					"currentAgree": {
+						"properties": {
+							"teamB": {
+								"type": "string",
+								"nullable": true
+							},
+							"teamA": {
+								"type": "string",
+								"nullable": true
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object",
+						"description": "Holds the wanted maps of each team."
+					},
+					"currentRestart": {
+						"properties": {
+							"teamB": {
+								"type": "boolean"
+							},
+							"teamA": {
+								"type": "boolean"
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object",
+						"description": "The election process can be restarted if both teams vote for it."
+					}
+				},
+				"required": [
+					"state",
+					"remainingMaps",
+					"currentStep",
+					"currentSubStep",
+					"currentAgree",
+					"currentRestart"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IGameServer": {
+				"properties": {
+					"ip": {
+						"type": "string"
+					},
+					"port": {
+						"type": "number",
+						"format": "double"
+					},
+					"rconPassword": {
+						"type": "string"
+					},
+					"hideRconPassword": {
+						"type": "boolean",
+						"description": "If plebs (client without an admin token) create a match the hideRconPassword attribute is set to true.\nThis will prevent executing rcon commands from the frontend by the (unauthorized) user."
+					}
+				},
+				"required": ["ip", "port", "rconPassword"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TMatchMapSate": {
+				"type": "string",
+				"enum": [
+					"PENDING",
+					"MAP_CHANGE",
+					"WARMUP",
+					"KNIFE",
+					"AFTER_KNIFE",
+					"IN_PROGRESS",
+					"PAUSED",
+					"FINISHED"
+				],
+				"description": "Possible match map states."
+			},
+			"IMatchMap": {
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Map name, e.g. de_anubis."
+					},
+					"knifeForSide": {
+						"type": "boolean"
+					},
+					"startAsCtTeam": {
+						"$ref": "#/components/schemas/TTeamAB",
+						"description": "may change after knife round"
+					},
+					"state": {
+						"$ref": "#/components/schemas/TMatchMapSate"
+					},
+					"knifeWinner": {
+						"$ref": "#/components/schemas/TTeamAB",
+						"description": "Winner of the knife round which is able to or already has picked a starting side."
+					},
+					"readyTeams": {
+						"properties": {
+							"teamB": {
+								"type": "boolean"
+							},
+							"teamA": {
+								"type": "boolean"
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object"
+					},
+					"knifeRestart": {
+						"properties": {
+							"teamB": {
+								"type": "boolean"
+							},
+							"teamA": {
+								"type": "boolean"
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object"
+					},
+					"score": {
+						"properties": {
+							"teamB": {
+								"type": "number",
+								"format": "double"
+							},
+							"teamA": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object",
+						"description": "Current score of both teams."
+					},
+					"overTimeEnabled": {
+						"type": "boolean",
+						"description": "If overtime is enabled (mp_overtime_enable)."
+					},
+					"overTimeMaxRounds": {
+						"type": "number",
+						"format": "double",
+						"description": "Max rounds in overtime (mp_overtime_maxrounds)."
+					},
+					"maxRounds": {
+						"type": "number",
+						"format": "double",
+						"description": "Max rounds (mp_maxrounds)."
+					}
+				},
+				"required": [
+					"name",
+					"knifeForSide",
+					"startAsCtTeam",
+					"state",
+					"readyTeams",
+					"knifeRestart",
+					"score",
+					"overTimeEnabled",
+					"overTimeMaxRounds",
+					"maxRounds"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TMatchEndAction": {
+				"type": "string",
+				"enum": ["KICK_ALL", "QUIT_SERVER", "NONE"]
+			},
+			"TLogType": {
+				"type": "string",
+				"enum": ["CHAT", "SYSTEM"]
+			},
+			"ILogChat": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": ["CHAT"],
+						"nullable": false
+					},
+					"timestamp": {
+						"type": "number",
+						"format": "double"
+					},
+					"isTeamChat": {
+						"type": "boolean"
+					},
+					"steamId64": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": ["type", "timestamp", "isTeamChat", "steamId64", "message"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TSystemLogCategory": {
+				"type": "string",
+				"enum": ["ERROR", "WARN", "INFO", "DEBUG"]
+			},
+			"ILogSystem": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": ["SYSTEM"],
+						"nullable": false
+					},
+					"timestamp": {
+						"type": "number",
+						"format": "double"
+					},
+					"category": {
+						"$ref": "#/components/schemas/TSystemLogCategory"
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": ["type", "timestamp", "category", "message"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TLogUnion": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/ILogChat"
+					},
+					{
+						"$ref": "#/components/schemas/ILogSystem"
+					}
+				]
+			},
+			"TTeamSides": {
+				"type": "string",
+				"enum": ["CT", "T"]
+			},
+			"IPlayer": {
+				"description": "Player.",
+				"properties": {
+					"steamId64": {
+						"type": "string",
+						"description": "Steam ID 64"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name."
+					},
+					"team": {
+						"$ref": "#/components/schemas/TTeamAB",
+						"description": "Current team as they joined with `.team`.\nIf the player's steam id is in the team's `playerSteamIds64`\nthis cannot be changed and is always set to the team."
+					},
+					"side": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TTeamSides"
+							}
+						],
+						"nullable": true,
+						"description": "Current ingame side."
+					},
+					"online": {
+						"type": "boolean",
+						"description": "Player currently on the game server (online)?"
+					}
+				},
+				"required": ["steamId64", "name"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TMatchMode": {
+				"type": "string",
+				"enum": ["SINGLE", "LOOP"],
+				"description": "Possible match modes."
+			},
+			"IMatch": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "tmt2 identifier for this match"
+					},
+					"state": {
+						"$ref": "#/components/schemas/TMatchState"
+					},
+					"passthrough": {
+						"type": "string",
+						"description": "e.g. remote identifier, will be present in every response/webhook"
+					},
+					"mapPool": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool.\nWorkshop maps are possible (contain numbers only).\nFriendly names for players when picking/banning maps can be added after a \"/\" delimiter and is advised for workshop maps.\n\nExample:\n```\n[\n   \"de_ancient\",\n   \"de_anubis/anubis\",\n   \"de_inferno\",\n   \"de_mirage\",\n   \"de_nuke\",\n   \"de_overpass\",\n   \"de_vertigo\",\n   \"3070923343/fy_pool_day\"\n]\n```"
+					},
+					"teamA": {
+						"$ref": "#/components/schemas/ITeam",
+						"description": "Team A for this match.\nTeam A will always be Team A in responses and webhooks.\nNo matter on which side (CT/T) it is currently."
+					},
+					"teamB": {
+						"$ref": "#/components/schemas/ITeam",
+						"description": "Team B for this match.\nTeam B will always be Team B in responses and webhooks.\nNo matter on which side (CT/T) it is currently."
+					},
+					"electionSteps": {
+						"items": {
+							"$ref": "#/components/schemas/IElectionStep"
+						},
+						"type": "array",
+						"description": "List of election steps to determine the played map(s)."
+					},
+					"election": {
+						"$ref": "#/components/schemas/IElection",
+						"description": "Data for the election process."
+					},
+					"gameServer": {
+						"$ref": "#/components/schemas/IGameServer"
+					},
+					"logSecret": {
+						"type": "string",
+						"description": "Log secret that is given as part of the url to the CS2 server as a log receiver (logaddress_add_http)."
+					},
+					"parseIncomingLogs": {
+						"type": "boolean",
+						"description": "Indicates if incoming logs from the CS2 server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
+					},
+					"matchMaps": {
+						"items": {
+							"$ref": "#/components/schemas/IMatchMap"
+						},
+						"type": "array",
+						"description": "The maps which will be played. If match state is still ELECTION than this is not final."
+					},
+					"currentMap": {
+						"type": "number",
+						"format": "double",
+						"description": "Index of the matchMaps array indicating the current map."
+					},
+					"webhookUrl": {
+						"type": "string",
+						"nullable": true,
+						"description": "Send various events to this url (HTTP POST)"
+					},
+					"webhookHeaders": {
+						"properties": {},
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object",
+						"nullable": true,
+						"description": "Additional headers that will be added to each webhook request"
+					},
+					"rconCommands": {
+						"properties": {
+							"end": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed after last match map"
+							},
+							"match": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every match map start"
+							},
+							"knife": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every knife round"
+							},
+							"init": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed exactly once on match init"
+							}
+						},
+						"required": ["end", "match", "knife", "init"],
+						"type": "object"
+					},
+					"canClinch": {
+						"type": "boolean",
+						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
+					},
+					"matchEndAction": {
+						"$ref": "#/components/schemas/TMatchEndAction",
+						"description": "defaults to NONE"
+					},
+					"logs": {
+						"items": {
+							"$ref": "#/components/schemas/TLogUnion"
+						},
+						"type": "array"
+					},
+					"players": {
+						"items": {
+							"$ref": "#/components/schemas/IPlayer"
+						},
+						"type": "array"
+					},
+					"tmtSecret": {
+						"type": "string",
+						"description": "Access token to be used in the API."
+					},
+					"isStopped": {
+						"type": "boolean",
+						"description": "If match is finished or if the match was stopped/deleted this is true."
+					},
+					"serverPassword": {
+						"type": "string",
+						"description": "Server password, periodically fetched from game server"
+					},
+					"tmtLogAddress": {
+						"type": "string",
+						"description": "if set will be used to register the target logaddress for the game server"
+					},
+					"createdAt": {
+						"type": "number",
+						"format": "double",
+						"description": "Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC)"
+					},
+					"lastSavedAt": {
+						"type": "number",
+						"format": "double",
+						"description": "Last time the match was saved to disk (unix time in milliseconds since midnight, January 1, 1970 UTC)"
+					},
+					"mode": {
+						"$ref": "#/components/schemas/TMatchMode",
+						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
+					}
+				},
+				"required": [
+					"id",
+					"state",
+					"mapPool",
+					"teamA",
+					"teamB",
+					"electionSteps",
+					"election",
+					"gameServer",
+					"logSecret",
+					"parseIncomingLogs",
+					"matchMaps",
+					"currentMap",
+					"webhookUrl",
+					"webhookHeaders",
+					"rconCommands",
+					"canClinch",
+					"matchEndAction",
+					"logs",
+					"players",
+					"tmtSecret",
+					"isStopped",
+					"serverPassword",
+					"createdAt",
+					"mode"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ITeamCreateDto": {
+				"description": "Team (create structure).",
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"passthrough": {
+						"type": "string",
+						"description": "Passthrough data to identify team in other systems.\nWill be present in every response/webhook."
+					},
+					"advantage": {
+						"type": "number",
+						"format": "double",
+						"description": "Advantage in map wins, useful for double elimination tournament finals."
+					},
+					"playerSteamIds64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "Steam ids of players in \"Steam ID 64\" format. Will be forced into this team."
+					}
+				},
+				"required": ["name"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IMatchCreateDto": {
+				"properties": {
+					"passthrough": {
+						"type": "string",
+						"description": "e.g. remote identifier, will be present in every response/webhook"
+					},
+					"mapPool": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool.\nWorkshop maps are possible (contain numbers only).\nFriendly names for players when picking/banning maps can be added after a \"/\" delimiter and is advised for workshop maps.\n\nExample:\n```\n[\n   \"de_ancient\",\n   \"de_anubis/anubis\",\n   \"de_inferno\",\n   \"de_mirage\",\n   \"de_nuke\",\n   \"de_overpass\",\n   \"de_vertigo\",\n   \"3070923343/fy_pool_day\"\n]\n```"
+					},
+					"teamA": {
+						"$ref": "#/components/schemas/ITeamCreateDto"
+					},
+					"teamB": {
+						"$ref": "#/components/schemas/ITeamCreateDto"
+					},
+					"electionSteps": {
+						"items": {
+							"anyOf": [
+								{
+									"$ref": "#/components/schemas/IElectionStepAdd"
+								},
+								{
+									"$ref": "#/components/schemas/IElectionStepSkip"
+								}
+							]
+						},
+						"type": "array"
+					},
+					"gameServer": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/IGameServer"
+							}
+						],
+						"nullable": true
+					},
+					"webhookUrl": {
+						"type": "string",
+						"nullable": true,
+						"description": "Send various events to this url (HTTP POST)"
+					},
+					"webhookHeaders": {
+						"properties": {},
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object",
+						"nullable": true,
+						"description": "Additional headers that will be added to each webhook request"
+					},
+					"rconCommands": {
+						"properties": {
+							"end": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed after last match map"
+							},
+							"match": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every match map start"
+							},
+							"knife": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every knife round"
+							},
+							"init": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed exactly once on match init"
+							}
+						},
+						"type": "object"
+					},
+					"canClinch": {
+						"type": "boolean",
+						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
+					},
+					"matchEndAction": {
+						"$ref": "#/components/schemas/TMatchEndAction",
+						"description": "defaults to NONE"
+					},
+					"tmtLogAddress": {
+						"type": "string",
+						"description": "if set will be used to register the target logaddress for the game server"
+					},
+					"mode": {
+						"$ref": "#/components/schemas/TMatchMode",
+						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
+					}
+				},
+				"required": ["mapPool", "teamA", "teamB", "electionSteps", "gameServer"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IMatchResponse": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "tmt2 identifier for this match"
+					},
+					"state": {
+						"$ref": "#/components/schemas/TMatchState"
+					},
+					"passthrough": {
+						"type": "string",
+						"description": "e.g. remote identifier, will be present in every response/webhook"
+					},
+					"mapPool": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool.\nWorkshop maps are possible (contain numbers only).\nFriendly names for players when picking/banning maps can be added after a \"/\" delimiter and is advised for workshop maps.\n\nExample:\n```\n[\n   \"de_ancient\",\n   \"de_anubis/anubis\",\n   \"de_inferno\",\n   \"de_mirage\",\n   \"de_nuke\",\n   \"de_overpass\",\n   \"de_vertigo\",\n   \"3070923343/fy_pool_day\"\n]\n```"
+					},
+					"teamA": {
+						"$ref": "#/components/schemas/ITeam",
+						"description": "Team A for this match.\nTeam A will always be Team A in responses and webhooks.\nNo matter on which side (CT/T) it is currently."
+					},
+					"teamB": {
+						"$ref": "#/components/schemas/ITeam",
+						"description": "Team B for this match.\nTeam B will always be Team B in responses and webhooks.\nNo matter on which side (CT/T) it is currently."
+					},
+					"electionSteps": {
+						"items": {
+							"$ref": "#/components/schemas/IElectionStep"
+						},
+						"type": "array",
+						"description": "List of election steps to determine the played map(s)."
+					},
+					"election": {
+						"$ref": "#/components/schemas/IElection",
+						"description": "Data for the election process."
+					},
+					"gameServer": {
+						"$ref": "#/components/schemas/IGameServer"
+					},
+					"logSecret": {
+						"type": "string",
+						"description": "Log secret that is given as part of the url to the CS2 server as a log receiver (logaddress_add_http)."
+					},
+					"parseIncomingLogs": {
+						"type": "boolean",
+						"description": "Indicates if incoming logs from the CS2 server are parsed (otherwise they will be dropped without any action).\nWill be set to true if match is loaded from storage (after a short delay)."
+					},
+					"matchMaps": {
+						"items": {
+							"$ref": "#/components/schemas/IMatchMap"
+						},
+						"type": "array",
+						"description": "The maps which will be played. If match state is still ELECTION than this is not final."
+					},
+					"currentMap": {
+						"type": "number",
+						"format": "double",
+						"description": "Index of the matchMaps array indicating the current map."
+					},
+					"webhookUrl": {
+						"type": "string",
+						"nullable": true,
+						"description": "Send various events to this url (HTTP POST)"
+					},
+					"webhookHeaders": {
+						"properties": {},
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object",
+						"nullable": true,
+						"description": "Additional headers that will be added to each webhook request"
+					},
+					"rconCommands": {
+						"properties": {
+							"end": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed after last match map"
+							},
+							"match": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every match map start"
+							},
+							"knife": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed before every knife round"
+							},
+							"init": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "executed exactly once on match init"
+							}
+						},
+						"required": ["end", "match", "knife", "init"],
+						"type": "object"
+					},
+					"canClinch": {
+						"type": "boolean",
+						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
+					},
+					"matchEndAction": {
+						"$ref": "#/components/schemas/TMatchEndAction",
+						"description": "defaults to NONE"
+					},
+					"logs": {
+						"items": {
+							"$ref": "#/components/schemas/TLogUnion"
+						},
+						"type": "array"
+					},
+					"players": {
+						"items": {
+							"$ref": "#/components/schemas/IPlayer"
+						},
+						"type": "array"
+					},
+					"tmtSecret": {
+						"type": "string",
+						"description": "Access token to be used in the API."
+					},
+					"isStopped": {
+						"type": "boolean",
+						"description": "If match is finished or if the match was stopped/deleted this is true."
+					},
+					"serverPassword": {
+						"type": "string",
+						"description": "Server password, periodically fetched from game server"
+					},
+					"tmtLogAddress": {
+						"type": "string",
+						"description": "if set will be used to register the target logaddress for the game server"
+					},
+					"createdAt": {
+						"type": "number",
+						"format": "double",
+						"description": "Creation date (unix time in milliseconds since midnight, January 1, 1970 UTC)"
+					},
+					"lastSavedAt": {
+						"type": "number",
+						"format": "double",
+						"description": "Last time the match was saved to disk (unix time in milliseconds since midnight, January 1, 1970 UTC)"
+					},
+					"mode": {
+						"$ref": "#/components/schemas/TMatchMode",
+						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
+					},
+					"isLive": {
+						"type": "boolean",
+						"description": "Match is currently supervised."
+					}
+				},
+				"required": [
+					"id",
+					"state",
+					"mapPool",
+					"teamA",
+					"teamB",
+					"electionSteps",
+					"election",
+					"gameServer",
+					"logSecret",
+					"parseIncomingLogs",
+					"matchMaps",
+					"currentMap",
+					"webhookUrl",
+					"webhookHeaders",
+					"rconCommands",
+					"canClinch",
+					"matchEndAction",
+					"logs",
+					"players",
+					"tmtSecret",
+					"isStopped",
+					"serverPassword",
+					"createdAt",
+					"mode",
+					"isLive"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TTeamString": {
+				"type": "string",
+				"enum": ["Unassigned", "CT", "TERRORIST", "", "Spectator"],
+				"description": "Possible ingame sides of a player."
+			},
+			"EventType": {
+				"type": "string",
+				"enum": [
+					"CHAT",
+					"ELECTION_MAP_STEP",
+					"ELECTION_SIDE_STEP",
+					"MAP_ELECTION_END",
+					"KNIFE_END",
+					"ROUND_END",
+					"MAP_START",
+					"MAP_END",
+					"MATCH_END",
+					"LOG",
+					"MATCH_CREATE",
+					"MATCH_UPDATE",
+					"MATCH_STOP"
+				]
+			},
+			"ChatEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["CHAT"],
+						"nullable": false
+					},
+					"player": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/IPlayer"
+							}
+						],
+						"nullable": true,
+						"description": "`null` when not a player (e.g. CONSOLE via rcon)"
+					},
+					"playerTeam": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ITeam"
+							}
+						],
+						"nullable": true,
+						"description": "`null` when not a player (e.g. CONSOLE via rcon)"
+					},
+					"message": {
+						"type": "string"
+					},
+					"isTeamChat": {
+						"type": "boolean"
+					},
+					"teamString": {
+						"$ref": "#/components/schemas/TTeamString"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"player",
+					"playerTeam",
+					"message",
+					"isTeamChat"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ElectionEndEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["MAP_ELECTION_END"],
+						"nullable": false
+					},
+					"mapNames": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": ["timestamp", "matchId", "matchPassthrough", "type", "mapNames"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RoundEndEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["ROUND_END"],
+						"nullable": false
+					},
+					"mapIndex": {
+						"type": "number",
+						"format": "double"
+					},
+					"mapName": {
+						"type": "string"
+					},
+					"matchMapCount": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps that could be played"
+					},
+					"winnerTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					},
+					"scoreTeamA": {
+						"type": "number",
+						"format": "double"
+					},
+					"scoreTeamB": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mapIndex",
+					"mapName",
+					"matchMapCount",
+					"winnerTeam",
+					"scoreTeamA",
+					"scoreTeamB"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MapEndEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["MAP_END"],
+						"nullable": false
+					},
+					"mapIndex": {
+						"type": "number",
+						"format": "double"
+					},
+					"mapName": {
+						"type": "string"
+					},
+					"matchMapCount": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps that could be played"
+					},
+					"scoreTeamA": {
+						"type": "number",
+						"format": "double"
+					},
+					"scoreTeamB": {
+						"type": "number",
+						"format": "double"
+					},
+					"winnerTeam": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ITeam"
+							}
+						],
+						"nullable": true,
+						"description": "winner of the map or null if it's a draw"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mapIndex",
+					"mapName",
+					"matchMapCount",
+					"scoreTeamA",
+					"scoreTeamB",
+					"winnerTeam"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MatchEndEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["MATCH_END"],
+						"nullable": false
+					},
+					"wonMapsTeamA": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps team a has won including its advantage (if given)"
+					},
+					"wonMapsTeamB": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps team b has won including its advantage (if given)"
+					},
+					"winnerTeam": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ITeam"
+							}
+						],
+						"nullable": true,
+						"description": "winner of the match or null if it's a draw"
+					},
+					"mapResults": {
+						"items": {
+							"properties": {
+								"winnerTeam": {
+									"allOf": [
+										{
+											"$ref": "#/components/schemas/ITeam"
+										}
+									],
+									"nullable": true,
+									"description": "winner of the match or null if it's a draw"
+								},
+								"scoreTeamB": {
+									"type": "number",
+									"format": "double"
+								},
+								"scoreTeamA": {
+									"type": "number",
+									"format": "double"
+								},
+								"mapName": {
+									"type": "string"
+								}
+							},
+							"required": ["winnerTeam", "scoreTeamB", "scoreTeamA", "mapName"],
+							"type": "object"
+						},
+						"type": "array",
+						"description": "all map results (but only for finished maps)"
+					},
+					"matchMapCount": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps that could have been played"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"wonMapsTeamA",
+					"wonMapsTeamB",
+					"winnerTeam",
+					"mapResults",
+					"matchMapCount"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"KnifeRoundEndEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["KNIFE_END"],
+						"nullable": false
+					},
+					"mapIndex": {
+						"type": "number",
+						"format": "double"
+					},
+					"mapName": {
+						"type": "string"
+					},
+					"matchMapCount": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps that could be played"
+					},
+					"winnerTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mapIndex",
+					"mapName",
+					"matchMapCount",
+					"winnerTeam"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MapStartEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["MAP_START"],
+						"nullable": false
+					},
+					"mapIndex": {
+						"type": "number",
+						"format": "double"
+					},
+					"mapName": {
+						"type": "string"
+					},
+					"matchMapCount": {
+						"type": "number",
+						"format": "double",
+						"description": "number of maps that could be played"
+					}
+				},
+				"required": [
+					"timestamp",
+					"matchId",
+					"matchPassthrough",
+					"type",
+					"mapIndex",
+					"mapName",
+					"matchMapCount"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"LogEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["LOG"],
+						"nullable": false
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": ["timestamp", "matchId", "matchPassthrough", "type", "message"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TMapMode": {
+				"type": "string",
+				"enum": ["FIXED", "PICK", "RANDOM_PICK", "AGREE", "BAN", "RANDOM_BAN"],
+				"description": "Possible map modes for a election step."
+			},
+			"ElectionMapStep": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["ELECTION_MAP_STEP"],
+						"nullable": false
+					},
+					"mode": {
+						"$ref": "#/components/schemas/TMapMode"
+					},
+					"mapName": {
+						"type": "string"
+					},
+					"pickerTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					}
+				},
+				"required": ["timestamp", "matchId", "matchPassthrough", "type", "mode", "mapName"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TSideMode": {
+				"type": "string",
+				"enum": ["KNIFE", "FIXED", "PICK", "RANDOM"],
+				"description": "Possible side modes to determine the starting sides of each team."
+			},
+			"ElectionSideStep": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["ELECTION_SIDE_STEP"],
+						"nullable": false
+					},
+					"mode": {
+						"$ref": "#/components/schemas/TSideMode"
+					},
+					"pickerTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					},
+					"pickerSide": {
+						"$ref": "#/components/schemas/TTeamSides"
+					},
+					"ctTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					},
+					"tTeam": {
+						"$ref": "#/components/schemas/ITeam"
+					}
+				},
+				"required": ["timestamp", "matchId", "matchPassthrough", "type", "mode"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MatchCreateEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["MATCH_CREATE"],
+						"nullable": false
+					},
+					"match": {
+						"$ref": "#/components/schemas/IMatchResponse"
+					}
+				},
+				"required": ["timestamp", "matchId", "matchPassthrough", "type", "match"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MatchUpdateEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["MATCH_UPDATE"],
+						"nullable": false
+					},
+					"path": {
+						"items": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "number",
+									"format": "double"
+								}
+							]
+						},
+						"type": "array"
+					},
+					"value": {}
+				},
+				"required": ["timestamp", "matchId", "matchPassthrough", "type", "path", "value"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MatchStopEvent": {
+				"properties": {
+					"timestamp": {
+						"type": "string",
+						"description": "ISO"
+					},
+					"matchId": {
+						"type": "string"
+					},
+					"matchPassthrough": {
+						"type": "string",
+						"nullable": true
+					},
+					"type": {
+						"type": "string",
+						"enum": ["MATCH_STOP"],
+						"nullable": false
+					}
+				},
+				"required": ["timestamp", "matchId", "matchPassthrough", "type"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Event": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/ChatEvent"
+					},
+					{
+						"$ref": "#/components/schemas/ElectionEndEvent"
+					},
+					{
+						"$ref": "#/components/schemas/RoundEndEvent"
+					},
+					{
+						"$ref": "#/components/schemas/MapEndEvent"
+					},
+					{
+						"$ref": "#/components/schemas/MatchEndEvent"
+					},
+					{
+						"$ref": "#/components/schemas/KnifeRoundEndEvent"
+					},
+					{
+						"$ref": "#/components/schemas/MapStartEvent"
+					},
+					{
+						"$ref": "#/components/schemas/LogEvent"
+					},
+					{
+						"$ref": "#/components/schemas/ElectionMapStep"
+					},
+					{
+						"$ref": "#/components/schemas/ElectionSideStep"
+					},
+					{
+						"$ref": "#/components/schemas/MatchCreateEvent"
+					},
+					{
+						"$ref": "#/components/schemas/MatchUpdateEvent"
+					},
+					{
+						"$ref": "#/components/schemas/MatchStopEvent"
+					}
+				]
+			},
+			"IMatchUpdateDto": {
+				"properties": {
+					"passthrough": {
+						"type": "string",
+						"description": "e.g. remote identifier, will be present in every response/webhook"
+					},
+					"mapPool": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"description": "The maps the players can pick or ban.\nWill also be used if a map is chosen randomly.\nIf the map is fixed it will not be removed from the map pool.\nWorkshop maps are possible (contain numbers only).\nFriendly names for players when picking/banning maps can be added after a \"/\" delimiter and is advised for workshop maps.\n\nExample:\n```\n[\n   \"de_ancient\",\n   \"de_anubis/anubis\",\n   \"de_inferno\",\n   \"de_mirage\",\n   \"de_nuke\",\n   \"de_overpass\",\n   \"de_vertigo\",\n   \"3070923343/fy_pool_day\"\n]\n```"
+					},
+					"teamA": {
+						"$ref": "#/components/schemas/ITeamCreateDto"
+					},
+					"teamB": {
+						"$ref": "#/components/schemas/ITeamCreateDto"
+					},
+					"electionSteps": {
+						"items": {
+							"anyOf": [
+								{
+									"$ref": "#/components/schemas/IElectionStepAdd"
+								},
+								{
+									"$ref": "#/components/schemas/IElectionStepSkip"
+								}
+							]
+						},
+						"type": "array"
+					},
+					"gameServer": {
+						"$ref": "#/components/schemas/IGameServer"
+					},
+					"webhookUrl": {
+						"type": "string",
+						"description": "Send various events to this url (HTTP POST)"
+					},
+					"webhookHeaders": {
+						"properties": {},
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object",
+						"description": "Additional headers that will be added to each webhook request"
+					},
+					"rconCommands": {
+						"properties": {
+							"end": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"match": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"knife": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"init": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						},
+						"type": "object"
+					},
+					"canClinch": {
+						"type": "boolean",
+						"description": "defaults to true, means that possibly not all maps will be played if the winner is determined before"
+					},
+					"matchEndAction": {
+						"type": "string",
+						"enum": ["KICK_ALL", "QUIT_SERVER", "NONE"],
+						"description": "defaults to NONE"
+					},
+					"tmtLogAddress": {
+						"type": "string",
+						"description": "if set will be used to register the target logaddress for the game server"
+					},
+					"mode": {
+						"$ref": "#/components/schemas/TMatchMode",
+						"description": "Match mode (single: stops when match is finished, loop: starts again after match is finished)"
+					},
+					"state": {
+						"$ref": "#/components/schemas/TMatchState",
+						"description": "Overwrite the match state.\nOnly sets the state. Does not execute any code/logic."
+					},
+					"logSecret": {
+						"type": "string",
+						"description": "updates the server's log address automatically"
+					},
+					"currentMap": {
+						"type": "number",
+						"format": "double",
+						"description": "Change to this match map (0-based index)."
+					},
+					"_restartElection": {
+						"type": "boolean",
+						"description": "Restart the complete match.\nWill restart the election process as well.\nMust be executed when the election steps were changed after the match was created."
+					},
+					"_execRconCommandsInit": {
+						"type": "boolean"
+					},
+					"_execRconCommandsKnife": {
+						"type": "boolean"
+					},
+					"_execRconCommandsMatch": {
+						"type": "boolean"
+					},
+					"_execRconCommandsEnd": {
+						"type": "boolean"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IMatchMapUpdateDto": {
+				"description": "Structure to update a match map.",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Map name, e.g. de_anubis."
+					},
+					"knifeForSide": {
+						"type": "boolean"
+					},
+					"startAsCtTeam": {
+						"$ref": "#/components/schemas/TTeamAB",
+						"description": "may change after knife round"
+					},
+					"state": {
+						"$ref": "#/components/schemas/TMatchMapSate"
+					},
+					"knifeWinner": {
+						"$ref": "#/components/schemas/TTeamAB",
+						"description": "Winner of the knife round which is able to or already has picked a starting side."
+					},
+					"readyTeams": {
+						"properties": {
+							"teamB": {
+								"type": "boolean"
+							},
+							"teamA": {
+								"type": "boolean"
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object"
+					},
+					"knifeRestart": {
+						"properties": {
+							"teamB": {
+								"type": "boolean"
+							},
+							"teamA": {
+								"type": "boolean"
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object"
+					},
+					"score": {
+						"properties": {
+							"teamB": {
+								"type": "number",
+								"format": "double"
+							},
+							"teamA": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": ["teamB", "teamA"],
+						"type": "object",
+						"description": "Current score of both teams."
+					},
+					"overTimeEnabled": {
+						"type": "boolean",
+						"description": "If overtime is enabled (mp_overtime_enable)."
+					},
+					"overTimeMaxRounds": {
+						"type": "number",
+						"format": "double",
+						"description": "Max rounds in overtime (mp_overtime_maxrounds)."
+					},
+					"maxRounds": {
+						"type": "number",
+						"format": "double",
+						"description": "Max rounds (mp_maxrounds)."
+					},
+					"_refreshOvertimeAndMaxRoundsSettings": {
+						"type": "boolean",
+						"description": "reads and refreshes mp_overtime_enable, mp_overtime_maxrounds and mp_maxrounds from rcon"
+					},
+					"_switchTeamInternals": {
+						"type": "boolean",
+						"description": "switch team internals, i.e. swap team names (and internal score)"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IManagedGameServer": {
+				"properties": {
+					"ip": {
+						"type": "string"
+					},
+					"port": {
+						"type": "number",
+						"format": "double"
+					},
+					"rconPassword": {
+						"type": "string"
+					},
+					"hideRconPassword": {
+						"type": "boolean",
+						"description": "If plebs (client without an admin token) create a match the hideRconPassword attribute is set to true.\nThis will prevent executing rcon commands from the frontend by the (unauthorized) user."
+					},
+					"canBeUsed": {
+						"type": "boolean",
+						"description": "Can the server be used for new matches?"
+					},
+					"usedBy": {
+						"type": "string",
+						"nullable": true,
+						"description": "Match id which is currently using this managed game server."
+					}
+				},
+				"required": ["ip", "port", "rconPassword", "canBeUsed", "usedBy"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IManagedGameServerCreateDto": {
+				"properties": {
+					"ip": {
+						"type": "string"
+					},
+					"port": {
+						"type": "number",
+						"format": "double"
+					},
+					"rconPassword": {
+						"type": "string"
+					},
+					"hideRconPassword": {
+						"type": "boolean",
+						"description": "If plebs (client without an admin token) create a match the hideRconPassword attribute is set to true.\nThis will prevent executing rcon commands from the frontend by the (unauthorized) user."
+					},
+					"canBeUsed": {
+						"type": "boolean",
+						"description": "Can the server be used for new matches?"
+					}
+				},
+				"required": ["ip", "port", "rconPassword"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IManagedGameServerUpdateDto": {
+				"properties": {
+					"ip": {
+						"type": "string"
+					},
+					"port": {
+						"type": "number",
+						"format": "double"
+					},
+					"rconPassword": {
+						"type": "string"
+					},
+					"canBeUsed": {
+						"type": "boolean",
+						"description": "Set if the server can be used for new matches."
+					},
+					"usedBy": {
+						"type": "string",
+						"nullable": true,
+						"description": "Set or delete the link to a match. If it's null and `canBeUsed` is true, the game server is available."
+					}
+				},
+				"required": ["ip", "port"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IDebugResponse": {
+				"properties": {
+					"tmtVersion": {
+						"type": "string",
+						"nullable": true
+					},
+					"tmtCommitSha": {
+						"type": "string",
+						"nullable": true
+					},
+					"tmtImageBuildTimestamp": {
+						"type": "string",
+						"nullable": true
+					},
+					"tmtStorageFolder": {
+						"type": "string"
+					},
+					"tmtPort": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "number",
+								"format": "double"
+							}
+						]
+					},
+					"tmtLogAddress": {
+						"type": "string",
+						"nullable": true
+					},
+					"tmtSayPrefix": {
+						"type": "string"
+					},
+					"webSockets": {
+						"items": {},
+						"type": "array"
+					}
+				},
+				"required": [
+					"tmtVersion",
+					"tmtCommitSha",
+					"tmtImageBuildTimestamp",
+					"tmtStorageFolder",
+					"tmtPort",
+					"tmtLogAddress",
+					"tmtSayPrefix",
+					"webSockets"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IConfig": {
+				"properties": {
+					"tmtLogAddress": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": ["tmtLogAddress"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IPreset": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"isPublic": {
+						"type": "boolean"
+					},
+					"data": {
+						"$ref": "#/components/schemas/IMatchCreateDto"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": ["name", "data", "id"],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IPresetCreateDto": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"isPublic": {
+						"type": "boolean"
+					},
+					"data": {
+						"$ref": "#/components/schemas/IMatchCreateDto"
+					}
+				},
+				"required": ["name", "data"],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {
+			"bearer_token": {
+				"type": "http",
+				"scheme": "bearer"
+			},
+			"bearer_token_optional": {
+				"type": "http",
+				"scheme": "bearer"
+			}
+		}
+	},
+	"info": {
+		"title": "tmt2-backend",
+		"version": "2.0.0",
+		"license": {
+			"name": "MIT"
+		},
+		"contact": {
+			"name": "Jens Forstmann"
+		}
+	},
+	"paths": {
+		"/api/login": {
+			"post": {
+				"operationId": "Login",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Dummy endpoint to check if given token is valid without executing anything.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/api/matches": {
+			"post": {
+				"operationId": "CreateMatch",
+				"responses": {
+					"201": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IMatch"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create and supervise a new match.",
+				"security": [
+					{
+						"bearer_token_optional": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IMatchCreateDto"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "GetAllMatches",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IMatchResponse"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all matches.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "State filter",
+						"in": "query",
+						"name": "state",
+						"required": false,
+						"schema": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"description": "Passthrough filter",
+						"in": "query",
+						"name": "passthrough",
+						"required": false,
+						"schema": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"description": "Get only stopped or not stopped matches.",
+						"in": "query",
+						"name": "isStopped",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					{
+						"description": "Filter for only live (currently active) matches, or the opposite.",
+						"in": "query",
+						"name": "isLive",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}": {
+			"get": {
+				"operationId": "GetMatch",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/IMatchResponse"
+										},
+										{}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Get a specific match by id.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"patch": {
+				"operationId": "UpdateMatch",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Update a specific match.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IMatchUpdateDto"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteMatch",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Stop supervising a specific match. TMT will execute the \"end rcon commands\" and afterwards no longer listen to the game server.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/logs": {
+			"get": {
+				"operationId": "GetLogs",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"type": "string"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get the last 1000 log lines from a specific match.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/events": {
+			"get": {
+				"operationId": "GetEvents",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Event"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get the last 1000 events from a specific match.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/server/round_backups": {
+			"get": {
+				"operationId": "GetRoundBackups",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"total": {
+													"type": "number",
+													"format": "double"
+												},
+												"latestFiles": {
+													"items": {
+														"type": "string"
+													},
+													"type": "array"
+												}
+											},
+											"required": ["total", "latestFiles"],
+											"type": "object"
+										},
+										{}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Get the last known round backups for a specific match.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "The max. number of round backups to be returned.",
+						"in": "query",
+						"name": "count",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/server/round_backups/{file}": {
+			"post": {
+				"operationId": "LoadRoundBackup",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"type": "boolean"
+										},
+										{}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Load a round backup file for a specific match.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Name of the round backup file.",
+						"in": "path",
+						"name": "file",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/matchMap/{mapNumber}": {
+			"patch": {
+				"operationId": "UpdateMatchMap",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Update a specific match map. First map has the map number 0.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "mapNumber",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IMatchMapUpdateDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/matches/{id}/revive": {
+			"patch": {
+				"operationId": "ReviveMatch",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Revive a specific match. TMT will start supervising a (stopped) match again (listen to the game sever and execute rcon commands).",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/matches/{id}/server/rcon": {
+			"post": {
+				"operationId": "Rcon",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"items": {
+												"type": "string"
+											},
+											"type": "array"
+										},
+										{}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Execute a rcon command on the game server.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/matches/{id}/server/log/{secret}": {
+			"post": {
+				"operationId": "ReceiveLog",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Endpoint the game server sends its log file to. Not meant for direct use!",
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "secret",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {}
+						}
+					}
+				}
+			}
+		},
+		"/api/gameservers": {
+			"get": {
+				"operationId": "GetGameServers",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IManagedGameServer"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all managed game servers.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateGameServer",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IManagedGameServer"
+								}
+							}
+						}
+					}
+				},
+				"description": "Add a new managed game server.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IManagedGameServerCreateDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/gameservers/{ip}/{port}": {
+			"patch": {
+				"operationId": "UpdateGameServer",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IManagedGameServer"
+								}
+							}
+						}
+					}
+				},
+				"description": "Change an existing managed game server.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "ip",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "port",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IManagedGameServerUpdateDto"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteGameServer",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Delete an existing managed game server.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "ip",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "port",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "GameServerRcon",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"items": {
+												"type": "string"
+											},
+											"type": "array"
+										},
+										{}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Execute a rcon command on the game server.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "ip",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "port",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/debug/webSockets": {
+			"get": {
+				"operationId": "GetWebSocketClients",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all connected web socket clients.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/api/debug": {
+			"get": {
+				"operationId": "GetInfos",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IDebugResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/api/config": {
+			"get": {
+				"operationId": "GetConfig",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IConfig"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get some internal config variables. Currently only the set TMT_LOG_ADDRESS.",
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/api/presets": {
+			"get": {
+				"operationId": "GetPresets",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IPreset"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all configured presets.",
+				"security": [
+					{
+						"bearer_token_optional": []
+					}
+				],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreatePreset",
+				"responses": {
+					"201": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IPreset"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new preset.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IPresetCreateDto"
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"operationId": "UpdatePreset",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Update an existing preset.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IPreset"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/presets/{id}": {
+			"delete": {
+				"operationId": "DeletePreset",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Delete an existing preset.",
+				"security": [
+					{
+						"bearer_token": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}

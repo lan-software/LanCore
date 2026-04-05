@@ -18,8 +18,11 @@ import {
     Palette,
     Pin,
     PinOff,
+    PlugZap,
     Puzzle,
+    Radio,
     Rows3,
+    Server,
     ShieldCheck,
     ShoppingCart,
     Swords,
@@ -32,9 +35,7 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { toggle as toggleFavoriteAction } from '@/actions/App/Http/Controllers/Settings/SidebarFavoriteController';
-import { usePermissions } from '@/composables/usePermissions';
 import AppLogo from '@/components/AppLogo.vue';
-import { Permission } from '@/types';
 import EventSelector from '@/components/EventSelector.vue';
 import NavFavorites from '@/components/NavFavorites.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -52,19 +53,23 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { usePermissions } from '@/composables/usePermissions';
 import { dashboard, home } from '@/routes';
 import { index as achievementsIndex } from '@/routes/achievements';
-import { index as competitionsIndex } from '@/routes/competitions';
-import { index as myCompetitionsIndex } from '@/routes/my-competitions';
 import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import { index as announcementsIndex } from '@/routes/announcements';
+import { index as competitionsIndex } from '@/routes/competitions';
 import { index as eventsIndex } from '@/routes/events';
+import { index as externalApisIndex } from '@/routes/external-apis';
+import { index as gameServersIndex } from '@/routes/game-servers';
 import { index as gamesIndex } from '@/routes/games';
 import { index as globalPurchaseConditionsIndex } from '@/routes/global-purchase-conditions';
 import { index as integrationsIndex } from '@/routes/integrations';
+import { index as myCompetitionsIndex } from '@/routes/my-competitions';
+import { index as myOrdersIndex } from '@/routes/my-orders';
 import { index as newsIndex } from '@/routes/news';
 import { index as newsCommentsIndex } from '@/routes/news/comments';
-import { index as myOrdersIndex } from '@/routes/my-orders';
+import { index as orchestrationJobsIndex } from '@/routes/orchestration-jobs';
 import { index as ordersIndex } from '@/routes/orders';
 import { index as paymentProviderConditionsIndex } from '@/routes/payment-provider-conditions';
 import { index as programsIndex } from '@/routes/programs';
@@ -80,6 +85,7 @@ import { index as usersIndex } from '@/routes/users';
 import { index as venuesIndex } from '@/routes/venues';
 import { index as vouchersIndex } from '@/routes/vouchers';
 import { index as webhooksIndex } from '@/routes/webhooks';
+import { Permission } from '@/types';
 import type { NavItem } from '@/types';
 
 const page = usePage();
@@ -360,6 +366,32 @@ const allPinnableItems = computed<NavItem[]>(() => {
                 title: 'Payment Conditions',
                 href: paymentProviderConditionsIndex(),
                 icon: CreditCard,
+            },
+        );
+    }
+
+    if (can(Permission.ManageGameServers)) {
+        items.push({
+            id: 'game-servers',
+            title: 'Game Servers',
+            href: gameServersIndex(),
+            icon: Server,
+        });
+    }
+
+    if (canAny(Permission.ViewOrchestration, Permission.ManageGameServers)) {
+        items.push(
+            {
+                id: 'orchestration-jobs',
+                title: 'Orchestration',
+                href: orchestrationJobsIndex(),
+                icon: Radio,
+            },
+            {
+                id: 'external-apis',
+                title: 'External APIs',
+                href: externalApisIndex(),
+                icon: PlugZap,
             },
         );
     }
@@ -832,16 +864,72 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Orchestration Domain -->
-            <SidebarGroup v-if="can(Permission.ManageEvents)">
+            <SidebarGroup
+                v-if="
+                    canAny(
+                        Permission.ManageGameServers,
+                        Permission.ViewOrchestration,
+                    )
+                "
+            >
                 <SidebarGroupLabel>Orchestration</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                class="pointer-events-none text-sidebar-foreground/50"
-                            >
-                                <span>Coming soon</span>
+                        <SidebarMenuItem
+                            v-if="can(Permission.ManageGameServers)"
+                        >
+                            <SidebarMenuButton as-child>
+                                <Link :href="gameServersIndex()">
+                                    <Server />
+                                    <span>Game Servers</span>
+                                </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('game-servers')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('game-servers')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="orchestrationJobsIndex()">
+                                    <Radio />
+                                    <span>Orchestration</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('orchestration-jobs')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('orchestration-jobs')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="externalApisIndex()">
+                                    <PlugZap />
+                                    <span>External APIs</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('external-apis')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('external-apis')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>

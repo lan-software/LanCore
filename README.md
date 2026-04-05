@@ -146,6 +146,11 @@ docker run --rm -v "$(pwd)":/opt -w /opt laravelsail/php85-composer:latest compo
 cp .env.example .env
 vendor/bin/sail artisan key:generate
 
+# 3.1 Generate VAPID keys for browser push notifications
+vendor/bin/sail artisan webpush:vapid
+
+# Copy the generated VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY into .env
+
 # 4. Start containers
 vendor/bin/sail up -d
 
@@ -158,6 +163,23 @@ vendor/bin/sail npm run dev
 ```
 
 The application will be available at **http://localhost**.
+
+### Web Push Notifications
+
+LanCore uses VAPID keys for browser push notifications. Add these variables to your local `.env`:
+
+```env
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+```
+
+Generate the key pair with:
+
+```bash
+vendor/bin/sail artisan webpush:vapid
+```
+
+The command prints `VAPID_PUBLIC_KEY=...` and `VAPID_PRIVATE_KEY=...`. Copy those values into `.env`, then restart the application containers or reload the config so push subscription requests use the new keys.
 
 ### Common Commands
 

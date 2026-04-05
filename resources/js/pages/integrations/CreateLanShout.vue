@@ -64,6 +64,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                     name="allowed_scopes[]"
                     value="user:roles"
                 />
+                <input type="hidden" name="send_role_updates" value="1" />
 
                 <!-- Summary -->
                 <div class="space-y-4">
@@ -131,7 +132,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                             id="callback_url"
                             name="callback_url"
                             type="url"
-                            placeholder="http://localhost:82/auth/lancore/callback"
+                            value="http://localhost:82/auth/callback"
+                            placeholder="http://localhost:82/auth/callback"
                         />
                         <p class="text-xs text-muted-foreground">
                             The URL LanCore redirects to after SSO
@@ -153,6 +155,21 @@ const breadcrumbs: BreadcrumbItem[] = [
                             Shout link in the navigation.
                         </p>
                         <InputError :message="errors.nav_url" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="roles_endpoint">Roles Webhook URL</Label>
+                        <Input
+                            id="roles_endpoint"
+                            name="roles_endpoint"
+                            type="url"
+                            value="http://localhost:82/api/webhooks/roles"
+                            placeholder="http://localhost:82/api/webhooks/roles"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            The endpoint LanCore will call when user roles change.
+                        </p>
+                        <InputError :message="errors.roles_endpoint" />
                     </div>
 
                     <div class="flex items-center gap-2">

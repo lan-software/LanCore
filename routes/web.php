@@ -39,3 +39,4 @@ require __DIR__.'/achievements.php';
 require __DIR__.'/notifications.php';
 require __DIR__.'/webhooks.php';
 require __DIR__.'/integrations.php';
+require __DIR__.'/orchestration.php';

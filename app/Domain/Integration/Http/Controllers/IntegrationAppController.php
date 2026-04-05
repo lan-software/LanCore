@@ -82,6 +82,13 @@ class IntegrationAppController extends Controller
         return Inertia::render('integrations/CreateLanHelp');
     }
 
+    public function createLanEntrance(): Response
+    {
+        $this->authorize('create', IntegrationApp::class);
+
+        return Inertia::render('integrations/CreateLanEntrance');
+    }
+
     public function store(StoreIntegrationAppRequest $request): RedirectResponse
     {
         $this->authorize('create', IntegrationApp::class);

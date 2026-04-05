@@ -11,6 +11,8 @@ use App\Domain\Announcement\Listeners\HandleAnnouncementPublishedWebhooks;
 use App\Domain\Announcement\Listeners\SendAnnouncementNotification;
 use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Announcement\Policies\AnnouncementPolicy;
+use App\Domain\Competition\Events\MatchCompleted;
+use App\Domain\Competition\Events\MatchReadyForOrchestration;
 use App\Domain\Event\Events\EventPublished;
 use App\Domain\Event\Listeners\HandleEventPublishedWebhooks;
 use App\Domain\Event\Models\Event;
@@ -41,6 +43,14 @@ use App\Domain\Notification\Listeners\HandleProfileUpdatedWebhooks;
 use App\Domain\Notification\Listeners\HandleUserRolesChangedWebhooks;
 use App\Domain\Notification\Listeners\SendUserAttributesUpdatedNotification;
 use App\Domain\Notification\Listeners\SendUserRolesChangedNotification;
+use App\Domain\Orchestration\Actions\ResolveMatchHandler;
+use App\Domain\Orchestration\Handlers\Tmt2MatchHandler;
+use App\Domain\Orchestration\Listeners\HandleMatchCompleted as OrchestrationHandleMatchCompleted;
+use App\Domain\Orchestration\Listeners\HandleMatchReadyForOrchestration as OrchestrationHandleMatchReady;
+use App\Domain\Orchestration\Models\GameServer;
+use App\Domain\Orchestration\Models\OrchestrationJob;
+use App\Domain\Orchestration\Policies\GameServerPolicy;
+use App\Domain\Orchestration\Policies\OrchestrationJobPolicy;
 use App\Domain\Program\Events\ProgramTimeSlotApproaching;
 use App\Domain\Program\Listeners\SendProgramTimeSlotNotification;
 use App\Domain\Program\Models\Program;
@@ -113,6 +123,11 @@ class AppServiceProvider extends ServiceProvider
             return $manager;
         });
 
+        $this->app->tag([Tmt2MatchHandler::class], 'match_handlers');
+        $this->app->when(ResolveMatchHandler::class)
+            ->needs('$handlers')
+            ->giveTagged('match_handlers');
+
         if ($this->app->environment('local') && class_exists(TelescopeServiceProvider::class)) {
             $this->app->register(TelescopeServiceProvider::class);
             // $this->app->register(TelescopeServiceProvider::class);
@@ -164,6 +179,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(NewsArticle::class, NewsArticlePolicy::class);
         Gate::policy(NewsComment::class, NewsCommentPolicy::class);
         Gate::policy(Webhook::class, WebhookPolicy::class);
+        Gate::policy(GameServer::class, GameServerPolicy::class);
+        Gate::policy(OrchestrationJob::class, OrchestrationJobPolicy::class);
     }
 
     /**
@@ -212,6 +229,10 @@ class AppServiceProvider extends ServiceProvider
         EventFacade::listen(TicketPurchased::class, HandleTicketPurchasedWebhooks::class);
         EventFacade::listen(ProfileUpdated::class, HandleProfileUpdatedWebhooks::class);
         EventFacade::listen(IntegrationAccessed::class, HandleIntegrationAccessedWebhooks::class);
+
+        // Orchestration listeners
+        EventFacade::listen(MatchReadyForOrchestration::class, OrchestrationHandleMatchReady::class);
+        EventFacade::listen(MatchCompleted::class, OrchestrationHandleMatchCompleted::class);
 
         // Achievement processing — listen to all grantable events
         EventFacade::listen(Registered::class, ProcessAchievements::class);

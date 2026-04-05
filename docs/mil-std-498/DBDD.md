@@ -820,6 +820,65 @@ Standard Laravel Cashier tables for subscription management with metered billing
 - **pulse_entries**, **pulse_aggregates**, **pulse_values** — Laravel Pulse monitoring
 - **telescope_entries**, **telescope_entries_tags**, **telescope_monitoring** — Laravel Telescope
 
+### 4.17 Orchestration
+
+#### 4.17.1 game_servers
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| name | varchar | Human-readable server label |
+| host | varchar | IP address or hostname |
+| port | unsigned integer | Server port |
+| game_id | bigint FK | References games.id (cascade delete) |
+| game_mode_id | bigint FK (nullable) | References game_modes.id (null on delete) |
+| status | varchar (default 'available') | GameServerStatus enum (available, in_use, offline, maintenance) |
+| allocation_type | varchar | GameServerAllocationType enum (competition, casual, flexible) |
+| credentials | text (nullable) | Encrypted JSON — RCON password, connection secrets |
+| metadata | jsonb (nullable) | Arbitrary server metadata |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+**Indexes:** `(game_id, status, allocation_type)` composite for server selection queries.
+
+#### 4.17.2 orchestration_jobs
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| game_server_id | bigint FK (nullable) | References game_servers.id (null on delete) — assigned after server selection |
+| competition_id | bigint FK | References competitions.id (cascade delete) |
+| lanbrackets_match_id | unsigned bigint | Match ID from LanBrackets |
+| game_id | bigint FK | References games.id (cascade delete) |
+| game_mode_id | bigint FK (nullable) | References game_modes.id (null on delete) |
+| status | varchar (default 'pending') | OrchestrationJobStatus enum (pending, selecting_server, deploying, active, completed, failed, cancelled) |
+| match_config | jsonb (nullable) | Game-specific match configuration blob |
+| match_handler | varchar (nullable) | FQCN of the MatchHandlerContract implementation used |
+| error_message | text (nullable) | Failure reason |
+| attempts | unsigned integer (default 0) | Processing attempt count |
+| started_at | timestamp (nullable) | When deployment completed and match became active |
+| completed_at | timestamp (nullable) | When match completed and server was released |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+**Unique constraint:** `(competition_id, lanbrackets_match_id)` prevents duplicate orchestration per match.
+**Indexes:** `(status)` for job processing queries.
+
+#### 4.17.3 match_chat_messages
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| orchestration_job_id | bigint FK | References orchestration_jobs.id (cascade delete) |
+| steam_id | varchar | Player's Steam ID 64 |
+| player_name | varchar | Player display name at time of message |
+| message | text | Chat message content |
+| is_team_chat | boolean (default false) | Team chat vs all chat |
+| timestamp | timestamp | When the message was sent (from match handler) |
+| created_at | timestamp | |
+
+**Indexes:** `(orchestration_job_id, timestamp)` for chat log queries.
+
 ---
 
 ## 5. Entity Relationship Summary
@@ -868,6 +927,11 @@ Achievement ──< AchievementEvent
 IntegrationApp ──< IntegrationToken
 IntegrationApp ──< Webhook
 Webhook ──< WebhookDelivery
+
+Game ──< GameServer
+GameServer ──< OrchestrationJob
+Competition ──< OrchestrationJob
+OrchestrationJob ──< MatchChatMessage
 ```
 
 ---

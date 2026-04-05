@@ -75,7 +75,10 @@ docker compose exec app php artisan migrate --force
 # Check migration status
 docker compose exec app php artisan migrate:status
 
-# Database backup (PostgreSQL)
+# Database backup (PostgreSQL — development with shared infrastructure)
+docker exec infrastructure-pgsql pg_dump -U sail lancore > backup.sql
+
+# Database backup (PostgreSQL — production)
 docker compose exec pgsql pg_dump -U lancore lancore > backup.sql
 ```
 

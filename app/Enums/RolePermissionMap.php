@@ -10,6 +10,7 @@ use App\Domain\Event\Enums\Permission as EventPermission;
 use App\Domain\Games\Enums\Permission as GamePermission;
 use App\Domain\Integration\Enums\Permission as IntegrationPermission;
 use App\Domain\News\Enums\Permission as NewsPermission;
+use App\Domain\Orchestration\Enums\Permission as OrchestrationPermission;
 use App\Domain\Program\Enums\Permission as ProgramPermission;
 use App\Domain\Seating\Enums\Permission as SeatingPermission;
 use App\Domain\Shop\Enums\Permission as ShopPermission;
@@ -63,6 +64,8 @@ final class RolePermissionMap
                 SponsoringPermission::ManageSponsorLevels,
                 IntegrationPermission::ManageIntegrations,
                 WebhookPermission::ManageWebhooks,
+                OrchestrationPermission::ManageGameServers,
+                OrchestrationPermission::ViewOrchestration,
                 Permission::ManageUsers,
                 AuditPermission::ViewAuditLogs,
             ],
@@ -95,6 +98,7 @@ final class RolePermissionMap
             ...TicketingPermission::cases(),
             ...VenuePermission::cases(),
             ...WebhookPermission::cases(),
+            ...OrchestrationPermission::cases(),
         ];
     }
 }

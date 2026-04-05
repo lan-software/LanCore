@@ -46,8 +46,17 @@ LanCore is an open-source PHP/Vue.js application. This manual guides developers 
 
 ### 3.2 Initial Setup
 
+All Lan-Software apps share infrastructure services (PostgreSQL, Redis, Mailpit, Mockserver) managed by `platform/dev/`. Start infrastructure first, then any app.
+
 ```bash
+# 1. Clone the monorepo
 git clone <repository-url>
+cd lan-software
+
+# 2. Start shared infrastructure (PostgreSQL, Redis, Mailpit, Mockserver)
+./platform/dev/setup.sh
+
+# 3. Set up LanCore
 cd LanCore
 cp .env.example .env
 docker run --rm -v $(pwd):/app composer install
@@ -57,6 +66,27 @@ vendor/bin/sail artisan migrate
 vendor/bin/sail npm install
 vendor/bin/sail npm run dev
 ```
+
+The `.env.example` is pre-configured for the shared infrastructure. No manual editing of database or Redis settings is required.
+
+#### Shared Infrastructure Services
+
+| Service | Container Name | Host Port |
+|---------|---------------|-----------|
+| PostgreSQL 18 | `infrastructure-pgsql` | 5430 |
+| Redis | `infrastructure-redis` | 6370 |
+| Mailpit | `infrastructure-mailpit` | 1025 (SMTP), 8021 (Dashboard) |
+| Mockserver | `infrastructure-mockserver` | 1080 |
+
+#### App Port Allocation
+
+| App | HTTP Port | Vite Port |
+|-----|-----------|-----------|
+| LanCore | 80 | 5173 |
+| LanBrackets | 81 | 5174 |
+| LanShout | 82 | 5175 |
+| LanHelp | 83 | 5176 |
+| LanEntrance | 84 | 5177 |
 
 ---
 

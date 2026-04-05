@@ -2,6 +2,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { ChevronsUpDown } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { cn } from '@/lib/utils';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,13 +17,33 @@ import {
 import UserInfo from '@/components/UserInfo.vue';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 
+type Props = {
+    variant?: 'sidebar' | 'topbar';
+};
+
+const props = withDefaults(defineProps<Props>(), {
+    variant: 'sidebar',
+});
+
 const page = usePage();
 const user = computed(() => page.props.auth.user);
-const { isMobile, state } = useSidebar();
+const sidebar = props.variant === 'sidebar' ? useSidebar() : null;
+
+const dropdownSide = computed(() => {
+    if (props.variant === 'topbar') {
+        return 'bottom';
+    }
+
+    if (sidebar?.isMobile.value) {
+        return 'bottom';
+    }
+
+    return sidebar?.state.value === 'collapsed' ? 'left' : 'bottom';
+});
 </script>
 
 <template>
-    <SidebarMenu>
+    <SidebarMenu v-if="props.variant === 'sidebar'">
         <SidebarMenuItem>
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
@@ -37,13 +58,7 @@ const { isMobile, state } = useSidebar();
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                     class="w-(--reka-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-                    :side="
-                        isMobile
-                            ? 'bottom'
-                            : state === 'collapsed'
-                              ? 'left'
-                              : 'bottom'
-                    "
+                    :side="dropdownSide"
                     align="end"
                     :side-offset="4"
                 >
@@ -52,4 +67,30 @@ const { isMobile, state } = useSidebar();
             </DropdownMenu>
         </SidebarMenuItem>
     </SidebarMenu>
+
+    <DropdownMenu v-else>
+        <DropdownMenuTrigger as-child>
+            <button
+                type="button"
+                :class="cn(
+                    'flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-2 py-1.5 text-sm shadow-sm transition hover:bg-accent hover:text-accent-foreground sm:gap-3 sm:px-3 sm:py-2',
+                )"
+                data-test="topbar-user-button"
+            >
+                <UserInfo
+                    :user="user"
+                    :hide-details-on-mobile="true"
+                />
+                <ChevronsUpDown class="size-4 text-muted-foreground sm:block" />
+            </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+            class="min-w-64 rounded-lg"
+            :side="dropdownSide"
+            align="end"
+            :side-offset="8"
+        >
+            <UserMenuContent :user="user" />
+        </DropdownMenuContent>
+    </DropdownMenu>
 </template>

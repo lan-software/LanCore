@@ -16,6 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('integrations/create/lanbrackets', [IntegrationAppController::class, 'createLanBrackets'])->name('integrations.create.lanbrackets');
     Route::get('integrations/create/lanshout', [IntegrationAppController::class, 'createLanShout'])->name('integrations.create.lanshout');
     Route::get('integrations/create/lanhelp', [IntegrationAppController::class, 'createLanHelp'])->name('integrations.create.lanhelp');
+    Route::get('integrations/create/lanentrance', [IntegrationAppController::class, 'createLanEntrance'])->name('integrations.create.lanentrance');
     Route::post('integrations', [IntegrationAppController::class, 'store'])->name('integrations.store');
     Route::get('integrations/{integration}', [IntegrationAppController::class, 'edit'])->name('integrations.edit');
     Route::patch('integrations/{integration}', [IntegrationAppController::class, 'update'])->name('integrations.update');

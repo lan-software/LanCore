@@ -205,6 +205,15 @@ it('displays the LanHelp create page for admins', function () {
         ->assertInertia(fn ($page) => $page->component('integrations/CreateLanHelp'));
 });
 
+it('displays the LanEntrance create page for admins', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->get('/integrations/create/lanentrance')
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page->component('integrations/CreateLanEntrance'));
+});
+
 it('creates a LanBrackets integration with prepopulated data', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
@@ -214,6 +223,8 @@ it('creates a LanBrackets integration with prepopulated data', function () {
             'slug' => 'lanbrackets',
             'description' => 'Tournament bracket management system',
             'callback_url' => 'http://localhost:81/auth/callback',
+            'send_role_updates' => true,
+            'roles_endpoint' => 'http://localhost:81/api/webhooks/roles',
             'nav_url' => 'http://localhost:81',
             'nav_label' => 'Brackets',
             'nav_icon' => 'swords',
@@ -228,6 +239,7 @@ it('creates a LanBrackets integration with prepopulated data', function () {
     expect($app->nav_label)->toBe('Brackets');
     expect($app->nav_icon)->toBe('swords');
     expect($app->allowed_scopes)->toBe(['user:read', 'user:email', 'user:roles']);
+    expect($app->roles_endpoint)->toBe('http://localhost:81/api/webhooks/roles');
 });
 
 it('creates a LanShout integration with prepopulated data', function () {
@@ -238,7 +250,9 @@ it('creates a LanShout integration with prepopulated data', function () {
             'name' => 'LanShout',
             'slug' => 'lanshout',
             'description' => 'Real-time chat and communication platform',
-            'callback_url' => 'http://localhost:82/auth/lancore/callback',
+            'callback_url' => 'http://localhost:82/auth/callback',
+            'send_role_updates' => true,
+            'roles_endpoint' => 'http://localhost:82/api/webhooks/roles',
             'nav_url' => 'http://localhost:82',
             'nav_label' => 'Shout',
             'nav_icon' => 'megaphone',
@@ -252,6 +266,7 @@ it('creates a LanShout integration with prepopulated data', function () {
     expect($app->name)->toBe('LanShout');
     expect($app->nav_label)->toBe('Shout');
     expect($app->nav_icon)->toBe('megaphone');
+    expect($app->roles_endpoint)->toBe('http://localhost:82/api/webhooks/roles');
 });
 
 it('creates a LanHelp integration with prepopulated data', function () {
@@ -262,7 +277,9 @@ it('creates a LanHelp integration with prepopulated data', function () {
             'name' => 'LanHelp',
             'slug' => 'lanhelp',
             'description' => 'Help desk and support ticket system',
-            'callback_url' => 'http://localhost:83/auth/lancore/callback',
+            'callback_url' => 'http://localhost:83/auth/callback',
+            'send_role_updates' => true,
+            'roles_endpoint' => 'http://localhost:83/api/webhooks/roles',
             'nav_url' => 'http://localhost:83',
             'nav_label' => 'Help',
             'nav_icon' => 'life-buoy',
@@ -276,4 +293,32 @@ it('creates a LanHelp integration with prepopulated data', function () {
     expect($app->name)->toBe('LanHelp');
     expect($app->nav_label)->toBe('Help');
     expect($app->nav_icon)->toBe('life-buoy');
+    expect($app->roles_endpoint)->toBe('http://localhost:83/api/webhooks/roles');
+});
+
+it('creates a LanEntrance integration with prepopulated data', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->post('/integrations', [
+            'name' => 'LanEntrance',
+            'slug' => 'lanentrance',
+            'description' => 'Entrance and check-in management system',
+            'callback_url' => 'http://localhost:84/auth/callback',
+            'send_role_updates' => true,
+            'roles_endpoint' => 'http://localhost:84/api/webhooks/roles',
+            'nav_url' => 'http://localhost:84',
+            'nav_label' => 'Entrance',
+            'nav_icon' => 'door-open',
+            'allowed_scopes' => ['user:read', 'user:email', 'user:roles'],
+            'is_active' => true,
+        ])
+        ->assertRedirect('/integrations');
+
+    $app = IntegrationApp::where('slug', 'lanentrance')->first();
+    expect($app)->not->toBeNull();
+    expect($app->name)->toBe('LanEntrance');
+    expect($app->nav_label)->toBe('Entrance');
+    expect($app->nav_icon)->toBe('door-open');
+    expect($app->roles_endpoint)->toBe('http://localhost:84/api/webhooks/roles');
 });

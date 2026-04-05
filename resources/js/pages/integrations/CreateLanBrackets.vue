@@ -64,6 +64,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                     name="allowed_scopes[]"
                     value="user:roles"
                 />
+                <input type="hidden" name="send_role_updates" value="1" />
 
                 <!-- Summary -->
                 <div class="space-y-4">
@@ -131,6 +132,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                             id="callback_url"
                             name="callback_url"
                             type="url"
+                            value="http://localhost:81/auth/callback"
                             placeholder="http://localhost:81/auth/callback"
                         />
                         <p class="text-xs text-muted-foreground">
@@ -146,6 +148,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                             id="nav_url"
                             name="nav_url"
                             type="url"
+                            value="http://localhost:81"
                             placeholder="http://localhost:81"
                         />
                         <p class="text-xs text-muted-foreground">
@@ -153,6 +156,21 @@ const breadcrumbs: BreadcrumbItem[] = [
                             Brackets link in the navigation.
                         </p>
                         <InputError :message="errors.nav_url" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="roles_endpoint">Roles Webhook URL</Label>
+                        <Input
+                            id="roles_endpoint"
+                            name="roles_endpoint"
+                            type="url"
+                            value="http://localhost:81/api/webhooks/roles"
+                            placeholder="http://localhost:81/api/webhooks/roles"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            The endpoint LanCore will call when user roles change.
+                        </p>
+                        <InputError :message="errors.roles_endpoint" />
                     </div>
 
                     <div class="flex items-center gap-2">

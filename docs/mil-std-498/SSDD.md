@@ -40,7 +40,42 @@ This document describes the system-level design, including subsystem decompositi
 
 ## 3. System-Wide Design Decisions
 
-### 3.1 Deployment Architecture
+### 3.1 Deployment Architecture (Development)
+
+In development, all Lan-Software ecosystem apps share infrastructure services via the `platform/dev/` Docker Compose stack, connected through a single `lanparty` Docker network.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                         Docker Host                               │
+│                                                                   │
+│  ══════════════════ lanparty network ═══════════════════════════  │
+│  ║                                                             ║  │
+│  ║  ┌───────────────────────────────────────────────────────┐  ║  │
+│  ║  │  platform/dev  (shared infrastructure)                │  ║  │
+│  ║  │                                                       │  ║  │
+│  ║  │  infrastructure-pgsql     PostgreSQL 18  :5430        │  ║  │
+│  ║  │  infrastructure-redis     Redis          :6370        │  ║  │
+│  ║  │  infrastructure-mailpit   Mailpit        :1025/:8021  │  ║  │
+│  ║  │  infrastructure-mockserver               :1080        │  ║  │
+│  ║  └───────────────────────────────────────────────────────┘  ║  │
+│  ║                                                             ║  │
+│  ║  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      ║  │
+│  ║  │ lancore.test  │  │ lanbrackets  │  │ lanshout     │      ║  │
+│  ║  │ :80  + queue  │  │ .test  :81   │  │ .test  :82   │      ║  │
+│  ║  │ + garage      │  └──────────────┘  └──────────────┘      ║  │
+│  ║  └──────────────┘                                           ║  │
+│  ║  ┌──────────────┐  ┌──────────────┐                         ║  │
+│  ║  │ lanhelp      │  │ lanentrance  │                         ║  │
+│  ║  │ .test  :83   │  │ .test  :84   │                         ║  │
+│  ║  └──────────────┘  └──────────────┘                         ║  │
+│  ║                                                             ║  │
+│  ═══════════════════════════════════════════════════════════════  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 3.1.1 Deployment Architecture (Production)
+
+In production, LanCore is deployed as a standalone Docker container stack with its own database, cache, and storage.
 
 ```
 ┌─────────────────────────────────────────┐
@@ -59,22 +94,22 @@ This document describes the system-level design, including subsystem decompositi
 │  └──────────────────┘  └──────────────┘ │
 │                                          │
 │  ┌──────────────────┐  ┌──────────────┐ │
-│  │  S3/Minio        │  │  MailHog     │ │
-│  │  (Object Storage) │  │  (Dev Mail)  │ │
+│  │  S3/Garage       │  │  SMTP        │ │
+│  │  (Object Storage) │  │  (Mail)      │ │
 │  └──────────────────┘  └──────────────┘ │
 └─────────────────────────────────────────┘
 ```
 
 ### 3.2 Subsystem Inventory
 
-| Subsystem | Technology | Purpose |
-|-----------|-----------|---------|
-| Application Server | FrankenPHP + Laravel Octane | HTTP request handling |
-| Queue Workers | Horizon + Supervisor | Background job processing |
-| Database | PostgreSQL 15+ | Persistent data storage |
-| Cache | Redis 7+ | Caching, rate limiting |
-| Object Storage | S3-compatible (Minio/Garage) | File and image storage |
-| Mail | SMTP | Transactional email delivery |
+| Subsystem | Technology | Purpose | Shared in Dev |
+|-----------|-----------|---------|---------------|
+| Application Server | FrankenPHP + Laravel Octane | HTTP request handling | No (per-app) |
+| Queue Workers | Horizon + Supervisor | Background job processing | No (LanCore only) |
+| Database | PostgreSQL 18 | Persistent data storage | Yes (one instance, per-app databases) |
+| Cache | Redis 7+ | Caching, sessions, rate limiting | Yes (shared instance) |
+| Object Storage | S3-compatible (Garage) | File and image storage | No (LanCore only) |
+| Mail | SMTP (Mailpit in dev) | Transactional email delivery | Yes (shared Mailpit) |
 
 ---
 
@@ -82,7 +117,15 @@ This document describes the system-level design, including subsystem decompositi
 
 ### 4.1 Subsystem Communication
 
-TBD — To be detailed with specific port mappings, connection strings, and failover behavior as deployment matures.
+In development, all app containers and shared infrastructure services communicate over a single Docker network (`lanparty`). Service discovery uses Docker DNS with container names as hostnames.
+
+| From | To | Hostname | Port | Protocol |
+|------|----|----------|------|----------|
+| Any app | PostgreSQL | `infrastructure-pgsql` | 5432 | TCP (libpq) |
+| Any app | Redis | `infrastructure-redis` | 6379 | TCP (RESP) |
+| Any app | Mailpit SMTP | `infrastructure-mailpit` | 1025 | TCP (SMTP) |
+| Any app | LanCore | `lancore.test` | 80 | HTTP |
+| LanCore | Garage S3 | `garage` | 3900 | HTTP (S3 API) |
 
 ### 4.2 Scaling Considerations
 
@@ -98,7 +141,9 @@ TBD — To be detailed with health check endpoints, container orchestration (Kub
 
 ### 5.1 Network Architecture
 
-TBD — To be detailed with network segmentation, TLS termination, and reverse proxy configuration.
+Development uses a single external Docker bridge network (`lanparty`) for all inter-service communication. The `infrastructure` network has been eliminated to reduce complexity. Each app may maintain an internal `sail` network for app-specific services (e.g., LanCore's Garage).
+
+Production network architecture (TLS termination, reverse proxy) is TBD.
 
 ### 5.2 Monitoring Integration
 
