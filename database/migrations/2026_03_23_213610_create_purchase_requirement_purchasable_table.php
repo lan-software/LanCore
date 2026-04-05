@@ -16,7 +16,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['purchase_requirement_id', 'purchasable_type', 'purchasable_id'], 'pr_purchasable_unique');
-            $table->index(['purchasable_type', 'purchasable_id']);
+            $table->index(['purchasable_type', 'purchasable_id'], 'pr_purchasable_type_id_index');
         });
     }
 

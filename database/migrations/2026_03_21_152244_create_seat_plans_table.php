@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->jsonb('data')->default('{"blocks":[]}');
+            $table->jsonb('data')->default(new \Illuminate\Database\Query\Expression('(JSON_OBJECT(\'blocks\', JSON_ARRAY()))'));
             $table->timestamps();
         });
     }
