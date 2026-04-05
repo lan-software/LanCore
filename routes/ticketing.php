@@ -15,7 +15,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('tickets', [TicketController::class, 'index'])->name('tickets.index');
     Route::get('tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::patch('tickets/{ticket}/manager', [TicketController::class, 'updateManager'])->name('tickets.update-manager');
-    Route::patch('tickets/{ticket}/user', [TicketController::class, 'updateUser'])->name('tickets.update-user');
+    Route::post('tickets/{ticket}/users', [TicketController::class, 'addUser'])->name('tickets.add-user');
+    Route::delete('tickets/{ticket}/users/{user}', [TicketController::class, 'removeUser'])->name('tickets.remove-user');
 
     // Admin: Ticket Types
     Route::get('ticket-types', [TicketTypeController::class, 'index'])->name('ticket-types.index');

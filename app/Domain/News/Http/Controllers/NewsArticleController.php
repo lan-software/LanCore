@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-NWS-001, CAP-NWS-002
+ * @see docs/mil-std-498/SRS.md NWS-F-001, NWS-F-002, NWS-F-007, NWS-F-008
+ */
 class NewsArticleController extends Controller
 {
     public function __construct(
@@ -31,8 +35,8 @@ class NewsArticleController extends Controller
 
         if ($search = $request->validated('search')) {
             $query->where(fn ($q) => $q
-                ->where('title', 'ilike', "%{$search}%")
-                ->orWhere('summary', 'ilike', "%{$search}%"));
+                ->whereLike('title', "%{$search}%")
+                ->orWhereLike('summary', "%{$search}%"));
         }
 
         if ($visibility = $request->validated('visibility')) {

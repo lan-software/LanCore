@@ -51,6 +51,11 @@ export default defineConfigWithVueTs(
                 'error',
                 {
                     groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+                    pathGroups: [
+                        { pattern: '@/actions/**', group: 'internal' },
+                        { pattern: '@/routes/**', group: 'internal' },
+                    ],
+                    pathGroupsExcludedImportTypes: [],
                     alphabetize: {
                         order: 'asc',
                         caseInsensitive: true,
@@ -86,6 +91,8 @@ export default defineConfigWithVueTs(
             'resources/js/components/ui/*',
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
+            'tests/e2e/**',
+            'playwright.config.ts',
         ],
     },
     prettier, // Turn off all rules that might conflict with Prettier

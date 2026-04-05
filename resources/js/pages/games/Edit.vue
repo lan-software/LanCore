@@ -1,41 +1,55 @@
 <script setup lang="ts">
-import GameController from '@/actions/App/Domain/Games/Http/Controllers/GameController'
-import GameModeController from '@/actions/App/Domain/Games/Http/Controllers/GameModeController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as gamesRoute } from '@/routes/games'
-import type { BreadcrumbItem } from '@/types'
-import type { Game } from '@/types/domain'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { Check, Pencil, Plus, Trash2, X } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { Form, Head, Link, router } from '@inertiajs/vue3';
+import { Check, Pencil, Plus, Trash2, X } from 'lucide-vue-next';
+import { ref } from 'vue';
+import GameController from '@/actions/App/Domain/Games/Http/Controllers/GameController';
+import GameModeController from '@/actions/App/Domain/Games/Http/Controllers/GameModeController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as gamesRoute } from '@/routes/games';
+import type { BreadcrumbItem } from '@/types';
+import type { Game } from '@/types/domain';
 
 const props = defineProps<{
-    game: Game
-}>()
+    game: Game;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: gamesRoute().url },
     { title: 'Games', href: gamesRoute().url },
     { title: props.game.name, href: GameController.edit(props.game.id).url },
-]
+];
 
-const showDeleteDialog = ref(false)
+const showDeleteDialog = ref(false);
 
 function executeDelete() {
     router.delete(GameController.destroy(props.game.id).url, {
         onSuccess: () => {
-            showDeleteDialog.value = false
+            showDeleteDialog.value = false;
         },
-    })
+    });
 }
 </script>
 
@@ -43,7 +57,7 @@ function executeDelete() {
     <Head :title="`Edit ${game.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <!-- Back link -->
             <div>
                 <Link
@@ -127,10 +141,7 @@ function executeDelete() {
 
                 <!-- Actions -->
                 <div class="flex items-center gap-4">
-                    <Button
-                        type="submit"
-                        :disabled="processing"
-                    >
+                    <Button type="submit" :disabled="processing">
                         {{ processing ? 'Saving…' : 'Save Changes' }}
                     </Button>
 
@@ -159,14 +170,16 @@ function executeDelete() {
                     </Button>
                 </div>
 
-                <div class="rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                <div
+                    class="rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
+                >
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead class="px-4">Name</TableHead>
                                 <TableHead class="px-4">Team Size</TableHead>
                                 <TableHead class="px-4">Active</TableHead>
-                                <TableHead class="px-4 w-24">Actions</TableHead>
+                                <TableHead class="w-24 px-4">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -174,11 +187,23 @@ function executeDelete() {
                                 v-for="mode in game.game_modes"
                                 :key="mode.id"
                             >
-                                <TableCell class="px-4 py-3 font-medium">{{ mode.name }}</TableCell>
-                                <TableCell class="px-4 py-3">{{ mode.team_size }}v{{ mode.team_size }}</TableCell>
+                                <TableCell class="px-4 py-3 font-medium">{{
+                                    mode.name
+                                }}</TableCell>
+                                <TableCell class="px-4 py-3"
+                                    >{{ mode.team_size }}v{{
+                                        mode.team_size
+                                    }}</TableCell
+                                >
                                 <TableCell class="px-4 py-3">
-                                    <Check v-if="mode.is_active" class="size-4 text-green-600" />
-                                    <X v-else class="size-4 text-muted-foreground" />
+                                    <Check
+                                        v-if="mode.is_active"
+                                        class="size-4 text-green-600"
+                                    />
+                                    <X
+                                        v-else
+                                        class="size-4 text-muted-foreground"
+                                    />
                                 </TableCell>
                                 <TableCell class="px-4 py-3">
                                     <div class="flex items-center gap-1">
@@ -187,7 +212,14 @@ function executeDelete() {
                                             size="sm"
                                             as-child
                                         >
-                                            <Link :href="GameModeController.edit({ game: game.id, mode: mode.id }).url">
+                                            <Link
+                                                :href="
+                                                    GameModeController.edit({
+                                                        game: game.id,
+                                                        mode: mode.id,
+                                                    }).url
+                                                "
+                                            >
                                                 <Pencil class="size-4" />
                                             </Link>
                                         </Button>
@@ -195,7 +227,10 @@ function executeDelete() {
                                 </TableCell>
                             </TableRow>
                             <TableRow v-if="!game.game_modes?.length">
-                                <TableCell :colspan="4" class="px-4 py-6 text-center text-muted-foreground">
+                                <TableCell
+                                    :colspan="4"
+                                    class="px-4 py-6 text-center text-muted-foreground"
+                                >
                                     No game modes yet.
                                 </TableCell>
                             </TableRow>
@@ -208,8 +243,12 @@ function executeDelete() {
             <div class="border-t pt-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-sm font-medium text-destructive">Delete Game</h3>
-                        <p class="text-sm text-muted-foreground">Permanently delete this game and all its modes.</p>
+                        <h3 class="text-sm font-medium text-destructive">
+                            Delete Game
+                        </h3>
+                        <p class="text-sm text-muted-foreground">
+                            Permanently delete this game and all its modes.
+                        </p>
                     </div>
                     <Button
                         variant="destructive"
@@ -229,20 +268,15 @@ function executeDelete() {
                 <DialogHeader>
                     <DialogTitle>Delete {{ game.name }}?</DialogTitle>
                     <DialogDescription>
-                        This action cannot be undone. The game and all its modes will be permanently removed.
+                        This action cannot be undone. The game and all its modes
+                        will be permanently removed.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button
-                        variant="outline"
-                        @click="showDeleteDialog = false"
-                    >
+                    <Button variant="outline" @click="showDeleteDialog = false">
                         Cancel
                     </Button>
-                    <Button
-                        variant="destructive"
-                        @click="executeDelete"
-                    >
+                    <Button variant="destructive" @click="executeDelete">
                         Delete
                     </Button>
                 </DialogFooter>

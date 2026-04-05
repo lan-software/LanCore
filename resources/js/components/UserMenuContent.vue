@@ -41,13 +41,23 @@ defineProps<Props>();
     <DropdownMenuSeparator />
     <DropdownMenuGroup>
         <DropdownMenuItem :as-child="true">
-            <a class="block w-full cursor-pointer" href="https://github.com/lan-software/LanCore.git" target="_blank" rel="noopener noreferrer">
+            <a
+                class="block w-full cursor-pointer"
+                href="https://github.com/lan-software/LanCore.git"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
                 <FolderGit2 class="mr-2 h-4 w-4" />
                 Repository
             </a>
         </DropdownMenuItem>
         <DropdownMenuItem :as-child="true">
-            <a class="block w-full cursor-pointer" href="https://lan-software.de/LanCore/docs" target="_blank" rel="noopener noreferrer">
+            <a
+                class="block w-full cursor-pointer"
+                href="https://lan-software.de/LanCore/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
                 <BookOpen class="mr-2 h-4 w-4" />
                 Documentation
             </a>

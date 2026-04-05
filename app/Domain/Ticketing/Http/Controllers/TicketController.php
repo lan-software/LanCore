@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-TKT-005, CAP-TKT-006
+ * @see docs/mil-std-498/SRS.md TKT-F-004, TKT-F-005, TKT-F-006
+ */
 class TicketController extends Controller
 {
     public function __construct(
@@ -25,27 +29,27 @@ class TicketController extends Controller
         $user = $request->user();
 
         $ownedTickets = $user->ownedTickets()
-            ->with(['ticketType', 'event', 'manager', 'ticketUser', 'addons', 'order'])
+            ->with(['ticketType', 'event', 'manager', 'users', 'addons', 'order'])
             ->get();
 
         $managedTickets = $user->managedTickets()
             ->where('owner_id', '!=', $user->id)
-            ->with(['ticketType', 'event', 'owner', 'ticketUser', 'addons', 'order'])
+            ->with(['ticketType', 'event', 'owner', 'users', 'addons', 'order'])
             ->get();
 
-        $usableTickets = $user->usableTickets()
+        $assignedTickets = $user->assignedTickets()
             ->where('owner_id', '!=', $user->id)
             ->where(function ($query) use ($user) {
                 $query->where('manager_id', '!=', $user->id)
                     ->orWhereNull('manager_id');
             })
-            ->with(['ticketType', 'event', 'addons', 'order'])
+            ->with(['ticketType', 'event', 'owner', 'users', 'addons', 'order'])
             ->get();
 
         return Inertia::render('tickets/Index', [
             'ownedTickets' => $this->enrichTickets($ownedTickets),
             'managedTickets' => $this->enrichTickets($managedTickets),
-            'usableTickets' => $this->enrichTickets($usableTickets),
+            'assignedTickets' => $this->enrichTickets($assignedTickets),
         ]);
     }
 
@@ -59,7 +63,7 @@ class TicketController extends Controller
             'order',
             'owner',
             'manager',
-            'ticketUser',
+            'users',
             'addons',
         ]);
 
@@ -110,19 +114,26 @@ class TicketController extends Controller
         return back();
     }
 
-    public function updateUser(Request $request, Ticket $ticket): RedirectResponse
+    public function addUser(Request $request, Ticket $ticket): RedirectResponse
     {
         $this->authorize('updateUser', $ticket);
 
         $request->validate([
-            'user_email' => ['nullable', 'email', 'exists:users,email'],
+            'user_email' => ['required', 'email', 'exists:users,email'],
         ]);
 
-        $ticketUser = $request->input('user_email')
-            ? User::where('email', $request->input('user_email'))->firstOrFail()
-            : null;
+        $ticketUser = User::where('email', $request->input('user_email'))->firstOrFail();
 
-        $this->updateTicketAssignments->updateUser($ticket, $ticketUser, $request->user()->id);
+        $this->updateTicketAssignments->addUser($ticket, $ticketUser, $request->user()->id);
+
+        return back();
+    }
+
+    public function removeUser(Request $request, Ticket $ticket, User $user): RedirectResponse
+    {
+        $this->authorize('updateUser', $ticket);
+
+        $this->updateTicketAssignments->removeUser($ticket, $user, $request->user()->id);
 
         return back();
     }

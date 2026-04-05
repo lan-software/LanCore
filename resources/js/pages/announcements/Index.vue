@@ -1,54 +1,68 @@
 <script setup lang="ts">
-import { FlexRender, getCoreRowModel, useVueTable, type SortingState } from '@tanstack/vue-table'
-import { router, Head, Link } from '@inertiajs/vue3'
-import { edit } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
-import { create as announcementCreate } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
-import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useDataTable, type DataTableFilters } from '@/composables/useDataTable'
-import { index as announcementsRoute } from '@/routes/announcements'
-import type { BreadcrumbItem } from '@/types'
-import type { Announcement } from '@/types/domain'
-import { columns } from './columns'
+import { router, Head, Link } from '@inertiajs/vue3';
+import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table';
+import type { SortingState } from '@tanstack/vue-table';
+import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
+import { edit } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController';
+import { create as announcementCreate } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableEmpty,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { useDataTable } from '@/composables/useDataTable';
+import type { DataTableFilters } from '@/composables/useDataTable';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as announcementsRoute } from '@/routes/announcements';
+import type { BreadcrumbItem } from '@/types';
+import type { Announcement } from '@/types/domain';
+import { columns } from './columns';
 
 interface PaginatedAnnouncements {
-    data: Announcement[]
-    current_page: number
-    last_page: number
-    per_page: number
-    total: number
-    from: number | null
-    to: number | null
+    data: Announcement[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
 }
 
 const props = defineProps<{
-    announcements: PaginatedAnnouncements
-    filters: DataTableFilters
-}>()
+    announcements: PaginatedAnnouncements;
+    filters: DataTableFilters;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: announcementsRoute().url },
     { title: 'Announcements', href: announcementsRoute().url },
-]
+];
 
-const { filters, setSearch, toggleSort, setFilter, setPage } =
-    useDataTable(() => announcementsRoute().url, props.filters)
+const { setSearch, toggleSort, setFilter, setPage } = useDataTable(
+    () => announcementsRoute().url,
+    props.filters,
+);
 
-const searchValue = ref(props.filters.search ?? '')
+const searchValue = ref(props.filters.search ?? '');
 
-watch(searchValue, (val) => setSearch(val))
+watch(searchValue, (val) => setSearch(val));
 
 const sorting = computed<SortingState>(() =>
-    props.filters.sort ? [{ id: props.filters.sort, desc: props.filters.direction === 'desc' }] : [],
-)
+    props.filters.sort
+        ? [{ id: props.filters.sort, desc: props.filters.direction === 'desc' }]
+        : [],
+);
 
 const table = useVueTable({
     get data() {
-        return props.announcements.data
+        return props.announcements.data;
     },
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -59,19 +73,21 @@ const table = useVueTable({
     getRowId: (row) => String(row.id),
     state: {
         get sorting() {
-            return sorting.value
+            return sorting.value;
         },
     },
     onSortingChange: (updater) => {
-        const newSorting = typeof updater === 'function' ? updater(sorting.value) : updater
+        const newSorting =
+            typeof updater === 'function' ? updater(sorting.value) : updater;
+
         if (newSorting.length > 0) {
-            toggleSort(newSorting[0].id)
+            toggleSort(newSorting[0].id);
         } else {
-            setFilter('sort', undefined)
-            setFilter('direction', undefined)
+            setFilter('sort', undefined);
+            setFilter('direction', undefined);
         }
     },
-})
+});
 </script>
 
 <template>
@@ -81,8 +97,10 @@ const table = useVueTable({
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <!-- Toolbar -->
             <div class="flex flex-wrap items-center gap-2">
-                <div class="relative flex-1 min-w-48">
-                    <Search class="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                <div class="relative min-w-48 flex-1">
+                    <Search
+                        class="absolute top-2.5 left-2.5 size-4 text-muted-foreground"
+                    />
                     <Input
                         v-model="searchValue"
                         placeholder="Search announcements…"
@@ -118,7 +136,11 @@ const table = useVueTable({
                         v-for="row in table.getRowModel().rows"
                         :key="row.id"
                         class="cursor-pointer hover:bg-muted/50"
-                        @click="router.visit(edit({ announcement: row.original.id }).url)"
+                        @click="
+                            router.visit(
+                                edit({ announcement: row.original.id }).url,
+                            )
+                        "
                     >
                         <TableCell
                             v-for="cell in row.getVisibleCells()"
@@ -131,7 +153,10 @@ const table = useVueTable({
                             />
                         </TableCell>
                     </TableRow>
-                    <TableEmpty v-if="table.getRowModel().rows.length === 0" :columns-count="table.getAllColumns().length" />
+                    <TableEmpty
+                        v-if="table.getRowModel().rows.length === 0"
+                        :columns-count="table.getAllColumns().length"
+                    />
                 </TableBody>
             </Table>
 
@@ -139,7 +164,10 @@ const table = useVueTable({
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span class="text-sm text-muted-foreground">
-                        {{ props.announcements.from }}-{{ props.announcements.to }} of {{ props.announcements.total }}
+                        {{ props.announcements.from }}-{{
+                            props.announcements.to
+                        }}
+                        of {{ props.announcements.total }}
                     </span>
                 </div>
                 <div class="flex items-center gap-2">
@@ -154,7 +182,10 @@ const table = useVueTable({
                     <Button
                         variant="outline"
                         size="sm"
-                        :disabled="props.announcements.current_page === props.announcements.last_page"
+                        :disabled="
+                            props.announcements.current_page ===
+                            props.announcements.last_page
+                        "
                         @click="setPage(props.announcements.current_page + 1)"
                     >
                         <ChevronRight class="size-4" />

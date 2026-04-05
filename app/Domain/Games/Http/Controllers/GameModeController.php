@@ -14,6 +14,10 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-GAM-002
+ * @see docs/mil-std-498/SRS.md GAM-F-002, GAM-F-003
+ */
 class GameModeController extends Controller
 {
     public function __construct(

@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Laravel\Cashier\Checkout;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-002
+ * @see docs/mil-std-498/SRS.md SHP-F-003
+ * @see docs/mil-std-498/IRS.md IF-STRIPE-002
+ */
 class CreateCheckoutSession
 {
     /**
@@ -126,7 +131,7 @@ class CreateCheckoutSession
 
         foreach ($items as $item) {
             $ticketType = TicketType::findOrFail($item['ticket_type_id']);
-            $totalSeatsNeeded += $ticketType->seats_per_ticket * $item['quantity'];
+            $totalSeatsNeeded += $ticketType->totalSeatsConsumed() * $item['quantity'];
 
             foreach ($item['addon_ids'] ?? [] as $addonId) {
                 $addon = Addon::findOrFail($addonId);

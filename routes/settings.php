@@ -6,6 +6,7 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Controllers\Settings\SidebarFavoriteController;
 use App\Http\Controllers\Settings\TicketDiscoveryController;
+use App\Http\Controllers\Settings\UserAchievementsController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -35,4 +36,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('settings/ticket-discovery', [TicketDiscoveryController::class, 'update'])->name('ticket-discovery.update');
 
     Route::post('settings/sidebar-favorites/toggle', [SidebarFavoriteController::class, 'toggle'])->name('sidebar-favorites.toggle');
+
+    Route::get('settings/achievements', UserAchievementsController::class)->name('user-achievements.index');
 });

@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @see docs/mil-std-498/SRS.md EVT-F-007
+ */
 #[Fillable(['venue_id', 'path', 'alt_text', 'sort_order'])]
 class VenueImage extends Model
 {

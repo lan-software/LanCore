@@ -1,37 +1,51 @@
 <script setup lang="ts">
-import { edit as sponsorLevelEdit, update, destroy } from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as sponsorLevelsRoute } from '@/routes/sponsor-levels'
-import type { BreadcrumbItem } from '@/types'
-import type { SponsorLevel } from '@/types/domain'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { Trash2 } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { Form, Head, Link, router } from '@inertiajs/vue3';
+import { Trash2 } from 'lucide-vue-next';
+import { ref } from 'vue';
+import {
+    edit as sponsorLevelEdit,
+    update,
+    destroy,
+} from '@/actions/App/Domain/Sponsoring/Http/Controllers/SponsorLevelController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as sponsorLevelsRoute } from '@/routes/sponsor-levels';
+import type { BreadcrumbItem } from '@/types';
+import type { SponsorLevel } from '@/types/domain';
 
 const props = defineProps<{
-    sponsorLevel: SponsorLevel
-}>()
+    sponsorLevel: SponsorLevel;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: sponsorLevelsRoute().url },
     { title: 'Sponsor Levels', href: sponsorLevelsRoute().url },
-    { title: props.sponsorLevel.name, href: sponsorLevelEdit(props.sponsorLevel.id).url },
-]
+    {
+        title: props.sponsorLevel.name,
+        href: sponsorLevelEdit(props.sponsorLevel.id).url,
+    },
+];
 
-const showDeleteDialog = ref(false)
+const showDeleteDialog = ref(false);
 
 function executeDelete() {
     router.delete(destroy(props.sponsorLevel.id).url, {
         onSuccess: () => {
-            showDeleteDialog.value = false
+            showDeleteDialog.value = false;
         },
-    })
+    });
 }
 </script>
 
@@ -39,7 +53,7 @@ function executeDelete() {
     <Head :title="`Edit ${sponsorLevel.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <div>
                 <Link
                     :href="sponsorLevelsRoute().url"
@@ -87,7 +101,9 @@ function executeDelete() {
                                 class="inline-block size-6 rounded-full border"
                                 :style="{ backgroundColor: sponsorLevel.color }"
                             />
-                            <span class="text-sm text-muted-foreground">{{ sponsorLevel.color }}</span>
+                            <span class="text-sm text-muted-foreground">{{
+                                sponsorLevel.color
+                            }}</span>
                         </div>
                         <InputError :message="errors.color" />
                     </div>
@@ -109,7 +125,12 @@ function executeDelete() {
                     <Button type="submit" :disabled="processing">
                         {{ processing ? 'Saving…' : 'Save Changes' }}
                     </Button>
-                    <p v-if="recentlySuccessful" class="text-sm text-muted-foreground">Saved.</p>
+                    <p
+                        v-if="recentlySuccessful"
+                        class="text-sm text-muted-foreground"
+                    >
+                        Saved.
+                    </p>
                 </div>
             </Form>
 
@@ -117,8 +138,13 @@ function executeDelete() {
             <div class="border-t pt-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-sm font-medium text-destructive">Delete Level</h3>
-                        <p class="text-sm text-muted-foreground">Remove this sponsor level. Sponsors using it will have their level unset.</p>
+                        <h3 class="text-sm font-medium text-destructive">
+                            Delete Level
+                        </h3>
+                        <p class="text-sm text-muted-foreground">
+                            Remove this sponsor level. Sponsors using it will
+                            have their level unset.
+                        </p>
                     </div>
                     <Button
                         variant="destructive"
@@ -137,12 +163,17 @@ function executeDelete() {
                 <DialogHeader>
                     <DialogTitle>Delete {{ sponsorLevel.name }}?</DialogTitle>
                     <DialogDescription>
-                        This action cannot be undone. Sponsors using this level will have their level unset.
+                        This action cannot be undone. Sponsors using this level
+                        will have their level unset.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button variant="outline" @click="showDeleteDialog = false">Cancel</Button>
-                    <Button variant="destructive" @click="executeDelete">Delete</Button>
+                    <Button variant="outline" @click="showDeleteDialog = false"
+                        >Cancel</Button
+                    >
+                    <Button variant="destructive" @click="executeDelete"
+                        >Delete</Button
+                    >
                 </DialogFooter>
             </DialogContent>
         </Dialog>

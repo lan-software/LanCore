@@ -2,45 +2,38 @@
 
 namespace App\Domain\News\Policies;
 
+use App\Domain\News\Enums\Permission;
 use App\Domain\News\Models\NewsComment;
+use App\Enums\AuditPermission;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007, NWS-F-007
+ */
 class NewsCommentPolicy
 {
-    /**
-     * Superadmin bypasses all authorization checks.
-     */
-    public function before(User $user): ?bool
-    {
-        if ($user->isSuperadmin()) {
-            return true;
-        }
-
-        return null;
-    }
-
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ModerateNewsComments);
     }
 
     public function update(User $user, NewsComment $comment): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ModerateNewsComments);
     }
 
     public function delete(User $user, NewsComment $comment): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ModerateNewsComments);
     }
 
     public function approve(User $user, NewsComment $comment): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ModerateNewsComments);
     }
 
     public function viewAudit(User $user, NewsComment $comment): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(AuditPermission::ViewAuditLogs);
     }
 }

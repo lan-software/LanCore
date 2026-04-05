@@ -1,14 +1,21 @@
-import { h } from 'vue'
-import type { ColumnDef } from '@tanstack/vue-table'
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { router } from '@inertiajs/vue3'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { publish } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController'
-import type { Announcement } from '@/types/domain'
+import { router } from '@inertiajs/vue3';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
+import { h } from 'vue';
+import { publish } from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementController';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import type { Announcement } from '@/types/domain';
 
 function sortableHeader(label: string) {
-    return ({ column }: { column: { getToggleSortingHandler: () => ((e: Event) => void) | undefined; getIsSorted: () => false | 'asc' | 'desc' } }) =>
+    return ({
+        column,
+    }: {
+        column: {
+            getToggleSortingHandler: () => ((e: Event) => void) | undefined;
+            getIsSorted: () => false | 'asc' | 'desc';
+        };
+    }) =>
         h(
             Button,
             {
@@ -25,31 +32,36 @@ function sortableHeader(label: string) {
                       ? h(ArrowDown, { class: 'ml-1.5 size-3.5' })
                       : h(ArrowUpDown, { class: 'ml-1.5 size-3.5 opacity-40' }),
             ],
-        )
+        );
 }
 
-const priorityVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const priorityVariant: Record<
+    string,
+    'default' | 'secondary' | 'destructive' | 'outline'
+> = {
     emergency: 'destructive',
     normal: 'default',
     silent: 'secondary',
-}
+};
 
 export const columns: ColumnDef<Announcement>[] = [
     {
         accessorKey: 'title',
         header: sortableHeader('Title'),
-        cell: ({ row }) => h('span', { class: 'font-medium' }, row.getValue('title')),
+        cell: ({ row }) =>
+            h('span', { class: 'font-medium' }, row.getValue('title')),
     },
     {
         accessorKey: 'priority',
         header: sortableHeader('Priority'),
         cell: ({ row }) => {
-            const priority = row.getValue('priority') as string
+            const priority = row.getValue('priority') as string;
+
             return h(
                 Badge,
                 { variant: priorityVariant[priority] ?? 'outline' },
                 () => priority.charAt(0).toUpperCase() + priority.slice(1),
-            )
+            );
         },
     },
     {
@@ -66,7 +78,8 @@ export const columns: ColumnDef<Announcement>[] = [
         accessorKey: 'published_at',
         header: sortableHeader('Published'),
         cell: ({ row }) => {
-            const date = row.getValue('published_at') as string | null
+            const date = row.getValue('published_at') as string | null;
+
             return date
                 ? h(
                       'span',
@@ -77,7 +90,7 @@ export const columns: ColumnDef<Announcement>[] = [
                           day: 'numeric',
                       }),
                   )
-                : h(Badge, { variant: 'outline' }, () => 'Draft')
+                : h(Badge, { variant: 'outline' }, () => 'Draft');
         },
     },
     {
@@ -87,7 +100,9 @@ export const columns: ColumnDef<Announcement>[] = [
             h(
                 'span',
                 { class: 'text-muted-foreground' },
-                new Date(row.getValue('created_at') as string).toLocaleDateString(undefined, {
+                new Date(
+                    row.getValue('created_at') as string,
+                ).toLocaleDateString(undefined, {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',
@@ -98,27 +113,35 @@ export const columns: ColumnDef<Announcement>[] = [
         id: 'acknowledged',
         header: () => h('span', 'Acknowledged'),
         cell: ({ row }) => {
-            const count = row.original.dismissed_by_users_count ?? 0
-            return h('span', { class: 'text-muted-foreground' }, `${count}`)
+            const count = row.original.dismissed_by_users_count ?? 0;
+
+            return h('span', { class: 'text-muted-foreground' }, `${count}`);
         },
     },
     {
         id: 'actions',
         header: () => h('span'),
         cell: ({ row }) => {
-            if (row.original.published_at) return null
+            if (row.original.published_at) {
+                return null;
+            }
+
             return h(
                 Button,
                 {
                     variant: 'outline',
                     size: 'sm',
                     onClick: (e: MouseEvent) => {
-                        e.stopPropagation()
-                        router.post(publish(row.original.id).url, {}, { preserveScroll: true })
+                        e.stopPropagation();
+                        router.post(
+                            publish(row.original.id).url,
+                            {},
+                            { preserveScroll: true },
+                        );
                     },
                 },
                 () => 'Publish',
-            )
+            );
         },
     },
-]
+];

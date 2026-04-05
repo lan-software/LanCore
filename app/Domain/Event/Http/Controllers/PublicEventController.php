@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SRS.md EVT-F-009
+ */
 class PublicEventController extends Controller
 {
     public function __invoke(): Response

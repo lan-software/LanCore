@@ -1,60 +1,88 @@
 <script setup lang="ts">
-import { FlexRender, getCoreRowModel, useVueTable, type SortingState } from '@tanstack/vue-table'
-import { router, Head } from '@inertiajs/vue3'
-import { approve, destroy, update } from '@/actions/App/Domain/News/Http/Controllers/NewsCommentController'
-import { edit as editArticle } from '@/actions/App/Domain/News/Http/Controllers/NewsArticleController'
-import { ChevronLeft, ChevronRight, Check, Pencil, Search, Trash2, X } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
-import { useDataTable, type DataTableFilters } from '@/composables/useDataTable'
-import { index as commentsRoute } from '@/routes/news/comments'
-import type { BreadcrumbItem } from '@/types'
-import type { NewsComment } from '@/types/domain'
-import { columns } from './columns'
+import { router, Head } from '@inertiajs/vue3';
+import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table';
+import type { SortingState } from '@tanstack/vue-table';
+import {
+    ChevronLeft,
+    ChevronRight,
+    Check,
+    Pencil,
+    Search,
+    Trash2,
+    X,
+} from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
+import {
+    approve,
+    destroy,
+    update,
+} from '@/actions/App/Domain/News/Http/Controllers/NewsCommentController';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import { useDataTable } from '@/composables/useDataTable';
+import type { DataTableFilters } from '@/composables/useDataTable';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as commentsRoute } from '@/routes/news/comments';
+import type { BreadcrumbItem } from '@/types';
+import type { NewsComment } from '@/types/domain';
+import { columns } from './columns';
 
 interface PaginatedComments {
-    data: NewsComment[]
-    current_page: number
-    last_page: number
-    per_page: number
-    total: number
-    from: number | null
-    to: number | null
+    data: NewsComment[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
 }
 
 const props = defineProps<{
-    comments: PaginatedComments
-    articles: { id: number; title: string }[]
-    tags: string[]
-    filters: DataTableFilters
-}>()
+    comments: PaginatedComments;
+    articles: { id: number; title: string }[];
+    tags: string[];
+    filters: DataTableFilters;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: commentsRoute().url },
     { title: 'News', href: commentsRoute().url },
     { title: 'Comments', href: commentsRoute().url },
-]
+];
 
 const { filters, setSearch, toggleSort, setFilter, setPage, setPerPage } =
-    useDataTable(() => commentsRoute().url, props.filters)
+    useDataTable(() => commentsRoute().url, props.filters);
 
-const searchValue = ref(props.filters.search ?? '')
+const searchValue = ref(props.filters.search ?? '');
 
-watch(searchValue, (val) => setSearch(val))
+watch(searchValue, (val) => setSearch(val));
 
 const sorting = computed<SortingState>(() =>
-    props.filters.sort ? [{ id: props.filters.sort, desc: props.filters.direction === 'desc' }] : [],
-)
+    props.filters.sort
+        ? [{ id: props.filters.sort, desc: props.filters.direction === 'desc' }]
+        : [],
+);
 
 const table = useVueTable({
     get data() {
-        return props.comments.data
+        return props.comments.data;
     },
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -65,55 +93,66 @@ const table = useVueTable({
     getRowId: (row) => String(row.id),
     state: {
         get sorting() {
-            return sorting.value
+            return sorting.value;
         },
     },
     onSortingChange: (updater) => {
-        const newSorting = typeof updater === 'function' ? updater(sorting.value) : updater
+        const newSorting =
+            typeof updater === 'function' ? updater(sorting.value) : updater;
+
         if (newSorting.length > 0) {
-            toggleSort(newSorting[0].id)
+            toggleSort(newSorting[0].id);
         } else {
-            setFilter('sort', undefined)
-            setFilter('direction', undefined)
+            setFilter('sort', undefined);
+            setFilter('direction', undefined);
         }
     },
-})
+});
 
 // Inline editing state
-const editingId = ref<number | null>(null)
-const editContent = ref('')
+const editingId = ref<number | null>(null);
+const editContent = ref('');
 
 function startEdit(comment: NewsComment) {
-    editingId.value = comment.id
-    editContent.value = comment.content
+    editingId.value = comment.id;
+    editContent.value = comment.content;
 }
 
 function cancelEdit() {
-    editingId.value = null
-    editContent.value = ''
+    editingId.value = null;
+    editContent.value = '';
 }
 
 function saveEdit(comment: NewsComment) {
-    router.patch(update({ newsComment: comment.id }).url, { content: editContent.value }, {
-        preserveScroll: true,
-        onSuccess: () => cancelEdit(),
-    })
+    router.patch(
+        update({ newsComment: comment.id }).url,
+        { content: editContent.value },
+        {
+            preserveScroll: true,
+            onSuccess: () => cancelEdit(),
+        },
+    );
 }
 
 function approveComment(comment: NewsComment) {
-    router.post(approve({ newsComment: comment.id }).url, {}, { preserveScroll: true })
+    router.post(
+        approve({ newsComment: comment.id }).url,
+        {},
+        { preserveScroll: true },
+    );
 }
 
 function deleteComment(comment: NewsComment) {
-    if (!confirm('Are you sure you want to delete this comment?')) return
-    router.delete(destroy({ newsComment: comment.id }).url, { preserveScroll: true })
+    if (!confirm('Are you sure you want to delete this comment?')) {
+        return;
+    }
+
+    router.delete(destroy({ newsComment: comment.id }).url, {
+        preserveScroll: true,
+    });
 }
 
-function goToArticle(articleId: number) {
-    router.visit(editArticle({ newsArticle: articleId }).url)
-}
-
-const perPageOptions = [10, 20, 50, 100]
+const perPageOptions = [10, 20, 50, 100];
 </script>
 
 <template>
@@ -124,8 +163,10 @@ const perPageOptions = [10, 20, 50, 100]
             <!-- Toolbar -->
             <div class="flex flex-wrap items-center gap-2">
                 <!-- Search -->
-                <div class="relative flex-1 min-w-48">
-                    <Search class="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                <div class="relative min-w-48 flex-1">
+                    <Search
+                        class="absolute top-2.5 left-2.5 size-4 text-muted-foreground"
+                    />
                     <Input
                         v-model="searchValue"
                         placeholder="Search comments or authors…"
@@ -136,7 +177,13 @@ const perPageOptions = [10, 20, 50, 100]
                 <!-- Article filter -->
                 <Select
                     :model-value="(filters.article_id as string) ?? 'all'"
-                    @update:model-value="(val) => setFilter('article_id', val === 'all' ? undefined : val)"
+                    @update:model-value="
+                        (val) =>
+                            setFilter(
+                                'article_id',
+                                val === 'all' ? undefined : val,
+                            )
+                    "
                 >
                     <SelectTrigger class="w-48">
                         <SelectValue placeholder="All articles" />
@@ -155,8 +202,18 @@ const perPageOptions = [10, 20, 50, 100]
 
                 <!-- Approval filter -->
                 <Select
-                    :model-value="filters.is_approved !== undefined ? String(filters.is_approved) : 'all'"
-                    @update:model-value="(val) => setFilter('is_approved', val === 'all' ? undefined : val)"
+                    :model-value="
+                        filters.is_approved !== undefined
+                            ? String(filters.is_approved)
+                            : 'all'
+                    "
+                    @update:model-value="
+                        (val) =>
+                            setFilter(
+                                'is_approved',
+                                val === 'all' ? undefined : val,
+                            )
+                    "
                 >
                     <SelectTrigger class="w-36">
                         <SelectValue placeholder="All statuses" />
@@ -171,7 +228,13 @@ const perPageOptions = [10, 20, 50, 100]
                 <!-- Visibility filter -->
                 <Select
                     :model-value="(filters.visibility as string) ?? 'all'"
-                    @update:model-value="(val) => setFilter('visibility', val === 'all' ? undefined : val)"
+                    @update:model-value="
+                        (val) =>
+                            setFilter(
+                                'visibility',
+                                val === 'all' ? undefined : val,
+                            )
+                    "
                 >
                     <SelectTrigger class="w-36">
                         <SelectValue placeholder="All visibility" />
@@ -187,18 +250,17 @@ const perPageOptions = [10, 20, 50, 100]
                 <!-- Tag filter -->
                 <Select
                     :model-value="(filters.tag as string) ?? 'all'"
-                    @update:model-value="(val) => setFilter('tag', val === 'all' ? undefined : val)"
+                    @update:model-value="
+                        (val) =>
+                            setFilter('tag', val === 'all' ? undefined : val)
+                    "
                 >
                     <SelectTrigger class="w-36">
                         <SelectValue placeholder="All tags" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All tags</SelectItem>
-                        <SelectItem
-                            v-for="tag in tags"
-                            :key="tag"
-                            :value="tag"
-                        >
+                        <SelectItem v-for="tag in tags" :key="tag" :value="tag">
                             {{ tag }}
                         </SelectItem>
                     </SelectContent>
@@ -242,9 +304,15 @@ const perPageOptions = [10, 20, 50, 100]
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    <template v-for="row in table.getRowModel().rows" :key="row.id">
+                    <template
+                        v-for="row in table.getRowModel().rows"
+                        :key="row.id"
+                    >
                         <!-- Normal row -->
-                        <TableRow v-if="editingId !== row.original.id" class="hover:bg-muted/50">
+                        <TableRow
+                            v-if="editingId !== row.original.id"
+                            class="hover:bg-muted/50"
+                        >
                             <TableCell
                                 v-for="cell in row.getVisibleCells()"
                                 :key="cell.id"
@@ -265,7 +333,9 @@ const perPageOptions = [10, 20, 50, 100]
                                         title="Approve"
                                         @click="approveComment(row.original)"
                                     >
-                                        <Check class="size-3.5 text-green-600" />
+                                        <Check
+                                            class="size-3.5 text-green-600"
+                                        />
                                     </Button>
                                     <Button
                                         variant="ghost"
@@ -283,7 +353,9 @@ const perPageOptions = [10, 20, 50, 100]
                                         title="Delete"
                                         @click="deleteComment(row.original)"
                                     >
-                                        <Trash2 class="size-3.5 text-destructive" />
+                                        <Trash2
+                                            class="size-3.5 text-destructive"
+                                        />
                                     </Button>
                                 </div>
                             </TableCell>
@@ -291,12 +363,29 @@ const perPageOptions = [10, 20, 50, 100]
 
                         <!-- Editing row -->
                         <TableRow v-else class="bg-muted/30">
-                            <TableCell :colspan="table.getAllColumns().length + 1" class="p-4">
+                            <TableCell
+                                :colspan="table.getAllColumns().length + 1"
+                                class="p-4"
+                            >
                                 <div class="space-y-3">
-                                    <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <span class="font-medium text-foreground">{{ row.original.user?.name ?? 'Unknown' }}</span>
+                                    <div
+                                        class="flex items-center gap-2 text-sm text-muted-foreground"
+                                    >
+                                        <span
+                                            class="font-medium text-foreground"
+                                            >{{
+                                                row.original.user?.name ??
+                                                'Unknown'
+                                            }}</span
+                                        >
                                         <span>on</span>
-                                        <span class="font-medium text-foreground">{{ row.original.article?.title ?? 'Unknown article' }}</span>
+                                        <span
+                                            class="font-medium text-foreground"
+                                            >{{
+                                                row.original.article?.title ??
+                                                'Unknown article'
+                                            }}</span
+                                        >
                                     </div>
                                     <Textarea
                                         v-model="editContent"
@@ -304,22 +393,37 @@ const perPageOptions = [10, 20, 50, 100]
                                         class="w-full"
                                     />
                                     <div class="flex items-center gap-2">
-                                        <Button size="sm" @click="saveEdit(row.original)">
+                                        <Button
+                                            size="sm"
+                                            @click="saveEdit(row.original)"
+                                        >
                                             <Check class="mr-1.5 size-3.5" />
                                             Save
                                         </Button>
-                                        <Button variant="outline" size="sm" @click="cancelEdit">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            @click="cancelEdit"
+                                        >
                                             <X class="mr-1.5 size-3.5" />
                                             Cancel
                                         </Button>
-                                        <Badge v-if="!row.original.is_approved" variant="outline" class="border-amber-500 text-amber-600">Pending approval</Badge>
+                                        <Badge
+                                            v-if="!row.original.is_approved"
+                                            variant="outline"
+                                            class="border-amber-500 text-amber-600"
+                                            >Pending approval</Badge
+                                        >
                                     </div>
                                 </div>
                             </TableCell>
                         </TableRow>
                     </template>
                     <TableRow v-if="table.getRowModel().rows.length === 0">
-                        <TableCell :colspan="table.getAllColumns().length + 1" class="h-24 text-center text-muted-foreground">
+                        <TableCell
+                            :colspan="table.getAllColumns().length + 1"
+                            class="h-24 text-center text-muted-foreground"
+                        >
                             No comments found.
                         </TableCell>
                     </TableRow>
@@ -330,7 +434,8 @@ const perPageOptions = [10, 20, 50, 100]
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span class="text-sm text-muted-foreground">
-                        {{ props.comments.from }}-{{ props.comments.to }} of {{ props.comments.total }}
+                        {{ props.comments.from }}-{{ props.comments.to }} of
+                        {{ props.comments.total }}
                     </span>
                 </div>
                 <div class="flex items-center gap-2">
@@ -345,7 +450,10 @@ const perPageOptions = [10, 20, 50, 100]
                     <Button
                         variant="outline"
                         size="sm"
-                        :disabled="props.comments.current_page === props.comments.last_page"
+                        :disabled="
+                            props.comments.current_page ===
+                            props.comments.last_page
+                        "
                         @click="setPage(props.comments.current_page + 1)"
                     >
                         <ChevronRight class="size-4" />

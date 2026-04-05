@@ -1,60 +1,60 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
-import type { SeatPlanBlock, SeatPlanData } from '@/types/domain'
+import type { SeatMapCanvas as SeatMapCanvasClass } from '@alisaitteke/seatmap-canvas';
+import { onMounted, onBeforeUnmount, ref, watch } from 'vue';
+import type { SeatPlanBlock, SeatPlanData } from '@/types/domain';
 
 interface ZoneSeat {
-    seat_number?: string
-    seat_guid: string
-    position: { x: number; y: number }
-    category: string
+    seat_number?: string;
+    seat_guid: string;
+    position: { x: number; y: number };
+    category: string;
 }
 
 interface ZoneRow {
-    position: { x: number; y: number }
-    row_number: string
-    row_number_position?: string
-    seats: ZoneSeat[]
+    position: { x: number; y: number };
+    row_number: string;
+    row_number_position?: string;
+    seats: ZoneSeat[];
 }
 
 interface Zone {
-    name: string
-    position: { x: number; y: number }
-    rows: ZoneRow[]
+    name: string;
+    position: { x: number; y: number };
+    rows: ZoneRow[];
 }
 
 interface ZoneCategory {
-    name: string
-    color: string
+    name: string;
+    color: string;
 }
 
 interface ZoneFormat {
-    categories?: ZoneCategory[]
-    zones: Zone[]
+    categories?: ZoneCategory[];
+    zones: Zone[];
 }
 
 const props = withDefaults(
     defineProps<{
-        data: SeatPlanData
-        options?: Record<string, unknown>
+        data: SeatPlanData;
+        options?: Record<string, unknown>;
     }>(),
     {
         options: () => ({}),
     },
-)
+);
 
 defineEmits<{
-    'seat-click': [seat: unknown]
-}>()
+    'seat-click': [seat: unknown];
+}>();
 
-const containerRef = ref<HTMLDivElement | null>(null)
-let seatmapInstance: InstanceType<typeof import('@alisaitteke/seatmap-canvas').SeatMapCanvas> | null = null
+const containerRef = ref<HTMLDivElement | null>(null);
+let seatmapInstance: SeatMapCanvasClass | null = null;
 
 function isZoneFormat(data: SeatPlanData): data is SeatPlanData & ZoneFormat {
-    return 'zones' in data && Array.isArray((data as Record<string, unknown>).zones)
-}
-
-function hasBlocks(data: SeatPlanData): boolean {
-    return 'blocks' in data && Array.isArray(data.blocks) && data.blocks.length > 0
+    return (
+        'zones' in data &&
+        Array.isArray((data as Record<string, unknown>).zones)
+    );
 }
 
 /**
@@ -63,25 +63,26 @@ function hasBlocks(data: SeatPlanData): boolean {
  * so we handle the conversion ourselves.
  */
 function convertZonesToBlocks(data: ZoneFormat): SeatPlanBlock[] {
-    const categoryColors = new Map<string, string>()
+    const categoryColors = new Map<string, string>();
+
     if (data.categories) {
         for (const cat of data.categories) {
-            categoryColors.set(cat.name, cat.color)
+            categoryColors.set(cat.name, cat.color);
         }
     }
 
-    const blockMap = new Map<string, SeatPlanBlock>()
+    const blockMap = new Map<string, SeatPlanBlock>();
 
     for (const zone of data.zones) {
-        const zoneX = zone.position.x
-        const zoneY = zone.position.y
+        const zoneX = zone.position.x;
+        const zoneY = zone.position.y;
 
         for (const row of zone.rows) {
-            const rowX = zoneX + row.position.x
-            const rowY = zoneY + row.position.y
+            const rowX = zoneX + row.position.x;
+            const rowY = zoneY + row.position.y;
 
             for (const seat of row.seats) {
-                const blockId = `${seat.category}-${row.row_number}-${row.row_number_position ?? 'start'}`
+                const blockId = `${seat.category}-${row.row_number}-${row.row_number_position ?? 'start'}`;
 
                 if (!blockMap.has(blockId)) {
                     blockMap.set(blockId, {
@@ -90,45 +91,52 @@ function convertZonesToBlocks(data: ZoneFormat): SeatPlanBlock[] {
                         color: categoryColors.get(seat.category) ?? '#2c2828',
                         seats: [],
                         labels: [],
-                    })
+                    });
                 }
 
-                const block = blockMap.get(blockId)!
+                const block = blockMap.get(blockId)!;
                 block.seats.push({
                     id: seat.seat_guid,
                     x: rowX + seat.position.x,
                     y: rowY + seat.position.y,
                     title: seat.seat_guid,
                     salable: true,
-                })
+                });
             }
         }
     }
 
-    const blocks = Array.from(blockMap.values())
+    const blocks = Array.from(blockMap.values());
+
     for (const block of blocks) {
-        block.seats.sort((a, b) => a.x === b.x ? a.y - b.y : a.x - b.x)
+        block.seats.sort((a, b) => (a.x === b.x ? a.y - b.y : a.x - b.x));
     }
 
-    return blocks
+    return blocks;
 }
 
 function getBlocks(): SeatPlanBlock[] {
     if (isZoneFormat(props.data)) {
-        return convertZonesToBlocks(props.data)
+        return convertZonesToBlocks(props.data);
     }
-    return props.data.blocks ?? []
+
+    return props.data.blocks ?? [];
 }
 
 async function initSeatmap(): Promise<void> {
-    if (!containerRef.value) return
+    if (!containerRef.value) {
+        return;
+    }
 
-    const blocks = getBlocks()
-    if (blocks.length === 0) return
+    const blocks = getBlocks();
 
-    destroySeatmap()
+    if (blocks.length === 0) {
+        return;
+    }
 
-    const { SeatMapCanvas } = await import('@alisaitteke/seatmap-canvas')
+    destroySeatmap();
+
+    const { SeatMapCanvas } = await import('@alisaitteke/seatmap-canvas');
 
     const defaultOptions = {
         legend: true,
@@ -151,42 +159,44 @@ async function initSeatmap(): Promise<void> {
                 background: '#ffffff',
             },
         },
-    }
+    };
 
     const mergedOptions = {
         ...defaultOptions,
         ...props.options,
         style: {
             ...defaultOptions.style,
-            ...(props.options?.style as Record<string, unknown> ?? {}),
+            ...((props.options?.style as Record<string, unknown>) ?? {}),
         },
-    }
+    };
 
-    seatmapInstance = new SeatMapCanvas(containerRef.value, mergedOptions)
-    seatmapInstance.data.replaceData(blocks as unknown as Record<string, unknown>[])
+    seatmapInstance = new SeatMapCanvas(containerRef.value, mergedOptions);
+    seatmapInstance.data.replaceData(
+        blocks as unknown as Record<string, unknown>[],
+    );
 }
 
 function destroySeatmap(): void {
     if (seatmapInstance && containerRef.value) {
-        containerRef.value.innerHTML = ''
-        seatmapInstance = null
+        containerRef.value.innerHTML = '';
+        seatmapInstance = null;
     }
 }
 
 onMounted(() => {
-    initSeatmap()
-})
+    initSeatmap();
+});
 
 onBeforeUnmount(() => {
-    destroySeatmap()
-})
+    destroySeatmap();
+});
 
 watch(
     () => props.data,
     () => {
-        initSeatmap()
+        initSeatmap();
     },
-)
+);
 </script>
 
 <template>

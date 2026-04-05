@@ -2,63 +2,61 @@
 
 namespace App\Domain\Sponsoring\Policies;
 
+use App\Domain\Sponsoring\Enums\Permission;
 use App\Domain\Sponsoring\Models\Sponsor;
+use App\Enums\AuditPermission;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007, SPO-F-004
+ */
 class SponsorPolicy
 {
-    /**
-     * Superadmin bypasses all authorization checks.
-     */
-    public function before(User $user): ?bool
-    {
-        if ($user->isSuperadmin()) {
-            return true;
-        }
-
-        return null;
-    }
-
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin() || $user->isSponsorManager();
+        return $user->hasAnyPermission(
+            Permission::ManageSponsors,
+            Permission::ManageAssignedSponsors,
+        );
     }
 
     public function view(User $user, Sponsor $sponsor): bool
     {
-        if ($user->isAdmin()) {
+        if ($user->hasPermission(Permission::ManageSponsors)) {
             return true;
         }
 
-        return $user->managedSponsors()->where('sponsor_id', $sponsor->id)->exists();
+        return $user->hasPermission(Permission::ManageAssignedSponsors)
+            && $user->managedSponsors()->where('sponsor_id', $sponsor->id)->exists();
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageSponsors);
     }
 
     public function update(User $user, Sponsor $sponsor): bool
     {
-        if ($user->isAdmin()) {
+        if ($user->hasPermission(Permission::ManageSponsors)) {
             return true;
         }
 
-        return $user->managedSponsors()->where('sponsor_id', $sponsor->id)->exists();
+        return $user->hasPermission(Permission::ManageAssignedSponsors)
+            && $user->managedSponsors()->where('sponsor_id', $sponsor->id)->exists();
     }
 
     public function delete(User $user, Sponsor $sponsor): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageSponsors);
     }
 
     public function manageEvents(User $user, Sponsor $sponsor): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageSponsors);
     }
 
     public function viewAudit(User $user, Sponsor $sponsor): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(AuditPermission::ViewAuditLogs);
     }
 }

@@ -7,6 +7,9 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-008, USR-F-006
+ */
 class EnsureUserHasRole
 {
     /**
@@ -23,7 +26,7 @@ class EnsureUserHasRole
             abort(403);
         }
 
-        $user->loadMissingRelation('roles');
+        $user->loadMissing('roles');
 
         foreach ($roles as $roleName) {
             $role = RoleName::tryFrom($roleName);

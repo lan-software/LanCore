@@ -2,12 +2,18 @@
 
 namespace App\Domain\Shop\Http\Controllers;
 
+use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Http\Requests\OrderIndexRequest;
 use App\Domain\Shop\Models\Order;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-004
+ * @see docs/mil-std-498/SRS.md SHP-F-004, SHP-F-006, SHP-F-014
+ */
 class OrderController extends Controller
 {
     public function index(OrderIndexRequest $request): Response
@@ -19,7 +25,7 @@ class OrderController extends Controller
         if ($search = $request->validated('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
-                    ->orWhereHas('user', fn ($q) => $q->where('name', 'ilike', "%{$search}%")->orWhere('email', 'ilike', "%{$search}%"));
+                    ->orWhereHas('user', fn ($q) => $q->whereLike('name', "%{$search}%")->orWhereLike('email', "%{$search}%"));
             });
         }
 
@@ -59,5 +65,22 @@ class OrderController extends Controller
         return Inertia::render('orders/Show', [
             'order' => $order,
         ]);
+    }
+
+    public function confirmPayment(Order $order): RedirectResponse
+    {
+        $this->authorize('confirmPayment', $order);
+
+        if ($order->payment_method !== PaymentMethod::OnSite) {
+            return back()->withErrors(['order' => 'Only on-site orders can be manually confirmed.']);
+        }
+
+        if ($order->paid_at !== null) {
+            return back()->withErrors(['order' => 'This order has already been marked as paid.']);
+        }
+
+        $order->update(['paid_at' => now()]);
+
+        return back();
     }
 }

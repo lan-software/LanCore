@@ -1,42 +1,48 @@
 <script setup lang="ts">
-import UserController from '@/actions/App/Http/Controllers/Users/UserController'
-import OrderController from '@/actions/App/Domain/Shop/Http/Controllers/OrderController'
-import { show as adminTicketShow } from '@/actions/App/Domain/Ticketing/Http/Controllers/AdminTicketController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as usersIndexRoute } from '@/routes/users'
-import type { BreadcrumbItem } from '@/types'
-import type { Role, User } from '@/types/auth'
-import type { Order, Ticket } from '@/types/domain'
-import { Form, Head, Link } from '@inertiajs/vue3'
+import { Form, Head, Link } from '@inertiajs/vue3';
+import OrderController from '@/actions/App/Domain/Shop/Http/Controllers/OrderController';
+import { show as adminTicketShow } from '@/actions/App/Domain/Ticketing/Http/Controllers/AdminTicketController';
+import UserController from '@/actions/App/Http/Controllers/Users/UserController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as usersIndexRoute } from '@/routes/users';
+import type { BreadcrumbItem } from '@/types';
+import type { Role, User } from '@/types/auth';
+import type { Order, Ticket } from '@/types/domain';
 
 const props = defineProps<{
-    user: User
-    availableRoles: Role[]
-    recentOrders: Order[]
-    recentTickets: Ticket[]
-}>()
+    user: User;
+    availableRoles: Role[];
+    recentOrders: Order[];
+    recentTickets: Ticket[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: usersIndexRoute().url },
     { title: 'Users', href: usersIndexRoute().url },
     { title: props.user.name, href: UserController.show(props.user.id).url },
-]
+];
 
 function hasRole(roleName: string): boolean {
-    return props.user.roles.some((r) => r.name === roleName)
+    return props.user.roles.some((r) => r.name === roleName);
 }
 
 function formatCurrency(cents: number): string {
-    return (cents / 100).toFixed(2) + ' €'
+    return (cents / 100).toFixed(2) + ' €';
 }
 
 function formatDate(dateString: string): string {
@@ -44,28 +50,34 @@ function formatDate(dateString: string): string {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
-    })
+    });
 }
 
-const orderStatusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const orderStatusVariant: Record<
+    string,
+    'default' | 'secondary' | 'destructive' | 'outline'
+> = {
     Completed: 'default',
     Pending: 'outline',
     Failed: 'destructive',
     Refunded: 'secondary',
-}
+};
 
-const ticketStatusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const ticketStatusVariant: Record<
+    string,
+    'default' | 'secondary' | 'destructive' | 'outline'
+> = {
     Active: 'default',
     CheckedIn: 'secondary',
     Cancelled: 'destructive',
-}
+};
 </script>
 
 <template>
     <Head :title="`Edit ${user.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <!-- Back link -->
             <div>
                 <Link
@@ -138,7 +150,9 @@ const ticketStatusVariant: Record<string, 'default' | 'secondary' | 'destructive
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password_confirmation">Confirm password</Label>
+                        <Label for="password_confirmation"
+                            >Confirm password</Label
+                        >
                         <Input
                             id="password_confirmation"
                             type="password"
@@ -164,11 +178,13 @@ const ticketStatusVariant: Record<string, 'default' | 'secondary' | 'destructive
                             :key="role.id"
                             class="flex items-center gap-2"
                         >
-                            <Checkbox
+                            <input
+                                type="checkbox"
                                 :id="`role-${role.id}`"
-                                :name="`role_names[]`"
+                                name="role_names[]"
                                 :value="role.name"
-                                :default-value="hasRole(role.name)"
+                                :checked="hasRole(role.name)"
+                                class="mt-0.5 size-4 shrink-0 rounded-[4px] border border-input accent-primary"
                             />
                             <Label
                                 :for="`role-${role.id}`"
@@ -183,10 +199,7 @@ const ticketStatusVariant: Record<string, 'default' | 'secondary' | 'destructive
 
                 <!-- Actions -->
                 <div class="flex items-center gap-4">
-                    <Button
-                        type="submit"
-                        :disabled="processing"
-                    >
+                    <Button type="submit" :disabled="processing">
                         Save changes
                     </Button>
 
@@ -220,21 +233,53 @@ const ticketStatusVariant: Record<string, 'default' | 'secondary' | 'destructive
                                 <TableHead>Status</TableHead>
                                 <TableHead class="text-right">Total</TableHead>
                                 <TableHead>Date</TableHead>
-                                <TableHead class="text-right">Actions</TableHead>
+                                <TableHead class="text-right"
+                                    >Actions</TableHead
+                                >
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="order in recentOrders" :key="order.id">
-                                <TableCell class="font-mono text-sm">#{{ order.id }}</TableCell>
-                                <TableCell>{{ order.event?.name ?? '—' }}</TableCell>
+                            <TableRow
+                                v-for="order in recentOrders"
+                                :key="order.id"
+                            >
+                                <TableCell class="font-mono text-sm"
+                                    >#{{ order.id }}</TableCell
+                                >
+                                <TableCell>{{
+                                    order.event?.name ?? '—'
+                                }}</TableCell>
                                 <TableCell>
-                                    <Badge :variant="orderStatusVariant[order.status] ?? 'outline'">{{ order.status }}</Badge>
+                                    <Badge
+                                        :variant="
+                                            orderStatusVariant[order.status] ??
+                                            'outline'
+                                        "
+                                        >{{ order.status }}</Badge
+                                    >
                                 </TableCell>
-                                <TableCell class="text-right font-medium">{{ formatCurrency(order.total) }}</TableCell>
-                                <TableCell class="text-muted-foreground text-sm">{{ formatDate(order.created_at) }}</TableCell>
+                                <TableCell class="text-right font-medium">{{
+                                    formatCurrency(order.total)
+                                }}</TableCell>
+                                <TableCell
+                                    class="text-sm text-muted-foreground"
+                                    >{{
+                                        formatDate(order.created_at)
+                                    }}</TableCell
+                                >
                                 <TableCell class="text-right">
-                                    <Button variant="outline" size="sm" as-child>
-                                        <Link :href="OrderController.show(order.id).url">View</Link>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        as-child
+                                    >
+                                        <Link
+                                            :href="
+                                                OrderController.show(order.id)
+                                                    .url
+                                            "
+                                            >View</Link
+                                        >
                                     </Button>
                                 </TableCell>
                             </TableRow>
@@ -256,20 +301,47 @@ const ticketStatusVariant: Record<string, 'default' | 'secondary' | 'destructive
                                 <TableHead>Type</TableHead>
                                 <TableHead>Event</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead class="text-right">Actions</TableHead>
+                                <TableHead class="text-right"
+                                    >Actions</TableHead
+                                >
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="ticket in recentTickets" :key="ticket.id">
-                                <TableCell class="font-mono text-sm">{{ ticket.validation_id }}</TableCell>
-                                <TableCell>{{ ticket.ticket_type?.name ?? '—' }}</TableCell>
-                                <TableCell>{{ ticket.event?.name ?? '—' }}</TableCell>
+                            <TableRow
+                                v-for="ticket in recentTickets"
+                                :key="ticket.id"
+                            >
+                                <TableCell class="font-mono text-sm">{{
+                                    ticket.validation_id
+                                }}</TableCell>
+                                <TableCell>{{
+                                    ticket.ticket_type?.name ?? '—'
+                                }}</TableCell>
+                                <TableCell>{{
+                                    ticket.event?.name ?? '—'
+                                }}</TableCell>
                                 <TableCell>
-                                    <Badge :variant="ticketStatusVariant[ticket.status] ?? 'outline'">{{ ticket.status }}</Badge>
+                                    <Badge
+                                        :variant="
+                                            ticketStatusVariant[
+                                                ticket.status
+                                            ] ?? 'outline'
+                                        "
+                                        >{{ ticket.status }}</Badge
+                                    >
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button variant="outline" size="sm" as-child>
-                                        <Link :href="adminTicketShow(ticket.id).url">View</Link>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        as-child
+                                    >
+                                        <Link
+                                            :href="
+                                                adminTicketShow(ticket.id).url
+                                            "
+                                            >View</Link
+                                        >
                                     </Button>
                                 </TableCell>
                             </TableRow>

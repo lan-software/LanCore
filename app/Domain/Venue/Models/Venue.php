@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-EVT-003
+ * @see docs/mil-std-498/SRS.md EVT-F-006
+ */
 #[Fillable(['name', 'description', 'address_id'])]
 class Venue extends Model
 {

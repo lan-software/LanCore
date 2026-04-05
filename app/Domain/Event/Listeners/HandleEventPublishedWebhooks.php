@@ -7,6 +7,10 @@ use App\Domain\Webhook\Actions\DispatchWebhooks;
 use App\Domain\Webhook\Enums\WebhookEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-EVT-004, CAP-WHK-001
+ * @see docs/mil-std-498/SRS.md EVT-F-005, WHK-F-005
+ */
 class HandleEventPublishedWebhooks implements ShouldQueue
 {
     public function __construct(private readonly DispatchWebhooks $dispatchWebhooks) {}

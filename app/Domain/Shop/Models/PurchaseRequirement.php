@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-006
+ * @see docs/mil-std-498/SRS.md SHP-F-009
+ */
 #[Fillable([
     'name', 'description', 'requirements_content', 'acknowledgements', 'is_active', 'requires_scroll',
 ])]

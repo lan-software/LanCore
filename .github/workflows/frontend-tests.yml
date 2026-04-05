@@ -31,7 +31,16 @@ jobs:
         run: npm ci
 
       - name: Run Vitest
-        run: npm test
+        run: npm run test:coverage
+        env:
+          LARAVEL_BYPASS_ENV_CHECK: 1
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: frontend
+          slug: lan-software/LanCore
 
   playwright:
     name: Playwright (E2E Tests)
@@ -68,24 +77,34 @@ jobs:
       - name: Build Assets
         run: npm run build
 
+      - name: Create Database
+        run: touch database/database.sqlite
+
       - name: Run Database Migrations
         run: php artisan migrate --force
+        env:
+          CACHE_STORE: array
+          SESSION_DRIVER: file
+          QUEUE_CONNECTION: sync
 
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
 
       - name: Start Laravel Server
-        run: php artisan serve --port=80 &
+        run: php artisan serve --port=8000 &
         env:
-          APP_URL: http://localhost
+          APP_URL: http://localhost:8000
+          CACHE_STORE: array
+          SESSION_DRIVER: file
+          QUEUE_CONNECTION: sync
 
       - name: Wait for Server
-        run: npx wait-on http://localhost --timeout 30000
+        run: npx wait-on http://localhost:8000 --timeout 30000
 
       - name: Run Playwright Tests
         run: npm run test:e2e
         env:
-          APP_URL: http://localhost
+          APP_URL: http://localhost:8000
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4

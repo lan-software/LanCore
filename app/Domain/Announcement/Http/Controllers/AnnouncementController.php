@@ -15,6 +15,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-ANN-001, CAP-ANN-002
+ * @see docs/mil-std-498/SRS.md ANN-F-001, ANN-F-002, ANN-F-005
+ */
 class AnnouncementController extends Controller
 {
     public function __construct(
@@ -31,7 +35,7 @@ class AnnouncementController extends Controller
             ->withCount('dismissedByUsers');
 
         if ($search = $request->input('search')) {
-            $query->where('title', 'ilike', "%{$search}%");
+            $query->whereLike('title', "%{$search}%");
         }
 
         $sortColumn = $request->input('sort', 'created_at');
@@ -52,6 +56,7 @@ class AnnouncementController extends Controller
 
         return Inertia::render('announcements/Create', [
             'events' => Event::query()->orderByDesc('start_date')->get(['id', 'name']),
+            'selectedEventId' => session('selected_event_id'),
         ]);
     }
 

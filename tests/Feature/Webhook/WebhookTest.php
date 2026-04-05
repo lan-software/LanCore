@@ -11,6 +11,8 @@ use App\Domain\Event\Models\Event;
 use App\Domain\News\Events\NewsArticlePublished;
 use App\Domain\News\Listeners\HandleNewsArticlePublishedWebhooks;
 use App\Domain\News\Models\NewsArticle;
+use App\Domain\Notification\Events\UserRolesChanged;
+use App\Domain\Notification\Listeners\HandleUserRolesChangedWebhooks;
 use App\Domain\Webhook\Actions\CreateWebhook;
 use App\Domain\Webhook\Actions\UpdateWebhook;
 use App\Domain\Webhook\Enums\WebhookEvent;
@@ -370,4 +372,59 @@ it('allows admins to view webhook show page with delivery history', function () 
             ->has('webhook')
             ->has('deliveries')
         );
+});
+
+// --- User Roles Changed Webhook Tests ---
+
+it('dispatches WebhookDispatched for active webhooks when user roles change', function () {
+    EventFacade::fake([WebhookDispatched::class]);
+
+    $activeWebhook = Webhook::factory()->create([
+        'event' => WebhookEvent::UserRolesUpdated->value,
+        'is_active' => true,
+    ]);
+
+    $inactiveWebhook = Webhook::factory()->create([
+        'event' => WebhookEvent::UserRolesUpdated->value,
+        'is_active' => false,
+    ]);
+
+    $user = User::factory()->withRole(RoleName::User)->create();
+    $listener = app(HandleUserRolesChangedWebhooks::class);
+    $listener->handle(new UserRolesChanged($user, [RoleName::Admin], []));
+
+    EventFacade::assertDispatched(WebhookDispatched::class, fn ($event) => $event->webhook->id === $activeWebhook->id);
+    EventFacade::assertNotDispatched(WebhookDispatched::class, fn ($event) => $event->webhook->id === $inactiveWebhook->id);
+});
+
+it('includes user roles and change data in user.roles_updated webhook payload', function () {
+    EventFacade::fake([WebhookDispatched::class]);
+
+    Webhook::factory()->create([
+        'event' => WebhookEvent::UserRolesUpdated->value,
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->withRole(RoleName::Admin)->create();
+    $listener = app(HandleUserRolesChangedWebhooks::class);
+    $listener->handle(new UserRolesChanged($user, [RoleName::Admin], [RoleName::User]));
+
+    EventFacade::assertDispatched(WebhookDispatched::class, function ($event) use ($user) {
+        return $event->payload['event'] === WebhookEvent::UserRolesUpdated->value
+            && $event->payload['user']['id'] === $user->id
+            && $event->payload['user']['username'] === $user->name
+            && in_array(RoleName::Admin->value, $event->payload['user']['roles'])
+            && in_array(RoleName::Admin->value, $event->payload['changes']['added'])
+            && in_array(RoleName::User->value, $event->payload['changes']['removed']);
+    });
+});
+
+it('does not dispatch WebhookDispatched for user.roles_updated when no active webhooks exist', function () {
+    EventFacade::fake([WebhookDispatched::class]);
+
+    $user = User::factory()->withRole(RoleName::User)->create();
+    $listener = app(HandleUserRolesChangedWebhooks::class);
+    $listener->handle(new UserRolesChanged($user, [RoleName::Admin], []));
+
+    EventFacade::assertNotDispatched(WebhookDispatched::class);
 });

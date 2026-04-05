@@ -11,6 +11,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-TKT-002
+ * @see docs/mil-std-498/SRS.md TKT-F-003
+ */
 #[Fillable(['name', 'description', 'event_id'])]
 class TicketGroup extends Model
 {

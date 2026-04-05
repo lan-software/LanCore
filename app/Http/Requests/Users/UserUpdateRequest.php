@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Users;
 
+use App\Enums\RoleName;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,7 +24,7 @@ class UserUpdateRequest extends FormRequest
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role_names' => ['sometimes', 'array'],
-            'role_names.*' => ['string', Rule::in(['user', 'admin', 'superadmin', 'sponsor_manager'])],
+            'role_names.*' => ['string', Rule::in(array_column(RoleName::cases(), 'value'))],
         ];
     }
 }

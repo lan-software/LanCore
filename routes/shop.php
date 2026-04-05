@@ -6,6 +6,7 @@ use App\Domain\Shop\Http\Controllers\OrderController;
 use App\Domain\Shop\Http\Controllers\PaymentProviderConditionController;
 use App\Domain\Shop\Http\Controllers\PurchaseRequirementController;
 use App\Domain\Shop\Http\Controllers\ShopController;
+use App\Domain\Shop\Http\Controllers\UserOrderController;
 use App\Domain\Shop\Http\Controllers\VoucherAuditController;
 use App\Domain\Shop\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Route;
@@ -64,7 +65,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('payment-provider-conditions/{paymentProviderCondition}', [PaymentProviderConditionController::class, 'update'])->name('payment-provider-conditions.update');
     Route::delete('payment-provider-conditions/{paymentProviderCondition}', [PaymentProviderConditionController::class, 'destroy'])->name('payment-provider-conditions.destroy');
 
+    // My Orders (user-facing)
+    Route::get('my-orders', [UserOrderController::class, 'index'])->name('my-orders.index');
+    Route::get('my-orders/{order}', [UserOrderController::class, 'show'])->name('my-orders.show');
+
     // Admin: Orders
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::patch('orders/{order}/confirm-payment', [OrderController::class, 'confirmPayment'])->name('orders.confirm-payment');
 });

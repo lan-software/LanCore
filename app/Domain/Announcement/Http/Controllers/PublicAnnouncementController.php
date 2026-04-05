@@ -2,6 +2,7 @@
 
 namespace App\Domain\Announcement\Http\Controllers;
 
+use App\Domain\Announcement\Events\AnnouncementsViewed;
 use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Event\Models\Event;
 use App\Http\Controllers\Controller;
@@ -9,6 +10,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-ANN-002
+ * @see docs/mil-std-498/SRS.md ANN-F-002
+ */
 class PublicAnnouncementController extends Controller
 {
     public function __invoke(Request $request, Event $event): Response
@@ -22,6 +27,8 @@ class PublicAnnouncementController extends Controller
 
         $dismissedIds = [];
         if ($request->user()) {
+            AnnouncementsViewed::dispatch($request->user());
+
             $dismissedIds = $request->user()
                 ->dismissedAnnouncements()
                 ->pluck('announcements.id')

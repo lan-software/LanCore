@@ -8,6 +8,9 @@ use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SRS.md TKT-F-010
+ */
 class AdminTicketController extends Controller
 {
     public function index(AdminTicketIndexRequest $request): Response
@@ -18,9 +21,9 @@ class AdminTicketController extends Controller
 
         if ($search = $request->validated('search')) {
             $query->where(function ($q) use ($search) {
-                $q->where('validation_id', 'ilike', "%{$search}%")
-                    ->orWhereHas('owner', fn ($q) => $q->where('name', 'ilike', "%{$search}%")->orWhere('email', 'ilike', "%{$search}%"))
-                    ->orWhereHas('ticketType', fn ($q) => $q->where('name', 'ilike', "%{$search}%"));
+                $q->whereLike('validation_id', "%{$search}%")
+                    ->orWhereHas('owner', fn ($q) => $q->whereLike('name', "%{$search}%")->orWhereLike('email', "%{$search}%"))
+                    ->orWhereHas('ticketType', fn ($q) => $q->whereLike('name', "%{$search}%"));
             });
         }
 
@@ -50,7 +53,7 @@ class AdminTicketController extends Controller
             'order.user',
             'owner',
             'manager',
-            'ticketUser',
+            'users',
             'addons',
         ]);
 

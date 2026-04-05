@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
     {
         $roles = [
             ['name' => RoleName::User->value, 'label' => 'User'],
+            ['name' => RoleName::Moderator->value, 'label' => 'Moderator'],
             ['name' => RoleName::Admin->value, 'label' => 'Admin'],
             ['name' => RoleName::Superadmin->value, 'label' => 'Superadmin'],
             ['name' => RoleName::SponsorManager->value, 'label' => 'Sponsor Manager'],

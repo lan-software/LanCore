@@ -9,20 +9,24 @@ import {
     Clock,
     CreditCard,
     Gamepad2,
-    Grid3x3,
     Handshake,
     MapPin,
     Palette,
     Receipt,
     Shield,
     ShieldCheck,
-    Tag,
     Ticket,
     TicketCheck,
     Users,
 } from 'lucide-vue-next';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
@@ -71,9 +75,9 @@ interface DashboardStats {
     }[];
 }
 
-const props = defineProps<{
+defineProps<{
     stats: DashboardStats;
-    isAdmin: boolean;
+    showAdminStats: boolean;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -89,13 +93,22 @@ function formatRelativeTime(isoString: string): string {
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / 60000);
 
-    if (diffMinutes < 1) return 'Just now';
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffMinutes < 1) {
+        return 'Just now';
+    }
+
+    if (diffMinutes < 60) {
+        return `${diffMinutes}m ago`;
+    }
 
     const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
+
+    if (diffHours < 24) {
+        return `${diffHours}h ago`;
+    }
 
     const diffDays = Math.floor(diffHours / 24);
+
     return `${diffDays}d ago`;
 }
 
@@ -107,7 +120,10 @@ const roleLabels: Record<string, string> = {
 };
 
 function formatCents(cents: number): string {
-    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
+    return new Intl.NumberFormat('de-DE', {
+        style: 'currency',
+        currency: 'EUR',
+    }).format(cents / 100);
 }
 </script>
 
@@ -116,86 +132,138 @@ function formatCents(cents: number): string {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4">
-            <template v-if="isAdmin">
+            <template v-if="showAdminStats">
                 <!-- Entity Counts -->
                 <div>
                     <h2 class="mb-3 text-lg font-semibold">Overview</h2>
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Users</CardDescription>
                                 <Users class="size-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold">{{ stats.counts.users }}</div>
+                                <div class="text-2xl font-bold">
+                                    {{ stats.counts.users }}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Events</CardDescription>
-                                <Calendar class="size-4 text-muted-foreground" />
+                                <Calendar
+                                    class="size-4 text-muted-foreground"
+                                />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold">{{ stats.counts.events }}</div>
+                                <div class="text-2xl font-bold">
+                                    {{ stats.counts.events }}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Programs</CardDescription>
-                                <ClipboardList class="size-4 text-muted-foreground" />
+                                <ClipboardList
+                                    class="size-4 text-muted-foreground"
+                                />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold">{{ stats.counts.programs }}</div>
-                                <p class="text-xs text-muted-foreground">{{ stats.counts.time_slots }} time slots</p>
+                                <div class="text-2xl font-bold">
+                                    {{ stats.counts.programs }}
+                                </div>
+                                <p class="text-xs text-muted-foreground">
+                                    {{ stats.counts.time_slots }} time slots
+                                </p>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Venues</CardDescription>
                                 <MapPin class="size-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold">{{ stats.counts.venues }}</div>
+                                <div class="text-2xl font-bold">
+                                    {{ stats.counts.venues }}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Sponsors</CardDescription>
-                                <Handshake class="size-4 text-muted-foreground" />
+                                <Handshake
+                                    class="size-4 text-muted-foreground"
+                                />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold">{{ stats.counts.sponsors }}</div>
-                                <p class="text-xs text-muted-foreground">{{ stats.counts.sponsor_levels }} levels</p>
+                                <div class="text-2xl font-bold">
+                                    {{ stats.counts.sponsors }}
+                                </div>
+                                <p class="text-xs text-muted-foreground">
+                                    {{ stats.counts.sponsor_levels }} levels
+                                </p>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Tickets</CardDescription>
                                 <Ticket class="size-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold">{{ stats.counts.tickets }}</div>
-                                <p class="text-xs text-muted-foreground">{{ stats.counts.ticket_types }} types · {{ stats.counts.addons }} addons</p>
+                                <div class="text-2xl font-bold">
+                                    {{ stats.counts.tickets }}
+                                </div>
+                                <p class="text-xs text-muted-foreground">
+                                    {{ stats.counts.ticket_types }} types ·
+                                    {{ stats.counts.addons }} addons
+                                </p>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Orders</CardDescription>
                                 <Receipt class="size-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold">{{ stats.counts.orders }}</div>
-                                <p class="text-xs text-muted-foreground">{{ stats.counts.vouchers }} vouchers</p>
+                                <div class="text-2xl font-bold">
+                                    {{ stats.counts.orders }}
+                                </div>
+                                <p class="text-xs text-muted-foreground">
+                                    {{ stats.counts.vouchers }} vouchers
+                                </p>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Games</CardDescription>
-                                <Gamepad2 class="size-4 text-muted-foreground" />
+                                <Gamepad2
+                                    class="size-4 text-muted-foreground"
+                                />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold">{{ stats.counts.games }}</div>
-                                <p class="text-xs text-muted-foreground">{{ stats.counts.game_modes }} game modes · {{ stats.counts.seat_plans }} seat plans</p>
+                                <div class="text-2xl font-bold">
+                                    {{ stats.counts.games }}
+                                </div>
+                                <p class="text-xs text-muted-foreground">
+                                    {{ stats.counts.game_modes }} game modes ·
+                                    {{ stats.counts.seat_plans }} seat plans
+                                </p>
                             </CardContent>
                         </Card>
                     </div>
@@ -206,39 +274,67 @@ function formatCents(cents: number): string {
                     <h2 class="mb-3 text-lg font-semibold">Events</h2>
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Upcoming</CardDescription>
-                                <CalendarClock class="size-4 text-muted-foreground" />
+                                <CalendarClock
+                                    class="size-4 text-muted-foreground"
+                                />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold">{{ stats.events.upcoming }}</div>
+                                <div class="text-2xl font-bold">
+                                    {{ stats.events.upcoming }}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Past</CardDescription>
-                                <CalendarCheck class="size-4 text-muted-foreground" />
+                                <CalendarCheck
+                                    class="size-4 text-muted-foreground"
+                                />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold">{{ stats.events.past }}</div>
+                                <div class="text-2xl font-bold">
+                                    {{ stats.events.past }}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Published</CardDescription>
-                                <Calendar class="size-4 text-muted-foreground" />
+                                <Calendar
+                                    class="size-4 text-muted-foreground"
+                                />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ stats.events.published }}</div>
+                                <div
+                                    class="text-2xl font-bold text-green-600 dark:text-green-400"
+                                >
+                                    {{ stats.events.published }}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader class="flex flex-row items-center justify-between pb-2">
+                            <CardHeader
+                                class="flex flex-row items-center justify-between pb-2"
+                            >
                                 <CardDescription>Draft</CardDescription>
-                                <Calendar class="size-4 text-muted-foreground" />
+                                <Calendar
+                                    class="size-4 text-muted-foreground"
+                                />
                             </CardHeader>
                             <CardContent>
-                                <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ stats.events.draft }}</div>
+                                <div
+                                    class="text-2xl font-bold text-yellow-600 dark:text-yellow-400"
+                                >
+                                    {{ stats.events.draft }}
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
@@ -252,26 +348,50 @@ function formatCents(cents: number): string {
                         <Card>
                             <CardContent class="pt-6">
                                 <div class="space-y-4">
-                                    <div class="flex items-center justify-between">
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
                                         <div class="flex items-center gap-2">
-                                            <Ticket class="size-4 text-green-500" />
-                                            <span class="text-sm font-medium">Active</span>
+                                            <Ticket
+                                                class="size-4 text-green-500"
+                                            />
+                                            <span class="text-sm font-medium"
+                                                >Active</span
+                                            >
                                         </div>
-                                        <span class="text-sm font-bold">{{ stats.tickets.active }}</span>
+                                        <span class="text-sm font-bold">{{
+                                            stats.tickets.active
+                                        }}</span>
                                     </div>
-                                    <div class="flex items-center justify-between">
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
                                         <div class="flex items-center gap-2">
-                                            <TicketCheck class="size-4 text-blue-500" />
-                                            <span class="text-sm font-medium">Checked In</span>
+                                            <TicketCheck
+                                                class="size-4 text-blue-500"
+                                            />
+                                            <span class="text-sm font-medium"
+                                                >Checked In</span
+                                            >
                                         </div>
-                                        <span class="text-sm font-bold">{{ stats.tickets.checked_in }}</span>
+                                        <span class="text-sm font-bold">{{
+                                            stats.tickets.checked_in
+                                        }}</span>
                                     </div>
-                                    <div class="flex items-center justify-between">
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
                                         <div class="flex items-center gap-2">
-                                            <Ticket class="size-4 text-red-500" />
-                                            <span class="text-sm font-medium">Cancelled</span>
+                                            <Ticket
+                                                class="size-4 text-red-500"
+                                            />
+                                            <span class="text-sm font-medium"
+                                                >Cancelled</span
+                                            >
                                         </div>
-                                        <span class="text-sm font-bold">{{ stats.tickets.cancelled }}</span>
+                                        <span class="text-sm font-bold">{{
+                                            stats.tickets.cancelled
+                                        }}</span>
                                     </div>
                                 </div>
                             </CardContent>
@@ -284,41 +404,90 @@ function formatCents(cents: number): string {
                         <Card>
                             <CardContent class="pt-6">
                                 <div class="space-y-4">
-                                    <div class="flex items-center justify-between">
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
                                         <div class="flex items-center gap-2">
-                                            <CreditCard class="size-4 text-yellow-500" />
-                                            <span class="text-sm font-medium">Pending</span>
+                                            <CreditCard
+                                                class="size-4 text-yellow-500"
+                                            />
+                                            <span class="text-sm font-medium"
+                                                >Pending</span
+                                            >
                                         </div>
-                                        <span class="text-sm font-bold">{{ stats.orders.pending }}</span>
+                                        <span class="text-sm font-bold">{{
+                                            stats.orders.pending
+                                        }}</span>
                                     </div>
-                                    <div class="flex items-center justify-between">
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
                                         <div class="flex items-center gap-2">
-                                            <CreditCard class="size-4 text-green-500" />
-                                            <span class="text-sm font-medium">Completed</span>
+                                            <CreditCard
+                                                class="size-4 text-green-500"
+                                            />
+                                            <span class="text-sm font-medium"
+                                                >Completed</span
+                                            >
                                         </div>
-                                        <span class="text-sm font-bold">{{ stats.orders.completed }}</span>
+                                        <span class="text-sm font-bold">{{
+                                            stats.orders.completed
+                                        }}</span>
                                     </div>
-                                    <div class="flex items-center justify-between">
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
                                         <div class="flex items-center gap-2">
-                                            <CreditCard class="size-4 text-red-500" />
-                                            <span class="text-sm font-medium">Failed</span>
+                                            <CreditCard
+                                                class="size-4 text-red-500"
+                                            />
+                                            <span class="text-sm font-medium"
+                                                >Failed</span
+                                            >
                                         </div>
-                                        <span class="text-sm font-bold">{{ stats.orders.failed }}</span>
+                                        <span class="text-sm font-bold">{{
+                                            stats.orders.failed
+                                        }}</span>
                                     </div>
-                                    <div class="flex items-center justify-between">
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
                                         <div class="flex items-center gap-2">
-                                            <CreditCard class="size-4 text-muted-foreground" />
-                                            <span class="text-sm font-medium">Refunded</span>
+                                            <CreditCard
+                                                class="size-4 text-muted-foreground"
+                                            />
+                                            <span class="text-sm font-medium"
+                                                >Refunded</span
+                                            >
                                         </div>
-                                        <span class="text-sm font-bold">{{ stats.orders.refunded }}</span>
+                                        <span class="text-sm font-bold">{{
+                                            stats.orders.refunded
+                                        }}</span>
                                     </div>
                                     <div class="border-t pt-4">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center gap-2">
-                                                <CircleDollarSign class="size-4 text-green-600 dark:text-green-400" />
-                                                <span class="text-sm font-medium">Total Revenue</span>
+                                        <div
+                                            class="flex items-center justify-between"
+                                        >
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
+                                                <CircleDollarSign
+                                                    class="size-4 text-green-600 dark:text-green-400"
+                                                />
+                                                <span
+                                                    class="text-sm font-medium"
+                                                    >Total Revenue</span
+                                                >
                                             </div>
-                                            <span class="text-sm font-bold text-green-600 dark:text-green-400">{{ formatCents(stats.orders.total_revenue) }}</span>
+                                            <span
+                                                class="text-sm font-bold text-green-600 dark:text-green-400"
+                                                >{{
+                                                    formatCents(
+                                                        stats.orders
+                                                            .total_revenue,
+                                                    )
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
                                 </div>
@@ -330,7 +499,9 @@ function formatCents(cents: number): string {
                 <div class="grid gap-6 lg:grid-cols-2">
                     <!-- Role Distribution -->
                     <div>
-                        <h2 class="mb-3 text-lg font-semibold">Role Distribution</h2>
+                        <h2 class="mb-3 text-lg font-semibold">
+                            Role Distribution
+                        </h2>
                         <Card>
                             <CardContent class="pt-6">
                                 <div class="space-y-4">
@@ -340,13 +511,32 @@ function formatCents(cents: number): string {
                                         class="flex items-center justify-between"
                                     >
                                         <div class="flex items-center gap-2">
-                                            <ShieldCheck v-if="role === 'superadmin'" class="size-4 text-purple-500" />
-                                            <Shield v-else-if="role === 'admin'" class="size-4 text-blue-500" />
-                                            <Palette v-else-if="role === 'sponsor_manager'" class="size-4 text-orange-500" />
-                                            <Users v-else class="size-4 text-muted-foreground" />
-                                            <span class="text-sm font-medium">{{ roleLabels[role as string] ?? role }}</span>
+                                            <ShieldCheck
+                                                v-if="role === 'superadmin'"
+                                                class="size-4 text-purple-500"
+                                            />
+                                            <Shield
+                                                v-else-if="role === 'admin'"
+                                                class="size-4 text-blue-500"
+                                            />
+                                            <Palette
+                                                v-else-if="
+                                                    role === 'sponsor_manager'
+                                                "
+                                                class="size-4 text-orange-500"
+                                            />
+                                            <Users
+                                                v-else
+                                                class="size-4 text-muted-foreground"
+                                            />
+                                            <span class="text-sm font-medium">{{
+                                                roleLabels[role as string] ??
+                                                role
+                                            }}</span>
                                         </div>
-                                        <span class="text-sm font-bold">{{ count }}</span>
+                                        <span class="text-sm font-bold">{{
+                                            count
+                                        }}</span>
                                     </div>
                                 </div>
                             </CardContent>
@@ -355,10 +545,15 @@ function formatCents(cents: number): string {
 
                     <!-- Last Active Users -->
                     <div>
-                        <h2 class="mb-3 text-lg font-semibold">Recently Active Users</h2>
+                        <h2 class="mb-3 text-lg font-semibold">
+                            Recently Active Users
+                        </h2>
                         <Card>
                             <CardContent class="pt-6">
-                                <div v-if="stats.lastActiveUsers.length === 0" class="text-sm text-muted-foreground">
+                                <div
+                                    v-if="stats.lastActiveUsers.length === 0"
+                                    class="text-sm text-muted-foreground"
+                                >
                                     No recent activity.
                                 </div>
                                 <div v-else class="space-y-4">
@@ -368,12 +563,26 @@ function formatCents(cents: number): string {
                                         class="flex items-center justify-between"
                                     >
                                         <div class="min-w-0 flex-1">
-                                            <p class="truncate text-sm font-medium">{{ user.name }}</p>
-                                            <p class="truncate text-xs text-muted-foreground">{{ user.email }}</p>
+                                            <p
+                                                class="truncate text-sm font-medium"
+                                            >
+                                                {{ user.name }}
+                                            </p>
+                                            <p
+                                                class="truncate text-xs text-muted-foreground"
+                                            >
+                                                {{ user.email }}
+                                            </p>
                                         </div>
-                                        <div class="ml-4 flex items-center gap-1 text-xs text-muted-foreground">
+                                        <div
+                                            class="ml-4 flex items-center gap-1 text-xs text-muted-foreground"
+                                        >
                                             <Clock class="size-3" />
-                                            <span>{{ formatRelativeTime(user.last_activity) }}</span>
+                                            <span>{{
+                                                formatRelativeTime(
+                                                    user.last_activity,
+                                                )
+                                            }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -389,7 +598,10 @@ function formatCents(cents: number): string {
                     <Card class="w-full max-w-md">
                         <CardHeader>
                             <CardTitle>Welcome</CardTitle>
-                            <CardDescription>You are logged in. Use the sidebar to navigate.</CardDescription>
+                            <CardDescription
+                                >You are logged in. Use the sidebar to
+                                navigate.</CardDescription
+                            >
                         </CardHeader>
                     </Card>
                 </div>

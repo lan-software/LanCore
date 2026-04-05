@@ -6,8 +6,17 @@ use App\Domain\Program\Models\Program;
 use App\Domain\Program\Models\TimeSlot;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-PRG-001
+ * @see docs/mil-std-498/SRS.md PRG-F-001, PRG-F-006
+ */
 class UpdateProgram
 {
+    public function __construct(
+        private readonly CreateTimeSlot $createTimeSlot,
+        private readonly UpdateTimeSlot $updateTimeSlot,
+    ) {}
+
     /**
      * @param  array{name?: string, description?: string|null, visibility?: string, sort_order?: int}  $attributes
      * @param  array<int, array{id?: int, name: string, description?: string|null, starts_at: string, visibility: string, sponsor_ids?: int[]}>  $timeSlots
@@ -29,30 +38,22 @@ class UpdateProgram
                 $slotSponsorIds = $slot['sponsor_ids'] ?? null;
 
                 if (isset($slot['id'])) {
-                    TimeSlot::where('id', $slot['id'])->update([
+                    $existingSlot = TimeSlot::find($slot['id']);
+                    $this->updateTimeSlot->execute($existingSlot, [
                         'name' => $slot['name'],
                         'description' => $slot['description'] ?? null,
                         'starts_at' => $slot['starts_at'],
                         'visibility' => $slot['visibility'],
                         'sort_order' => $index,
-                    ]);
-
-                    if ($slotSponsorIds !== null) {
-                        TimeSlot::find($slot['id'])->sponsors()->sync($slotSponsorIds);
-                    }
+                    ], $slotSponsorIds);
                 } else {
-                    $newSlot = TimeSlot::create([
-                        'program_id' => $program->id,
+                    $this->createTimeSlot->execute($program, [
                         'name' => $slot['name'],
                         'description' => $slot['description'] ?? null,
                         'starts_at' => $slot['starts_at'],
                         'visibility' => $slot['visibility'],
                         'sort_order' => $index,
-                    ]);
-
-                    if ($slotSponsorIds !== null) {
-                        $newSlot->sponsors()->sync($slotSponsorIds);
-                    }
+                    ], $slotSponsorIds);
                 }
             }
         });

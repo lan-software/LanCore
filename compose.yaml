@@ -1,5 +1,6 @@
 services:
     laravel.test:
+        container_name: 'lancore.test'
         build:
             context: ./vendor/laravel/sail/runtimes/8.5
             dockerfile: Dockerfile
@@ -21,6 +22,7 @@ services:
             - '.:/var/www/html'
         networks:
             - sail
+            - lanparty
         depends_on:
             - pgsql
             - redis
@@ -88,12 +90,14 @@ services:
             retries: 3
             timeout: 5s
     mailpit:
+        container_name: infrastructure-mailpit
         image: 'axllent/mailpit:latest'
         ports:
             - '${FORWARD_MAILPIT_PORT:-1025}:1025'
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8021}:8025'
         networks:
             - sail
+            - infrastructure
     garage:
         image: 'dxflrs/garage:v2.2.0'
         restart: unless-stopped
@@ -163,6 +167,11 @@ services:
 networks:
     sail:
         driver: bridge
+    lanparty:
+        external: true
+    infrastructure:
+        external: true
+
 volumes:
     sail-pgsql:
         driver: local

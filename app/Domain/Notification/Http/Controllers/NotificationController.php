@@ -2,12 +2,17 @@
 
 namespace App\Domain\Notification\Http\Controllers;
 
+use App\Domain\Notification\Events\NotificationsArchived;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-NTF-004
+ * @see docs/mil-std-498/SRS.md NTF-F-005
+ */
 class NotificationController extends Controller
 {
     public function index(Request $request): Response
@@ -68,6 +73,8 @@ class NotificationController extends Controller
             ->notifications()
             ->whereNull('archived_at')
             ->update(['archived_at' => now()]);
+
+        NotificationsArchived::dispatch($request->user());
 
         return back();
     }

@@ -2,7 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Contracts\PermissionEnum;
+use App\Domain\Event\Enums\Permission as EventPermission;
 use App\Domain\Event\Models\Event;
+use App\Domain\Integration\Models\IntegrationApp;
+use App\Domain\Program\Enums\Permission as ProgramPermission;
+use App\Domain\Seating\Enums\Permission as SeatingPermission;
+use App\Domain\Ticketing\Enums\Permission as TicketingPermission;
 use App\Enums\RoleName;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -56,11 +62,28 @@ class HandleInertiaRequests extends Middleware
                     ])->values()->all(),
                 ]) : null,
             ],
+            'permissions' => $user ? array_map(
+                fn (PermissionEnum $p) => $p->value,
+                $user->allPermissions(),
+            ) : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'sidebarFavorites' => $user ? ($user->sidebar_favorites ?? []) : [],
             'eventContext' => fn () => $this->eventContext($request),
             'vapidPublicKey' => config('services.vapid.public_key'),
+            'integrationLinks' => fn () => IntegrationApp::query()
+                ->where('is_active', true)
+                ->whereNotNull('nav_url')
+                ->whereNotNull('nav_label')
+                ->get(['nav_url', 'nav_icon', 'nav_label'])
+                ->map(fn (IntegrationApp $app) => [
+                    'url' => $app->nav_url,
+                    'icon' => $app->nav_icon,
+                    'label' => $app->nav_label,
+                ])
+                ->values()
+                ->all(),
             'pushSubscribed' => fn () => $user ? $user->pushSubscriptions()->exists() : false,
+            'pushPromptDismissed' => fn () => (bool) $request->session()->get('push_prompt_dismissed', false),
             'unreadNotificationsCount' => fn () => $user ? $user->unreadNotifications()->whereNull('archived_at')->count() : 0,
             'recentNotifications' => fn () => $user
                 ? $user->notifications()->whereNull('archived_at')->latest()->limit(5)->get()->map(fn ($n) => [
@@ -81,7 +104,12 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
 
-        if (! $user || ! $user->isAdmin()) {
+        if (! $user || ! $user->hasAnyPermission(
+            EventPermission::ManageEvents,
+            ProgramPermission::ManagePrograms,
+            TicketingPermission::ManageTicketing,
+            SeatingPermission::ManageSeatPlans,
+        )) {
             return null;
         }
 

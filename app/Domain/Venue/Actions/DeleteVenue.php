@@ -6,6 +6,9 @@ use App\Domain\Venue\Models\Venue;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @see docs/mil-std-498/SRS.md EVT-F-006
+ */
 class DeleteVenue
 {
     public function execute(Venue $venue): void

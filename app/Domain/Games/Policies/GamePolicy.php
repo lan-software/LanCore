@@ -2,45 +2,37 @@
 
 namespace App\Domain\Games\Policies;
 
+use App\Domain\Games\Enums\Permission;
 use App\Domain\Games\Models\Game;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SRS.md SEC-007, GAM-F-003
+ */
 class GamePolicy
 {
-    /**
-     * Superadmin bypasses all authorization checks.
-     */
-    public function before(User $user): ?bool
-    {
-        if ($user->isSuperadmin()) {
-            return true;
-        }
-
-        return null;
-    }
-
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageGames);
     }
 
     public function view(User $user, Game $game): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageGames);
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageGames);
     }
 
     public function update(User $user, Game $game): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageGames);
     }
 
     public function delete(User $user, Game $game): bool
     {
-        return $user->isAdmin();
+        return $user->hasPermission(Permission::ManageGames);
     }
 }

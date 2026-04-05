@@ -3,14 +3,21 @@
 namespace App\Domain\Shop\Actions;
 
 use App\Domain\Shop\Enums\OrderStatus;
+use App\Domain\Shop\Enums\PaymentMethod;
+use App\Domain\Shop\Events\TicketPurchased;
 use App\Domain\Shop\Models\Order;
 use App\Domain\Ticketing\Enums\TicketStatus;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketType;
+use App\Models\User;
 use App\Notifications\OrderConfirmationNotification;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-004
+ * @see docs/mil-std-498/SRS.md SHP-F-006, SHP-F-012
+ */
 class FulfillOrder
 {
     public function execute(Order $order): void
@@ -20,9 +27,14 @@ class FulfillOrder
         }
 
         DB::transaction(function () use ($order): void {
-            $order->update([
-                'status' => OrderStatus::Completed,
-            ]);
+            $updateData = ['status' => OrderStatus::Completed];
+
+            // Stripe orders are paid when fulfilled; on-site orders need admin confirmation.
+            if ($order->payment_method !== PaymentMethod::OnSite) {
+                $updateData['paid_at'] = now();
+            }
+
+            $order->update($updateData);
 
             $items = json_decode($order->metadata ?? '[]', true);
 
@@ -45,8 +57,10 @@ class FulfillOrder
                         'order_id' => $order->id,
                         'owner_id' => $order->user_id,
                         'manager_id' => $order->user_id,
-                        'user_id' => $order->user_id,
                     ]);
+
+                    // Assign the purchaser as the first user on the ticket
+                    $ticket->users()->attach($order->user_id);
 
                     foreach ($item['addon_ids'] ?? [] as $addonId) {
                         $addon = Addon::findOrFail($addonId);
@@ -63,6 +77,11 @@ class FulfillOrder
             }
         });
 
-        $order->user->notify(new OrderConfirmationNotification($order));
+        /** @var User $user */
+        $user = $order->user;
+
+        $user->notify(new OrderConfirmationNotification($order));
+
+        TicketPurchased::dispatch($user, $order);
     }
 }

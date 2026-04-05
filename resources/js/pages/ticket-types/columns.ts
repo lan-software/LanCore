@@ -1,14 +1,21 @@
-import { h } from 'vue'
-import type { ColumnDef } from '@tanstack/vue-table'
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { router } from '@inertiajs/vue3'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import TicketTypeAuditController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketTypeAuditController'
-import type { TicketType } from '@/types/domain'
+import { router } from '@inertiajs/vue3';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
+import { h } from 'vue';
+import TicketTypeAuditController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketTypeAuditController';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import type { TicketType } from '@/types/domain';
 
 function sortableHeader(label: string) {
-    return ({ column }: { column: { getToggleSortingHandler: () => ((e: Event) => void) | undefined; getIsSorted: () => false | 'asc' | 'desc' } }) =>
+    return ({
+        column,
+    }: {
+        column: {
+            getToggleSortingHandler: () => ((e: Event) => void) | undefined;
+            getIsSorted: () => false | 'asc' | 'desc';
+        };
+    }) =>
         h(
             Button,
             {
@@ -25,7 +32,7 @@ function sortableHeader(label: string) {
                       ? h(ArrowDown, { class: 'ml-1.5 size-3.5' })
                       : h(ArrowUpDown, { class: 'ml-1.5 size-3.5 opacity-40' }),
             ],
-        )
+        );
 }
 
 function formatDate(dateString: string): string {
@@ -35,24 +42,35 @@ function formatDate(dateString: string): string {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-    })
+    });
 }
 
 export const columns: ColumnDef<TicketType>[] = [
     {
         accessorKey: 'name',
         header: sortableHeader('Name'),
-        cell: ({ row }) => h('span', { class: 'font-medium' }, row.getValue('name')),
+        cell: ({ row }) =>
+            h('span', { class: 'font-medium' }, row.getValue('name')),
     },
     {
         accessorKey: 'price',
         header: sortableHeader('Price'),
-        cell: ({ row }) => h('span', { class: 'text-muted-foreground' }, (Number(row.getValue('price')) / 100).toFixed(2) + ' €'),
+        cell: ({ row }) =>
+            h(
+                'span',
+                { class: 'text-muted-foreground' },
+                (Number(row.getValue('price')) / 100).toFixed(2) + ' €',
+            ),
     },
     {
         accessorKey: 'quota',
         header: sortableHeader('Quota'),
-        cell: ({ row }) => h('span', { class: 'text-muted-foreground' }, String(row.getValue('quota'))),
+        cell: ({ row }) =>
+            h(
+                'span',
+                { class: 'text-muted-foreground' },
+                String(row.getValue('quota')),
+            ),
     },
     {
         id: 'event',
@@ -77,7 +95,12 @@ export const columns: ColumnDef<TicketType>[] = [
     {
         accessorKey: 'created_at',
         header: sortableHeader('Created'),
-        cell: ({ row }) => h('span', { class: 'text-muted-foreground' }, formatDate(row.getValue('created_at') as string)),
+        cell: ({ row }) =>
+            h(
+                'span',
+                { class: 'text-muted-foreground' },
+                formatDate(row.getValue('created_at') as string),
+            ),
     },
     {
         id: 'actions',
@@ -89,11 +112,13 @@ export const columns: ColumnDef<TicketType>[] = [
                     variant: 'outline',
                     size: 'sm',
                     onClick: (e: MouseEvent) => {
-                        e.stopPropagation()
-                        router.visit(TicketTypeAuditController(row.original.id).url)
+                        e.stopPropagation();
+                        router.visit(
+                            TicketTypeAuditController(row.original.id).url,
+                        );
                     },
                 },
                 () => 'Audit',
             ),
     },
-]
+];

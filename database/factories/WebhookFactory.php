@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Domain\Integration\Models\IntegrationApp;
 use App\Domain\Webhook\Enums\WebhookEvent;
 use App\Domain\Webhook\Models\Webhook;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -25,6 +26,7 @@ class WebhookFactory extends Factory
             'secret' => fake()->optional()->sha256(),
             'description' => fake()->optional()->sentence(),
             'is_active' => true,
+            'integration_app_id' => null,
         ];
     }
 
@@ -32,6 +34,13 @@ class WebhookFactory extends Factory
     {
         return $this->state(fn (array $attributes): array => [
             'is_active' => false,
+        ]);
+    }
+
+    public function managedBy(IntegrationApp $app): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'integration_app_id' => $app->id,
         ]);
     }
 }

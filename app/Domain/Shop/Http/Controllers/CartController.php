@@ -8,6 +8,7 @@ use App\Domain\Shop\Actions\FulfillOrder;
 use App\Domain\Shop\Contracts\Purchasable;
 use App\Domain\Shop\Enums\OrderStatus;
 use App\Domain\Shop\Enums\PaymentMethod;
+use App\Domain\Shop\Events\CartItemAdded;
 use App\Domain\Shop\Models\Cart;
 use App\Domain\Shop\Models\CartItem;
 use App\Domain\Shop\Models\CheckoutAcknowledgement;
@@ -27,6 +28,10 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-001, CAP-SHP-008
+ * @see docs/mil-std-498/SRS.md SHP-F-001, SHP-F-002, SHP-F-011, SHP-F-013
+ */
 class CartController extends Controller
 {
     public function __construct(
@@ -92,6 +97,13 @@ class CartController extends Controller
 
     public function addItem(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        if (! $user->hasCompleteProfile()) {
+            return redirect()->route('profile.edit')
+                ->withErrors(['profile' => 'Please complete your address and contact information before adding items to your cart.']);
+        }
+
         $request->validate([
             'purchasable_type' => ['required', 'string', 'in:ticket_type,addon'],
             'purchasable_id' => ['required', 'integer'],
@@ -99,7 +111,6 @@ class CartController extends Controller
             'event_id' => ['required', 'integer', 'exists:events,id'],
         ]);
 
-        $user = $request->user();
         $cart = Cart::forUser($user);
 
         // Ensure the cart is scoped to one event
@@ -138,6 +149,8 @@ class CartController extends Controller
                 'quantity' => $quantity,
             ]);
         }
+
+        CartItemAdded::dispatch($user);
 
         return back();
     }
@@ -294,7 +307,7 @@ class CartController extends Controller
         ]);
     }
 
-    public function checkout(Request $request): RedirectResponse
+    public function checkout(Request $request): RedirectResponse|\Symfony\Component\HttpFoundation\Response
     {
         $request->validate([
             'payment_method' => ['required', 'string', Rule::enum(PaymentMethod::class)],
@@ -347,6 +360,12 @@ class CartController extends Controller
             // Clear the cart after successful order creation
             $cart->items()->delete();
             $cart->update(['event_id' => null, 'voucher_code' => null]);
+
+            // External payment providers (Stripe) require Inertia::location()
+            // to perform a full page redirect instead of an XHR visit
+            if ($result->requiresRedirect) {
+                return Inertia::location($result->toResponse()->getTargetUrl());
+            }
 
             return $result->toResponse();
         } catch (\InvalidArgumentException $e) {

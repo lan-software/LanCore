@@ -10,6 +10,10 @@ use App\Notifications\ProgramTimeSlotNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-PRG-004
+ * @see docs/mil-std-498/SRS.md PRG-F-004
+ */
 class SendProgramTimeSlotNotification implements ShouldQueue
 {
     public function handle(ProgramTimeSlotApproaching $event): void

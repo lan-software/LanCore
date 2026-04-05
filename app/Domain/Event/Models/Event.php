@@ -23,6 +23,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-EVT-001, CAP-EVT-002, CAP-EVT-005
+ * @see docs/mil-std-498/SRS.md EVT-F-002, EVT-F-004, EVT-F-010
+ */
 #[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_images', 'status', 'venue_id', 'primary_program_id', 'seat_capacity'])]
 class Event extends Model implements AuditableContract
 {
@@ -101,16 +105,17 @@ class Event extends Model implements AuditableContract
             return PHP_INT_MAX;
         }
 
-        $ticketSeats = $this->tickets()
+        $ticketSeats = (int) $this->tickets()
             ->join('ticket_types', 'tickets.ticket_type_id', '=', 'ticket_types.id')
-            ->sum('ticket_types.seats_per_ticket');
+            ->selectRaw('COALESCE(SUM(ticket_types.seats_per_user * ticket_types.max_users_per_ticket), 0) as total')
+            ->value('total');
 
         $addonSeats = $this->tickets()
             ->join('ticket_ticket_addon', 'tickets.id', '=', 'ticket_ticket_addon.ticket_id')
             ->join('ticket_addons', 'ticket_ticket_addon.ticket_addon_id', '=', 'ticket_addons.id')
             ->sum('ticket_addons.seats_consumed');
 
-        return max(0, $this->seat_capacity - (int) $ticketSeats - (int) $addonSeats);
+        return max(0, $this->seat_capacity - $ticketSeats - (int) $addonSeats);
     }
 
     /**

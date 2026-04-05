@@ -16,6 +16,10 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-PRG-001, CAP-PRG-002
+ * @see docs/mil-std-498/SRS.md PRG-F-001, PRG-F-002, PRG-F-003
+ */
 class ProgramController extends Controller
 {
     public function __construct(
@@ -31,7 +35,7 @@ class ProgramController extends Controller
         $query = Program::with('event');
 
         if ($search = $request->validated('search')) {
-            $query->where('name', 'ilike', "%{$search}%");
+            $query->whereLike('name', "%{$search}%");
         }
 
         $eventId = $request->validated('event_id') ?? $request->session()->get('selected_event_id');

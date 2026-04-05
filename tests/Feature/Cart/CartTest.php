@@ -48,8 +48,29 @@ it('shows empty cart state', function () {
         );
 });
 
-it('can add a ticket type to the cart', function () {
+it('redirects to profile when user has incomplete profile', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
+    $event = Event::factory()->create(['status' => 'published']);
+    $ticketType = TicketType::factory()->create([
+        'event_id' => $event->id,
+        'price' => 2500,
+        'purchase_from' => now()->subDay(),
+        'purchase_until' => now()->addDay(),
+    ]);
+
+    $this->actingAs($user)
+        ->post('/cart/items', [
+            'purchasable_type' => 'ticket_type',
+            'purchasable_id' => $ticketType->id,
+            'quantity' => 1,
+            'event_id' => $event->id,
+        ])
+        ->assertRedirect(route('profile.edit'))
+        ->assertSessionHasErrors('profile');
+});
+
+it('can add a ticket type to the cart', function () {
+    $user = User::factory()->withCompleteProfile()->withRole(RoleName::User)->create();
     $event = Event::factory()->create(['status' => 'published']);
     $ticketType = TicketType::factory()->create([
         'event_id' => $event->id,
@@ -76,7 +97,7 @@ it('can add a ticket type to the cart', function () {
 });
 
 it('can add an addon to the cart', function () {
-    $user = User::factory()->withRole(RoleName::User)->create();
+    $user = User::factory()->withCompleteProfile()->withRole(RoleName::User)->create();
     $event = Event::factory()->create(['status' => 'published']);
     $addon = Addon::factory()->create([
         'event_id' => $event->id,
@@ -98,7 +119,7 @@ it('can add an addon to the cart', function () {
 });
 
 it('increments quantity when adding the same item again', function () {
-    $user = User::factory()->withRole(RoleName::User)->create();
+    $user = User::factory()->withCompleteProfile()->withRole(RoleName::User)->create();
     $event = Event::factory()->create(['status' => 'published']);
     $ticketType = TicketType::factory()->create([
         'event_id' => $event->id,
@@ -296,7 +317,7 @@ it('can remove a voucher from the cart', function () {
 });
 
 it('prevents adding unavailable items to the cart', function () {
-    $user = User::factory()->withRole(RoleName::User)->create();
+    $user = User::factory()->withCompleteProfile()->withRole(RoleName::User)->create();
     $event = Event::factory()->create(['status' => 'published']);
     $ticketType = TicketType::factory()->create([
         'event_id' => $event->id,
@@ -445,6 +466,7 @@ it('can checkout with on-site payment method', function () {
     expect($order->status)->toBe(OrderStatus::Completed);
     expect($order->payment_method->value)->toBe('on_site');
     expect($order->total)->toBe(2500);
+    expect($order->paid_at)->toBeNull();
     expect($order->tickets)->toHaveCount(1);
 });
 

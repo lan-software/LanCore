@@ -5,8 +5,8 @@ import {
     archivedIndex as notificationsArchive,
     index as notificationsIndex,
 } from '@/actions/App/Domain/Notification/Http/Controllers/NotificationController';
-import { Button } from '@/components/ui/button';
 import Heading from '@/components/Heading.vue';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { AppNotification, BreadcrumbItem } from '@/types';
 
@@ -36,17 +36,25 @@ function notificationLabel(notification: AppNotification): string {
     if (type === 'NewsPublishedNotification' && data.title) {
         return `New article: ${data.title}`;
     }
+
     if (type === 'AnnouncementPublishedNotification' && data.title) {
         return `Announcement: ${data.title}`;
     }
+
     if (type === 'ProgramTimeSlotNotification') {
         return 'Upcoming program time slot';
     }
+
     if (type === 'UserAttributesUpdatedNotification') {
         return 'Your profile was updated';
     }
+
     if (type === 'UserRolesChangedNotification') {
         return 'Your roles have changed';
+    }
+
+    if (type === 'AchievementEarnedNotification' && data.name) {
+        return `Achievement unlocked: ${data.name}`;
     }
 
     return 'New notification';
@@ -56,8 +64,15 @@ function notificationDescription(notification: AppNotification): string | null {
     const type = notification.type.split('\\').pop() ?? '';
     const data = notification.data;
 
-    if (type === 'UserAttributesUpdatedNotification' && Array.isArray(data.changed_attributes)) {
+    if (
+        type === 'UserAttributesUpdatedNotification' &&
+        Array.isArray(data.changed_attributes)
+    ) {
         return `Updated fields: ${(data.changed_attributes as string[]).join(', ')}`;
+    }
+
+    if (type === 'AchievementEarnedNotification' && data.description) {
+        return data.description as string;
     }
 
     return null;
@@ -84,7 +99,10 @@ function goToPage(page: number) {
 
         <div class="px-4 py-6 md:px-6">
             <div class="flex flex-wrap items-start justify-between gap-4">
-                <Heading title="Archived Notifications" description="Notifications you have previously archived." />
+                <Heading
+                    title="Archived Notifications"
+                    description="Notifications you have previously archived."
+                />
                 <Button variant="outline" size="sm" as-child>
                     <Link :href="notificationsIndex().url">
                         <ChevronLeft class="mr-2 size-4" />
@@ -107,21 +125,31 @@ function goToPage(page: number) {
                         <p class="text-sm leading-snug text-muted-foreground">
                             {{ notificationLabel(notification) }}
                         </p>
-                        <p v-if="notificationDescription(notification)" class="mt-0.5 text-sm text-muted-foreground">
+                        <p
+                            v-if="notificationDescription(notification)"
+                            class="mt-0.5 text-sm text-muted-foreground"
+                        >
                             {{ notificationDescription(notification) }}
                         </p>
                         <p class="mt-1 text-xs text-muted-foreground">
                             {{ formatDate(notification.created_at) }}
-                            <span v-if="notification.read_at" class="ml-2">· Read</span>
+                            <span v-if="notification.read_at" class="ml-2"
+                                >· Read</span
+                            >
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div v-else class="mt-16 flex flex-col items-center gap-3 text-center text-muted-foreground">
+            <div
+                v-else
+                class="mt-16 flex flex-col items-center gap-3 text-center text-muted-foreground"
+            >
                 <Archive class="size-12 opacity-30" />
                 <p class="text-lg font-medium">No archived notifications</p>
-                <p class="text-sm">Notifications you archive will appear here.</p>
+                <p class="text-sm">
+                    Notifications you archive will appear here.
+                </p>
             </div>
 
             <!-- Pagination -->
@@ -130,7 +158,8 @@ function goToPage(page: number) {
                 class="mt-6 flex items-center justify-between text-sm text-muted-foreground"
             >
                 <p>
-                    Showing {{ notifications.from }}–{{ notifications.to }} of {{ notifications.total }}
+                    Showing {{ notifications.from }}–{{ notifications.to }} of
+                    {{ notifications.total }}
                 </p>
                 <div class="flex gap-2">
                     <Button
@@ -144,7 +173,10 @@ function goToPage(page: number) {
                     <Button
                         variant="outline"
                         size="sm"
-                        :disabled="notifications.current_page === notifications.last_page"
+                        :disabled="
+                            notifications.current_page ===
+                            notifications.last_page
+                        "
                         @click="goToPage(notifications.current_page + 1)"
                     >
                         Next

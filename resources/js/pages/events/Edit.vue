@@ -1,41 +1,55 @@
 <script setup lang="ts">
-import EventController from '@/actions/App/Domain/Event/Http/Controllers/EventController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as eventsRoute } from '@/routes/events'
-import type { BreadcrumbItem } from '@/types'
-import type { Event } from '@/types/domain'
-import { Form, Head, Link, router } from '@inertiajs/vue3'
-import { ImagePlus, Trash2, X } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { Form, Head, Link, router } from '@inertiajs/vue3';
+import { ImagePlus, Trash2, X } from 'lucide-vue-next';
+import { ref } from 'vue';
+import EventController from '@/actions/App/Domain/Event/Http/Controllers/EventController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as eventsRoute } from '@/routes/events';
+import type { BreadcrumbItem } from '@/types';
+import type { Event } from '@/types/domain';
 
 const props = defineProps<{
-    event: Event
-    venues: { id: number; name: string }[]
-}>()
+    event: Event;
+    venues: { id: number; name: string }[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: eventsRoute().url },
     { title: 'Events', href: eventsRoute().url },
     { title: props.event.name, href: EventController.edit(props.event.id).url },
-]
+];
 
 function formatDateTimeLocal(dateString: string): string {
-    const date = new Date(dateString)
-    const pad = (n: number) => String(n).padStart(2, '0')
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+    const date = new Date(dateString);
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-const showDeleteDialog = ref(false)
-const publishErrors = ref<Record<string, string>>({})
+const showDeleteDialog = ref(false);
+const publishErrors = ref<Record<string, string>>({});
 
 // Existing images still retained (not yet marked for removal).
 const retainedImages = ref<{ path: string; url: string }[]>(
@@ -43,60 +57,71 @@ const retainedImages = ref<{ path: string; url: string }[]>(
         path,
         url: props.event.banner_image_urls[i] ?? '',
     })),
-)
-const imagesToRemove = ref<string[]>([])
+);
+const imagesToRemove = ref<string[]>([]);
 
 function markImageForRemoval(index: number) {
-    const img = retainedImages.value[index]
-    imagesToRemove.value.push(img.path)
-    retainedImages.value.splice(index, 1)
+    const img = retainedImages.value[index];
+    imagesToRemove.value.push(img.path);
+    retainedImages.value.splice(index, 1);
 }
 
 // Newly picked images (not yet uploaded).
-const newBannerSlots = ref<{ id: number; preview: string }[]>([])
-let nextSlotId = 0
+const newBannerSlots = ref<{ id: number; preview: string }[]>([]);
+let nextSlotId = 0;
 
 function addBannerSlot() {
-    newBannerSlots.value.push({ id: nextSlotId++, preview: '' })
+    newBannerSlots.value.push({ id: nextSlotId++, preview: '' });
 }
 
 function onNewBannerSelected(index: number, event: globalThis.Event) {
-    const file = (event.target as HTMLInputElement).files?.[0]
+    const file = (event.target as HTMLInputElement).files?.[0];
+
     if (file) {
-        newBannerSlots.value[index].preview = URL.createObjectURL(file)
+        newBannerSlots.value[index].preview = URL.createObjectURL(file);
     }
 }
 
 function removeNewBannerSlot(index: number) {
-    const preview = newBannerSlots.value[index].preview
+    const preview = newBannerSlots.value[index].preview;
+
     if (preview) {
-        URL.revokeObjectURL(preview)
+        URL.revokeObjectURL(preview);
     }
-    newBannerSlots.value.splice(index, 1)
+
+    newBannerSlots.value.splice(index, 1);
 }
 
 function executeDelete() {
     router.delete(EventController.destroy(props.event.id).url, {
         onSuccess: () => {
-            showDeleteDialog.value = false
+            showDeleteDialog.value = false;
         },
-    })
+    });
 }
 
 function publishEvent() {
-    publishErrors.value = {}
-    router.patch(EventController.publish(props.event.id).url, {}, {
-        preserveScroll: true,
-        onError: (errors) => {
-            publishErrors.value = errors
+    publishErrors.value = {};
+    router.patch(
+        EventController.publish(props.event.id).url,
+        {},
+        {
+            preserveScroll: true,
+            onError: (errors) => {
+                publishErrors.value = errors;
+            },
         },
-    })
+    );
 }
 
 function unpublishEvent() {
-    router.patch(EventController.unpublish(props.event.id).url, {}, {
-        preserveScroll: true,
-    })
+    router.patch(
+        EventController.unpublish(props.event.id).url,
+        {},
+        {
+            preserveScroll: true,
+        },
+    );
 }
 </script>
 
@@ -104,7 +129,7 @@ function unpublishEvent() {
     <Head :title="`Edit ${event.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <!-- Back link -->
             <div>
                 <Link
@@ -117,7 +142,11 @@ function unpublishEvent() {
 
             <!-- Status & Publishing -->
             <div class="flex items-center gap-4">
-                <Badge :variant="event.status === 'published' ? 'default' : 'secondary'">
+                <Badge
+                    :variant="
+                        event.status === 'published' ? 'default' : 'secondary'
+                    "
+                >
                     {{ event.status === 'published' ? 'Published' : 'Draft' }}
                 </Badge>
                 <Button
@@ -137,7 +166,11 @@ function unpublishEvent() {
                 </Button>
             </div>
             <div v-if="Object.keys(publishErrors).length > 0" class="space-y-1">
-                <p v-for="(message, field) in publishErrors" :key="field" class="text-sm text-destructive">
+                <p
+                    v-for="(message, field) in publishErrors"
+                    :key="field"
+                    class="text-sm text-destructive"
+                >
                     {{ message }}
                 </p>
             </div>
@@ -195,7 +228,9 @@ function unpublishEvent() {
                                 id="start_date"
                                 type="datetime-local"
                                 name="start_date"
-                                :default-value="formatDateTimeLocal(event.start_date)"
+                                :default-value="
+                                    formatDateTimeLocal(event.start_date)
+                                "
                                 required
                             />
                             <InputError :message="errors.start_date" />
@@ -207,7 +242,9 @@ function unpublishEvent() {
                                 id="end_date"
                                 type="datetime-local"
                                 name="end_date"
-                                :default-value="formatDateTimeLocal(event.end_date)"
+                                :default-value="
+                                    formatDateTimeLocal(event.end_date)
+                                "
                                 required
                             />
                             <InputError :message="errors.end_date" />
@@ -227,10 +264,16 @@ function unpublishEvent() {
                         <Label for="venue_id">Venue</Label>
                         <Select
                             name="venue_id"
-                            :default-value="event.venue_id ? String(event.venue_id) : undefined"
+                            :default-value="
+                                event.venue_id
+                                    ? String(event.venue_id)
+                                    : undefined
+                            "
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a venue (optional)" />
+                                <SelectValue
+                                    placeholder="Select a venue (optional)"
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem
@@ -251,7 +294,11 @@ function unpublishEvent() {
                             id="seat_capacity"
                             type="number"
                             name="seat_capacity"
-                            :default-value="event.seat_capacity ? String(event.seat_capacity) : ''"
+                            :default-value="
+                                event.seat_capacity
+                                    ? String(event.seat_capacity)
+                                    : ''
+                            "
                             min="0"
                             placeholder="Leave empty for unlimited"
                         />
@@ -294,10 +341,7 @@ function unpublishEvent() {
                         </div>
 
                         <!-- Hidden inputs for images to remove -->
-                        <template
-                            v-for="path in imagesToRemove"
-                            :key="path"
-                        >
+                        <template v-for="path in imagesToRemove" :key="path">
                             <input
                                 type="hidden"
                                 name="banner_images_to_remove[]"
@@ -317,7 +361,11 @@ function unpublishEvent() {
                                     class="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground"
                                 >
                                     <ImagePlus class="size-4" />
-                                    {{ slot.preview ? 'Replace' : 'Choose Image' }}
+                                    {{
+                                        slot.preview
+                                            ? 'Replace'
+                                            : 'Choose Image'
+                                    }}
                                 </label>
                                 <input
                                     :id="`new_banner_${slot.id}`"
@@ -357,17 +405,23 @@ function unpublishEvent() {
                             Add Image
                         </Button>
 
-                        <p class="text-xs text-muted-foreground">Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB each.</p>
-                        <InputError :message="(errors as Record<string, string>)['banner_images']" />
+                        <p class="text-xs text-muted-foreground">
+                            Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB
+                            each.
+                        </p>
+                        <InputError
+                            :message="
+                                (errors as Record<string, string>)[
+                                    'banner_images'
+                                ]
+                            "
+                        />
                     </div>
                 </div>
 
                 <!-- Actions -->
                 <div class="flex items-center gap-4">
-                    <Button
-                        type="submit"
-                        :disabled="processing"
-                    >
+                    <Button type="submit" :disabled="processing">
                         {{ processing ? 'Saving…' : 'Save Changes' }}
                     </Button>
 
@@ -384,8 +438,12 @@ function unpublishEvent() {
             <div class="border-t pt-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-sm font-medium text-destructive">Delete Event</h3>
-                        <p class="text-sm text-muted-foreground">Permanently delete this event.</p>
+                        <h3 class="text-sm font-medium text-destructive">
+                            Delete Event
+                        </h3>
+                        <p class="text-sm text-muted-foreground">
+                            Permanently delete this event.
+                        </p>
                     </div>
                     <Button
                         variant="destructive"
@@ -405,20 +463,15 @@ function unpublishEvent() {
                 <DialogHeader>
                     <DialogTitle>Delete {{ event.name }}?</DialogTitle>
                     <DialogDescription>
-                        This action cannot be undone. The event will be permanently removed.
+                        This action cannot be undone. The event will be
+                        permanently removed.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button
-                        variant="outline"
-                        @click="showDeleteDialog = false"
-                    >
+                    <Button variant="outline" @click="showDeleteDialog = false">
                         Cancel
                     </Button>
-                    <Button
-                        variant="destructive"
-                        @click="executeDelete"
-                    >
+                    <Button variant="destructive" @click="executeDelete">
                         Delete
                     </Button>
                 </DialogFooter>

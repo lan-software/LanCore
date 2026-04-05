@@ -20,7 +20,7 @@ it('seeds demo data successfully', function () {
     $this->artisan('db:seed-demo')
         ->assertSuccessful();
 
-    expect(Role::count())->toBe(4)
+    expect(Role::count())->toBe(5)
         ->and(User::count())->toBeGreaterThanOrEqual(24)
         ->and(Venue::count())->toBe(3)
         ->and(Game::count())->toBe(5)
@@ -51,5 +51,5 @@ it('also runs the default database seeder', function () {
     $this->artisan('db:seed-demo')
         ->assertSuccessful();
 
-    expect(Role::count())->toBe(4);
+    expect(Role::count())->toBe(5);
 });

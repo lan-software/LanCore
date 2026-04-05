@@ -3,17 +3,23 @@
 namespace App\Domain\News\Http\Controllers;
 
 use App\Domain\News\Enums\ArticleVisibility;
+use App\Domain\News\Events\NewsArticleRead;
 use App\Domain\News\Models\NewsArticle;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-NWS-001
+ * @see docs/mil-std-498/SRS.md NWS-F-001, NWS-F-006
+ */
 class PublicNewsController extends Controller
 {
-    public function show(string $slug): Response
+    public function show(Request $request, string $slug): Response
     {
-        $article = NewsArticle::where('slug', $slug)
+        $article = NewsArticle::query()->where('slug', $slug)
             ->where('visibility', ArticleVisibility::Public)
             ->where('is_archived', false)
             ->whereNotNull('published_at')
@@ -36,6 +42,10 @@ class PublicNewsController extends Controller
 
                 return $commentData;
             })->all();
+        }
+
+        if ($request->user()) {
+            NewsArticleRead::dispatch($request->user(), $article);
         }
 
         $articleData = $article->toArray();

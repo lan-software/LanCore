@@ -91,6 +91,12 @@ describe('AddRequestId middleware', function () {
 
 describe('TrackHttpMetrics middleware', function () {
     beforeEach(function () {
+        try {
+            Redis::ping();
+        } catch (RedisException) {
+            $this->markTestSkipped('Redis is not available');
+        }
+
         Redis::del('metrics:http:requests', 'metrics:http:duration_ms');
 
         // Register a lightweight web route so TrackHttpMetrics runs.

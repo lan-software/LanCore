@@ -105,7 +105,8 @@ const notificationRows: NotificationRow[] = [
     },
     {
         label: 'Announcements',
-        description: 'When organizers publish a new announcement (emergency announcements always send)',
+        description:
+            'When organizers publish a new announcement (emergency announcements always send)',
         mailKey: 'mail_on_announcements',
         pushKey: 'push_on_announcements',
     },
@@ -133,33 +134,73 @@ const notificationRows: NotificationRow[] = [
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b bg-muted/50">
-                                    <th class="px-4 py-3 text-left font-medium">Notification</th>
-                                    <th class="w-20 px-4 py-3 text-center font-medium">Email</th>
-                                                    <th class="w-20 px-4 py-3 text-center font-medium">Push</th>
+                                    <th class="px-4 py-3 text-left font-medium">
+                                        Notification
+                                    </th>
+                                    <th
+                                        class="w-20 px-4 py-3 text-center font-medium"
+                                    >
+                                        Email
+                                    </th>
+                                    <th
+                                        class="w-20 px-4 py-3 text-center font-medium"
+                                    >
+                                        Push
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="row in notificationRows" :key="row.mailKey" class="border-b last:border-b-0">
+                                <tr
+                                    v-for="row in notificationRows"
+                                    :key="row.mailKey"
+                                    class="border-b last:border-b-0"
+                                >
                                     <td class="px-4 py-3">
-                                        <div class="font-medium">{{ row.label }}</div>
-                                        <p class="text-xs text-muted-foreground">{{ row.description }}</p>
+                                        <div class="font-medium">
+                                            {{ row.label }}
+                                        </div>
+                                        <p
+                                            class="text-xs text-muted-foreground"
+                                        >
+                                            {{ row.description }}
+                                        </p>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <div class="flex justify-center">
                                             <Checkbox
                                                 :id="row.mailKey"
-                                                :model-value="form[row.mailKey] as boolean"
-                                                @update:model-value="(val: boolean) => { form[row.mailKey] = val; }"
+                                                :model-value="
+                                                    form[row.mailKey] as boolean
+                                                "
+                                                @update:model-value="
+                                                    (val: boolean) => {
+                                                        form[row.mailKey] = val;
+                                                    }
+                                                "
                                             />
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-center">
-                                        <div class="flex justify-center" :class="{ 'opacity-40': !page.props.pushSubscribed }">
+                                        <div
+                                            class="flex justify-center"
+                                            :class="{
+                                                'opacity-40':
+                                                    !page.props.pushSubscribed,
+                                            }"
+                                        >
                                             <Checkbox
                                                 :id="row.pushKey"
-                                                :model-value="form[row.pushKey] as boolean"
-                                                :disabled="!page.props.pushSubscribed"
-                                                @update:model-value="(val: boolean) => { form[row.pushKey] = val; }"
+                                                :model-value="
+                                                    form[row.pushKey] as boolean
+                                                "
+                                                :disabled="
+                                                    !page.props.pushSubscribed
+                                                "
+                                                @update:model-value="
+                                                    (val: boolean) => {
+                                                        form[row.pushKey] = val;
+                                                    }
+                                                "
                                             />
                                         </div>
                                     </td>
@@ -170,7 +211,11 @@ const notificationRows: NotificationRow[] = [
 
                     <div class="flex items-center gap-4">
                         <Button type="submit" :disabled="form.processing">
-                            {{ form.processing ? 'Saving...' : 'Save preferences' }}
+                            {{
+                                form.processing
+                                    ? 'Saving...'
+                                    : 'Save preferences'
+                            }}
                         </Button>
 
                         <Transition
@@ -179,7 +224,12 @@ const notificationRows: NotificationRow[] = [
                             leave-active-class="transition ease-in-out"
                             leave-to-class="opacity-0"
                         >
-                            <p v-if="form.recentlySuccessful" class="text-sm text-muted-foreground">Saved.</p>
+                            <p
+                                v-if="form.recentlySuccessful"
+                                class="text-sm text-muted-foreground"
+                            >
+                                Saved.
+                            </p>
                         </Transition>
                     </div>
                 </form>

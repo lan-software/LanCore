@@ -1,56 +1,74 @@
 <script setup lang="ts">
-import { FlexRender, getCoreRowModel, useVueTable, type SortingState } from '@tanstack/vue-table'
-import { router, Head, Link } from '@inertiajs/vue3'
-import { edit } from '@/actions/App/Domain/Program/Http/Controllers/ProgramController'
-import { create as programCreate } from '@/actions/App/Domain/Program/Http/Controllers/ProgramController'
-import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useDataTable, type DataTableFilters } from '@/composables/useDataTable'
-import { index as programsRoute } from '@/routes/programs'
-import type { BreadcrumbItem } from '@/types'
-import type { Program } from '@/types/domain'
-import { columns } from './columns'
+import { router, Head, Link } from '@inertiajs/vue3';
+import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table';
+import type { SortingState } from '@tanstack/vue-table';
+import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
+import { edit } from '@/actions/App/Domain/Program/Http/Controllers/ProgramController';
+import { create as programCreate } from '@/actions/App/Domain/Program/Http/Controllers/ProgramController';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableEmpty,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { useDataTable } from '@/composables/useDataTable';
+import type { DataTableFilters } from '@/composables/useDataTable';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as programsRoute } from '@/routes/programs';
+import type { BreadcrumbItem } from '@/types';
+import type { Program } from '@/types/domain';
+import { columns } from './columns';
 
 interface PaginatedPrograms {
-    data: Program[]
-    current_page: number
-    last_page: number
-    per_page: number
-    total: number
-    from: number | null
-    to: number | null
+    data: Program[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
 }
 
 const props = defineProps<{
-    programs: PaginatedPrograms
-    filters: DataTableFilters
-    events: { id: number; name: string }[]
-}>()
+    programs: PaginatedPrograms;
+    filters: DataTableFilters;
+    events: { id: number; name: string }[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: programsRoute().url },
     { title: 'Programs', href: programsRoute().url },
-]
+];
 
 const { filters, setSearch, toggleSort, setFilter, setPage, setPerPage } =
-    useDataTable(() => programsRoute().url, props.filters)
+    useDataTable(() => programsRoute().url, props.filters);
 
-const searchValue = ref(props.filters.search ?? '')
+const searchValue = ref(props.filters.search ?? '');
 
-watch(searchValue, (val) => setSearch(val))
+watch(searchValue, (val) => setSearch(val));
 
 const sorting = computed<SortingState>(() =>
-    props.filters.sort ? [{ id: props.filters.sort, desc: props.filters.direction === 'desc' }] : [],
-)
+    props.filters.sort
+        ? [{ id: props.filters.sort, desc: props.filters.direction === 'desc' }]
+        : [],
+);
 
 const table = useVueTable({
     get data() {
-        return props.programs.data
+        return props.programs.data;
     },
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -61,27 +79,23 @@ const table = useVueTable({
     getRowId: (row) => String(row.id),
     state: {
         get sorting() {
-            return sorting.value
+            return sorting.value;
         },
     },
     onSortingChange: (updater) => {
-        const newSorting = typeof updater === 'function' ? updater(sorting.value) : updater
+        const newSorting =
+            typeof updater === 'function' ? updater(sorting.value) : updater;
+
         if (newSorting.length > 0) {
-            toggleSort(newSorting[0].id)
+            toggleSort(newSorting[0].id);
         } else {
-            setFilter('sort', undefined)
-            setFilter('direction', undefined)
+            setFilter('sort', undefined);
+            setFilter('direction', undefined);
         }
     },
-})
+});
 
-const visibilityOptions = [
-    { value: 'public', label: 'Public' },
-    { value: 'internal', label: 'Internal' },
-    { value: 'private', label: 'Private' },
-]
-
-const perPageOptions = [10, 20, 50, 100]
+const perPageOptions = [10, 20, 50, 100];
 </script>
 
 <template>
@@ -92,8 +106,10 @@ const perPageOptions = [10, 20, 50, 100]
             <!-- Toolbar -->
             <div class="flex flex-wrap items-center gap-2">
                 <!-- Search -->
-                <div class="relative flex-1 min-w-48">
-                    <Search class="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                <div class="relative min-w-48 flex-1">
+                    <Search
+                        class="absolute top-2.5 left-2.5 size-4 text-muted-foreground"
+                    />
                     <Input
                         v-model="searchValue"
                         placeholder="Search programs…"
@@ -104,7 +120,13 @@ const perPageOptions = [10, 20, 50, 100]
                 <!-- Event filter -->
                 <Select
                     :model-value="(filters.event_id as string) ?? 'all'"
-                    @update:model-value="(val) => setFilter('event_id', val === 'all' ? undefined : val)"
+                    @update:model-value="
+                        (val) =>
+                            setFilter(
+                                'event_id',
+                                val === 'all' ? undefined : val,
+                            )
+                    "
                 >
                     <SelectTrigger class="w-44">
                         <SelectValue placeholder="All events" />
@@ -150,7 +172,9 @@ const perPageOptions = [10, 20, 50, 100]
             </div>
 
             <!-- Table -->
-            <div class="rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+            <div
+                class="rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
+            >
                 <Table>
                     <TableHeader>
                         <TableRow
@@ -190,20 +214,20 @@ const perPageOptions = [10, 20, 50, 100]
                                 </TableCell>
                             </TableRow>
                         </template>
-                        <TableEmpty
-                            v-else
-                            :colspan="columns.length"
-                        >
+                        <TableEmpty v-else :colspan="columns.length">
                             No programs found.
                         </TableEmpty>
                     </TableBody>
                 </Table>
 
                 <!-- Pagination -->
-                <div class="flex items-center justify-between border-t border-sidebar-border/70 px-4 py-3 dark:border-sidebar-border">
+                <div
+                    class="flex items-center justify-between border-t border-sidebar-border/70 px-4 py-3 dark:border-sidebar-border"
+                >
                     <span class="text-xs text-muted-foreground">
                         <template v-if="programs.from && programs.to">
-                            Showing {{ programs.from }}–{{ programs.to }} of {{ programs.total }} programs
+                            Showing {{ programs.from }}–{{ programs.to }} of
+                            {{ programs.total }} programs
                         </template>
                         <template v-else>
                             {{ programs.total }} programs
@@ -220,13 +244,16 @@ const perPageOptions = [10, 20, 50, 100]
                             <ChevronLeft class="size-4" />
                         </Button>
                         <span class="px-2 text-xs text-muted-foreground">
-                            {{ programs.current_page }} / {{ programs.last_page }}
+                            {{ programs.current_page }} /
+                            {{ programs.last_page }}
                         </span>
                         <Button
                             variant="outline"
                             size="sm"
                             class="size-8 p-0"
-                            :disabled="programs.current_page >= programs.last_page"
+                            :disabled="
+                                programs.current_page >= programs.last_page
+                            "
                             @click="setPage(programs.current_page + 1)"
                         >
                             <ChevronRight class="size-4" />

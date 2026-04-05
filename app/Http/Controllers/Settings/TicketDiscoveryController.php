@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Domain\Notification\Events\TicketDiscoverySettingsUpdated;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,6 +37,8 @@ class TicketDiscoveryController extends Controller
             'is_ticket_discoverable' => $validated['is_ticket_discoverable'],
             'ticket_discovery_allowlist' => $allowlist,
         ]);
+
+        TicketDiscoverySettingsUpdated::dispatch($request->user());
 
         return back();
     }

@@ -17,6 +17,8 @@ use Symfony\Component\HttpFoundation\Response;
  * anywhere during the lifecycle (logging processors, exception handlers, …).
  *
  * Octane-safe: stores state on the request object, not in a singleton.
+ *
+ * @see docs/mil-std-498/SRS.md SEC-010
  */
 class AddRequestId
 {

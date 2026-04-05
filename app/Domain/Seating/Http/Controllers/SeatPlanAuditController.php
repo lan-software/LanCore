@@ -7,6 +7,10 @@ use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SET-004
+ * @see docs/mil-std-498/SRS.md SET-F-005
+ */
 class SeatPlanAuditController extends Controller
 {
     public function __invoke(SeatPlan $seatPlan): Response

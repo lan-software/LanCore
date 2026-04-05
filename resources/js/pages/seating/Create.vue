@@ -1,34 +1,40 @@
 <script setup lang="ts">
-import SeatPlanController from '@/actions/App/Domain/Seating/Http/Controllers/SeatPlanController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as seatPlansRoute } from '@/routes/seat-plans'
-import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
+import { Form, Head, Link } from '@inertiajs/vue3';
+import SeatPlanController from '@/actions/App/Domain/Seating/Http/Controllers/SeatPlanController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as seatPlansRoute } from '@/routes/seat-plans';
+import type { BreadcrumbItem } from '@/types';
 
-const props = defineProps<{
-    events: { id: number; name: string }[]
-    selectedEventId?: number | null
-}>()
+defineProps<{
+    events: { id: number; name: string }[];
+    selectedEventId?: number | null;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: seatPlansRoute().url },
     { title: 'Seat Plans', href: seatPlansRoute().url },
     { title: 'Create', href: SeatPlanController.create().url },
-]
+];
 </script>
 
 <template>
     <Head title="Create Seat Plan" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <!-- Back link -->
             <div>
                 <Link
@@ -65,7 +71,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                     <div class="grid gap-2">
                         <Label for="event_id">Event</Label>
-                        <Select name="event_id" :default-value="selectedEventId ? String(selectedEventId) : undefined">
+                        <Select
+                            name="event_id"
+                            :default-value="
+                                selectedEventId
+                                    ? String(selectedEventId)
+                                    : undefined
+                            "
+                        >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select an event" />
                             </SelectTrigger>
@@ -89,20 +102,22 @@ const breadcrumbs: BreadcrumbItem[] = [
                             name="data"
                             rows="12"
                             class="font-mono text-sm"
-                            :default-value="JSON.stringify({ blocks: [] }, null, 2)"
+                            :default-value="
+                                JSON.stringify({ blocks: [] }, null, 2)
+                            "
                             placeholder='{"blocks": []}'
                         />
-                        <p class="text-xs text-muted-foreground">JSON describing blocks, seats, and labels for the seat plan.</p>
+                        <p class="text-xs text-muted-foreground">
+                            JSON describing blocks, seats, and labels for the
+                            seat plan.
+                        </p>
                         <InputError :message="errors.data" />
                     </div>
                 </div>
 
                 <!-- Submit -->
                 <div class="flex items-center gap-4">
-                    <Button
-                        type="submit"
-                        :disabled="processing"
-                    >
+                    <Button type="submit" :disabled="processing">
                         {{ processing ? 'Creating…' : 'Create Seat Plan' }}
                     </Button>
                 </div>

@@ -7,6 +7,9 @@ use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SRS.md TKT-F-012
+ */
 class TicketCategoryAuditController extends Controller
 {
     public function __invoke(TicketCategory $ticketCategory): Response

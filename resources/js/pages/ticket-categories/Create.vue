@@ -1,34 +1,40 @@
 <script setup lang="ts">
-import TicketCategoryController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketCategoryController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as ticketCategoriesIndex } from '@/routes/ticket-categories'
-import type { BreadcrumbItem } from '@/types'
-import { Form, Head, Link } from '@inertiajs/vue3'
+import { Form, Head, Link } from '@inertiajs/vue3';
+import TicketCategoryController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketCategoryController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as ticketCategoriesIndex } from '@/routes/ticket-categories';
+import type { BreadcrumbItem } from '@/types';
 
 defineProps<{
-    events: { id: number; name: string }[]
-    selectedEventId?: number | null
-}>()
+    events: { id: number; name: string }[];
+    selectedEventId?: number | null;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: ticketCategoriesIndex().url },
     { title: 'Ticket Categories', href: ticketCategoriesIndex().url },
     { title: 'Create', href: TicketCategoryController.create().url },
-]
+];
 </script>
 
 <template>
     <Head title="Create Ticket Category" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <!-- Back link -->
             <div>
                 <Link
@@ -107,9 +113,18 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                     <div class="grid gap-2">
                         <Label for="event_id">Event</Label>
-                        <Select name="event_id" :default-value="selectedEventId ? String(selectedEventId) : undefined">
+                        <Select
+                            name="event_id"
+                            :default-value="
+                                selectedEventId
+                                    ? String(selectedEventId)
+                                    : undefined
+                            "
+                        >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select an event (optional)" />
+                                <SelectValue
+                                    placeholder="Select an event (optional)"
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem
@@ -127,10 +142,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                 <!-- Actions -->
                 <div class="flex items-center gap-4">
-                    <Button
-                        type="submit"
-                        :disabled="processing"
-                    >
+                    <Button type="submit" :disabled="processing">
                         {{ processing ? 'Creating…' : 'Create Category' }}
                     </Button>
                 </div>

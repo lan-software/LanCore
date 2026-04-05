@@ -8,6 +8,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @see docs/mil-std-498/SRS.md NTF-F-004
+ */
 class ProgramSubscriptionController extends Controller
 {
     public function toggle(Request $request, Program $program): JsonResponse

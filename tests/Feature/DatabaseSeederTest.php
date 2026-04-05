@@ -9,7 +9,7 @@ it('only seeds roles and no test data', function () {
     $this->artisan('db:seed')
         ->assertSuccessful();
 
-    expect(Role::count())->toBe(4)
+    expect(Role::count())->toBe(5)
         ->and(User::count())->toBe(0)
         ->and(Event::count())->toBe(0)
         ->and(Venue::count())->toBe(0);

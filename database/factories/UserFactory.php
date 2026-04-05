@@ -61,6 +61,20 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the user has a complete profile (address + contact).
+     */
+    public function withCompleteProfile(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'phone' => fake()->phoneNumber(),
+            'street' => fake()->streetAddress(),
+            'city' => fake()->city(),
+            'zip_code' => fake()->postcode(),
+            'country' => fake()->countryCode(),
+        ]);
+    }
+
+    /**
      * Attach a role after user creation.
      */
     public function withRole(RoleName $role): static

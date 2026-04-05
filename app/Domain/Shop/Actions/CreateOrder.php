@@ -16,6 +16,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-001, CAP-SHP-004
+ * @see docs/mil-std-498/SRS.md SHP-F-006, SHP-F-012
+ */
 class CreateOrder
 {
     public function __construct(
@@ -139,7 +143,7 @@ class CreateOrder
 
         foreach ($items as $item) {
             $ticketType = TicketType::findOrFail($item['ticket_type_id']);
-            $totalSeatsNeeded += $ticketType->seats_per_ticket * $item['quantity'];
+            $totalSeatsNeeded += $ticketType->totalSeatsConsumed() * $item['quantity'];
 
             foreach ($item['addon_ids'] ?? [] as $addonId) {
                 $addon = Addon::findOrFail($addonId);

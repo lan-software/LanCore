@@ -7,6 +7,9 @@ use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SRS.md PRG-F-007
+ */
 class ProgramAuditController extends Controller
 {
     public function __invoke(Program $program): Response

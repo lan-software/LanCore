@@ -1,13 +1,20 @@
-import { h } from 'vue'
-import type { ColumnDef } from '@tanstack/vue-table'
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next'
-import { router } from '@inertiajs/vue3'
-import { Button } from '@/components/ui/button'
-import TicketCategoryAuditController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketCategoryAuditController'
-import type { TicketCategory } from '@/types/domain'
+import { router } from '@inertiajs/vue3';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
+import { h } from 'vue';
+import TicketCategoryAuditController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketCategoryAuditController';
+import { Button } from '@/components/ui/button';
+import type { TicketCategory } from '@/types/domain';
 
 function sortableHeader(label: string) {
-    return ({ column }: { column: { getToggleSortingHandler: () => ((e: Event) => void) | undefined; getIsSorted: () => false | 'asc' | 'desc' } }) =>
+    return ({
+        column,
+    }: {
+        column: {
+            getToggleSortingHandler: () => ((e: Event) => void) | undefined;
+            getIsSorted: () => false | 'asc' | 'desc';
+        };
+    }) =>
         h(
             Button,
             {
@@ -24,7 +31,7 @@ function sortableHeader(label: string) {
                       ? h(ArrowDown, { class: 'ml-1.5 size-3.5' })
                       : h(ArrowUpDown, { class: 'ml-1.5 size-3.5 opacity-40' }),
             ],
-        )
+        );
 }
 
 function formatDate(dateString: string): string {
@@ -34,29 +41,45 @@ function formatDate(dateString: string): string {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-    })
+    });
 }
 
 export const columns: ColumnDef<TicketCategory>[] = [
     {
         accessorKey: 'name',
         header: sortableHeader('Name'),
-        cell: ({ row }) => h('span', { class: 'font-medium' }, row.getValue('name')),
+        cell: ({ row }) =>
+            h('span', { class: 'font-medium' }, row.getValue('name')),
     },
     {
         accessorKey: 'sort_order',
         header: sortableHeader('Sort Order'),
-        cell: ({ row }) => h('span', { class: 'text-muted-foreground' }, String(row.getValue('sort_order'))),
+        cell: ({ row }) =>
+            h(
+                'span',
+                { class: 'text-muted-foreground' },
+                String(row.getValue('sort_order')),
+            ),
     },
     {
         id: 'ticket_types_count',
         header: () => h('span', 'Ticket Types'),
-        cell: ({ row }) => h('span', { class: 'text-muted-foreground' }, String(row.original.ticket_types_count ?? 0)),
+        cell: ({ row }) =>
+            h(
+                'span',
+                { class: 'text-muted-foreground' },
+                String(row.original.ticket_types_count ?? 0),
+            ),
     },
     {
         accessorKey: 'created_at',
         header: sortableHeader('Created'),
-        cell: ({ row }) => h('span', { class: 'text-muted-foreground' }, formatDate(row.getValue('created_at') as string)),
+        cell: ({ row }) =>
+            h(
+                'span',
+                { class: 'text-muted-foreground' },
+                formatDate(row.getValue('created_at') as string),
+            ),
     },
     {
         id: 'actions',
@@ -68,11 +91,13 @@ export const columns: ColumnDef<TicketCategory>[] = [
                     variant: 'outline',
                     size: 'sm',
                     onClick: (e: MouseEvent) => {
-                        e.stopPropagation()
-                        router.visit(TicketCategoryAuditController(row.original.id).url)
+                        e.stopPropagation();
+                        router.visit(
+                            TicketCategoryAuditController(row.original.id).url,
+                        );
                     },
                 },
                 () => 'Audit',
             ),
     },
-]
+];

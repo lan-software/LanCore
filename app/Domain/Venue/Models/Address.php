@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @see docs/mil-std-498/SRS.md EVT-F-006
+ */
 #[Fillable(['street', 'city', 'zip_code', 'state', 'country'])]
 class Address extends Model
 {

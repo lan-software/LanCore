@@ -9,6 +9,10 @@ use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Models\Order;
 use App\Models\User;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-003
+ * @see docs/mil-std-498/SRS.md SHP-F-004
+ */
 class OnSitePaymentProvider implements PaymentProvider
 {
     public function __construct(
@@ -28,7 +32,8 @@ class OnSitePaymentProvider implements PaymentProvider
     public function initiate(User $user, Order $order): PaymentResult
     {
         // On-site orders are fulfilled immediately — tickets are issued,
-        // but payment happens physically at the event.
+        // but payment is collected at the venue. paid_at remains null
+        // until an admin confirms payment was received.
         $this->fulfillOrder->execute($order);
 
         return PaymentResult::completed(

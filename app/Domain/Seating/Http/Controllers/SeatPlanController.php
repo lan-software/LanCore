@@ -15,6 +15,10 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SET-001, CAP-SET-003
+ * @see docs/mil-std-498/SRS.md SET-F-001, SET-F-003, SET-F-004
+ */
 class SeatPlanController extends Controller
 {
     public function __construct(
@@ -36,8 +40,8 @@ class SeatPlanController extends Controller
 
         if ($search = $request->validated('search')) {
             $query->where(function ($q) use ($search): void {
-                $q->where('name', 'ilike', "%{$search}%")
-                    ->orWhereHas('event', fn ($eq) => $eq->where('name', 'ilike', "%{$search}%"));
+                $q->whereLike('name', "%{$search}%")
+                    ->orWhereHas('event', fn ($eq) => $eq->whereLike('name', "%{$search}%"));
             });
         }
 

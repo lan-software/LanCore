@@ -1,35 +1,35 @@
 <script setup lang="ts">
-import GameController from '@/actions/App/Domain/Games/Http/Controllers/GameController'
-import GameModeController from '@/actions/App/Domain/Games/Http/Controllers/GameModeController'
-import Heading from '@/components/Heading.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { index as gamesRoute } from '@/routes/games'
-import type { BreadcrumbItem } from '@/types'
-import type { Game } from '@/types/domain'
-import { Form, Head, Link } from '@inertiajs/vue3'
+import { Form, Head, Link } from '@inertiajs/vue3';
+import GameController from '@/actions/App/Domain/Games/Http/Controllers/GameController';
+import GameModeController from '@/actions/App/Domain/Games/Http/Controllers/GameModeController';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { index as gamesRoute } from '@/routes/games';
+import type { BreadcrumbItem } from '@/types';
+import type { Game } from '@/types/domain';
 
 const props = defineProps<{
-    game: Game
-}>()
+    game: Game;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: gamesRoute().url },
     { title: 'Games', href: gamesRoute().url },
     { title: props.game.name, href: GameController.edit(props.game.id).url },
     { title: 'New Mode', href: GameModeController.create(props.game.id).url },
-]
+];
 </script>
 
 <template>
     <Head :title="`${game.name} – New Mode`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-8 p-4 max-w-2xl">
+        <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <!-- Back link -->
             <div>
                 <Link
@@ -107,17 +107,17 @@ const breadcrumbs: BreadcrumbItem[] = [
                             rows="6"
                             placeholder='e.g. {"map_pool": ["dust2", "mirage", "inferno"]}'
                         />
-                        <p class="text-xs text-muted-foreground">Optional JSON for extra configuration like map pools, rulesets, etc.</p>
+                        <p class="text-xs text-muted-foreground">
+                            Optional JSON for extra configuration like map
+                            pools, rulesets, etc.
+                        </p>
                         <InputError :message="errors.parameters" />
                     </div>
                 </div>
 
                 <!-- Submit -->
                 <div class="flex items-center gap-4">
-                    <Button
-                        type="submit"
-                        :disabled="processing"
-                    >
+                    <Button type="submit" :disabled="processing">
                         {{ processing ? 'Creating…' : 'Create Mode' }}
                     </Button>
                 </div>

@@ -10,6 +10,11 @@ use App\Domain\Shop\Models\OrderLine;
 use App\Models\User;
 use Laravel\Cashier\Cashier;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-SHP-002
+ * @see docs/mil-std-498/SRS.md SHP-F-003
+ * @see docs/mil-std-498/IRS.md IF-STRIPE-001, IF-STRIPE-002
+ */
 class StripePaymentProvider implements PaymentProvider
 {
     public function method(): PaymentMethod

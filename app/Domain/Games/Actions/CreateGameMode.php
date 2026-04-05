@@ -5,6 +5,10 @@ namespace App\Domain\Games\Actions;
 use App\Domain\Games\Models\Game;
 use App\Domain\Games\Models\GameMode;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-GAM-002
+ * @see docs/mil-std-498/SRS.md GAM-F-002
+ */
 class CreateGameMode
 {
     /**

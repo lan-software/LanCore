@@ -15,6 +15,10 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * @see docs/mil-std-498/SSS.md CAP-TKT-002
+ * @see docs/mil-std-498/SRS.md TKT-F-002, TKT-F-008
+ */
 class TicketCategoryController extends Controller
 {
     public function __construct(
@@ -35,7 +39,7 @@ class TicketCategoryController extends Controller
         }
 
         if ($search = $request->validated('search')) {
-            $query->where('name', 'ilike', "%{$search}%");
+            $query->whereLike('name', "%{$search}%");
         }
 
         $sortColumn = $request->validated('sort') ?? 'sort_order';
