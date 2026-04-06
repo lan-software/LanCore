@@ -222,6 +222,54 @@ class EntranceController extends Controller
         return response()->json(['results' => $results]);
     }
 
+    public function stats(): JsonResponse
+    {
+        $currency = strtoupper((string) config('cashier.currency', 'eur'));
+
+        $totalScans = EntranceAuditLog::where('action', 'validate')->count();
+        $checkedIn = EntranceAuditLog::where('action', 'checkin')
+            ->orWhere('action', 'verify_checkin')
+            ->count();
+        $denied = EntranceAuditLog::where('action', 'validate')
+            ->whereIn('decision', ['invalid', 'already_checked_in', 'denied_by_policy'])
+            ->count();
+        $overrides = EntranceAuditLog::where('action', 'override')->count();
+        $payments = EntranceAuditLog::where('action', 'confirm_payment')->count();
+
+        // Payment totals from orders confirmed via entrance
+        $paymentTotal = \App\Domain\Shop\Models\Order::query()
+            ->whereNotNull('confirmed_by')
+            ->sum('total');
+
+        // Avg check-in time: time between validate and checkin for same validation_id
+        $avgTime = 0;
+
+        // Scans per hour (last 24 hours)
+        $scansPerHour = EntranceAuditLog::where('action', 'validate')
+            ->where('created_at', '>=', now()->subHours(24))
+            ->selectRaw("to_char(created_at, 'HH24') as hour, count(*) as count")
+            ->groupBy('hour')
+            ->orderBy('hour')
+            ->get()
+            ->map(fn ($row) => [
+                'hour' => $row->hour.':00',
+                'count' => (int) $row->count,
+            ])
+            ->all();
+
+        return response()->json([
+            'total_scans' => $totalScans,
+            'checked_in' => $checkedIn,
+            'denied' => $denied,
+            'overrides' => $overrides,
+            'payments_collected' => $payments,
+            'payment_total' => number_format($paymentTotal / 100, 2, '.', ''),
+            'payment_currency' => $currency,
+            'avg_checkin_time_ms' => $avgTime,
+            'scans_per_hour' => $scansPerHour,
+        ]);
+    }
+
     // --- Private helpers ---
 
     private function findActiveTicket(string $token): ?Ticket

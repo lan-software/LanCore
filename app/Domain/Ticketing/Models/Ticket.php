@@ -37,10 +37,18 @@ class Ticket extends Model
         });
     }
 
+    /**
+     * Generate an opaque, non-guessable ticket token for QR code scanning.
+     *
+     * Format: "TKT-" prefix + 32 hex chars (128 bits of cryptographic entropy).
+     * Compact enough for fast QR scanning, non-guessable, contains no PII.
+     *
+     * @see LanEntrance/docs/LanCore-API-Contract.md Section 1 — QR code token format
+     */
     public static function generateValidationId(): string
     {
         do {
-            $id = strtoupper(Str::random(16));
+            $id = 'TKT-'.bin2hex(random_bytes(16));
         } while (self::where('validation_id', $id)->exists());
 
         return $id;
