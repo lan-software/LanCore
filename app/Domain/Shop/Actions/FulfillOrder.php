@@ -8,6 +8,7 @@ use App\Domain\Shop\Events\TicketPurchased;
 use App\Domain\Shop\Jobs\GenerateReceiptPdf;
 use App\Domain\Shop\Models\Order;
 use App\Domain\Ticketing\Enums\TicketStatus;
+use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketType;
@@ -70,6 +71,8 @@ class FulfillOrder
                             'order_id' => $order->id,
                         ]);
                     }
+
+                    GenerateTicketPdf::dispatch($ticket->id);
                 }
             }
 

@@ -14,6 +14,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // My Tickets
     Route::get('tickets', [TicketController::class, 'index'])->name('tickets.index');
     Route::get('tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
+    Route::get('tickets/{ticket}/download', [TicketController::class, 'download'])->name('tickets.download');
+    Route::get('tickets/{ticket}/qr', [TicketController::class, 'qrCode'])->name('tickets.qr');
     Route::patch('tickets/{ticket}/manager', [TicketController::class, 'updateManager'])->name('tickets.update-manager');
     Route::post('tickets/{ticket}/users', [TicketController::class, 'addUser'])->name('tickets.add-user');
     Route::delete('tickets/{ticket}/users/{user}', [TicketController::class, 'removeUser'])->name('tickets.remove-user');

@@ -20,7 +20,7 @@ class EntranceController extends Controller
         private readonly UpdateTicketAssignments $ticketAssignments,
     ) {}
 
-    public function validate(Request $request): JsonResponse
+    public function validateTicket(Request $request): JsonResponse
     {
         $request->validate([
             'token' => ['required', 'string', 'max:512'],
@@ -69,7 +69,7 @@ class EntranceController extends Controller
             return response()->json(['error' => 'invalid', 'message' => 'Ticket not found or not valid for check-in.'], 404);
         }
 
-        $this->ticketAssignments->checkIn($ticket);
+        $this->ticketAssignments->checkIn($ticket, (int) $request->input('operator_id'));
         $ticket->refresh();
 
         $auditId = $this->audit($request, 'checkin', $ticket, 'valid');
@@ -93,7 +93,7 @@ class EntranceController extends Controller
             return response()->json(['error' => 'invalid', 'message' => 'Ticket not found or not valid for check-in.'], 404);
         }
 
-        $this->ticketAssignments->checkIn($ticket);
+        $this->ticketAssignments->checkIn($ticket, (int) $request->input('operator_id'));
         $ticket->refresh();
 
         $auditId = $this->audit($request, 'verify_checkin', $ticket, 'valid');
@@ -150,7 +150,7 @@ class EntranceController extends Controller
 
         GenerateReceiptPdf::dispatch($order->id);
 
-        $this->ticketAssignments->checkIn($ticket);
+        $this->ticketAssignments->checkIn($ticket, (int) $request->input('operator_id'));
         $ticket->refresh();
 
         $auditId = $this->audit($request, 'confirm_payment', $ticket, 'valid');
@@ -178,7 +178,7 @@ class EntranceController extends Controller
             return response()->json(['error' => 'invalid', 'message' => 'Ticket not found or not valid for override.'], 404);
         }
 
-        $this->ticketAssignments->checkIn($ticket);
+        $this->ticketAssignments->checkIn($ticket, (int) $request->input('operator_id'));
         $ticket->refresh();
 
         $auditId = $this->audit($request, 'override', $ticket, 'valid', $request->input('reason'));

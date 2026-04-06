@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { Armchair, Eye, EyeOff, X } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { Armchair, Download, Eye, EyeOff, QrCode, X } from 'lucide-vue-next';
+import { ref, onMounted } from 'vue';
 import TicketController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketController';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,8 @@ const props = defineProps<{
 }>();
 
 const showValidationId = ref(false);
+const showQrCode = ref(false);
+const qrSvg = ref('');
 
 function formatPrice(cents: number): string {
     return (cents / 100).toFixed(2) + ' €';
@@ -174,6 +176,41 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                         >
                     </button>
                 </div>
+            </div>
+
+            <!-- QR Code & Download -->
+            <div class="flex items-center gap-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    class="gap-1.5"
+                    @click="showQrCode = !showQrCode"
+                >
+                    <QrCode class="size-4" />
+                    {{ showQrCode ? 'Hide QR Code' : 'Show QR Code' }}
+                </Button>
+                <a :href="`/tickets/${ticket.id}/download`">
+                    <Button variant="outline" size="sm" class="gap-1.5">
+                        <Download class="size-4" />
+                        PDF
+                    </Button>
+                </a>
+            </div>
+
+            <!-- QR Code Display -->
+            <div
+                v-if="showQrCode"
+                class="flex flex-col items-center gap-3 rounded-lg border bg-white p-6 dark:bg-gray-950"
+            >
+                <img
+                    :src="`/tickets/${ticket.id}/qr`"
+                    :alt="`QR Code for ticket ${ticket.validation_id}`"
+                    class="size-48"
+                />
+                <p class="font-mono text-sm font-bold tracking-[0.2em] text-foreground">
+                    {{ ticket.validation_id }}
+                </p>
+                <p class="text-xs text-muted-foreground">Scan at entrance</p>
             </div>
 
             <!-- Manager Assignment -->

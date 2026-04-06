@@ -4,9 +4,11 @@ namespace App\Domain\Ticketing\Actions;
 
 use App\Domain\Ticketing\Enums\CheckInMode;
 use App\Domain\Ticketing\Enums\TicketStatus;
+use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 /**
@@ -17,16 +19,24 @@ class UpdateTicketAssignments
 {
     public function updateManager(Ticket $ticket, ?User $manager, int $performedBy): Ticket
     {
-        return DB::transaction(function () use ($ticket, $manager): Ticket {
+        $this->ensureNotCheckedIn($ticket);
+
+        $result = DB::transaction(function () use ($ticket, $manager): Ticket {
             $ticket->update(['manager_id' => $manager?->id]);
 
             return $ticket;
         });
+
+        GenerateTicketPdf::dispatch($ticket->id);
+
+        return $result;
     }
 
     public function addUser(Ticket $ticket, User $user, int $performedBy): Ticket
     {
-        return DB::transaction(function () use ($ticket, $user): Ticket {
+        $this->ensureNotCheckedIn($ticket);
+
+        $result = DB::transaction(function () use ($ticket, $user): Ticket {
             $maxUsers = $ticket->ticketType->max_users_per_ticket;
             $currentCount = $ticket->users()->count();
 
@@ -38,15 +48,25 @@ class UpdateTicketAssignments
 
             return $ticket->fresh();
         });
+
+        GenerateTicketPdf::dispatch($ticket->id);
+
+        return $result;
     }
 
     public function removeUser(Ticket $ticket, User $user, int $performedBy): Ticket
     {
-        return DB::transaction(function () use ($ticket, $user): Ticket {
+        $this->ensureNotCheckedIn($ticket);
+
+        $result = DB::transaction(function () use ($ticket, $user): Ticket {
             $ticket->users()->detach($user->id);
 
             return $ticket->fresh();
         });
+
+        GenerateTicketPdf::dispatch($ticket->id);
+
+        return $result;
     }
 
     public function checkIn(Ticket $ticket, int $performedBy, ?int $userId = null): Ticket
@@ -97,5 +117,14 @@ class UpdateTicketAssignments
 
             return $ticket->fresh();
         });
+    }
+
+    private function ensureNotCheckedIn(Ticket $ticket): void
+    {
+        if ($ticket->checked_in_at !== null) {
+            throw ValidationException::withMessages([
+                'ticket' => 'This ticket has been checked in and can no longer be modified.',
+            ]);
+        }
     }
 }

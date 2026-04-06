@@ -27,11 +27,19 @@ class TicketPolicy
 
     public function updateManager(User $user, Ticket $ticket): bool
     {
+        if ($ticket->checked_in_at !== null) {
+            return false;
+        }
+
         return $user->hasPermission(Permission::ManageTicketing) || $ticket->owner_id === $user->id;
     }
 
     public function updateUser(User $user, Ticket $ticket): bool
     {
+        if ($ticket->checked_in_at !== null) {
+            return false;
+        }
+
         return $user->hasPermission(Permission::ManageTicketing)
             || $ticket->owner_id === $user->id
             || $ticket->manager_id === $user->id;

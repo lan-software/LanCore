@@ -11,8 +11,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @see docs/mil-std-498/SSS.md CAP-TKT-005, CAP-TKT-006
@@ -136,5 +143,38 @@ class TicketController extends Controller
         $this->updateTicketAssignments->removeUser($ticket, $user, $request->user()->id);
 
         return back();
+    }
+
+    public function download(Ticket $ticket): StreamedResponse
+    {
+        $this->authorize('view', $ticket);
+
+        $path = "tickets/{$ticket->id}.pdf";
+
+        if (! Storage::disk('local')->exists($path)) {
+            // Generate synchronously so the user gets the PDF immediately
+            $job = new GenerateTicketPdf($ticket->id);
+            $job->handle();
+        }
+
+        return Storage::disk('local')->download($path, "ticket-{$ticket->validation_id}.pdf");
+    }
+
+    public function qrCode(Ticket $ticket): HttpResponse
+    {
+        $this->authorize('view', $ticket);
+
+        $renderer = new ImageRenderer(
+            new RendererStyle(400),
+            new SvgImageBackEnd(),
+        );
+
+        $writer = new Writer($renderer);
+        $svg = $writer->writeString($ticket->validation_id);
+
+        return response($svg, 200, [
+            'Content-Type' => 'image/svg+xml',
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
     }
 }
