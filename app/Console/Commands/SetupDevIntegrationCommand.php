@@ -54,7 +54,7 @@ class SetupDevIntegrationCommand extends Command
 
         $config = self::APPS[$slug];
         $baseUrl = "http://localhost:{$config['port']}";
-        $internalUrl = "http://{$slug}.test";
+        $appInternalUrl = "http://{$slug}.test";
 
         $existing = IntegrationApp::where('slug', $slug)->first();
 
@@ -77,7 +77,7 @@ class SetupDevIntegrationCommand extends Command
                 'allowed_scopes' => $config['scopes'],
                 'is_active' => true,
                 'send_role_updates' => $config['roles_webhook'],
-                'roles_endpoint' => $config['roles_webhook'] ? "{$internalUrl}/api/webhooks/roles" : null,
+                'roles_endpoint' => $config['roles_webhook'] ? "{$appInternalUrl}/api/webhooks/roles" : null,
                 'roles_webhook_secret' => $rolesWebhookSecret,
                 'nav_url' => $baseUrl,
                 'nav_label' => $config['name'],
@@ -99,7 +99,7 @@ class SetupDevIntegrationCommand extends Command
         $envLines = [
             "LANCORE_ENABLED=true",
             "LANCORE_BASE_URL=http://localhost",
-            "LANCORE_INTERNAL_URL={$internalUrl}",
+            "LANCORE_INTERNAL_URL=http://lancore.test",
             "LANCORE_TOKEN={$plainToken}",
             "LANCORE_APP_SLUG={$slug}",
             "LANCORE_CALLBACK_URL={$baseUrl}/auth/callback",
