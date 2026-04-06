@@ -4,6 +4,7 @@ namespace App\Domain\Shop\PaymentProviders;
 
 use App\Domain\Shop\Contracts\PaymentProvider;
 use App\Domain\Shop\Enums\PaymentMethod;
+use App\Domain\Shop\Models\ShopSetting;
 use InvalidArgumentException;
 
 /**
@@ -38,11 +39,33 @@ class PaymentProviderManager
      */
     public function availableMethods(): array
     {
+        return array_values(array_filter(array_map(
+            fn (PaymentProvider $provider): ?array => ShopSetting::isPaymentMethodEnabled($provider->method()->value)
+                ? [
+                    'value' => $provider->method()->value,
+                    'label' => $provider->method()->label(),
+                    'requires_redirect' => $provider->requiresRedirect(),
+                ]
+                : null,
+            $this->providers,
+        )));
+    }
+
+    /**
+     * Get all registered methods regardless of enabled state (for admin UI).
+     *
+     * @return array<int, array{value: string, label: string, requires_redirect: bool, enabled: bool}>
+     */
+    public function allMethods(): array
+    {
+        $enabledMap = ShopSetting::enabledPaymentMethods();
+
         return array_values(array_map(
             fn (PaymentProvider $provider): array => [
                 'value' => $provider->method()->value,
                 'label' => $provider->method()->label(),
                 'requires_redirect' => $provider->requiresRedirect(),
+                'enabled' => $enabledMap[$provider->method()->value] ?? true,
             ],
             $this->providers,
         ));

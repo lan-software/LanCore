@@ -80,4 +80,28 @@ class CompetitionTeam extends Model
     {
         return $this->activeMembers()->where('user_id', $user->id)->exists();
     }
+
+    /** @return HasMany<TeamJoinRequest, $this> */
+    public function joinRequests(): HasMany
+    {
+        return $this->hasMany(TeamJoinRequest::class, 'team_id');
+    }
+
+    /** @return HasMany<TeamJoinRequest, $this> */
+    public function pendingJoinRequests(): HasMany
+    {
+        return $this->joinRequests()->where('status', 'pending');
+    }
+
+    /** @return HasMany<TeamInvite, $this> */
+    public function invites(): HasMany
+    {
+        return $this->hasMany(TeamInvite::class, 'team_id');
+    }
+
+    /** @return HasMany<TeamInvite, $this> */
+    public function pendingInvites(): HasMany
+    {
+        return $this->invites()->pending();
+    }
 }

@@ -9,9 +9,18 @@ use App\Models\User;
 
 class CompetitionTeamPolicy
 {
+    public function viewAny(User $user): bool
+    {
+        return $user->hasPermission(Permission::ManageCompetitions);
+    }
+
     public function create(User $user, Competition $competition): bool
     {
         if (! $competition->isRegistrationOpen()) {
+            return false;
+        }
+
+        if (! $this->hasValidTicketForEvent($user, $competition)) {
             return false;
         }
 
@@ -30,6 +39,10 @@ class CompetitionTeamPolicy
             return false;
         }
 
+        if (! $this->hasValidTicketForEvent($user, $team->competition)) {
+            return false;
+        }
+
         return ! $team->hasMember($user);
     }
 
@@ -45,5 +58,21 @@ class CompetitionTeamPolicy
         }
 
         return $team->captain_user_id === $user->id;
+    }
+
+    private function hasValidTicketForEvent(User $user, Competition $competition): bool
+    {
+        if (! $competition->event_id) {
+            return true;
+        }
+
+        $event = $competition->event;
+
+        if ($event?->end_date && $event->end_date->isPast()) {
+            return true;
+        }
+
+        return $user->assignedTickets()->where('event_id', $competition->event_id)->exists()
+            || $user->ownedTickets()->where('event_id', $competition->event_id)->exists();
     }
 }

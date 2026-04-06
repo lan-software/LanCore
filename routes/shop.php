@@ -6,6 +6,7 @@ use App\Domain\Shop\Http\Controllers\OrderController;
 use App\Domain\Shop\Http\Controllers\PaymentProviderConditionController;
 use App\Domain\Shop\Http\Controllers\PurchaseRequirementController;
 use App\Domain\Shop\Http\Controllers\ShopController;
+use App\Domain\Shop\Http\Controllers\ShopSettingsController;
 use App\Domain\Shop\Http\Controllers\UserOrderController;
 use App\Domain\Shop\Http\Controllers\VoucherAuditController;
 use App\Domain\Shop\Http\Controllers\VoucherController;
@@ -57,6 +58,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('global-purchase-conditions/{globalPurchaseCondition}', [GlobalPurchaseConditionController::class, 'update'])->name('global-purchase-conditions.update');
     Route::delete('global-purchase-conditions/{globalPurchaseCondition}', [GlobalPurchaseConditionController::class, 'destroy'])->name('global-purchase-conditions.destroy');
 
+    // Admin: Shop Settings
+    Route::get('shop-settings', [ShopSettingsController::class, 'index'])->name('shop-settings.index');
+    Route::patch('shop-settings/payment-methods', [ShopSettingsController::class, 'updatePaymentMethods'])->name('shop-settings.update-payment-methods');
+    Route::patch('shop-settings/invoice', [ShopSettingsController::class, 'updateInvoiceConfig'])->name('shop-settings.update-invoice');
+
     // Admin: Payment Provider Conditions
     Route::get('payment-provider-conditions', [PaymentProviderConditionController::class, 'index'])->name('payment-provider-conditions.index');
     Route::get('payment-provider-conditions/create', [PaymentProviderConditionController::class, 'create'])->name('payment-provider-conditions.create');
@@ -73,4 +79,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::patch('orders/{order}/confirm-payment', [OrderController::class, 'confirmPayment'])->name('orders.confirm-payment');
+    Route::get('orders/{order}/invoice', [OrderController::class, 'downloadInvoice'])->name('orders.download-invoice');
+    Route::get('orders/{order}/receipt', [OrderController::class, 'downloadReceipt'])->name('orders.download-receipt');
 });

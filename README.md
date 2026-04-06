@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="resources/images/logo-icon.png" alt="LanCore Logo" width="120" />
+  <img src="resources/images/textmarke.png" alt="LanCore Logo" width="120" />
 </p>
 
 <h1 align="center">LanCore</h1>

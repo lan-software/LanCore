@@ -4,11 +4,15 @@ namespace App\Domain\Shop\Http\Controllers;
 
 use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Http\Requests\OrderIndexRequest;
+use App\Domain\Shop\Jobs\GenerateReceiptPdf;
 use App\Domain\Shop\Models\Order;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @see docs/mil-std-498/SSS.md CAP-SHP-004
@@ -67,7 +71,7 @@ class OrderController extends Controller
         ]);
     }
 
-    public function confirmPayment(Order $order): RedirectResponse
+    public function confirmPayment(Request $request, Order $order): RedirectResponse
     {
         $this->authorize('confirmPayment', $order);
 
@@ -79,8 +83,35 @@ class OrderController extends Controller
             return back()->withErrors(['order' => 'This order has already been marked as paid.']);
         }
 
-        $order->update(['paid_at' => now()]);
+        $order->update([
+            'paid_at' => now(),
+            'confirmed_by' => $request->user()->id,
+        ]);
+
+        GenerateReceiptPdf::dispatch($order->id);
 
         return back();
+    }
+
+    public function downloadInvoice(Order $order): StreamedResponse
+    {
+        $this->authorize('view', $order);
+
+        $path = "invoices/{$order->id}.pdf";
+
+        abort_unless(Storage::disk('local')->exists($path), 404, 'Invoice not yet generated.');
+
+        return Storage::disk('local')->download($path, "invoice-{$order->invoice_number}.pdf");
+    }
+
+    public function downloadReceipt(Order $order): StreamedResponse
+    {
+        $this->authorize('view', $order);
+
+        $path = "receipts/{$order->id}.pdf";
+
+        abort_unless(Storage::disk('local')->exists($path), 404, 'Receipt not yet generated.');
+
+        return Storage::disk('local')->download($path, "receipt-{$order->invoice_number}.pdf");
     }
 }

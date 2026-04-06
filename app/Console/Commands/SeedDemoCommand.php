@@ -4,14 +4,26 @@ namespace App\Console\Commands;
 
 use App\Domain\Achievements\Enums\GrantableEvent;
 use App\Domain\Achievements\Models\Achievement;
+use App\Domain\Competition\Enums\CompetitionStatus;
+use App\Domain\Competition\Enums\CompetitionType;
+use App\Domain\Competition\Enums\ResultSubmissionMode;
+use App\Domain\Competition\Enums\StageType;
+use App\Domain\Competition\Models\Competition;
+use App\Domain\Competition\Models\CompetitionTeam;
+use App\Domain\Competition\Models\CompetitionTeamMember;
 use App\Domain\Event\Models\Event;
 use App\Domain\Games\Models\Game;
 use App\Domain\Games\Models\GameMode;
+use App\Domain\Integration\Models\IntegrationApp;
 use App\Domain\News\Enums\ArticleVisibility;
 use App\Domain\News\Models\NewsArticle;
 use App\Domain\Program\Models\Program;
 use App\Domain\Program\Models\TimeSlot;
 use App\Domain\Seating\Models\SeatPlan;
+use App\Domain\Shop\Enums\PaymentMethod;
+use App\Domain\Shop\Models\GlobalPurchaseCondition;
+use App\Domain\Shop\Models\PaymentProviderCondition;
+use App\Domain\Shop\Models\PurchaseRequirement;
 use App\Domain\Sponsoring\Models\Sponsor;
 use App\Domain\Sponsoring\Models\SponsorLevel;
 use App\Domain\Ticketing\Models\Addon;
@@ -24,6 +36,7 @@ use App\Domain\Venue\Models\VenueImage;
 use App\Domain\Webhook\Enums\WebhookEvent;
 use App\Domain\Webhook\Models\Webhook;
 use App\Enums\RoleName;
+use App\Models\OrganizationSetting;
 use App\Models\User;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -60,7 +73,13 @@ class SeedDemoCommand extends Command
             $this->attempt('Ticketing', $results, fn () => $this->seedTicketing($events));
             $this->attempt('Programs', $results, fn () => $this->seedPrograms($events));
             $this->attempt('Sponsors', $results, fn () => $this->seedSponsors($events));
-            $this->attempt('Competitions', $results, fn () => $this->seedCompetitions($events));
+
+            $hasBrackets = IntegrationApp::query()->where('slug', 'lanbrackets')->where('is_active', true)->exists();
+            if ($hasBrackets) {
+                $this->attempt('Competitions', $results, fn () => $this->seedCompetitions($events));
+            } else {
+                $results['Competitions'] = 'Skipped — LanBrackets integration not configured (run integration:setup-dev lanbrackets first)';
+            }
         } else {
             $results['Ticketing'] = 'Skipped — events not seeded';
             $results['Programs'] = 'Skipped — events not seeded';
@@ -70,6 +89,8 @@ class SeedDemoCommand extends Command
 
         $this->attempt('News', $results, fn () => $this->seedNews());
         $this->attempt('Achievements', $results, fn () => $this->seedAchievements());
+        $this->attempt('Shop Conditions', $results, fn () => $this->seedShopConditions());
+        $this->attempt('Organization', $results, fn () => $this->seedOrganization());
         $this->attempt('Webhooks', $results, fn () => $this->seedWebhooks());
 
         $this->newLine();
@@ -1073,6 +1094,167 @@ class SeedDemoCommand extends Command
                 'secret' => null,
                 'is_active' => true,
             ]);
+        });
+
+        return true;
+    }
+
+    private function seedShopConditions(): bool
+    {
+        if (GlobalPurchaseCondition::query()->where('name', 'Terms of Service')->exists()) {
+            return false;
+        }
+
+        $this->components->task('Seeding purchase conditions & requirements', function (): void {
+            // --- Global Purchase Conditions (apply to all orders) ---
+            GlobalPurchaseCondition::create([
+                'name' => 'Terms of Service',
+                'description' => 'General terms and conditions for all ticket purchases.',
+                'content' => "By purchasing a ticket you agree to the following terms:\n\n"
+                    ."1. **No Refunds** — All ticket sales are final. Tickets cannot be refunded after purchase.\n"
+                    ."2. **Transferability** — Tickets may be transferred to another person via the ticket transfer feature. The new holder must have a LanCore account.\n"
+                    ."3. **Code of Conduct** — All attendees must follow the event's Code of Conduct. Violations may result in removal without refund.\n"
+                    ."4. **Liability** — The organizer is not responsible for personal belongings. Bring your own locks and keep valuables secure.\n"
+                    ."5. **Photography** — Event photography and videography will take place. By attending, you consent to being photographed.",
+                'acknowledgement_label' => 'I accept the Terms of Service',
+                'is_required' => true,
+                'is_active' => true,
+                'requires_scroll' => true,
+                'sort_order' => 0,
+            ]);
+
+            GlobalPurchaseCondition::create([
+                'name' => 'Age Verification',
+                'description' => 'Confirm minimum age requirement for the event.',
+                'content' => 'This event is open to participants aged 16 and older. Participants under 18 must have a signed parental consent form submitted before check-in.',
+                'acknowledgement_label' => 'I confirm that I am at least 16 years old',
+                'is_required' => true,
+                'is_active' => true,
+                'requires_scroll' => false,
+                'sort_order' => 1,
+            ]);
+
+            GlobalPurchaseCondition::create([
+                'name' => 'Newsletter Subscription',
+                'description' => 'Optional newsletter sign-up during checkout.',
+                'content' => 'Stay up to date with future events, early-bird offers, and community news. You can unsubscribe at any time.',
+                'acknowledgement_label' => 'I would like to receive the event newsletter',
+                'is_required' => false,
+                'is_active' => true,
+                'requires_scroll' => false,
+                'sort_order' => 2,
+            ]);
+
+            // --- Payment Provider Conditions ---
+            PaymentProviderCondition::create([
+                'payment_method' => PaymentMethod::Stripe,
+                'name' => 'Credit Card Payment Terms',
+                'description' => 'Terms specific to credit card payments via Stripe.',
+                'content' => "Payment is processed securely via Stripe. Your card will be charged immediately upon purchase.\n\n"
+                    ."- We do not store your full card details. All payment data is handled by Stripe.\n"
+                    ."- A payment confirmation will be sent to your email address.\n"
+                    ."- For chargebacks or disputes, contact us before contacting your bank.",
+                'acknowledgement_label' => 'I agree to the credit card payment terms',
+                'is_required' => true,
+                'is_active' => true,
+                'requires_scroll' => false,
+                'sort_order' => 0,
+            ]);
+
+            PaymentProviderCondition::create([
+                'payment_method' => PaymentMethod::OnSite,
+                'name' => 'On-Site Payment Terms',
+                'description' => 'Terms for paying at the event venue.',
+                'content' => "On-site payment reserves your ticket but does not guarantee it. Your reservation is held for 48 hours.\n\n"
+                    ."- Payment must be made in cash at the check-in desk.\n"
+                    ."- If payment is not received within 48 hours, your reservation may be released.\n"
+                    ."- On-site payments do not include online payment processing fees.",
+                'acknowledgement_label' => 'I understand the on-site payment terms',
+                'is_required' => true,
+                'is_active' => true,
+                'requires_scroll' => false,
+                'sort_order' => 0,
+            ]);
+
+            // --- Purchase Requirements (linked to specific ticket types) ---
+            $premiumReq = PurchaseRequirement::create([
+                'name' => 'Premium Seat Agreement',
+                'description' => 'Additional requirements for premium ticket holders.',
+                'requirements_content' => "Premium ticket holders receive priority seating in the front rows with extra desk space and dedicated power strips.\n\n"
+                    ."Please note:\n"
+                    ."- Premium seats are assigned first-come, first-served within the premium zone.\n"
+                    ."- Seat swaps within the premium zone must be coordinated with staff.\n"
+                    ."- The premium zone has a noise limit policy — no open speakers.",
+                'acknowledgements' => [
+                    'I understand the premium zone rules',
+                    'I agree to the noise limit policy',
+                ],
+                'is_active' => true,
+                'requires_scroll' => false,
+            ]);
+
+            $clanReq = PurchaseRequirement::create([
+                'name' => 'Clan Row Requirements',
+                'description' => 'Requirements for purchasing clan row tickets.',
+                'requirements_content' => "Clan row tickets provide a contiguous block of seats for your group.\n\n"
+                    ."Requirements:\n"
+                    ."- Minimum 4 tickets must be purchased together for a clan row.\n"
+                    ."- All clan members must check in within the first 2 hours of the event.\n"
+                    ."- Unclaimed seats after 2 hours may be reassigned.",
+                'acknowledgements' => [
+                    'I confirm I am purchasing for a group of at least 4',
+                    'I understand the check-in deadline policy',
+                ],
+                'is_active' => true,
+                'requires_scroll' => false,
+            ]);
+
+            // Link requirements to ticket types
+            $premiumTicket = TicketType::query()->where('name', 'Premium Ticket')->first();
+            $vipTicket = TicketType::query()->where('name', 'VIP Ticket')->first();
+            $clanTicket = TicketType::query()->where('name', 'Clan Row Ticket')->first();
+
+            if ($premiumTicket) {
+                $premiumReq->ticketTypes()->syncWithoutDetaching([$premiumTicket->id]);
+            }
+            if ($vipTicket) {
+                $premiumReq->ticketTypes()->syncWithoutDetaching([$vipTicket->id]);
+            }
+            if ($clanTicket) {
+                $clanReq->ticketTypes()->syncWithoutDetaching([$clanTicket->id]);
+            }
+        });
+
+        return true;
+    }
+
+    private function seedOrganization(): bool
+    {
+        if (OrganizationSetting::get('name') !== null) {
+            return false;
+        }
+
+        $this->components->task('Seeding organization settings', function (): void {
+            $settings = [
+                'name' => 'LAN Party e.V.',
+                'address_line1' => 'Musterstraße 42',
+                'address_line2' => '12345 Berlin, Germany',
+                'email' => 'info@lanparty.example.com',
+                'phone' => '+49 30 123 456 78',
+                'website' => 'https://lanparty.example.com',
+                'tax_id' => 'DE123456789',
+                'registration_id' => 'VR 12345, Amtsgericht Berlin-Charlottenburg',
+                'legal_notice' => 'All prices include applicable taxes. Tickets are non-refundable unless otherwise stated.',
+            ];
+
+            foreach ($settings as $key => $value) {
+                OrganizationSetting::set($key, $value);
+            }
+
+            // Invoice config
+            ShopSetting::set('invoice_prefix', 'LAN-');
+            ShopSetting::set('invoice_notes', "Payment is due upon receipt.\nFor questions about your order, contact us at info@lanparty.example.com.");
+            ShopSetting::set('invoice_footer', 'Thank you for attending our LAN party!');
         });
 
         return true;

@@ -2,6 +2,7 @@
 
 use App\Domain\Notification\Http\Controllers\NotificationSettingsController;
 use App\Domain\Notification\Http\Controllers\ProgramSubscriptionController;
+use App\Http\Controllers\OrganizationSettingsController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Controllers\Settings\SidebarFavoriteController;
@@ -38,4 +39,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('settings/sidebar-favorites/toggle', [SidebarFavoriteController::class, 'toggle'])->name('sidebar-favorites.toggle');
 
     Route::get('settings/achievements', UserAchievementsController::class)->name('user-achievements.index');
+
+    // Admin: Organization settings
+    Route::get('organization-settings', [OrganizationSettingsController::class, 'index'])->name('organization-settings.index');
+    Route::patch('organization-settings', [OrganizationSettingsController::class, 'update'])->name('organization-settings.update');
+    Route::post('organization-settings/logo', [OrganizationSettingsController::class, 'uploadLogo'])->name('organization-settings.upload-logo');
+    Route::delete('organization-settings/logo', [OrganizationSettingsController::class, 'removeLogo'])->name('organization-settings.remove-logo');
 });

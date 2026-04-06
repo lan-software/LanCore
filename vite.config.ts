@@ -6,6 +6,7 @@ import { defineConfig } from 'vite';
 import { configDefaults } from 'vitest/config';
 
 const isVitest = !!process.env.VITEST;
+const skipWayfinder = !!process.env.WAYFINDER_SKIP;
 
 export default defineConfig({
     plugins: [
@@ -25,6 +26,7 @@ export default defineConfig({
             },
         }),
         !isVitest &&
+            !skipWayfinder &&
             wayfinder({
                 formVariants: true,
             }),

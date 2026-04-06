@@ -6,6 +6,7 @@ use App\Domain\Event\Models\Event;
 use App\Domain\Shop\Contracts\PaymentResult;
 use App\Domain\Shop\Enums\OrderStatus;
 use App\Domain\Shop\Enums\PaymentMethod;
+use App\Domain\Shop\Jobs\GenerateInvoicePdf;
 use App\Domain\Shop\Models\Order;
 use App\Domain\Shop\Models\OrderLine;
 use App\Domain\Shop\Models\Voucher;
@@ -24,6 +25,7 @@ class CreateOrder
 {
     public function __construct(
         private readonly PaymentProviderManager $providerManager,
+        private readonly GenerateInvoiceNumber $generateInvoiceNumber,
     ) {}
 
     /**
@@ -125,8 +127,14 @@ class CreateOrder
                 ]);
             }
 
-            // Store the items structure in the order for fulfillment
-            $order->update(['metadata' => json_encode($lineItems)]);
+            // Generate invoice number and store items for fulfillment
+            $order->update([
+                'invoice_number' => $this->generateInvoiceNumber->execute(),
+                'metadata' => json_encode($lineItems),
+            ]);
+
+            // Generate and send invoice PDF asynchronously
+            GenerateInvoicePdf::dispatch($order->id);
 
             $provider = $this->providerManager->resolve($paymentMethod);
 

@@ -11,6 +11,7 @@ import {
     AlertTriangle,
     X,
     ExternalLink,
+    Trophy,
 } from 'lucide-vue-next';
 import { computed, defineAsyncComponent, ref } from 'vue';
 import type { Component } from 'vue';
@@ -26,6 +27,7 @@ import {
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { dashboard, login, register } from '@/routes';
+import { show as myCompetitionShow } from '@/routes/my-competitions';
 import { index as shopIndex } from '@/routes/shop';
 import type { Event, NewsArticle, Announcement } from '@/types/domain';
 
@@ -36,12 +38,28 @@ const props = withDefaults(
         latestNews: NewsArticle[];
         announcements: Announcement[];
         dismissedAnnouncementIds: number[];
+        openCompetitions: {
+            id: number;
+            name: string;
+            slug: string | null;
+            description: string | null;
+            type: string;
+            stage_type: string | null;
+            team_size: number | null;
+            max_teams: number | null;
+            teams_count: number;
+            game: { name: string } | null;
+            event: { name: string } | null;
+            registration_closes_at: string | null;
+            starts_at: string | null;
+        }[];
     }>(),
     {
         canRegister: true,
         latestNews: () => [],
         announcements: () => [],
         dismissedAnnouncementIds: () => [],
+        openCompetitions: () => [],
     },
 );
 
@@ -651,6 +669,39 @@ function resolveIcon(name: string | null): Component {
                                         },
                                     }"
                                 />
+                            </div>
+                        </div>
+                        <!-- Open Competitions -->
+                        <div v-if="openCompetitions.length > 0" class="space-y-6">
+                            <div class="flex items-center gap-2">
+                                <Trophy class="size-5 text-muted-foreground" />
+                                <h2 class="text-2xl font-semibold">Open Competitions</h2>
+                            </div>
+
+                            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                <Link
+                                    v-for="comp in openCompetitions"
+                                    :key="comp.id"
+                                    :href="myCompetitionShow({ competition: comp.id }).url"
+                                    class="group flex flex-col rounded-lg border p-4 transition-colors hover:border-foreground/20"
+                                >
+                                    <div class="mb-2 flex items-center justify-between">
+                                        <Badge variant="secondary" class="text-[10px] capitalize">{{ comp.type }}</Badge>
+                                        <span v-if="comp.game" class="text-xs text-muted-foreground">{{ comp.game.name }}</span>
+                                    </div>
+                                    <h3 class="font-semibold transition-colors group-hover:text-primary">{{ comp.name }}</h3>
+                                    <p v-if="comp.description" class="mt-1 line-clamp-2 text-sm text-muted-foreground">{{ comp.description }}</p>
+                                    <div class="mt-auto flex items-center gap-3 pt-3 text-xs text-muted-foreground">
+                                        <span v-if="comp.teams_count !== undefined">
+                                            {{ comp.teams_count }}<template v-if="comp.max_teams"> / {{ comp.max_teams }}</template> teams
+                                        </span>
+                                        <span v-if="comp.team_size">{{ comp.team_size }}v{{ comp.team_size }}</span>
+                                        <span v-if="comp.stage_type" class="capitalize">{{ comp.stage_type.replace(/_/g, ' ') }}</span>
+                                    </div>
+                                    <div v-if="comp.registration_closes_at" class="mt-2 text-[11px] text-muted-foreground">
+                                        Registration closes {{ new Date(comp.registration_closes_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) }}
+                                    </div>
+                                </Link>
                             </div>
                         </div>
                     </div>

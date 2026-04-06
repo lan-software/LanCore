@@ -63,9 +63,13 @@ import { index as eventsIndex } from '@/routes/events';
 import { index as externalApisIndex } from '@/routes/external-apis';
 import { index as gameServersIndex } from '@/routes/game-servers';
 import { index as gamesIndex } from '@/routes/games';
+import { index as adminTeamsIndex } from '@/routes/admin/teams';
+import { index as organizationSettingsIndex } from '@/routes/organization-settings';
 import { index as globalPurchaseConditionsIndex } from '@/routes/global-purchase-conditions';
+import { index as shopSettingsIndex } from '@/routes/shop-settings';
 import { index as integrationsIndex } from '@/routes/integrations';
 import { index as myCompetitionsIndex } from '@/routes/my-competitions';
+import { index as myTeamsIndex } from '@/routes/my-teams';
 import { index as myOrdersIndex } from '@/routes/my-orders';
 import { index as newsIndex } from '@/routes/news';
 import { index as newsCommentsIndex } from '@/routes/news/comments';
@@ -111,6 +115,11 @@ const mainNavItems: NavItem[] = [
         title: 'My Competitions',
         href: myCompetitionsIndex(),
         icon: Swords,
+    },
+    {
+        title: 'My Teams',
+        href: myTeamsIndex(),
+        icon: Users,
     },
 ];
 
@@ -221,6 +230,12 @@ const allPinnableItems = computed<NavItem[]>(() => {
             title: 'Competitions',
             href: competitionsIndex(),
             icon: Swords,
+        },
+        {
+            id: 'admin-teams',
+            title: 'Teams',
+            href: adminTeamsIndex(),
+            icon: Users,
         });
     }
 
@@ -436,6 +451,23 @@ function toggleFavorite(itemId: string): void {
             <NavMain :items="mainNavItems" />
 
             <NavFavorites :all-items="allPinnableItems" />
+
+            <!-- Platform Settings -->
+            <SidebarGroup v-if="canAny(Permission.ManageUsers)">
+                <SidebarGroupLabel>Platform</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="organizationSettingsIndex()">
+                                    <Cog />
+                                    <span>Organization</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
 
             <!-- Administration -->
             <SidebarGroup v-if="can(Permission.ManageUsers)">
@@ -859,6 +891,24 @@ function toggleFavorite(itemId: string): void {
                                 <Pin v-else class="size-4" />
                             </SidebarMenuAction>
                         </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="adminTeamsIndex()">
+                                    <Users />
+                                    <span>Teams</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('admin-teams')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('admin-teams')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
             </SidebarGroup>
@@ -1030,6 +1080,14 @@ function toggleFavorite(itemId: string): void {
                 <SidebarGroupLabel>Shop</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="shopSettingsIndex()">
+                                    <Cog />
+                                    <span>Settings</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="ordersIndex()">

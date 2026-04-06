@@ -5,6 +5,7 @@ namespace App\Domain\Shop\Actions;
 use App\Domain\Shop\Enums\OrderStatus;
 use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Events\TicketPurchased;
+use App\Domain\Shop\Jobs\GenerateReceiptPdf;
 use App\Domain\Shop\Models\Order;
 use App\Domain\Ticketing\Enums\TicketStatus;
 use App\Domain\Ticketing\Models\Addon;
@@ -81,6 +82,11 @@ class FulfillOrder
         $user = $order->user;
 
         $user->notify(new OrderConfirmationNotification($order));
+
+        // Generate and send receipt PDF for non-on-site orders (paid immediately)
+        if ($order->payment_method !== PaymentMethod::OnSite) {
+            GenerateReceiptPdf::dispatch($order->id);
+        }
 
         TicketPurchased::dispatch($user, $order);
     }

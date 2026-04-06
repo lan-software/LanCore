@@ -5,10 +5,12 @@ namespace App\Domain\Orchestration\Http\Controllers;
 use App\Domain\Api\Clients\Tmt2Client;
 use App\Domain\Orchestration\Models\GameServer;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Stripe\Exception\AuthenticationException;
+use Stripe\Stripe;
 
 /**
  * Admin page for managing external API connections (TMT2, future: Pelican, Steam).
@@ -19,6 +21,9 @@ class ExternalApiController extends Controller
     {
         $this->authorize('viewAny', GameServer::class);
 
+        $stripeKey = (string) config('cashier.key');
+        $stripeSecret = (string) config('cashier.secret');
+
         return Inertia::render('orchestration/apis/Index', [
             'connections' => [
                 'tmt2' => [
@@ -28,11 +33,19 @@ class ExternalApiController extends Controller
                     'timeout' => config('tmt2.timeout', 5),
                     'retries' => config('tmt2.retries', 2),
                 ],
+                'stripe' => [
+                    'enabled' => $stripeKey !== '' && $stripeSecret !== '',
+                    'has_publishable_key' => $stripeKey !== '',
+                    'has_secret_key' => $stripeSecret !== '',
+                    'has_webhook_secret' => ((string) config('cashier.webhook.secret')) !== '',
+                    'currency' => strtoupper((string) config('cashier.currency', 'usd')),
+                    'currency_locale' => config('cashier.currency_locale', 'en'),
+                ],
             ],
         ]);
     }
 
-    public function testTmt2(Request $request): RedirectResponse
+    public function testTmt2(Request $request): JsonResponse
     {
         $this->authorize('viewAny', GameServer::class);
 
@@ -41,12 +54,39 @@ class ExternalApiController extends Controller
             $result = $client->login();
 
             if ($result) {
-                return back()->with('flash', ['tmt2_status' => 'connected']);
+                return response()->json(['status' => 'connected']);
             }
 
-            return back()->with('flash', ['tmt2_status' => 'auth_failed']);
+            return response()->json(['status' => 'auth_failed'], 401);
         } catch (\Throwable $e) {
-            return back()->with('flash', ['tmt2_status' => 'unreachable', 'tmt2_error' => $e->getMessage()]);
+            return response()->json(['status' => 'unreachable', 'error' => $e->getMessage()], 503);
+        }
+    }
+
+    public function testStripe(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', GameServer::class);
+
+        $secret = (string) config('cashier.secret');
+
+        if ($secret === '') {
+            return response()->json(['status' => 'not_configured', 'error' => 'STRIPE_SECRET is not set.'], 422);
+        }
+
+        try {
+            Stripe::setApiKey($secret);
+            $balance = \Stripe\Balance::retrieve();
+
+            return response()->json([
+                'status' => 'connected',
+                'account' => count($balance->available) > 0
+                    ? strtoupper($balance->available[0]->currency).' account'
+                    : 'OK',
+            ]);
+        } catch (AuthenticationException) {
+            return response()->json(['status' => 'auth_failed', 'error' => 'Invalid API key.'], 401);
+        } catch (\Throwable $e) {
+            return response()->json(['status' => 'unreachable', 'error' => $e->getMessage()], 503);
         }
     }
 }

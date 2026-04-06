@@ -231,7 +231,7 @@ function submitCreateTeam() {
                                     members
                                 </div>
 
-                                <!-- Join button -->
+                                <!-- Request to Join -->
                                 <Button
                                     v-if="
                                         !userTeam &&
@@ -243,14 +243,14 @@ function submitCreateTeam() {
                                     class="mt-1"
                                     @click="
                                         $inertia.post(
-                                            TeamController.join(
+                                            TeamController.requestJoin(
                                                 competition.id,
                                                 team.id,
                                             ).url,
                                         )
                                     "
                                 >
-                                    Join
+                                    Request to Join
                                 </Button>
                             </div>
                             <p
