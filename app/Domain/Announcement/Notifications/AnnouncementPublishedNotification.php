@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Domain\Announcement\Notifications;
 
 use App\Domain\Announcement\Enums\AnnouncementPriority;
 use App\Domain\Announcement\Models\Announcement;

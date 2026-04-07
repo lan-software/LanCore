@@ -3,8 +3,8 @@
 namespace App\Domain\Achievements\Actions;
 
 use App\Domain\Achievements\Models\Achievement;
+use App\Domain\Achievements\Notifications\AchievementEarnedNotification;
 use App\Models\User;
-use App\Notifications\AchievementEarnedNotification;
 
 /**
  * @see docs/mil-std-498/SSS.md CAP-ACH-002, CAP-ACH-004

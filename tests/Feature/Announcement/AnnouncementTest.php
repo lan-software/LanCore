@@ -5,12 +5,12 @@ use App\Domain\Announcement\Actions\UpdateAnnouncement;
 use App\Domain\Announcement\Enums\AnnouncementPriority;
 use App\Domain\Announcement\Events\AnnouncementPublished;
 use App\Domain\Announcement\Models\Announcement;
+use App\Domain\Announcement\Notifications\AnnouncementPublishedNotification;
 use App\Domain\Event\Models\Event;
 use App\Domain\Notification\Models\NotificationPreference;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
-use App\Notifications\AnnouncementPublishedNotification;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Notification;
 

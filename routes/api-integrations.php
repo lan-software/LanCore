@@ -34,6 +34,7 @@ Route::prefix('api/entrance')
         Route::post('override', [EntranceController::class, 'override'])->name('api.entrance.override');
         Route::get('search', [EntranceController::class, 'search'])->name('api.entrance.search');
         Route::get('stats', [EntranceController::class, 'stats'])->name('api.entrance.stats');
+        Route::get('events', [EntranceController::class, 'events'])->name('api.entrance.events');
     });
 
 /*

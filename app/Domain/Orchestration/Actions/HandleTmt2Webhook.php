@@ -2,7 +2,7 @@
 
 namespace App\Domain\Orchestration\Actions;
 
-use App\Domain\Competition\Services\LanBracketsClient;
+use App\Domain\Api\Clients\LanBracketsClient;
 use App\Domain\Orchestration\Contracts\Features\SupportsChatFeature;
 use App\Domain\Orchestration\Models\OrchestrationJob;
 use Illuminate\Support\Facades\Log;

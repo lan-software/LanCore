@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Competition\Services;
+namespace App\Domain\Api\Clients;
 
 use App\Domain\Competition\Exceptions\LanBracketsDisabledException;
 use App\Domain\Competition\Exceptions\LanBracketsRequestException;

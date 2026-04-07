@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Domain\Achievements\Notifications;
 
 use App\Domain\Achievements\Models\Achievement;
 use Illuminate\Bus\Queueable;

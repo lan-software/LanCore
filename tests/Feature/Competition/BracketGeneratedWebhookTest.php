@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Api\Clients\LanBracketsClient;
 use App\Domain\Competition\Actions\HandleLanBracketsWebhook;
 use App\Domain\Competition\Events\MatchReadyForOrchestration;
 use App\Domain\Competition\Models\Competition;
-use App\Domain\Competition\Services\LanBracketsClient;
 use App\Domain\Games\Models\Game;
 use App\Domain\Orchestration\Models\OrchestrationJob;
 use Illuminate\Support\Facades\Event;

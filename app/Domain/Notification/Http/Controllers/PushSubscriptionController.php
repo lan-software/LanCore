@@ -2,8 +2,8 @@
 
 namespace App\Domain\Notification\Http\Controllers;
 
+use App\Domain\Notification\Actions\StorePushSubscription;
 use App\Domain\Notification\Http\Requests\StorePushSubscriptionRequest;
-use App\Domain\Notification\Models\PushSubscription;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,21 +15,9 @@ use Illuminate\Http\Request;
  */
 class PushSubscriptionController extends Controller
 {
-    public function store(StorePushSubscriptionRequest $request): JsonResponse
+    public function store(StorePushSubscriptionRequest $request, StorePushSubscription $action): JsonResponse
     {
-        $data = $request->validated();
-
-        PushSubscription::updateOrCreate(
-            [
-                'user_id' => $request->user()->id,
-                'endpoint' => $data['endpoint'],
-            ],
-            [
-                'public_key' => $data['public_key'],
-                'auth_token' => $data['auth_token'],
-                'content_encoding' => $data['content_encoding'] ?? 'aesgcm',
-            ]
-        );
+        $action->execute($request->user(), $request->validated());
 
         return response()->json(['subscribed' => true]);
     }

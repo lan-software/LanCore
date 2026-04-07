@@ -22,9 +22,12 @@ class UpdateTicketAssignments
         $this->ensureNotCheckedIn($ticket);
 
         $result = DB::transaction(function () use ($ticket, $manager): Ticket {
-            $ticket->update(['manager_id' => $manager?->id]);
+            $ticket->update([
+                'manager_id' => $manager?->id,
+                'validation_id' => Ticket::generateValidationId(),
+            ]);
 
-            return $ticket;
+            return $ticket->fresh();
         });
 
         GenerateTicketPdf::dispatch($ticket->id);
@@ -45,6 +48,7 @@ class UpdateTicketAssignments
             }
 
             $ticket->users()->attach($user->id);
+            $ticket->update(['validation_id' => Ticket::generateValidationId()]);
 
             return $ticket->fresh();
         });
@@ -60,6 +64,7 @@ class UpdateTicketAssignments
 
         $result = DB::transaction(function () use ($ticket, $user): Ticket {
             $ticket->users()->detach($user->id);
+            $ticket->update(['validation_id' => Ticket::generateValidationId()]);
 
             return $ticket->fresh();
         });

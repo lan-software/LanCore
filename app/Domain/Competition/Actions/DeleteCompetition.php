@@ -2,8 +2,8 @@
 
 namespace App\Domain\Competition\Actions;
 
+use App\Domain\Api\Clients\LanBracketsClient;
 use App\Domain\Competition\Models\Competition;
-use App\Domain\Competition\Services\LanBracketsClient;
 
 /**
  * @see docs/mil-std-498/SRS.md COMP-F-004

@@ -5,10 +5,10 @@ use App\Domain\Achievements\Enums\GrantableEvent;
 use App\Domain\Achievements\Listeners\ProcessAchievements;
 use App\Domain\Achievements\Models\Achievement;
 use App\Domain\Achievements\Models\AchievementEvent;
+use App\Domain\Achievements\Notifications\AchievementEarnedNotification;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
-use App\Notifications\AchievementEarnedNotification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Notification;
 

@@ -3,8 +3,8 @@
 namespace App\Domain\News\Listeners;
 
 use App\Domain\News\Events\NewsArticlePublished;
+use App\Domain\News\Notifications\NewsPublishedNotification;
 use App\Models\User;
-use App\Notifications\NewsPublishedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
 

@@ -2,10 +2,10 @@
 
 namespace App\Domain\Competition\Actions;
 
+use App\Domain\Api\Clients\LanBracketsClient;
 use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\CompetitionTeam;
 use App\Domain\Competition\Models\MatchResultProof;
-use App\Domain\Competition\Services\LanBracketsClient;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 

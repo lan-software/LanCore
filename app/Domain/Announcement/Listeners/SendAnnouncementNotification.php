@@ -4,8 +4,8 @@ namespace App\Domain\Announcement\Listeners;
 
 use App\Domain\Announcement\Enums\AnnouncementPriority;
 use App\Domain\Announcement\Events\AnnouncementPublished;
+use App\Domain\Announcement\Notifications\AnnouncementPublishedNotification;
 use App\Models\User;
-use App\Notifications\AnnouncementPublishedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
 

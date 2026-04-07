@@ -4,11 +4,11 @@ use App\Domain\News\Actions\CreateNewsArticle;
 use App\Domain\News\Actions\UpdateNewsArticle;
 use App\Domain\News\Events\NewsArticlePublished;
 use App\Domain\News\Models\NewsArticle;
+use App\Domain\News\Notifications\NewsPublishedNotification;
 use App\Domain\Notification\Models\NotificationPreference;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
-use App\Notifications\NewsPublishedNotification;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 

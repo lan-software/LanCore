@@ -7,13 +7,13 @@ use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Events\TicketPurchased;
 use App\Domain\Shop\Jobs\GenerateReceiptPdf;
 use App\Domain\Shop\Models\Order;
+use App\Domain\Shop\Notifications\OrderConfirmationNotification;
 use App\Domain\Ticketing\Enums\TicketStatus;
 use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketType;
 use App\Models\User;
-use App\Notifications\OrderConfirmationNotification;
 use Illuminate\Support\Facades\DB;
 
 /**

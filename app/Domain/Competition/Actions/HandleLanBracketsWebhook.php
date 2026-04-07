@@ -2,12 +2,12 @@
 
 namespace App\Domain\Competition\Actions;
 
+use App\Domain\Api\Clients\LanBracketsClient;
 use App\Domain\Competition\Enums\CompetitionStatus;
 use App\Domain\Competition\Events\MatchCompleted;
 use App\Domain\Competition\Events\MatchReadyForOrchestration;
 use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\MatchResultProof;
-use App\Domain\Competition\Services\LanBracketsClient;
 use App\Domain\Orchestration\Models\OrchestrationJob;
 
 /**

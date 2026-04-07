@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Api\Clients\LanBracketsClient;
 use App\Domain\Competition\Exceptions\LanBracketsDisabledException;
 use App\Domain\Competition\Exceptions\LanBracketsRequestException;
-use App\Domain\Competition\Services\LanBracketsClient;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {

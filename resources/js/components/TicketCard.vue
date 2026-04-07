@@ -15,7 +15,7 @@ const props = defineProps<{
     canUpdateUser?: boolean;
 }>();
 
-const showValidationId = ref(false);
+const showValidationToken = ref(false);
 const showQrCode = ref(false);
 const qrSvg = ref('');
 
@@ -46,7 +46,7 @@ function statusVariant(
     }
 }
 
-function maskedValidationId(id: string): string {
+function maskedValidationToken(id: string): string {
     return '•'.repeat(id.length);
 }
 
@@ -146,32 +146,32 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                 </div>
             </div>
 
-            <!-- Validation ID (Preshared Secret) -->
+            <!-- Validation Token (Preshared Secret) -->
             <div class="space-y-1">
                 <p
                     class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
                 >
-                    Validation ID
+                    Validation Token
                 </p>
                 <div class="flex items-center gap-2">
                     <code
                         class="rounded bg-muted px-2 py-1 font-mono text-sm tracking-widest"
                     >
                         {{
-                            showValidationId
+                            showValidationToken
                                 ? ticket.validation_id
-                                : maskedValidationId(ticket.validation_id)
+                                : maskedValidationToken(ticket.validation_id)
                         }}
                     </code>
                     <button
                         type="button"
                         class="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        @click="showValidationId = !showValidationId"
+                        @click="showValidationToken = !showValidationToken"
                     >
-                        <Eye v-if="!showValidationId" class="size-4" />
+                        <Eye v-if="!showValidationToken" class="size-4" />
                         <EyeOff v-else class="size-4" />
                         <span class="sr-only"
-                            >{{ showValidationId ? 'Hide' : 'Show' }} validation
+                            >{{ showValidationToken ? 'Hide' : 'Show' }} validation
                             ID</span
                         >
                     </button>

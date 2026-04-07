@@ -4,9 +4,9 @@ namespace App\Domain\Program\Listeners;
 
 use App\Domain\Notification\Models\ProgramNotificationSubscription;
 use App\Domain\Program\Events\ProgramTimeSlotApproaching;
+use App\Domain\Program\Notifications\ProgramTimeSlotNotification;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Models\User;
-use App\Notifications\ProgramTimeSlotNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
 

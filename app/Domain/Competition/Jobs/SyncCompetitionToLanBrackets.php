@@ -2,8 +2,8 @@
 
 namespace App\Domain\Competition\Jobs;
 
+use App\Domain\Api\Clients\LanBracketsClient;
 use App\Domain\Competition\Models\Competition;
-use App\Domain\Competition\Services\LanBracketsClient;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
