@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import {
     Copy,
     Check,
@@ -9,7 +8,7 @@ import {
     Server,
     AlertCircle,
 } from 'lucide-vue-next';
-import { Badge } from '@/components/ui/badge';
+import { ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import type { OrchestrationJob } from '@/types/domain';
 
@@ -63,7 +62,10 @@ const isLoading = ['pending', 'selecting_server', 'deploying'].includes(
 );
 
 function copyAddress() {
-    if (!props.job.game_server) return;
+    if (!props.job.game_server) {
+        return;
+    }
+
     const address = `${props.job.game_server.host}:${props.job.game_server.port}`;
     navigator.clipboard.writeText(address);
     copied.value = true;

@@ -64,7 +64,10 @@ function triggerLogoUpload() {
 
 function uploadLogo(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
+
+    if (!file) {
+        return;
+    }
 
     uploadingLogo.value = true;
     router.post(
@@ -79,7 +82,10 @@ function uploadLogo(event: Event) {
 }
 
 function removeLogo() {
-    if (!window.confirm('Remove the organization logo?')) return;
+    if (!window.confirm('Remove the organization logo?')) {
+        return;
+    }
+
     router.delete('/organization-settings/logo', { preserveScroll: true });
 }
 </script>

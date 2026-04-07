@@ -2,8 +2,8 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { ExternalLink, Users } from 'lucide-vue-next';
 import { ref } from 'vue';
-import UserCompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/UserCompetitionController';
 import TeamController from '@/actions/App/Domain/Competition/Http/Controllers/TeamController';
+import UserCompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/UserCompetitionController';
 import MailLetterAnimation from '@/components/MailLetterAnimation.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,10 @@ const leaving = ref(false);
 const page = usePage();
 
 function leaveTeam() {
-    if (!props.userTeam) return;
+    if (!props.userTeam) {
+        return;
+    }
+
     const authUserId = (
         page.props.auth as { user?: { id: number } } | undefined
     )?.user?.id;
@@ -50,7 +53,10 @@ function leaveTeam() {
     const msg = isCaptain
         ? 'You are the captain. If you leave, captaincy transfers to another member. If you are the last member, the team is deleted. Continue?'
         : `Leave team "${props.userTeam.name}"?`;
-    if (!window.confirm(msg)) return;
+
+    if (!window.confirm(msg)) {
+        return;
+    }
 
     leaving.value = true;
     router.post(

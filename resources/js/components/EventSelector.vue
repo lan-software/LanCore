@@ -41,6 +41,7 @@ const context = computed(() => {
             selectedEventId: number | null;
             events: { id: number; name: string }[];
         } | null;
+
         return c;
     }
 
@@ -53,6 +54,7 @@ const endpoint = computed(() =>
 
 const selectedValue = computed(() => {
     const id = context.value?.selectedEventId;
+
     return id ? String(id) : 'all';
 });
 

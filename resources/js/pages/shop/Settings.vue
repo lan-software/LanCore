@@ -76,6 +76,7 @@ function methodDescription(value: string): string {
         on_site:
             'Allow attendees to pay at the venue during check-in. Orders are marked as pending until staff confirms payment.',
     };
+
     return map[value] ?? '';
 }
 

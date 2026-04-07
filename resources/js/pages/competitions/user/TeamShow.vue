@@ -1,23 +1,15 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import {
-    ArrowLeft,
-    Check,
-    Crown,
-    Mail,
-    Shield,
-    Users,
-    X,
-} from 'lucide-vue-next';
+import { ArrowLeft, Check, Crown, Mail, Shield, X } from 'lucide-vue-next';
 import { ref } from 'vue';
+import TeamController from '@/actions/App/Domain/Competition/Http/Controllers/TeamController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { index as myTeamsRoute } from '@/routes/my-teams';
 import { show as myCompetitionShow } from '@/routes/my-competitions';
-import TeamController from '@/actions/App/Domain/Competition/Http/Controllers/TeamController';
+import { index as myTeamsRoute } from '@/routes/my-teams';
 import type { BreadcrumbItem } from '@/types';
 
 interface Member {
@@ -75,11 +67,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 const leaving = ref(false);
 
 function leaveTeam() {
-    if (!props.team.competition) return;
+    if (!props.team.competition) {
+        return;
+    }
+
     const msg = props.team.is_captain
         ? 'You are the captain. If you leave, captaincy transfers to another member. If you are the last member, the team is deleted. Continue?'
         : `Leave team "${props.team.name}"?`;
-    if (!window.confirm(msg)) return;
+
+    if (!window.confirm(msg)) {
+        return;
+    }
 
     leaving.value = true;
     router.post(
@@ -103,7 +101,10 @@ function resolveRequest(requestId: number, action: 'approve' | 'deny') {
 const inviteForm = useForm({ email: '' });
 
 function sendInvite() {
-    if (!props.team.competition) return;
+    if (!props.team.competition) {
+        return;
+    }
+
     inviteForm.post(
         TeamController.invite({
             competition: props.team.competition.id,
@@ -127,6 +128,7 @@ function statusColor(status: string): string {
         finished:
             'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
     };
+
     return (
         map[status] ??
         'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'

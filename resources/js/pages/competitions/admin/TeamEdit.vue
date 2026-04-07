@@ -1,17 +1,7 @@
 <script setup lang="ts">
-import { Form, Head, Link, router, useForm } from '@inertiajs/vue3';
-import {
-    ArrowLeft,
-    Check,
-    Crown,
-    Mail,
-    Trash2,
-    Users,
-    X,
-} from 'lucide-vue-next';
-import { ref } from 'vue';
+import { Form, Head, Link, router } from '@inertiajs/vue3';
+import { ArrowLeft, Check, Crown, Trash2, X } from 'lucide-vue-next';
 import AdminTeamController from '@/actions/App/Domain/Competition/Http/Controllers/AdminTeamController';
-import TeamController from '@/actions/App/Domain/Competition/Http/Controllers/TeamController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
@@ -78,7 +68,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 function removeMember(member: Member) {
-    if (!window.confirm(`Remove ${member.name} from the team?`)) return;
+    if (!window.confirm(`Remove ${member.name} from the team?`)) {
+        return;
+    }
+
     router.delete(`/admin/teams/${props.team.id}/members/${member.id}`, {
         preserveScroll: true,
     });
@@ -97,9 +90,14 @@ function deleteTeam() {
         !window.confirm(
             `Delete team "${props.team.name}"? This cannot be undone.`,
         )
-    )
+    ) {
         return;
-    if (!props.team.competition) return;
+    }
+
+    if (!props.team.competition) {
+        return;
+    }
+
     router.delete(
         `/competitions/${props.team.competition.id}/teams/${props.team.id}`,
     );
@@ -116,6 +114,7 @@ function statusColor(status: string): string {
         finished:
             'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
     };
+
     return (
         map[status] ??
         'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'

@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import {
-    ChevronLeft,
-    ChevronRight,
-    ExternalLink,
-    Swords,
-} from 'lucide-vue-next';
+import { Swords } from 'lucide-vue-next';
 import UserCompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/UserCompetitionController';
+import EventSelector from '@/components/EventSelector.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import EventSelector from '@/components/EventSelector.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index as myCompetitionsRoute } from '@/routes/my-competitions';
 import type { BreadcrumbItem } from '@/types';
@@ -118,11 +113,9 @@ const statusColors: Record<string, string> = {
                     :disabled="!link.url || link.active"
                     as-child
                 >
-                    <Link
-                        v-if="link.url"
-                        :href="link.url"
-                        v-html="link.label"
-                    />
+                    <Link v-if="link.url" :href="link.url">
+                        <span v-html="link.label" />
+                    </Link>
                     <span v-else v-html="link.label" />
                 </Button>
             </div>

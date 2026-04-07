@@ -144,17 +144,27 @@ const testButtonClass = computed(() => {
     if (testResult.value === 'success') {
         return 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100 dark:border-green-600 dark:bg-green-950 dark:text-green-400 dark:hover:bg-green-900';
     }
+
     if (testResult.value === 'failure') {
         return 'border-red-500 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-600 dark:bg-red-950 dark:text-red-400 dark:hover:bg-red-900';
     }
+
     return '';
 });
 
 const testButtonLabel = computed(() => {
-    if (testingTmt2.value) return 'Testing...';
-    if (testResult.value === 'success') return 'Connected!';
-    if (testResult.value === 'failure')
+    if (testingTmt2.value) {
+        return 'Testing...';
+    }
+
+    if (testResult.value === 'success') {
+        return 'Connected!';
+    }
+
+    if (testResult.value === 'failure') {
         return testStatusLabel.value || 'Failed';
+    }
+
     return 'Test Connection';
 });
 
@@ -217,17 +227,27 @@ const stripeButtonClass = computed(() => {
     if (stripeResult.value === 'success') {
         return 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100 dark:border-green-600 dark:bg-green-950 dark:text-green-400 dark:hover:bg-green-900';
     }
+
     if (stripeResult.value === 'failure') {
         return 'border-red-500 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-600 dark:bg-red-950 dark:text-red-400 dark:hover:bg-red-900';
     }
+
     return '';
 });
 
 const stripeButtonLabel = computed(() => {
-    if (testingStripe.value) return 'Testing...';
-    if (stripeResult.value === 'success') return 'Connected!';
-    if (stripeResult.value === 'failure')
+    if (testingStripe.value) {
+        return 'Testing...';
+    }
+
+    if (stripeResult.value === 'success') {
+        return 'Connected!';
+    }
+
+    if (stripeResult.value === 'failure') {
         return stripeStatusLabel.value || 'Failed';
+    }
+
     return 'Test Connection';
 });
 </script>

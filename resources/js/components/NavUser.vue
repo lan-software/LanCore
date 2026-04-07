@@ -2,7 +2,6 @@
 import { usePage } from '@inertiajs/vue3';
 import { ChevronsUpDown } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { cn } from '@/lib/utils';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,6 +15,7 @@ import {
 } from '@/components/ui/sidebar';
 import UserInfo from '@/components/UserInfo.vue';
 import UserMenuContent from '@/components/UserMenuContent.vue';
+import { cn } from '@/lib/utils';
 
 type Props = {
     variant?: 'sidebar' | 'topbar';

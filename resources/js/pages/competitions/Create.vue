@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index as competitionsRoute } from '@/routes/competitions';
 import type { BreadcrumbItem } from '@/types';
-import type { Game, Event } from '@/types/domain';
+import type { Game } from '@/types/domain';
 
 const props = defineProps<{
     games: Game[];

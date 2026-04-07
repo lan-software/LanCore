@@ -2,7 +2,6 @@
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { CheckCircle2, Clock, Users, XCircle } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 
@@ -49,7 +48,10 @@ function accept() {
 }
 
 function decline() {
-    if (!window.confirm('Decline this invite?')) return;
+    if (!window.confirm('Decline this invite?')) {
+        return;
+    }
+
     declining.value = true;
     router.post(
         `/team-invites/${props.invite.token}/decline`,

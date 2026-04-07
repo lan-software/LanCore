@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { Clock, ShoppingCart } from 'lucide-vue-next';
 import UserOrderController from '@/actions/App/Domain/Shop/Http/Controllers/UserOrderController';
+import EventSelector from '@/components/EventSelector.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +12,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import EventSelector from '@/components/EventSelector.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index as myOrdersIndex } from '@/routes/my-orders';
 import { index as shopIndex } from '@/routes/shop';

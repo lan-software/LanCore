@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
 import { Armchair, Download, Eye, EyeOff, QrCode, X } from 'lucide-vue-next';
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import TicketController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketController';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +17,6 @@ const props = defineProps<{
 
 const showValidationToken = ref(false);
 const showQrCode = ref(false);
-const qrSvg = ref('');
 
 function formatPrice(cents: number): string {
     return (cents / 100).toFixed(2) + ' €';

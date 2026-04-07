@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { Shield, Swords, Users } from 'lucide-vue-next';
-import { Badge } from '@/components/ui/badge';
 import EventSelector from '@/components/EventSelector.vue';
+import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { index as myTeamsRoute, show as myTeamShow } from '@/routes/my-teams';
 import { show as myCompetitionShow } from '@/routes/my-competitions';
+import { index as myTeamsRoute, show as myTeamShow } from '@/routes/my-teams';
 import type { BreadcrumbItem } from '@/types';
 
 interface TeamItem {
@@ -45,6 +45,7 @@ function statusColor(status: string): string {
         archived:
             'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500',
     };
+
     return (
         map[status] ??
         'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'

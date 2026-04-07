@@ -18,13 +18,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index as competitionsRoute } from '@/routes/competitions';
@@ -101,6 +94,7 @@ function submitTransition() {
     if (transition?.confirm && !window.confirm(transition.confirm)) {
         return;
     }
+
     transitioning.value = true;
     transitionForm.patch(
         CompetitionController.update(props.competition.id).url,
@@ -148,6 +142,7 @@ function deleteCompetition() {
     ) {
         return;
     }
+
     deleting.value = true;
     router.delete(CompetitionController.destroy(props.competition.id).url);
 }
@@ -167,6 +162,7 @@ function statusColor(status: string): string {
         archived:
             'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500',
     };
+
     return map[status] ?? '';
 }
 </script>
