@@ -22,7 +22,7 @@ This Software Requirements Specification (SRS) specifies the requirements for th
 
 ### 1.2 System Overview
 
-LanCore is a monolithic web application comprising a Laravel 13 backend and a Vue.js 3 frontend connected via Inertia.js v2. It is organized into 15 domain modules, each encapsulating a bounded context of the event management domain.
+LanCore is a monolithic web application comprising a Laravel 13 backend and a Vue.js 3 frontend connected via Inertia.js v2. It is organized into 17 domain modules, each encapsulating a bounded context of the event management domain.
 
 ### 1.3 Document Overview
 
@@ -51,6 +51,7 @@ The LanCore CSCI shall support the following operational states:
 | Maintenance | `php artisan down`; returns 503 to all non-allowed requests |
 | Queue Processing | Horizon workers active, processing background jobs |
 | Migrating | Database migrations in progress; application temporarily unavailable |
+| Demo | Database pre-seeded with synthetic data via `SeedDemoCommand`; the `demo` payment provider is active in place of Stripe, completing orders without real transactions; all other CSCI capabilities function normally |
 
 ### 3.2 CSCI Capability Requirements
 
@@ -72,6 +73,7 @@ The LanCore CSCI shall support the following operational states:
 | EVT-F-008 | The software shall provide audit trail views for events via EventAuditController |
 | EVT-F-009 | The software shall provide public event listing via PublicEventController |
 | EVT-F-010 | The software shall support a primary program assignment per event |
+| EVT-F-011 | The software shall provide per-user event context selection for "My Pages" views via `POST /my-event-context` (store) and `DELETE /my-event-context` (destroy), implemented in `EventContextController::storeMy/destroyMy`. The selected event shall be validated via `Event::scopeForUser` to confirm the user has participation (ticket ownership/management, active team membership, or order) in that event. The selection shall be stored in session key `my_selected_event_id` and applied as a filter on my-competitions, my-teams, my-orders, and my-tickets index views. A stale selection (user loses participation) shall be automatically cleared when the `myEventContext` shared prop is computed. |
 
 #### 3.2.2 Ticketing Domain (CSCI-TKT)
 
@@ -304,12 +306,15 @@ The LanCore CSCI shall support the following operational states:
 | COMP-F-004 | The software shall support competition deletion (draft/archived only) |
 | COMP-F-005 | The software shall support team creation with captain assignment during registration |
 | COMP-F-006 | The software shall support team joining with capacity validation |
-| COMP-F-007 | The software shall support team leaving with captain succession |
+| COMP-F-007 | The software shall support team leaving via `LeaveTeam::execute(): bool`. When a member who is not the last member leaves, captaincy is rotated to the oldest-joined active member and `execute()` returns `false`. When the last member leaves, the team is deleted and `execute()` returns `true`. On success the user is redirected to `my-competitions.show` with a flash `success` message. Non-members receive a 403 via `CompetitionTeamPolicy::leave()`. |
 | COMP-F-008 | The software shall support match result submission with screenshot proof upload, proxied to LanBrackets API |
 | COMP-F-009 | The software shall handle LanBrackets webhooks (competition.completed, match.result_reported, bracket.generated) with HMAC signature verification |
 | COMP-F-010 | The software shall sync competitions to LanBrackets via queued job with external_reference_id mapping |
 | COMP-F-011 | The software shall sync teams as participants to LanBrackets when registration closes |
 | COMP-F-012 | The software shall provide user-facing competition views scoped to team membership only |
+| COMP-F-013 | The software shall allow authenticated users to submit a join request for a team via `RequestToJoinTeam` action; a `TeamJoinRequestNotification` shall be dispatched to the team captain |
+| COMP-F-014 | The software shall allow the team captain to resolve a join request (approve or reject) via `ResolveJoinRequest` action; a `JoinRequestResolvedNotification` shall be dispatched to the requesting user |
+| COMP-F-015 | The software shall prevent duplicate join requests from the same user to the same team, and reject requests when the team is at capacity |
 
 #### 3.2.15 Venue Domain (CSCI-VEN)
 
@@ -348,7 +353,7 @@ The LanCore CSCI shall support the following operational states:
 | USR-F-011 | The software shall integrate with Stripe Cashier for billing customer management |
 | USR-F-012 | The software shall store user address fields (phone, street, city, zip_code, country) on the users table |
 | USR-F-013 | The software shall enforce profile completeness (address + at least phone or email) via `hasCompleteProfile()` before allowing cart item additions |
-| USR-F-014 | The software shall define granular per-domain permissions via domain-specific `Permission` enums (24 cases across 14 enums) implementing the `PermissionEnum` interface, with cross-cutting audit permissions in a separate `AuditPermission` enum |
+| USR-F-014 | The software shall define granular per-domain permissions via domain-specific `Permission` enums (23 cases across 15 domain enums plus 3 cases in `app/Enums/Permission.php` and 1 case in `AuditPermission.php` — 27 cases total across 17 enums) implementing the `PermissionEnum` interface, with cross-cutting audit permissions in a separate `AuditPermission` enum |
 | USR-F-015 | The software shall map permissions to roles statically via `RolePermissionMap::forRole()` without database tables, with `RolePermissionMap::all()` collecting every permission case across all domain enums |
 | USR-F-016 | The software shall provide `hasPermission()`, `hasAnyPermission()`, and `allPermissions()` methods on the User model via the `HasPermissions` trait, with request-scoped caching of resolved permissions |
 | USR-F-017 | The software shall centralize superadmin authorization bypass via a single `Gate::before()` callback in `AppServiceProvider`, removing per-policy `before()` methods |
@@ -395,6 +400,19 @@ The LanCore CSCI shall support the following operational states:
 |--------|------------|
 | API-F-001 | The software shall provide an HTTP client for TMT2 REST API with bearer token authentication, retries, and feature flag (tmt2.enabled) |
 | API-F-002 | The software shall support TMT2 match lifecycle operations: create, get, update, delete matches via Tmt2Client |
+
+#### 3.2.18 Organization Settings (CSCI-ORG)
+
+**Controllers:** OrganizationSettingsController
+**Actions:** UpdateOrganizationSettings, UploadOrganizationLogo, RemoveOrganizationLogo
+
+| Req ID | Requirement |
+|--------|------------|
+| ORG-F-001 | The software shall store organization identity fields — name, logo path, address, and legal notice — in a key/value settings table or equivalent |
+| ORG-F-002 | The software shall restrict all organization settings routes to administrators |
+| ORG-F-003 | The software shall serve the organization identity as a shared Inertia prop (`organization`) on every page, containing at minimum `{ name, logoUrl }` |
+| ORG-F-004 | The software shall cache the `organization` shared prop under cache key `inertia.organization` with a 1-hour TTL and invalidate this cache whenever `OrganizationSettingsController::update`, `uploadLogo`, or `removeLogo` is called |
+| ORG-F-005 | The software shall support logo upload to the `public` disk and return a signed URL; logo removal shall delete the file and null the setting |
 
 ### 3.3 CSCI External Interface Requirements
 
@@ -499,6 +517,9 @@ Additional CSCI-level requirements:
 | CAP-WHK-* | WHK-F-* |
 | CAP-GAM-* | GAM-F-* |
 | CAP-USR-* | USR-F-* |
+| CAP-COMP-* | COMP-F-* |
+| CAP-ORC-* | ORC-F-* |
+| CAP-ORG-* | ORG-F-* |
 
 ---
 

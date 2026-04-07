@@ -48,7 +48,7 @@ LanCore departs from traditional Laravel "fat controller" patterns by organizing
 
 ```
 app/
-├── Domain/                    # Business domains (14 modules)
+├── Domain/                    # Business domains (17 modules)
 │   ├── Event/
 │   │   ├── Actions/           # Business logic (CreateEvent, PublishEvent, etc.)
 │   │   ├── Controllers/       # HTTP layer (thin, delegates to Actions)
@@ -92,12 +92,13 @@ app/
 | JSONB for flexible data | Seat plans and banner images benefit from schemaless storage |
 | Laravel Octane/FrankenPHP | Application boot once, reuse across requests for performance |
 | Redis for caching | Tag-based invalidation, high throughput, shared cache across workers |
+| Demo mode via `SeedDemoCommand` + `DemoPaymentProvider` | Enables self-contained showcases without external payment dependencies; activated via environment flag `APP_DEMO=true`; `PaymentProviderManager` resolves `DemoPaymentProvider` when the flag is set |
 
 ### 3.3 Security Design
 
 - All user input validated via Form Request classes before reaching Actions
 - Authorization enforced at controller level via `$this->authorize()` and Policy classes
-- 24 Policy classes cover all domain entities, each checking granular permissions via `$user->hasPermission()`
+- 29 Policy classes cover all domain entities, each checking granular permissions via `$user->hasPermission()`
 - CSRF protection on all state-changing web routes
 - Stateless Bearer token auth for integration API (no session/cookies)
 - Passwords hashed with bcrypt (configurable rounds)
@@ -153,6 +154,9 @@ RoleName Enum (5 cases)
 | ViewAuditLogs | | | | X | X |
 | SyncUserRoles | | | | | X |
 | DeleteUsers | | | | | X |
+| ManageCompetitions | | | | X | X |
+| ManageGameServers | | | | X | X |
+| ViewOrchestration | | | | X | X |
 
 ---
 
@@ -186,7 +190,7 @@ RoleName Enum (5 cases)
 └─────────────────────────────────────────────────────────┘
 ```
 
-### 4.2 Domain Modules (14)
+### 4.2 Domain Modules (17)
 
 Each domain module follows a consistent internal structure:
 
@@ -388,7 +392,7 @@ show({ id: 1 })
 | 1 | AddRequestId | Assigns X-Request-ID header for tracing |
 | 2 | TrackHttpMetrics | Records Prometheus metrics |
 | 3 | HandleAppearance | Reads appearance/theme preference |
-| 4 | HandleInertiaRequests | Shares global data with Inertia (auth, flash, push prompt dismissal, etc.) |
+| 4 | HandleInertiaRequests | Shares global data with Inertia (auth, flash, push prompt dismissal, permissions, `organization`, `myEventContext`, etc.). The `organization` prop is read from cache key `inertia.organization` (1h TTL, invalidated by `OrganizationSettingsController::update/uploadLogo/removeLogo`). The `myEventContext` prop resolves the user's currently selected event from session key `my_selected_event_id`, validates participation via `Event::scopeForUser`, and auto-clears a stale selection. |
 | 5 | EncryptCookies | Cookie encryption |
 | 6 | StartSession | Session initialization |
 | 7 | VerifyCsrfToken | CSRF protection |
@@ -498,6 +502,8 @@ Built on **reka-ui** (headless) + **Tailwind CSS v4**:
 | PushNotificationPrompt | Web push subscription prompt |
 | SeatMapCanvas | Canvas-based seat plan rendering |
 | TicketCard | Ticket display with validation and status |
+| AppLogo | Renders the organization logo (or a text fallback) sourced from the `organization` Inertia shared prop |
+| MailLetterAnimation | Animated envelope illustration used in email-confirmation and verification screens |
 
 #### 5.3.3 Frontend Libraries
 
@@ -512,6 +518,27 @@ Built on **reka-ui** (headless) + **Tailwind CSS v4**:
 | @alisaitteke/seatmap-canvas | ^2.7.1 | Seating visualization |
 | tailwindcss | ^4.2 | Utility CSS |
 
+### 5.3a Design Notes — Competition Domain
+
+#### LeaveTeam Action Contract
+
+`LeaveTeam::execute(): bool` implements a two-branch departure flow:
+
+- **Non-last-member departure:** Removes the member from `CompetitionTeamMember`. If the departing user was captain, captaincy is transferred to the active member with the earliest `joined_at`. Returns `false`.
+- **Last-member departure:** Deletes the `CompetitionTeam` record entirely. Returns `true` (team deleted).
+
+On both branches the controller redirects to `my-competitions.show` and sets a flash `success` message appropriate to the branch (standard leave vs. team disbanded).
+
+Non-members are rejected at the policy layer (`CompetitionTeamPolicy::leave()` → 403) before the action is reached.
+
+### 5.3b Design Notes — Event Context Controller
+
+`EventContextController::storeMy(Request $request)` accepts a validated `event_id`, queries `Event::forUser($user)` to confirm participation (ownership of a ticket, active team membership in a competition linked to the event, or an order with `event_id`), stores the result in `session('my_selected_event_id')`, and returns a redirect.
+
+`EventContextController::destroyMy()` simply removes the `my_selected_event_id` session key.
+
+The `myEventContext` Inertia shared prop (set by `HandleInertiaRequests`) re-resolves the selected event on every request. If the stored ID no longer appears in `Event::forUser($user)` (participation lost), the session key is cleared automatically and the prop returns `null`, ensuring stale context never filters "My Pages" views incorrectly.
+
 ### 5.4 Console Commands (21)
 
 | Category | Commands |
@@ -520,6 +547,15 @@ Built on **reka-ui** (headless) + **Tailwind CSS v4**:
 | Data Listing | ListEvents, ListVenues, ListPrograms, ListSponsors, ListSponsorLevels, ListTickets, ListTicketTypes, ListAddons, ListNews, ListGames, ListSeatPlans, ListUsers |
 | Administration | PromoteUserToAdmin, SeedDemoCommand |
 | Utilities | MigrateStorageCommand, TestPushNotificationCommand |
+
+#### 5.4.1 Demo Mode Design
+
+When `APP_DEMO=true` is set in the environment, the system enters Demo mode:
+
+1. **Data seeding:** `SeedDemoCommand` (existing) populates the database with a synthetic published event, ticket types, a demo admin user, and sample attendees. It is idempotent — running it multiple times does not duplicate records.
+2. **Payment simulation:** `PaymentProviderManager` detects `APP_DEMO=true` and resolves `DemoPaymentProvider` instead of `StripePaymentProvider`. `DemoPaymentProvider` implements `PaymentProvider` and immediately returns a successful `PaymentResult` with a fake session reference, causing `FulfillOrder` to issue tickets without any Stripe API call.
+3. **Stripe routes disabled:** The Stripe Checkout and webhook routes remain registered but `DemoPaymentProvider` is never dispatched via those routes; attempting to submit with `payment_method: stripe` is rejected at the `PaymentProviderManager` layer.
+4. **Normal mode restoration:** Setting `APP_DEMO=false` (and clearing application cache) returns `PaymentProviderManager` to resolving `StripePaymentProvider`. Demo data is not automatically purged — admins must run a migration rollback or a dedicated cleanup seeder if clean-slate state is desired.
 
 ---
 
@@ -542,6 +578,11 @@ Built on **reka-ui** (headless) + **Tailwind CSS v4**:
 | GAM-F-* | app/Domain/Games/ |
 | USR-F-001..013 | app/Models/User, app/Domain/ controllers |
 | USR-F-014..020 | app/Contracts/PermissionEnum.php, app/Enums/Permission.php, app/Enums/RolePermissionMap.php, app/Domain/*/Enums/Permission.php, app/Concerns/HasPermissions.php, app/Providers/AppServiceProvider.php, resources/js/composables/usePermissions.ts |
+| COMP-F-001..015 | app/Domain/Competition/ |
+| ORC-F-001..015 | app/Domain/Orchestration/ |
+| EVT-F-011 | app/Domain/Event/Http/Controllers/EventContextController.php, app/Http/Middleware/HandleInertiaRequests.php, app/Domain/Event/Models/Event.php (scopeForUser) |
+| ORG-F-001..005 | app/Domain/Settings/Http/Controllers/OrganizationSettingsController.php, app/Http/Middleware/HandleInertiaRequests.php, resources/js/components/AppLogo.vue |
+| SRS 3.1 Required States (Demo) | app/Console/Commands/SeedDemoCommand.php (data seeding), app/Domain/Shop/Providers/DemoPaymentProvider.php (simulated payments), app/Domain/Shop/Services/PaymentProviderManager.php (provider resolution via APP_DEMO flag) |
 
 ---
 

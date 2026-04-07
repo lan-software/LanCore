@@ -251,6 +251,7 @@ LanCore is a ground-up rewrite providing:
 | Maintenance Mode | Application returns maintenance page; admin can still access via allowed IPs |
 | Development Mode | Debug toolbar, Telescope, detailed error pages enabled |
 | Queue Processing | Horizon manages background jobs (webhooks, notifications, email) |
+| Demo Purposes | System pre-loaded with synthetic event, ticket, and user data to showcase platform capabilities to prospective organizers or stakeholders; payment processing is simulated and no real financial transactions occur |
 
 ---
 

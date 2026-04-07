@@ -164,6 +164,7 @@ Production network architecture (TLS termination, reverse proxy) is TBD.
 | SSS 3.7 Environment | Section 3 |
 | SSS 3.4 Internal Interfaces | Section 4.1 |
 | SSS 3.9 Quality Factors (Scalability) | Section 4.2 |
+| SSS 3.1 Required States and Modes (Demo) | Section 3.1 — Demo mode uses the same Docker deployment topology as Normal mode; the distinction is data content (seeded via `SeedDemoCommand`) and payment provider configuration (simulated), not infrastructure topology |
 
 ---
 

@@ -45,10 +45,11 @@ This document specifies the system-level requirements for LanCore, organized by 
 
 | State | Description | Transitions |
 |-------|-------------|-------------|
-| Normal | Full operation, all features available | To Maintenance, To Queue-Only |
+| Normal | Full operation, all features available | To Maintenance, To Queue-Only, To Demo |
 | Maintenance | Application returns 503, scheduled work paused | To Normal |
 | Queue-Only | Web interface disabled, queue workers process jobs | To Normal |
 | Development | Debug features enabled, Telescope active | To Normal |
+| Demo | System operates with pre-seeded synthetic data; payment processing is simulated (no real transactions); intended for showcasing platform capabilities to prospective organizers or stakeholders | To Normal |
 
 ### 3.2 System Capability Requirements
 
@@ -211,6 +212,30 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-USR-007 | The system shall support sidebar favorites for navigation customization |
 | CAP-USR-008 | The system shall support appearance settings (theme preferences) |
 
+#### 3.2.16 Game Server Orchestration (CAP-ORC)
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-ORC-001 | The system shall provide CRUD operations for game servers, accessible to administrators with the ManageGameServers permission |
+| CAP-ORC-002 | The system shall support game server allocation types: Competition, Casual, and Flexible, with server selection prioritising Competition over Flexible over Casual |
+| CAP-ORC-003 | The system shall create orchestration jobs from match-ready events and process them via dedicated queue workers with retry logic |
+| CAP-ORC-004 | The system shall deploy match configurations via pluggable MatchHandler implementations, with TMT2 as the first concrete handler for CS2/Source 2 games |
+| CAP-ORC-005 | The system shall track orchestration job lifecycle states: Pending, SelectingServer, Deploying, Active, Completed, Failed, Cancelled |
+| CAP-ORC-006 | The system shall release game servers upon match completion or job failure, preventing server exhaustion |
+| CAP-ORC-007 | The system shall prevent duplicate orchestration jobs per competition/match pair via database constraint |
+| CAP-ORC-008 | The system shall receive TMT2 webhooks and auto-report match results to LanBrackets for automated bracket progression |
+| CAP-ORC-009 | The system shall support admin manual controls: retry failed jobs, cancel pending/failed jobs, force-release in-use servers |
+| CAP-ORC-010 | The system shall display server connection details (IP:port, password) to match participants when the orchestration job is Active |
+
+#### 3.2.17 Organization Identity and Branding (CAP-ORG)
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-ORG-001 | The system shall maintain an organization identity record comprising: name, logo (uploadable image), address, and legal notice |
+| CAP-ORG-002 | The system shall restrict modification of organization identity to administrators |
+| CAP-ORG-003 | The system shall make organization identity globally available to all frontend pages via Inertia shared props (the `organization` prop) |
+| CAP-ORG-004 | The system shall cache the organization shared prop (cache key `inertia.organization`, TTL 1 hour) and invalidate the cache on any update, logo upload, or logo removal |
+
 ### 3.3 System External Interface Requirements
 
 #### 3.3.1 External Interfaces
@@ -255,7 +280,7 @@ See [IRS](IRS.md) for detailed interface requirements.
 | SEC-005 | Webhook payloads shall be signed with HMAC-SHA256 |
 | SEC-006 | CSRF protection shall be enforced on all state-changing requests |
 | SEC-007 | Authorization shall be enforced via Laravel Policies on all domain entities |
-| SEC-008 | The system shall support role-based access control with 24 authorization policies |
+| SEC-008 | The system shall support role-based access control with 29 authorization policies |
 | SEC-011 | Authorization shall use a static enum-based permission system mapping permissions to roles, with per-domain granularity |
 | SEC-012 | Superadmin role shall bypass all authorization checks via a centralized Gate::before() callback |
 | SEC-013 | User permissions shall be shared with the frontend via Inertia.js shared props for UI-level access control |
@@ -346,3 +371,6 @@ Requirements in this document trace to:
 | RESP | Redis Serialization Protocol |
 | CSRF | Cross-Site Request Forgery |
 | TOTP | Time-based One-Time Password |
+| ORC | Orchestration |
+| ORG | Organisation |
+| TTL | Time to Live |

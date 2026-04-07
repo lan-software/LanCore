@@ -3,6 +3,7 @@
 use App\Domain\Event\Models\Event;
 use App\Domain\Program\Models\Program;
 use App\Domain\Seating\Models\SeatPlan;
+use App\Domain\Ticketing\Models\Ticket;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
@@ -337,4 +338,84 @@ it('clears my event context independently from admin selector', function () {
 
     expect(session('my_selected_event_id'))->toBeNull();
     expect(session('selected_event_id'))->toBe(1);
+});
+
+it('stores my event context for a participating user', function () {
+    $user = User::factory()->withRole(RoleName::User)->create();
+    $event = Event::factory()->create();
+    Ticket::factory()->create(['event_id' => $event->id, 'owner_id' => $user->id]);
+
+    $this->actingAs($user)
+        ->post('/my-event-context', ['event_id' => $event->id])
+        ->assertRedirect();
+
+    expect(session('my_selected_event_id'))->toBe($event->id);
+});
+
+it('validates event_id is required when storing my event context', function () {
+    $user = User::factory()->withRole(RoleName::User)->create();
+
+    $this->actingAs($user)
+        ->post('/my-event-context', [])
+        ->assertSessionHasErrors(['event_id']);
+});
+
+it('validates event_id exists when storing my event context', function () {
+    $user = User::factory()->withRole(RoleName::User)->create();
+
+    $this->actingAs($user)
+        ->post('/my-event-context', ['event_id' => 99999])
+        ->assertSessionHasErrors(['event_id']);
+});
+
+it('requires authentication for my-event-context routes', function () {
+    $this->post('/my-event-context', ['event_id' => 1])->assertRedirect('/login');
+    $this->delete('/my-event-context')->assertRedirect('/login');
+});
+
+it('allows a regular user to clear their my-event-context', function () {
+    $user = User::factory()->withRole(RoleName::User)->create();
+
+    $this->actingAs($user)
+        ->withSession(['my_selected_event_id' => 42])
+        ->delete('/my-event-context')
+        ->assertRedirect();
+
+    expect(session('my_selected_event_id'))->toBeNull();
+});
+
+it('shares myEventContext.events ordered by start_date desc and only events the user participates in', function () {
+    $user = User::factory()->withRole(RoleName::User)->create();
+    $older = Event::factory()->create(['start_date' => now()->subDays(10), 'end_date' => now()->subDays(9)]);
+    $newer = Event::factory()->create(['start_date' => now()->addDays(5), 'end_date' => now()->addDays(6)]);
+    $unrelated = Event::factory()->create(['start_date' => now()->addDays(20), 'end_date' => now()->addDays(21)]);
+
+    Ticket::factory()->create(['event_id' => $older->id, 'owner_id' => $user->id]);
+    Ticket::factory()->create(['event_id' => $newer->id, 'owner_id' => $user->id]);
+    Ticket::factory()->create(['event_id' => $unrelated->id, 'owner_id' => User::factory()->create()->id]);
+
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->has('myEventContext.events', 2)
+                ->where('myEventContext.events.0.id', $newer->id)
+                ->where('myEventContext.events.1.id', $older->id)
+        );
+});
+
+it('clears stale my_selected_event_id when the user no longer participates in that event', function () {
+    $user = User::factory()->withRole(RoleName::User)->create();
+    $event = Event::factory()->create();
+
+    $this->actingAs($user)
+        ->withSession(['my_selected_event_id' => $event->id])
+        ->get('/dashboard')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page->where('myEventContext.selectedEventId', null)
+        );
+
+    expect(session('my_selected_event_id'))->toBeNull();
 });

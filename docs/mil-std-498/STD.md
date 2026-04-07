@@ -493,6 +493,87 @@ This ensures complete isolation between test cases.
 | No direct DB:: usage | Models use Eloquent, not DB facade |
 | Controller returns | Controllers return Inertia or redirect responses |
 
+### 4.16 Competition Tests
+
+**Files:** `tests/Feature/Competition/LeaveTeamTest.php`, `tests/Unit/Domain/Competition/LeaveTeamActionTest.php`
+
+#### 4.16.1 Feature Tests — LeaveTeamTest
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| non-captain member leaves (happy path) | Authenticated member, captain exists | DELETE /teams/{team}/leave | 302 to my-competitions.show, flash success = "You have left the team.", team NOT deleted |
+| captain leaves with members remaining | Captain, at least one other member | DELETE /teams/{team}/leave | Captaincy rotated to oldest-joined active member, 302 to my-competitions.show, team NOT deleted |
+| last member leaves (team deleted) | Sole remaining member | DELETE /teams/{team}/leave | Team record deleted, 302 to my-competitions.show, flash success = "You left the team. As the last member, the team has been disbanded." |
+| non-member receives 403 | Authenticated user, not on team | DELETE /teams/{team}/leave | 403 Forbidden |
+| captain destroys team | Captain | DELETE /teams/{team} | 302 redirect, flash "Team deleted.", team record deleted |
+| non-captain cannot destroy team | Non-captain member | DELETE /teams/{team} | 403 Forbidden |
+
+#### 4.16.2 Unit Tests — LeaveTeamActionTest
+
+| Test | Input | Expected Result |
+|------|-------|-----------------|
+| returns false when members remain | Team with 2+ members | `LeaveTeam::execute()` returns `false`, team not deleted |
+| returns true when last member leaves | Team with 1 member | `LeaveTeam::execute()` returns `true`, team deleted |
+| rotates captain to oldest joined_at | Team with multiple members, explicit `joined_at` values on factory | Captaincy assigned to member with earliest `joined_at` |
+
+### 4.17 My Pages Event Selector Tests
+
+**Files:** `tests/Feature/EventContextTest.php`, `tests/Feature/MyPagesEventFilterTest.php`, `tests/Unit/Domain/Event/EventScopeForUserTest.php`
+
+#### 4.17.1 Feature Tests — EventContextTest
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| storeMy happy path (participant) | User has ticket in event | POST /my-event-context {event_id} | session('my_selected_event_id') set, 302 |
+| storeMy rejects non-participant | User has no participation in event | POST /my-event-context {event_id} | 422 validation error |
+| storeMy validation (missing event_id) | Authenticated | POST /my-event-context {} | 422 |
+| destroyMy clears session key | Session has my_selected_event_id | DELETE /my-event-context | my_selected_event_id removed from session, 302 |
+| stale session key auto-cleared | User had participation, now lost | GET /dashboard (or any Inertia page) | myEventContext prop is null, session key cleared |
+| guest blocked on POST | Unauthenticated | POST /my-event-context | 302 to login |
+| guest blocked on DELETE | Unauthenticated | DELETE /my-event-context | 302 to login |
+| myEventContext.events shape and ordering | User participates in multiple events | GET /dashboard | events ordered by start_date descending |
+
+#### 4.17.2 Feature Tests — MyPagesEventFilterTest
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| UserCompetitionController index filtered by session event | User in competitions across 2 events | GET /my-competitions (session set) | Only competitions for selected event returned |
+| UserCompetitionController index unfiltered without session | No session key | GET /my-competitions | All user competitions returned |
+| UserTeamController index filtered | Teams across 2 events | GET /my-teams (session set) | Only teams in selected event's competitions returned |
+| UserOrderController index filtered | Orders across 2 events | GET /my-orders (session set) | Only orders for selected event returned |
+| TicketController index filtered | Tickets (owned/manager/assignee) across 2 events | GET /my-tickets (session set) | Only tickets for selected event returned |
+
+#### 4.17.3 Unit Tests — EventScopeForUserTest
+
+| Test | Input | Expected Result |
+|------|-------|-----------------|
+| ticket owner sees event | User owns a ticket in event | `Event::scopeForUser($user)` includes event |
+| ticket manager sees event | User is manager on a ticket | `Event::scopeForUser($user)` includes event |
+| ticket pivot user sees event | User assigned via ticket_user pivot | `Event::scopeForUser($user)` includes event |
+| active team member sees event | User has active CompetitionTeamMember, competition has event_id | `Event::scopeForUser($user)` includes event |
+| order with event_id grants access | User has order with event_id | `Event::scopeForUser($user)` includes event |
+| left team member excluded | User has left_at set on CompetitionTeamMember | event not returned |
+| competition without event_id excluded | competition.event_id IS NULL | event not returned |
+| order without event_id excluded | order.event_id IS NULL | event not returned |
+| no participation — nothing returned | User has no tickets, teams, or orders | empty result |
+
+### 4.18 Organization Settings Tests
+
+**File:** `tests/Feature/Settings/OrganizationSettingsTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| organization prop shape without logo | No logo configured | GET any Inertia page | `organization = { name, logoUrl: null }` |
+| organization prop shape with logo | Logo uploaded to public disk | GET any Inertia page | `organization.logoUrl` is a non-null URL |
+| prop is cached after first request | Cache empty | GET /dashboard | `Cache::has('inertia.organization')` is true after response |
+| cache invalidated on update | Cache populated | PATCH /settings/organization {name} | `Cache::has('inertia.organization')` is false after response |
+| cache invalidated on uploadLogo | Cache populated | POST /settings/organization/logo | Cache cleared |
+| cache invalidated on removeLogo | Cache populated, logo exists | DELETE /settings/organization/logo | Cache cleared, logo file deleted from public disk |
+| uploadLogo writes file to public disk | Admin authenticated | POST /settings/organization/logo {logo file} | File exists on Storage::disk('public') |
+| non-admin blocked on update | Regular user | PATCH /settings/organization | 403 Forbidden |
+| non-admin blocked on uploadLogo | Regular user | POST /settings/organization/logo | 403 Forbidden |
+| non-admin blocked on removeLogo | Regular user | DELETE /settings/organization/logo | 403 Forbidden |
+
 ### 4.15 CI Pipeline Verification
 
 **Scope:** GitHub Actions workflows (`.github/workflows/`)
@@ -504,6 +585,17 @@ This ensures complete isolation between test cases.
 | Lint pipeline executes | `lint.yml` passes Pint, ESLint, and Prettier checks with zero errors |
 | Docker pipeline executes | `docker-publish.yml` builds multi-platform image and pushes to GHCR |
 | All pipelines gate merges | Pull requests cannot merge with failing required status checks |
+
+### 4.19 Demo Mode Tests
+
+**File:** `tests/Feature/Demo/`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| demo seed produces expected event | Demo mode active | Run `artisan db:seed --class=DemoSeeder` | At least one published event with tickets and users exists in the database |
+| simulated payment completes without Stripe | Demo mode active, demo event with ticket | POST `/cart/checkout` `{payment_method: demo}` | Order created with status Completed, ticket issued, no Stripe API call made |
+| real payment methods unavailable in demo mode | Demo mode active | POST `/cart/checkout` `{payment_method: stripe}` | 422 validation error or redirect with error message |
+| admin can exit demo mode | Superadmin, demo mode active | Artisan `app:demo --disable` or equivalent env toggle | Application returns to Normal mode, demo data remains until manually purged |
 
 ---
 
@@ -518,11 +610,16 @@ This ensures complete isolation between test cases.
 | ACH-F-001..007 | Achievement CRUD tests (4.12), notification tests (4.4.1) |
 | TKT-F-001..016 | Ticketing tests (4.5, 4.5.1) |
 | SHP-F-003, SHP-F-015, SHP-F-016 | Shop/Payment tests (4.6) |
+| SHP-F-017 | User order views (4.6.2) |
 | VEN-F-001..003 | Venue tests (4.8) |
 | GAM-F-001..003 | Game tests (4.9) |
 | SPO-F-001..005 | Sponsor tests (4.10) |
 | SET-F-001..005 | Seating tests (4.11) |
 | All domains | Architecture tests (4.13) |
+| COMP-F-007, COMP-F-013..015 | Competition tests (4.16) |
+| EVT-F-011 | My Pages event selector tests (4.17) |
+| ORG-F-001..005 | Organization settings tests (4.18) |
+| SSS 3.1 Required States (Demo) | Demo mode tests (4.19) |
 
 ---
 

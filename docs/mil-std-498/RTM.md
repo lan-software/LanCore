@@ -24,9 +24,9 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 - **Gap** — No test coverage exists for this requirement
 
 **Statistics:**
-- Total SRS Requirements: 128
-- Total Test Files: 121
-- Total Test Cases: 834
+- Total SRS Requirements: 148 (added EVT-F-011, COMP-F-013..015, ORG-F-001..005, CAP-ORC-001..010, CAP-ORG-001..004)
+- Total Test Files: 121 (tests for new requirements pending per Workstream B)
+- Total Test Cases: 834 (new test cases documented in STD §4.16..4.18, pending implementation)
 
 ---
 
@@ -384,12 +384,15 @@ No gaps identified.
 | COMP-F-004 | Competition deletion (draft/archived) | `Domain/Competition/Actions/DeleteCompetition.php` | `Competition/CompetitionCrudTest.php` | Covered |
 | COMP-F-005 | Team creation with captain | `Domain/Competition/Actions/CreateTeam.php` | `Competition/TeamTest.php` | Covered |
 | COMP-F-006 | Team joining with capacity validation | `Domain/Competition/Actions/JoinTeam.php` | `Competition/TeamTest.php` | Covered |
-| COMP-F-007 | Team leaving with captain succession | `Domain/Competition/Actions/LeaveTeam.php` | `Competition/TeamTest.php` | Covered |
+| COMP-F-007 | Team leaving via `LeaveTeam::execute(): bool`; captain succession, team deletion when last member, redirect to my-competitions.show, flash success | `Domain/Competition/Actions/LeaveTeam.php` | `Competition/LeaveTeamTest.php`, `Unit/Domain/Competition/LeaveTeamActionTest.php` | Covered |
 | COMP-F-008 | Match result submission with proof | `Domain/Competition/Actions/SubmitMatchResult.php` | — | Pending |
 | COMP-F-009 | LanBrackets webhook handling | `Domain/Competition/Actions/HandleLanBracketsWebhook.php` | `Competition/LanBracketsWebhookTest.php` | Covered |
 | COMP-F-010 | Competition sync to LanBrackets | `Domain/Competition/Jobs/SyncCompetitionToLanBrackets.php` | — | Pending |
 | COMP-F-011 | Teams sync to LanBrackets | `Domain/Competition/Jobs/SyncTeamsToLanBrackets.php` | — | Pending |
 | COMP-F-012 | User-facing competition views | `Domain/Competition/Http/Controllers/UserCompetitionController.php` | `Competition/UserCompetitionTest.php` | Covered |
+| COMP-F-013 | Submit join request via `RequestToJoinTeam`; `TeamJoinRequestNotification` dispatched to captain | `Domain/Competition/Actions/RequestToJoinTeam.php` | — | **Gap** |
+| COMP-F-014 | Captain resolves join request (approve/reject) via `ResolveJoinRequest`; `JoinRequestResolvedNotification` dispatched | `Domain/Competition/Actions/ResolveJoinRequest.php` | — | **Gap** |
+| COMP-F-015 | Prevent duplicate join requests and requests when team at capacity | `Domain/Competition/Actions/RequestToJoinTeam.php` | — | **Gap** |
 
 ---
 
@@ -420,7 +423,7 @@ No gaps identified.
 | USR-F-009 | Sidebar favorites | `Settings/SidebarFavoriteController.php` | `Settings/SidebarFavoriteTest.php` (8 tests) | Covered |
 | USR-F-010 | Appearance/theme settings | HandleAppearance middleware | — | **Gap** |
 | USR-F-011 | Stripe Cashier billing customer | `App/Models/User.php` (Billable trait) | — | **Gap** |
-| USR-F-014 | Domain-specific Permission enums (24 cases across 14 enums) | `App/Contracts/PermissionEnum.php`, `App/Enums/Permission.php`, `App/Enums/AuditPermission.php`, `App/Domain/*/Enums/Permission.php` | `Unit/PermissionEnumTest.php` (7 tests), `Unit/PermissionArchitectureTest.php` (2 tests) | Covered |
+| USR-F-014 | Domain-specific Permission enums (27 cases across 17 enums) | `App/Contracts/PermissionEnum.php`, `App/Enums/Permission.php`, `App/Enums/AuditPermission.php`, `App/Domain/*/Enums/Permission.php` | `Unit/PermissionEnumTest.php` (7 tests), `Unit/PermissionArchitectureTest.php` (2 tests) | Covered |
 | USR-F-015 | Static role-to-permission mapping via `RolePermissionMap::forRole()` | `App/Enums/RolePermissionMap.php` | `Unit/PermissionEnumTest.php` (7 tests), `Unit/PermissionArchitectureTest.php` (2 tests) | Covered |
 | USR-F-016 | `HasPermissions` trait with `hasPermission()`, `hasAnyPermission()`, `allPermissions()` | `App/Concerns/HasPermissions.php` | `Unit/HasPermissionsTraitTest.php` (5 tests) | Covered |
 | USR-F-017 | Centralized `Gate::before()` superadmin bypass | `App/Providers/AppServiceProvider.php` | `Policies/RoleBasedPolicyAccessTest.php` (68 tests) | Covered |
@@ -447,7 +450,48 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 
 ---
 
-## 17. Gap Summary
+## 17. Event Context (CSCI-EVT — EVT-F-011)
+
+| Req ID | Requirement | Source | Test File(s) | Status |
+|--------|-------------|--------|--------------|--------|
+| EVT-F-011 | Per-user event context selection for My Pages; `POST/DELETE /my-event-context`; session-scoped via `my_selected_event_id`; validated via `Event::scopeForUser`; stale auto-cleared | `Domain/Event/Http/Controllers/EventContextController.php`, `app/Http/Middleware/HandleInertiaRequests.php`, `Domain/Event/Models/Event.php` (scopeForUser) | `EventContextTest.php`, `MyPagesEventFilterTest.php`, `Unit/Domain/Event/EventScopeForUserTest.php` | Covered |
+
+---
+
+## 18. Organization Settings (CSCI-ORG)
+
+| Req ID | Requirement | Source | Test File(s) | Status |
+|--------|-------------|--------|--------------|--------|
+| ORG-F-001 | Organization identity fields (name, logo, address, legal notice) in settings store | `Domain/Settings/Http/Controllers/OrganizationSettingsController.php` | `Settings/OrganizationSettingsTest.php` | Covered |
+| ORG-F-002 | Organization settings routes restricted to admins | `OrganizationSettingsController` policy/middleware | `Settings/OrganizationSettingsTest.php` | Covered |
+| ORG-F-003 | `organization` Inertia shared prop on every page | `app/Http/Middleware/HandleInertiaRequests.php` | `Settings/OrganizationSettingsTest.php` | Covered |
+| ORG-F-004 | Cache key `inertia.organization` (1h TTL), invalidated on update/uploadLogo/removeLogo | `HandleInertiaRequests.php`, `OrganizationSettingsController.php` | `Settings/OrganizationSettingsTest.php` | Covered |
+| ORG-F-005 | Logo upload to `public` disk; removeLogo deletes file and nulls setting | `OrganizationSettingsController::uploadLogo/removeLogo` | `Settings/OrganizationSettingsTest.php` | Covered |
+
+---
+
+## 19. SSS Capability Traceability
+
+| SSS Requirement | SRS Requirements | Status |
+|----------------|-----------------|--------|
+| CAP-ORC-001 | ORC-F-001, ORC-F-003 | Covered |
+| CAP-ORC-002 | ORC-F-004, ORC-F-005 | Covered |
+| CAP-ORC-003 | ORC-F-006, ORC-F-007 | Covered |
+| CAP-ORC-004 | ORC-F-008 | Covered |
+| CAP-ORC-005 | ORC-F-009 | Covered |
+| CAP-ORC-006 | ORC-F-010 | Covered |
+| CAP-ORC-007 | ORC-F-011 | Covered |
+| CAP-ORC-008 | ORC-F-013 | Covered |
+| CAP-ORC-009 | ORC-F-014 | Covered |
+| CAP-ORC-010 | ORC-F-015 | Covered |
+| CAP-ORG-001 | ORG-F-001 | Covered |
+| CAP-ORG-002 | ORG-F-002 | Covered |
+| CAP-ORG-003 | ORG-F-003 | Covered |
+| CAP-ORG-004 | ORG-F-004 | Covered |
+
+---
+
+## 20. Gap Summary
 
 | Req ID | Domain | Gap Description | Priority | Proposed Test File |
 |--------|--------|-----------------|----------|--------------------|
@@ -462,10 +506,13 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | USR-F-011 | User | Stripe customer management | Low | `Shop/StripeCustomerTest.php` |
 | USR-F-019 | User | `usePermissions()` composable (frontend) | Low | `composables/usePermissions.test.ts` |
 | USR-F-020 | User | Permission-based sidebar rendering (frontend) | Low | `components/AppSidebar.test.ts` |
+| COMP-F-013 | Competition | Join request submission | Medium | `Competition/JoinRequestTest.php` |
+| COMP-F-014 | Competition | Join request resolution (approve/reject) | Medium | `Competition/JoinRequestTest.php` |
+| COMP-F-015 | Competition | Duplicate/capacity guards on join requests | Medium | `Competition/JoinRequestTest.php` |
 
-**Total: 10 gaps out of 128 requirements (92.2% coverage by requirement count)**
+**Total: 13 gaps out of 148 requirements (91.2% coverage by requirement count)**
 
-*Note: TKT-F-009 deprecated and replaced by TKT-F-013..016 (4 new requirements, all now covered).*
+*Note: TKT-F-009 deprecated and replaced by TKT-F-013..016 (4 new requirements, all now covered). COMP-F-013..015 (join request flow) are newly added and pending test implementation.*
 
 ### Priority Order for Implementation
 
