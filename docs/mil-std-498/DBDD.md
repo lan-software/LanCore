@@ -244,10 +244,22 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | manager_id | bigint FK (nullable) | References users.id (manager) |
 | order_id | bigint FK (nullable) | References orders.id |
 | status | varchar | TicketStatus enum |
-| validation_id | varchar (unique, nullable) | Check-in validation code |
+| validation_id | varchar (unique, nullable) | **Deprecated** — legacy plaintext check-in validation code; nullable; to be removed in a follow-up migration once all consumers use LCT1 tokens |
+| validation_nonce_hash | CHAR(64) (unique, nullable) | HMAC-SHA256(nonce, pepper) in lowercase hex; used for token-to-ticket lookup without storing the nonce; NULL when ticket is cancelled or no token has been issued |
+| validation_kid | VARCHAR(16) (nullable) | Key identifier of the Ed25519 signing key used for the current token; NULL when no token is active |
+| validation_issued_at | timestamp (nullable) | When the current LCT1 token was issued |
+| validation_expires_at | timestamp (nullable) | When the current LCT1 token expires (event end + grace period) |
 | checked_in_at | datetime (nullable) | Ticket-level check-in timestamp |
 | created_at | timestamp | |
 | updated_at | timestamp | |
+
+**Indexes on tickets:**
+- `UNIQUE (validation_nonce_hash)` — enforces the DB≠QR invariant; no two active tokens can map to the same hash
+- Existing `UNIQUE (validation_id)` retained until the column is dropped
+
+**Deprecation plan for `validation_id`:**
+1. Phase 1 (current): Column is nullable; new tokens are issued as LCT1 and stored in `validation_nonce_hash`; `validation_id` is not populated for new tokens
+2. Phase 2 (follow-up migration): Column dropped; index removed; any remaining code paths referencing `validation_id` removed
 
 #### 4.4.2a ticket_user (pivot)
 
@@ -948,3 +960,16 @@ OrchestrationJob ──< MatchChatMessage
 | users | sidebar_favorites | Navigation bookmark IDs |
 | integration_apps | webhook_events | Subscribed event type array |
 | webhooks | events | Subscribed event type array |
+
+### 6.2 Ticket Token Storage Invariants
+
+The following values are **never stored in the database**:
+
+| Value | Rationale |
+|-------|-----------|
+| LCT1 token string | QR payload; stored only in the generated PDF |
+| Plaintext nonce | One-way derivation; only the HMAC is stored |
+| Ed25519 private key bytes | Stored on filesystem only (`storage/keys/ticket_signing/`) |
+| HMAC pepper | Supplied via `TICKET_TOKEN_PEPPER` environment variable only |
+
+The `validation_nonce_hash` column stores a 64-character lowercase hex HMAC-SHA256 digest. An attacker with read access to the database cannot reverse this to obtain the nonce, because the pepper is not in the database. The nonce itself is not in the database either, so an attacker with the pepper still cannot reconstruct a valid token without the Ed25519 private key.

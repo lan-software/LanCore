@@ -157,6 +157,89 @@ Production network architecture (TLS termination, reverse proxy) is TBD.
 
 ---
 
+## 5a. Ticket Token Security Architecture
+
+### 5a.1 Trust Boundary
+
+LanCore is the sole token **issuer**. LanEntrance is a token **verifier** only. The trust boundary is enforced as follows:
+
+| Capability | LanCore | LanEntrance |
+|-----------|---------|-------------|
+| Holds Ed25519 private keys | Yes | Never |
+| Holds HMAC pepper | Yes | Never |
+| Issues new LCT1 tokens | Yes | Never |
+| Verifies Ed25519 signatures | Yes (authoritative) | Yes (fast pre-check only) |
+| Can query ticket database | Yes | No (calls `/api/entrance/validate`) |
+| Can forge new tokens | Yes (by design — issuer) | No |
+
+A compromised LanEntrance instance can replay scanned tokens within their validity window but cannot generate new valid tokens or query the nonce hash directly, because it holds no private key and no pepper.
+
+### 5a.2 Sequence Diagram — Token Issuance on Assignment Change
+
+```
+UpdateTicketAssignments (addUser / removeUser / updateManager)
+  │
+  ├── TicketTokenService::issue(ticket)
+  │     ├── Generate 128-bit CSPRNG nonce
+  │     ├── Derive nonce_hash = HMAC-SHA256(nonce, pepper)
+  │     ├── Build body = base64url(json({tid, nonce, iat, exp, evt}))
+  │     ├── sig = sodium_crypto_sign_detached("LCT1." + kid + "." + body, sk[kid])
+  │     ├── token = "LCT1." + kid + "." + body + "." + base64url(sig)
+  │     └── Persist: nonce_hash, kid, issued_at, expires_at to tickets row
+  │
+  ├── dispatch(GenerateTicketPdf(ticket, qrPayload: token))
+  │     └── PDF job embeds token in QR code; token not persisted
+  │
+  └── Return (caller proceeds)
+```
+
+The `qrPayload` is passed as a constructor argument to `GenerateTicketPdf`. The job never persists it beyond its own execution; it is rendered into the QR image and discarded.
+
+### 5a.3 Sequence Diagram — Validation Scan
+
+```
+LanEntrance                       LanCore
+     │                                │
+     │── POST /api/entrance/validate ──►
+     │   { token: "LCT1.kid.body.sig" }
+     │                                │
+     │                    Parse token segments
+     │                    Lookup kid in TicketKeyRing
+     │                    Verify sig via sodium_crypto_sign_verify_detached
+     │                    Decode body → extract nonce, tid, exp, evt
+     │                    Derive nonce_hash = HMAC-SHA256(nonce, pepper)
+     │                    SELECT ticket WHERE validation_nonce_hash = nonce_hash
+     │                    Check exp > now()
+     │                    Check ticket.status
+     │                                │
+     │◄── 200 { decision: "valid" ... }
+     │
+```
+
+Failure paths return one of: `invalid_signature`, `unknown_kid`, `expired`, `revoked`, `already_checked_in`, `invalid` — all as HTTP 200 with a structured `decision` field.
+
+### 5a.4 Sequence Diagram — Key Rotation
+
+```
+Admin
+  │
+  ├── php artisan tickets:keys:rotate
+  │     ├── Generate new Ed25519 key pair
+  │     ├── Assign kid = "key-YYYY-MM" (or custom label)
+  │     ├── Write private key → storage/keys/ticket_signing/{kid}.key (mode 0600)
+  │     ├── Register new kid as active in TicketKeyRing config/DB record
+  │     └── Print new kid to console
+  │
+  └── LanEntrance (on next JWKS cache refresh)
+        ├── GET /api/entrance/signing-keys
+        │     └── Returns [ new_kid_public_key, ...retired_unexpired_public_keys ]
+        └── Updates local key cache
+```
+
+Previously issued tokens signed by the retired `kid` remain verifiable because retired public keys stay in the JWKS response until all tokens signed by them have expired (`validation_expires_at < now()`).
+
+---
+
 ## 6. Requirements Traceability
 
 | SSS Requirement | SSDD Section |
@@ -165,6 +248,8 @@ Production network architecture (TLS termination, reverse proxy) is TBD.
 | SSS 3.4 Internal Interfaces | Section 4.1 |
 | SSS 3.9 Quality Factors (Scalability) | Section 4.2 |
 | SSS 3.1 Required States and Modes (Demo) | Section 3.1 — Demo mode uses the same Docker deployment topology as Normal mode; the distinction is data content (seeded via `SeedDemoCommand`) and payment provider configuration (simulated), not infrastructure topology |
+| CAP-TKT-013, CAP-TKT-014 | Section 5a |
+| SEC-014..020 | Section 5a.1 |
 
 ---
 

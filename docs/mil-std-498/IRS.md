@@ -202,6 +202,28 @@ This document describes the requirements for all external interfaces of the LanC
 - `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
 - Config file: `config/database.php`
 
+### 3.11 LanCore Entrance API — Ticket Signing Keys (IF-JWKS)
+
+| Req ID | Requirement |
+|--------|------------|
+| IF-JWKS-001 | The system shall expose a `GET /api/entrance/signing-keys` endpoint accessible to registered integration consumers authenticated via Bearer token |
+| IF-JWKS-002 | The response shall be a JWKS-format JSON object containing one entry per active or retired-but-unexpired Ed25519 public key |
+| IF-JWKS-003 | Each JWKS entry shall carry at minimum: `kty` ("OKP"), `crv` ("Ed25519"), `use` ("sig"), `kid` (string, max 16 chars), `x` (base64url-encoded public key bytes) |
+| IF-JWKS-004 | The endpoint shall include a `Cache-Control: max-age=<ttl>` header; consumers shall treat the response as cacheable for the stated TTL and must not call the endpoint more frequently |
+| IF-JWKS-005 | The endpoint shall return HTTP 401 when the Bearer token is invalid or missing |
+| IF-JWKS-006 | The endpoint shall return HTTP 200 with the JWKS object even when only retired (unexpired) keys remain; an empty `keys` array is returned only when no keys have ever been generated |
+
+### 3.12 LanCore Entrance API — Validate Endpoint Error Codes (IF-VALIDATE)
+
+| Req ID | Requirement |
+|--------|------------|
+| IF-VALIDATE-001 | The `POST /api/entrance/validate` endpoint shall accept the opaque LCT1 token string in the `token` field and perform: (a) structural parse, (b) `kid` lookup in JWKS, (c) Ed25519 signature verification, (d) nonce hash lookup, (e) expiry check |
+| IF-VALIDATE-002 | The endpoint shall return `decision: "invalid_signature"` when the Ed25519 signature does not verify against the public key identified by `kid` |
+| IF-VALIDATE-003 | The endpoint shall return `decision: "unknown_kid"` when the `kid` field in the token does not correspond to any known public key |
+| IF-VALIDATE-004 | The endpoint shall return `decision: "expired"` when the current time is past the token's `exp` claim |
+| IF-VALIDATE-005 | The endpoint shall return `decision: "revoked"` when no `tickets` row matches the HMAC-derived nonce hash (ticket cancelled or nonce rotated) |
+| IF-VALIDATE-006 | The existing decision values (`valid`, `already_checked_in`, `invalid`, `denied_by_policy`, `override_possible`, `verification_required`, `payment_required`) shall remain unchanged |
+
 ### 3.10 Prometheus Metrics Interface (IF-PROM)
 
 | Req ID | Requirement |
@@ -225,6 +247,8 @@ This document describes the requirements for all external interfaces of the LanC
 | IF-WHK | Feature tests verifying payload dispatch and signature |
 | IF-REDIS | Feature tests with Redis test instance |
 | IF-DB | All test suites (SQLite for speed) |
+| IF-JWKS | Feature tests with test integration token; verify JWKS structure and cacheability |
+| IF-VALIDATE | Feature tests covering all six error code paths (invalid_signature, unknown_kid, expired, revoked, valid, already_checked_in) |
 
 ---
 
@@ -238,6 +262,10 @@ This document describes the requirements for all external interfaces of the LanC
 | CAP-WHK-* | IF-WHK |
 | CAP-NTF-* | IF-SMTP, IF-PUSH |
 | CAP-SHP-* | IF-STRIPE |
+| CAP-TKT-014 | IF-JWKS |
+| CAP-TKT-013 | IF-VALIDATE |
+| SEC-019, SEC-020 | IF-JWKS |
+| SEC-014..018 | IF-VALIDATE |
 
 ---
 

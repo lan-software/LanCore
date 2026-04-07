@@ -100,6 +100,13 @@ The LanCore CSCI shall support the following operational states:
 | TKT-F-014 | The software shall support multi-user ticket assignment via a `ticket_user` pivot table, replacing the singular `user_id` on tickets |
 | TKT-F-015 | The software shall support configurable check-in modes per ticket type (`individual` or `group`) via a `check_in_mode` field and CheckInMode enum |
 | TKT-F-016 | The software shall calculate seat capacity consumption as `seats_per_user × max_users_per_ticket`, reserved at purchase time |
+| TKT-F-017 | The software shall issue an LCT1 signed ticket token (`LCT1.<kid>.<body>.<sig>`) for each ticket upon order fulfillment, where `body = base64url(json({tid, nonce, iat, exp, evt}))` and `sig = base64url(Ed25519_sign(sk[kid], "LCT1." + kid + "." + body))`; the token shall be embedded in the ticket QR code payload |
+| TKT-F-018 | The software shall store per-ticket signing metadata in new `tickets` columns: `validation_nonce_hash` CHAR(64) UNIQUE (HMAC-SHA256 of nonce with pepper), `validation_kid` VARCHAR(16), `validation_issued_at` TIMESTAMP, `validation_expires_at` TIMESTAMP; the plaintext nonce and the full LCT1 token string shall never be stored |
+| TKT-F-019 | The software shall regenerate the LCT1 token (rotate nonce, re-sign, dispatch PDF regeneration job) whenever `UpdateTicketAssignments` executes `updateManager`, `addUser`, or `removeUser`; regeneration shall also be triggered by the `rotateToken` admin action |
+| TKT-F-020 | The software shall clear `validation_nonce_hash`, `validation_kid`, `validation_issued_at`, and `validation_expires_at` when a ticket is cancelled, rendering any previously issued token unresolvable |
+| TKT-F-021 | The software shall provide a `GET /api/entrance/signing-keys` endpoint (Bearer-authenticated via existing integration middleware) that returns all active and retired-but-unexpired Ed25519 public keys in JWKS format; response shall be cacheable by consumers for a configurable TTL |
+| TKT-F-022 | The software shall provide a `php artisan tickets:keys:rotate` command that generates a new Ed25519 key pair, assigns a `kid`, writes the private key to `storage/keys/ticket_signing/{kid}.key`, and designates the new key as the active signing key |
+| TKT-F-023 | The software shall return structured error codes in the validate endpoint response for token-related failure modes: `invalid_signature` (signature verification failed), `unknown_kid` (no public key for the given kid), `expired` (token past `validation_expires_at`), `revoked` (nonce hash not found or cleared); these supplement the existing `valid`, `already_checked_in`, and `invalid` decision values |
 
 #### 3.2.3 Shop Domain (CSCI-SHP)
 
@@ -460,6 +467,8 @@ Additional CSCI-level requirements:
 | SEC-CSCI-003 | File uploads shall be stored in private S3 buckets with signed URL access |
 | SEC-CSCI-004 | The software shall use parameterized queries (via Eloquent) to prevent SQL injection |
 | SEC-CSCI-005 | Vue components shall use v-text or template interpolation to prevent XSS |
+| SEC-CSCI-006 | Ed25519 private key files (`storage/keys/ticket_signing/{kid}.key`) shall have filesystem permissions restricted to the application process user only (mode 0600) and shall not be readable by web-accessible paths |
+| SEC-CSCI-007 | The HMAC pepper for nonce hashing shall be supplied via the `TICKET_TOKEN_PEPPER` environment variable; it shall never be hardcoded, logged, or included in version control |
 
 ### 3.9 Computer Resource Requirements
 
@@ -504,7 +513,10 @@ Additional CSCI-level requirements:
 | System Requirement (SSS) | Software Requirement (SRS) |
 |--------------------------|---------------------------|
 | CAP-EVT-* | EVT-F-* |
-| CAP-TKT-* | TKT-F-* |
+| CAP-TKT-001..012 | TKT-F-001..016 |
+| CAP-TKT-013 | TKT-F-017..020, TKT-F-022, TKT-F-023 |
+| CAP-TKT-014 | TKT-F-021 |
+| SEC-014..020 | TKT-F-017..023 |
 | CAP-SHP-* | SHP-F-* |
 | CAP-PRG-* | PRG-F-* |
 | CAP-SET-* | SET-F-* |

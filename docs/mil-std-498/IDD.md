@@ -472,6 +472,137 @@ interface MatchHandlerContract {
 **Registered implementations:**
 - `Tmt2MatchHandler` — CS2/Source 2 engine games via TMT2 API
 
+### 3.11 Signed Ticket Token — LCT1 Format
+
+#### 3.11.1 Token ABNF Grammar
+
+```abnf
+lct1-token   = "LCT1" "." kid "." body "." sig
+kid          = 1*16(ALPHA / DIGIT / "-" / "_")
+body         = base64url
+sig          = base64url
+base64url    = *( ALPHA / DIGIT / "-" / "_" ) *( "=" )
+```
+
+The token is composed of four dot-separated segments:
+
+| Segment | Value |
+|---------|-------|
+| `"LCT1"` | Literal version prefix |
+| `kid` | Key identifier, max 16 URL-safe characters |
+| `body` | base64url(json payload) — see §3.11.2 |
+| `sig` | base64url(Ed25519 signature over signing input) |
+
+The signing input is the raw ASCII string: `"LCT1." + kid + "." + body` (no newlines, no padding adjustments).
+
+#### 3.11.2 Token Body Payload (JSON)
+
+```json
+{
+  "tid": 1234,
+  "nonce": "base64url-encoded-128-bit-random",
+  "iat": 1743984000,
+  "exp": 1744070400,
+  "evt": 7
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `tid` | integer | LanCore ticket primary key |
+| `nonce` | string | base64url-encoded 128-bit random value; rotated on every regeneration |
+| `iat` | integer | Issued-at Unix timestamp (UTC) |
+| `exp` | integer | Expiry Unix timestamp (UTC); typically event end + grace period |
+| `evt` | integer | LanCore event primary key |
+
+The nonce is generated fresh (CSPRNG) on each token issuance or regeneration. The stored database value is `HMAC-SHA256(nonce_raw_bytes, pepper_bytes)`, hex-encoded, in column `validation_nonce_hash`. The plaintext nonce never leaves the application process after the QR PDF is generated.
+
+#### 3.11.3 Signature Algorithm
+
+```
+sig_bytes = sodium_crypto_sign_detached(
+    message  = "LCT1." || kid || "." || body,
+    sk       = Ed25519_private_key[kid]
+)
+sig = base64url_no_padding(sig_bytes)
+```
+
+The PHP implementation uses `sodium_crypto_sign_detached()`. The resulting 64-byte signature is base64url-encoded without padding characters.
+
+#### 3.11.4 Nonce Hash Derivation
+
+```
+nonce_hash = hex(HMAC-SHA256(key=pepper_bytes, data=nonce_raw_bytes))
+```
+
+Stored in `tickets.validation_nonce_hash` as a 64-character lowercase hex string. Used by the validate endpoint to locate the ticket row without exposing either the nonce or the full token.
+
+#### 3.11.5 Example Token (illustrative, not a real key)
+
+```
+LCT1.key-2026-01.eyJ0aWQiOjEyMzQsIm5vbmNlIjoiQUFBQUFBQUFBQUFBQUFBQUFBQUFBQT09IiwiaWF0IjoxNzQzOTg0MDAwLCJleHAiOjE3NDQwNzA0MDAsImV2dCI6N30.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+```
+
+Maximum token length: approximately 350–380 characters for a 32-byte nonce and a typical payload.
+
+### 3.12 JWKS Endpoint Design
+
+**Endpoint:** `GET /api/entrance/signing-keys`
+**Authentication:** Bearer token (AuthenticateIntegration middleware)
+**Content-Type:** `application/json`
+
+#### 3.12.1 Response Structure
+
+```json
+{
+  "keys": [
+    {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "use": "sig",
+      "kid": "key-2026-01",
+      "x": "base64url-encoded-32-byte-public-key"
+    },
+    {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "use": "sig",
+      "kid": "key-2025-12",
+      "x": "base64url-encoded-32-byte-retired-public-key"
+    }
+  ]
+}
+```
+
+The first entry in the `keys` array is the currently active signing key. Subsequent entries are retired keys still present because unexpired tokens may have been signed by them. The `x` field is the 32-byte Ed25519 public key in base64url encoding (no padding).
+
+#### 3.12.2 Caching Contract
+
+- LanCore sets `Cache-Control: max-age=3600, s-maxage=3600` (1 hour default, configurable)
+- LanEntrance must not poll this endpoint more frequently than the returned `max-age`
+- On a cache miss, LanEntrance fetches the fresh key set before attempting signature verification
+- LanCore must not remove a `kid` from the JWKS response while tokens signed with that `kid` may still be within their TTL window
+
+#### 3.12.3 Error Responses
+
+| Status | Condition |
+|--------|-----------|
+| 401 | Missing or invalid Bearer token |
+| 200 | Success (including empty `keys` array if no keys generated yet) |
+
+### 3.13 Validate Endpoint — Updated Error Decision Codes
+
+The `POST /api/entrance/validate` endpoint returns a `decision` field. The following error decision codes are added by the LCT1 scheme (in addition to existing codes):
+
+| Decision | HTTP Status | When Returned | `override_allowed` |
+|----------|-------------|---------------|-------------------|
+| `invalid_signature` | 200 | Ed25519 signature does not verify | false |
+| `unknown_kid` | 200 | `kid` not found in known key set | false |
+| `expired` | 200 | Current time > `exp` claim | false |
+| `revoked` | 200 | Nonce hash not found in `tickets` (cancelled or rotated) | false |
+
+All four new codes follow the same 200-OK response envelope as existing decision codes; the `decision` field distinguishes them. The `message` field provides a human-readable description for the door operator (e.g., "Ticket has been cancelled or reissued — ask attendee to show their latest ticket").
+
 ---
 
 ## 4. Requirements Traceability
@@ -486,6 +617,8 @@ interface MatchHandlerContract {
 | IF-S3-* | Section 3.6 |
 | IF-LANBRACKETS-* | Section 3.8 |
 | IF-TMT2-* | Section 3.9 |
+| IF-JWKS-* | Section 3.12 |
+| IF-VALIDATE-* | Section 3.13 |
 
 ---
 
@@ -501,3 +634,8 @@ interface MatchHandlerContract {
 | SSO | Single Sign-On |
 | TTL | Time To Live |
 | VAPID | Voluntary Application Server Identification |
+| JWKS | JSON Web Key Set |
+| kid | Key Identifier |
+| LCT1 | LanCore Token version 1 |
+| ABNF | Augmented Backus-Naur Form |
+| CSPRNG | Cryptographically Secure Pseudo-Random Number Generator |

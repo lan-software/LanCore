@@ -80,6 +80,8 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-TKT-010 | The system shall support ticket locking mechanisms |
 | CAP-TKT-011 | The system shall support group tickets with configurable max users per ticket, where seat capacity is calculated as seats_per_user × max_users_per_ticket |
 | CAP-TKT-012 | The system shall support configurable check-in modes per ticket type: individual (per-user) or group (all users at once) |
+| CAP-TKT-013 | The system shall issue cryptographically signed ticket tokens in the LCT1 format (`LCT1.<kid>.<body>.<sig>`) for every ticket assigned to a user, and regenerate the token on every assignment change, ticket cancellation, or explicit admin rotation |
+| CAP-TKT-014 | The system shall publish its active and retired verification public keys to LanEntrance via an authenticated JWKS endpoint (`GET /api/entrance/signing-keys`), and support key rotation without invalidating unexpired tokens issued under prior keys |
 
 #### 3.2.3 Shop and Payments (CAP-SHP)
 
@@ -286,6 +288,13 @@ See [IRS](IRS.md) for detailed interface requirements.
 | SEC-013 | User permissions shall be shared with the frontend via Inertia.js shared props for UI-level access control |
 | SEC-009 | Integration API routes shall use stateless Bearer token authentication |
 | SEC-010 | The system shall track unique request IDs for audit and debugging |
+| SEC-014 | Ticket tokens shall be signed with Ed25519 (asymmetric); the private key shall never be stored in the database or transmitted to integration consumers |
+| SEC-015 | The system shall store ticket tokens in the QR code payload only; the plaintext nonce and full token string shall never be persisted in the database or any log |
+| SEC-016 | The system shall store a per-ticket nonce hash computed as HMAC-SHA256(nonce, pepper) in column `validation_nonce_hash`; the pepper shall be supplied via environment variable and shall not be stored in the database |
+| SEC-017 | The database-stored nonce hash (`validation_nonce_hash`) shall be UNIQUE-indexed; no two active tickets shall share the same hash |
+| SEC-018 | Ticket token validity shall be bounded by a configurable TTL ending at event end plus grace period; the system shall return `expired` for tokens past their expiry, even if the nonce hash is found |
+| SEC-019 | The system shall support rotating Ed25519 signing keys via `php artisan tickets:keys:rotate`; each key pair shall carry a unique `kid` (max 16 characters); retired keys shall remain in the public JWKS for the duration of the maximum token TTL |
+| SEC-020 | The JWKS endpoint (`GET /api/entrance/signing-keys`) shall require Bearer token authentication using the existing integration middleware; it shall return all public keys in active and retired-but-unexpired states |
 
 ### 3.7 System Environment Requirements
 
@@ -374,3 +383,6 @@ Requirements in this document trace to:
 | ORC | Orchestration |
 | ORG | Organisation |
 | TTL | Time to Live |
+| JWKS | JSON Web Key Set |
+| kid | Key Identifier |
+| LCT1 | LanCore Token version 1 (signed ticket token scheme) |

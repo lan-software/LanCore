@@ -189,12 +189,36 @@ LanCore is a ground-up rewrite providing:
 
 #### 5.2.5 Check-In at Event
 
-1. Attendee arrives at venue with ticket validation ID
+1. Attendee arrives at venue with a QR code displayed from their ticket PDF or LanCore portal
 2. Door staff uses companion app (LanEntrance) connected via Integration API
-3. Companion app validates ticket via API and marks as checked-in
-4. System updates ticket status from "active" to "checked_in"
-5. For group tickets with individual check-in: each user checks in separately; ticket status becomes "checked_in" when all users have checked in
-6. For group tickets with group check-in: a single scan checks in all assigned users simultaneously
+3. LanEntrance performs a fast local signature pre-check against LanCore's published public key, then calls LanCore's authoritative validate endpoint; the plaintext token is never stored by either party
+4. LanCore locates the ticket by comparing the HMAC of the token nonce against the stored nonce hash, verifies the Ed25519 signature, checks expiry, and returns a validation decision
+5. Companion app presents the decision (valid / already_checked_in / expired / revoked / etc.) to the door operator and marks the ticket as checked in
+6. System updates ticket status from "active" to "checked_in"
+7. For group tickets with individual check-in: each user checks in separately; ticket status becomes "checked_in" when all users have checked in
+8. For group tickets with group check-in: a single scan checks in all assigned users simultaneously
+
+#### 5.2.5a Ticket Token Confidentiality and Signing
+
+LanCore issues cryptographically signed ticket tokens to protect against the following threat scenarios:
+
+1. **Database dump leak** — An attacker who obtains a full copy of the database cannot forge QR codes. The private signing key and the HMAC pepper are never stored in the database; the stored nonce hash is a one-way derivation that reveals neither the token value nor the original nonce.
+2. **QR photo leak** — An attacker who photographs a QR code cannot discover the database record it corresponds to. The stored value is an HMAC of the nonce, not the nonce itself; brute-force reversal is computationally infeasible.
+3. **Insider with database access** — An insider who can read the database still cannot mint new valid QR codes without access to the private signing key, which lives outside the database in secured key storage.
+4. **Scanner (LanEntrance) theft** — LanEntrance holds only public keys. A compromised LanEntrance instance cannot forge new ticket tokens.
+
+Token format: `LCT1.<kid>.<body>.<sig>`, where `body` is a base64url-encoded JSON payload containing the ticket ID, event ID, nonce, issued-at, and expiry timestamps. `sig` is an Ed25519 signature over `"LCT1." + kid + "." + body`. Tokens expire at event end plus a configurable grace period.
+
+Key management is performed by operators via the `php artisan tickets:keys:rotate` command. Retired keys remain in the verification set so tokens issued before rotation remain valid until expiry. The active public key set is published to LanEntrance via an authenticated JWKS endpoint (`GET /api/entrance/signing-keys`).
+
+#### 5.2.5b Operator Flow — Key Rotation
+
+1. Admin triggers key rotation via `php artisan tickets:keys:rotate`
+2. System generates a new Ed25519 key pair, assigns a new `kid`, and writes the private key to `storage/keys/ticket_signing/{kid}.key`
+3. The new `kid` becomes the active signing key for all subsequently issued tokens
+4. LanEntrance fetches the updated JWKS from `GET /api/entrance/signing-keys` on its next cache refresh interval
+5. Previously issued tokens remain valid; retired keys are retained in the JWKS verify list until all tokens signed with them have expired
+6. Admins can also trigger per-ticket token rotation (`rotateToken` action) or cancel invalidation (clearing the nonce hash) through the admin ticket management interface
 
 #### 5.2.6 Third-Party Integration
 
@@ -286,3 +310,10 @@ LanCore is a ground-up rewrite providing:
 | Group Ticket | A ticket that allows multiple users to gain entry, purchased by one owner and assignable to multiple attendees |
 | Webhook | An HTTP callback that delivers event notifications to external systems |
 | Integration App | A third-party application registered with LanCore for API access and SSO |
+| LCT1 Token | Signed ticket validation token in the format `LCT1.<kid>.<body>.<sig>` issued by LanCore and verified by LanEntrance |
+| kid | Key identifier — a short string (up to 16 characters) that identifies which Ed25519 signing key was used for a given token |
+| JWKS | JSON Web Key Set — a JSON document listing public keys, served by LanCore to LanEntrance for token verification |
+| Ed25519 | An elliptic-curve digital signature algorithm used for ticket token signing; asymmetric (private key on LanCore, public key shared to LanEntrance) |
+| Nonce | A 128-bit random value embedded in each ticket token, rotated on every token regeneration; never stored in plaintext |
+| Nonce Hash | HMAC-SHA256 of the nonce using a server-side pepper; stored in the database for token-to-ticket lookup without exposing the nonce |
+| Pepper | A secret value (not stored in the database) used as the HMAC key when deriving the nonce hash |

@@ -126,7 +126,27 @@ RoleName Enum (5 cases)
 
 **Frontend Integration**: `HandleInertiaRequests` shares the user's resolved permissions as a flat string array via Inertia shared props. The `usePermissions()` composable (`resources/js/composables/usePermissions.ts`) provides typed `can(PermissionValue)` and `canAny(PermissionValue...)` helpers backed by a `Permission` TypeScript constant object (`resources/js/types/permissions.ts`) for compile-time safety against typos.
 
-#### 3.3.2 Role-Permission Matrix
+#### 3.3.2 Ticket Token Security Design
+
+The ticket signing subsystem is implemented as two service classes in `app/Domain/Ticketing/Security/`:
+
+**`TicketTokenService`** — Orchestrates token lifecycle:
+- `issue(Ticket $ticket): string` — Generates nonce (CSPRNG), builds LCT1 body, calls `TicketKeyRing::sign()`, persists nonce hash + metadata to ticket row, returns the full token string for PDF generation
+- `verify(string $token): array` — Parses the token, delegates to `TicketKeyRing::verify()`, derives nonce hash from body nonce, queries ticket by nonce hash; returns structured result including the `Ticket` model on success
+- `locateByNonceHash(string $nonceHash): ?Ticket` — Direct lookup used by the validate endpoint
+
+**`TicketKeyRing`** — Key management:
+- `sign(string $message, string $kid = null): string` — Signs `message` with the active (or specified) private key; returns base64url-encoded 64-byte signature
+- `publicKey(string $kid): string` — Returns base64url-encoded public key bytes for a given kid; throws `UnknownKidException` if not found
+- `activeKid(): string` — Returns the currently active key identifier
+- `allVerifyKids(): array` — Returns all kids whose public keys are retained (active + retired-but-unexpired)
+- `toJwks(): array` — Builds the `{ keys: [...] }` JWKS array for the signing-keys endpoint
+
+Private key files reside at `storage/keys/ticket_signing/{kid}.key` with mode 0600. `TicketKeyRing` reads them on boot and caches in memory for the Octane process lifetime. On `tickets:keys:rotate`, a new key pair is written to disk and `TicketKeyRing` is re-initialized.
+
+**`GenerateTicketPdf` job change:** The job receives a new optional constructor argument `?string $qrPayload`. When present, this value is used as the QR code content; when absent (legacy path), the job falls back to the deprecated `validation_id`. The `qrPayload` string is never stored beyond the job execution.
+
+#### 3.3.4 Role-Permission Matrix
 
 | Permission | User | Moderator | SponsorManager | Admin | Superadmin |
 |------------|:----:|:---------:|:--------------:|:-----:|:----------:|
@@ -209,7 +229,7 @@ Each domain module follows a consistent internal structure:
 |--------|--------|---------|-------------|--------|-----------|
 | Event | 1 | 5 | 3 | 1 | 1 |
 | Venue | 3 | 3 | 1 | 0 | 0 |
-| Ticketing | 5 | 10 | 8 | 0 | 0 |
+| Ticketing | 5 | 10+2 services | 8+1 | 0 | 0 |
 | Shop | 9 | 15 | 9 | 2 | 2 |
 | Program | 2 | 6 | 2 | 1 | 1 |
 | Seating | 1 | 3 | 2 | 0 | 0 |
@@ -333,6 +353,18 @@ Group Mode:
 ```
 
 **Enum:** `App\Domain\Ticketing\Enums\CheckInMode` (Individual, Group)
+
+**Token Regeneration Triggers (within UpdateTicketAssignments):**
+
+| Method | Trigger Condition | Token Action |
+|--------|------------------|--------------|
+| `updateManager` | Manager user changes | Rotate nonce, re-sign, dispatch PDF regen |
+| `addUser` | User added to pivot | Rotate nonce, re-sign, dispatch PDF regen |
+| `removeUser` | User removed from pivot | Rotate nonce, re-sign, dispatch PDF regen |
+| `rotateToken` (admin action) | Manual admin request | Rotate nonce, re-sign, dispatch PDF regen |
+| Ticket cancel | Status set to cancelled | Clear nonce hash, kid, issued_at, expires_at |
+
+The regeneration sequence calls `TicketTokenService::issue($ticket)`, stores the new nonce hash and metadata, and passes the new `qrPayload` to a freshly dispatched `GenerateTicketPdf` job. The old QR codes become unresolvable immediately (nonce hash changes).
 
 #### 4.3.4 SSO Authorization Flow
 
@@ -547,6 +579,7 @@ The `myEventContext` Inertia shared prop (set by `HandleInertiaRequests`) re-res
 | Data Listing | ListEvents, ListVenues, ListPrograms, ListSponsors, ListSponsorLevels, ListTickets, ListTicketTypes, ListAddons, ListNews, ListGames, ListSeatPlans, ListUsers |
 | Administration | PromoteUserToAdmin, SeedDemoCommand |
 | Utilities | MigrateStorageCommand, TestPushNotificationCommand |
+| Ticket Security | `tickets:keys:rotate` — generates a new Ed25519 key pair, assigns a `kid`, writes the private key to `storage/keys/ticket_signing/{kid}.key` (mode 0600), and sets the new key as active for subsequent token issuance |
 
 #### 5.4.1 Demo Mode Design
 
@@ -564,7 +597,8 @@ When `APP_DEMO=true` is set in the environment, the system enters Demo mode:
 | SRS Requirement | Design Component |
 |----------------|-----------------|
 | EVT-F-* | app/Domain/Event/ |
-| TKT-F-* | app/Domain/Ticketing/ |
+| TKT-F-001..016 | app/Domain/Ticketing/ |
+| TKT-F-017..023 | app/Domain/Ticketing/Security/TicketTokenService.php, app/Domain/Ticketing/Security/TicketKeyRing.php, app/Console/Commands/RotateTicketKeysCommand.php, app/Domain/Ticketing/Http/Controllers/AdminTicketController.php (rotateToken action) |
 | SHP-F-* | app/Domain/Shop/ |
 | PRG-F-* | app/Domain/Program/ |
 | SET-F-* | app/Domain/Seating/ |
