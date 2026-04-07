@@ -23,8 +23,8 @@ test('ticket generates validation_id on creation', function () {
     ]);
 
     expect($ticket->validation_id)->toBeString();
-    expect($ticket->validation_id)->toHaveLength(16);
-    expect($ticket->validation_id)->toMatch('/^[A-Z0-9]+$/');
+    expect($ticket->validation_id)->toHaveLength(36);
+    expect($ticket->validation_id)->toMatch('/^TKT-[a-f0-9]{32}$/');
 });
 
 test('ticket validation_id is unique across tickets', function () {
@@ -39,5 +39,5 @@ test('ticket factory generates validation_id', function () {
     $ticket = Ticket::factory()->create();
 
     expect($ticket->validation_id)->toBeString();
-    expect($ticket->validation_id)->toHaveLength(16);
+    expect($ticket->validation_id)->toHaveLength(36);
 });
