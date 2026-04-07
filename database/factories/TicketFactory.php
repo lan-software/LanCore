@@ -9,7 +9,6 @@ use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Ticket>
@@ -25,7 +24,7 @@ class TicketFactory extends Factory
     {
         return [
             'status' => TicketStatus::Active,
-            'validation_id' => strtoupper(Str::random(16)),
+            'validation_id' => 'TKT-'.bin2hex(random_bytes(16)),
             'checked_in_at' => null,
             'ticket_type_id' => TicketType::factory(),
             'event_id' => Event::factory(),
