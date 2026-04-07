@@ -110,13 +110,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 <option value="double_elimination">
                                     Double Elimination
                                 </option>
-                                <option value="round_robin">
-                                    Round Robin
-                                </option>
+                                <option value="round_robin">Round Robin</option>
                                 <option value="swiss">Swiss</option>
-                                <option value="group_stage">
-                                    Group Stage
-                                </option>
+                                <option value="group_stage">Group Stage</option>
                             </select>
                             <InputError :message="errors.stage_type" />
                         </div>

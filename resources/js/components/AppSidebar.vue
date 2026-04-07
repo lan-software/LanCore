@@ -225,18 +225,20 @@ const allPinnableItems = computed<NavItem[]>(() => {
     }
 
     if (can(Permission.ManageCompetitions)) {
-        items.push({
-            id: 'competitions',
-            title: 'Competitions',
-            href: competitionsIndex(),
-            icon: Swords,
-        },
-        {
-            id: 'admin-teams',
-            title: 'Teams',
-            href: adminTeamsIndex(),
-            icon: Users,
-        });
+        items.push(
+            {
+                id: 'competitions',
+                title: 'Competitions',
+                href: competitionsIndex(),
+                icon: Swords,
+            },
+            {
+                id: 'admin-teams',
+                title: 'Teams',
+                href: adminTeamsIndex(),
+                icon: Users,
+            },
+        );
     }
 
     if (can(Permission.ManageGames)) {

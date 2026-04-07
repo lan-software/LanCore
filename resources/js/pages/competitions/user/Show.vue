@@ -31,10 +31,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 const createTeamForm = useForm({ name: '', tag: '' });
 
 function submitCreateTeam() {
-    createTeamForm.post(
-        TeamController.store(props.competition.id).url,
-        { preserveScroll: true },
-    );
+    createTeamForm.post(TeamController.store(props.competition.id).url, {
+        preserveScroll: true,
+    });
 }
 
 const leaving = ref(false);
@@ -43,9 +42,11 @@ const page = usePage();
 
 function leaveTeam() {
     if (!props.userTeam) return;
-    const authUserId = (page.props.auth as { user?: { id: number } } | undefined)?.user?.id;
-    const isCaptain = authUserId != null
-        && props.userTeam.captain_user_id === authUserId;
+    const authUserId = (
+        page.props.auth as { user?: { id: number } } | undefined
+    )?.user?.id;
+    const isCaptain =
+        authUserId != null && props.userTeam.captain_user_id === authUserId;
     const msg = isCaptain
         ? 'You are the captain. If you leave, captaincy transfers to another member. If you are the last member, the team is deleted. Continue?'
         : `Leave team "${props.userTeam.name}"?`;
@@ -113,7 +114,7 @@ function requestJoin(teamId: number) {
                     >
                         {{ competition.game.name }}
                     </span>
-                    <span class="text-sm capitalize text-muted-foreground">
+                    <span class="text-sm text-muted-foreground capitalize">
                         {{ competition.type }} &middot;
                         {{ competition.stage_type.replace(/_/g, ' ') }}
                     </span>
@@ -134,9 +135,7 @@ function requestJoin(teamId: number) {
                         v-if="bracketUrl"
                         class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
-                        <h3 class="mb-2 text-sm font-semibold">
-                            Bracket View
-                        </h3>
+                        <h3 class="mb-2 text-sm font-semibold">Bracket View</h3>
                         <a
                             :href="bracketUrl"
                             target="_blank"
@@ -199,9 +198,7 @@ function requestJoin(teamId: number) {
 
                     <!-- Create Team (if no team and registration open) -->
                     <div
-                        v-else-if="
-                            competition.status === 'registration_open'
-                        "
+                        v-else-if="competition.status === 'registration_open'"
                         class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
                         <h3 class="mb-3 text-sm font-semibold">
@@ -263,9 +260,7 @@ function requestJoin(teamId: number) {
                                         [{{ team.tag }}]
                                     </span>
                                 </div>
-                                <div
-                                    class="text-xs text-muted-foreground"
-                                >
+                                <div class="text-xs text-muted-foreground">
                                     {{
                                         team.active_members_count ??
                                         team.active_members?.length ??

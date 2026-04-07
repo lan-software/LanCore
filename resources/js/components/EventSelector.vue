@@ -37,9 +37,10 @@ const page = usePage();
 
 const context = computed(() => {
     if (props.variant === 'my') {
-        const c = page.props.myEventContext as
-            | { selectedEventId: number | null; events: { id: number; name: string }[] }
-            | null;
+        const c = page.props.myEventContext as {
+            selectedEventId: number | null;
+            events: { id: number; name: string }[];
+        } | null;
         return c;
     }
 
@@ -102,12 +103,12 @@ function onSelect(value: string) {
             </SidebarMenu>
         </SidebarGroupContent>
     </SidebarGroup>
-    <div v-else-if="context && context.events.length > 0" class="flex items-center gap-2">
+    <div
+        v-else-if="context && context.events.length > 0"
+        class="flex items-center gap-2"
+    >
         <Calendar class="size-4 text-muted-foreground" />
-        <Select
-            :model-value="selectedValue"
-            @update:model-value="onSelect"
-        >
+        <Select :model-value="selectedValue" @update:model-value="onSelect">
             <SelectTrigger class="w-full max-w-xs">
                 <SelectValue placeholder="All Events" />
             </SelectTrigger>

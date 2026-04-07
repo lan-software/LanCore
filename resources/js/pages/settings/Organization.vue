@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { Building2, CheckCircle2, ImagePlus, Loader2, Trash2 } from 'lucide-vue-next';
+import {
+    Building2,
+    CheckCircle2,
+    ImagePlus,
+    Loader2,
+    Trash2,
+} from 'lucide-vue-next';
 import { reactive, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
@@ -61,11 +67,15 @@ function uploadLogo(event: Event) {
     if (!file) return;
 
     uploadingLogo.value = true;
-    router.post('/organization-settings/logo', { logo: file }, {
-        forceFormData: true,
-        preserveScroll: true,
-        onFinish: () => (uploadingLogo.value = false),
-    });
+    router.post(
+        '/organization-settings/logo',
+        { logo: file },
+        {
+            forceFormData: true,
+            preserveScroll: true,
+            onFinish: () => (uploadingLogo.value = false),
+        },
+    );
 }
 
 function removeLogo() {
@@ -100,17 +110,48 @@ function removeLogo() {
                             alt="Organization logo"
                             class="size-full object-contain p-2"
                         />
-                        <ImagePlus v-else class="size-8 text-muted-foreground/40" />
+                        <ImagePlus
+                            v-else
+                            class="size-8 text-muted-foreground/40"
+                        />
                     </div>
                     <div class="space-y-2">
-                        <input ref="logoInput" type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" class="hidden" @change="uploadLogo" />
-                        <Button type="button" variant="outline" size="sm" :disabled="uploadingLogo" @click="triggerLogoUpload">
-                            {{ uploadingLogo ? 'Uploading...' : logoUrl ? 'Change Logo' : 'Upload Logo' }}
+                        <input
+                            ref="logoInput"
+                            type="file"
+                            accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                            class="hidden"
+                            @change="uploadLogo"
+                        />
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            :disabled="uploadingLogo"
+                            @click="triggerLogoUpload"
+                        >
+                            {{
+                                uploadingLogo
+                                    ? 'Uploading...'
+                                    : logoUrl
+                                      ? 'Change Logo'
+                                      : 'Upload Logo'
+                            }}
                         </Button>
-                        <Button v-if="logoUrl" type="button" variant="ghost" size="sm" class="text-destructive" @click="removeLogo">
+                        <Button
+                            v-if="logoUrl"
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            class="text-destructive"
+                            @click="removeLogo"
+                        >
                             <Trash2 class="mr-1 size-3" /> Remove
                         </Button>
-                        <p class="text-xs text-muted-foreground">PNG, JPG, SVG or WebP. Max 2MB. Shown on invoices and receipts.</p>
+                        <p class="text-xs text-muted-foreground">
+                            PNG, JPG, SVG or WebP. Max 2MB. Shown on invoices
+                            and receipts.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -125,27 +166,53 @@ function removeLogo() {
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div class="grid gap-2 sm:col-span-2">
                             <Label for="name">Organization Name</Label>
-                            <Input id="name" v-model="form.name" placeholder="e.g. LAN Party e.V." />
+                            <Input
+                                id="name"
+                                v-model="form.name"
+                                placeholder="e.g. LAN Party e.V."
+                            />
                         </div>
                         <div class="grid gap-2">
                             <Label for="address_line1">Address Line 1</Label>
-                            <Input id="address_line1" v-model="form.address_line1" placeholder="Street and number" />
+                            <Input
+                                id="address_line1"
+                                v-model="form.address_line1"
+                                placeholder="Street and number"
+                            />
                         </div>
                         <div class="grid gap-2">
                             <Label for="address_line2">Address Line 2</Label>
-                            <Input id="address_line2" v-model="form.address_line2" placeholder="ZIP, City, Country" />
+                            <Input
+                                id="address_line2"
+                                v-model="form.address_line2"
+                                placeholder="ZIP, City, Country"
+                            />
                         </div>
                         <div class="grid gap-2">
                             <Label for="email">Contact Email</Label>
-                            <Input id="email" v-model="form.email" type="email" placeholder="info@example.com" />
+                            <Input
+                                id="email"
+                                v-model="form.email"
+                                type="email"
+                                placeholder="info@example.com"
+                            />
                         </div>
                         <div class="grid gap-2">
                             <Label for="phone">Phone</Label>
-                            <Input id="phone" v-model="form.phone" placeholder="+49 123 456789" />
+                            <Input
+                                id="phone"
+                                v-model="form.phone"
+                                placeholder="+49 123 456789"
+                            />
                         </div>
                         <div class="grid gap-2 sm:col-span-2">
                             <Label for="website">Website</Label>
-                            <Input id="website" v-model="form.website" type="url" placeholder="https://example.com" />
+                            <Input
+                                id="website"
+                                v-model="form.website"
+                                type="url"
+                                placeholder="https://example.com"
+                            />
                         </div>
                     </div>
                 </div>
@@ -156,25 +223,46 @@ function removeLogo() {
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div class="grid gap-2">
                             <Label for="tax_id">Tax ID / VAT Number</Label>
-                            <Input id="tax_id" v-model="form.tax_id" placeholder="e.g. DE123456789" />
+                            <Input
+                                id="tax_id"
+                                v-model="form.tax_id"
+                                placeholder="e.g. DE123456789"
+                            />
                         </div>
                         <div class="grid gap-2">
                             <Label for="registration_id">Registration ID</Label>
-                            <Input id="registration_id" v-model="form.registration_id" placeholder="e.g. VR 12345, Amtsgericht Berlin" />
+                            <Input
+                                id="registration_id"
+                                v-model="form.registration_id"
+                                placeholder="e.g. VR 12345, Amtsgericht Berlin"
+                            />
                         </div>
                         <div class="grid gap-2 sm:col-span-2">
-                            <Label for="legal_notice">Legal Notice / Disclaimer</Label>
-                            <Textarea id="legal_notice" v-model="form.legal_notice" rows="3" placeholder="Additional legal text printed on invoices and receipts..." />
+                            <Label for="legal_notice"
+                                >Legal Notice / Disclaimer</Label
+                            >
+                            <Textarea
+                                id="legal_notice"
+                                v-model="form.legal_notice"
+                                rows="3"
+                                placeholder="Additional legal text printed on invoices and receipts..."
+                            />
                         </div>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
                     <Button type="submit" :disabled="saving">
-                        <Loader2 v-if="saving" class="mr-1.5 size-4 animate-spin" />
+                        <Loader2
+                            v-if="saving"
+                            class="mr-1.5 size-4 animate-spin"
+                        />
                         {{ saving ? 'Saving...' : 'Save Changes' }}
                     </Button>
-                    <span v-if="saved" class="flex items-center gap-1 text-sm text-green-600">
+                    <span
+                        v-if="saved"
+                        class="flex items-center gap-1 text-sm text-green-600"
+                    >
                         <CheckCircle2 class="size-4" /> Saved
                     </span>
                 </div>

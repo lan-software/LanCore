@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { CheckCircle2, CreditCard, Banknote, FileText, Loader2 } from 'lucide-vue-next';
+import {
+    CheckCircle2,
+    CreditCard,
+    Banknote,
+    FileText,
+    Loader2,
+} from 'lucide-vue-next';
 import { reactive, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
@@ -67,7 +73,8 @@ function methodIcon(value: string) {
 function methodDescription(value: string): string {
     const map: Record<string, string> = {
         stripe: 'Process payments via Stripe Checkout. Requires STRIPE_KEY and STRIPE_SECRET environment variables.',
-        on_site: 'Allow attendees to pay at the venue during check-in. Orders are marked as pending until staff confirms payment.',
+        on_site:
+            'Allow attendees to pay at the venue during check-in. Orders are marked as pending until staff confirms payment.',
     };
     return map[value] ?? '';
 }
@@ -120,39 +127,53 @@ function saveInvoice() {
                         <div class="flex items-center gap-3">
                             <div
                                 class="flex size-10 items-center justify-center rounded-lg"
-                                :class="method.value === 'stripe'
-                                    ? 'bg-violet-50 dark:bg-violet-950'
-                                    : 'bg-emerald-50 dark:bg-emerald-950'"
+                                :class="
+                                    method.value === 'stripe'
+                                        ? 'bg-violet-50 dark:bg-violet-950'
+                                        : 'bg-emerald-50 dark:bg-emerald-950'
+                                "
                             >
                                 <component
                                     :is="methodIcon(method.value)"
                                     class="size-5"
-                                    :class="method.value === 'stripe'
-                                        ? 'text-violet-600 dark:text-violet-400'
-                                        : 'text-emerald-600 dark:text-emerald-400'"
+                                    :class="
+                                        method.value === 'stripe'
+                                            ? 'text-violet-600 dark:text-violet-400'
+                                            : 'text-emerald-600 dark:text-emerald-400'
+                                    "
                                 />
                             </div>
                             <div>
-                                <h3 class="text-base font-medium">{{ method.label }}</h3>
+                                <h3 class="text-base font-medium">
+                                    {{ method.label }}
+                                </h3>
                                 <p class="text-sm text-muted-foreground">
                                     {{ methodDescription(method.value) }}
                                 </p>
                             </div>
                         </div>
 
-                        <label class="relative inline-flex cursor-pointer items-center">
+                        <label
+                            class="relative inline-flex cursor-pointer items-center"
+                        >
                             <input
                                 type="checkbox"
                                 v-model="methods[method.value]"
                                 class="peer sr-only"
                             />
-                            <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-ring dark:bg-gray-700"></div>
+                            <div
+                                class="peer h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-ring peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white dark:bg-gray-700"
+                            ></div>
                         </label>
                     </div>
 
                     <div class="mt-3 flex items-center gap-2">
                         <Badge variant="outline" class="text-[10px]">
-                            {{ method.requires_redirect ? 'External checkout' : 'Inline payment' }}
+                            {{
+                                method.requires_redirect
+                                    ? 'External checkout'
+                                    : 'Inline payment'
+                            }}
                         </Badge>
                     </div>
                 </div>
@@ -163,7 +184,10 @@ function saveInvoice() {
                     <Loader2 v-if="saving" class="mr-1.5 size-4 animate-spin" />
                     {{ saving ? 'Saving...' : 'Save Changes' }}
                 </Button>
-                <span v-if="saved" class="flex items-center gap-1 text-sm text-green-600">
+                <span
+                    v-if="saved"
+                    class="flex items-center gap-1 text-sm text-green-600"
+                >
                     <CheckCircle2 class="size-4" /> Saved
                 </span>
             </div>
@@ -174,31 +198,68 @@ function saveInvoice() {
                     Invoice & Receipt Configuration
                 </div>
 
-                <div class="rounded-xl border border-sidebar-border/70 p-5 dark:border-sidebar-border">
+                <div
+                    class="rounded-xl border border-sidebar-border/70 p-5 dark:border-sidebar-border"
+                >
                     <div class="space-y-4">
                         <div class="grid gap-2">
-                            <Label for="invoice_prefix">Invoice Number Prefix</Label>
-                            <Input id="invoice_prefix" v-model="invoiceForm.invoice_prefix" placeholder="INV-" class="max-w-xs" />
-                            <p class="text-xs text-muted-foreground">Prefix for generated invoice numbers, e.g. INV-2026-00001</p>
+                            <Label for="invoice_prefix"
+                                >Invoice Number Prefix</Label
+                            >
+                            <Input
+                                id="invoice_prefix"
+                                v-model="invoiceForm.invoice_prefix"
+                                placeholder="INV-"
+                                class="max-w-xs"
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                Prefix for generated invoice numbers, e.g.
+                                INV-2026-00001
+                            </p>
                         </div>
                         <div class="grid gap-2">
                             <Label for="invoice_notes">Invoice Notes</Label>
-                            <Textarea id="invoice_notes" v-model="invoiceForm.invoice_notes" rows="3" placeholder="Payment terms, return policy..." />
-                            <p class="text-xs text-muted-foreground">Shown in the notes section of invoices</p>
+                            <Textarea
+                                id="invoice_notes"
+                                v-model="invoiceForm.invoice_notes"
+                                rows="3"
+                                placeholder="Payment terms, return policy..."
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                Shown in the notes section of invoices
+                            </p>
                         </div>
                         <div class="grid gap-2">
                             <Label for="invoice_footer">Invoice Footer</Label>
-                            <Textarea id="invoice_footer" v-model="invoiceForm.invoice_footer" rows="2" placeholder="Custom footer text..." />
-                            <p class="text-xs text-muted-foreground">Additional text printed at the bottom of invoices and receipts</p>
+                            <Textarea
+                                id="invoice_footer"
+                                v-model="invoiceForm.invoice_footer"
+                                rows="2"
+                                placeholder="Custom footer text..."
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                Additional text printed at the bottom of
+                                invoices and receipts
+                            </p>
                         </div>
                     </div>
 
                     <div class="mt-4 flex items-center gap-3">
                         <Button :disabled="savingInvoice" @click="saveInvoice">
-                            <Loader2 v-if="savingInvoice" class="mr-1.5 size-4 animate-spin" />
-                            {{ savingInvoice ? 'Saving...' : 'Save Invoice Settings' }}
+                            <Loader2
+                                v-if="savingInvoice"
+                                class="mr-1.5 size-4 animate-spin"
+                            />
+                            {{
+                                savingInvoice
+                                    ? 'Saving...'
+                                    : 'Save Invoice Settings'
+                            }}
                         </Button>
-                        <span v-if="savedInvoice" class="flex items-center gap-1 text-sm text-green-600">
+                        <span
+                            v-if="savedInvoice"
+                            class="flex items-center gap-1 text-sm text-green-600"
+                        >
                             <CheckCircle2 class="size-4" /> Saved
                         </span>
                     </div>

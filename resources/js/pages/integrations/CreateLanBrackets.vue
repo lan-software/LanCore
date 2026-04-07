@@ -168,7 +168,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                             placeholder="http://localhost:81/api/webhooks/roles"
                         />
                         <p class="text-xs text-muted-foreground">
-                            The endpoint LanCore will call when user roles change.
+                            The endpoint LanCore will call when user roles
+                            change.
                         </p>
                         <InputError :message="errors.roles_endpoint" />
                     </div>

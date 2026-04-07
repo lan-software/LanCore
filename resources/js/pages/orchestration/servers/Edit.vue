@@ -89,9 +89,7 @@ function forceRelease() {
                 class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
             >
                 <p class="text-sm font-medium text-blue-700 dark:text-blue-300">
-                    Active match: Job #{{
-                        server.active_orchestration_job.id
-                    }}
+                    Active match: Job #{{ server.active_orchestration_job.id }}
                     (Match
                     {{ server.active_orchestration_job.lanbrackets_match_id }})
                 </p>

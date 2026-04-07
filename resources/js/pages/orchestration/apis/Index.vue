@@ -64,14 +64,30 @@ function fireConfetti() {
             angle: 60,
             spread: 55,
             origin: { x: 0, y: 0.7 },
-            colors: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'],
+            colors: [
+                '#ef4444',
+                '#f97316',
+                '#eab308',
+                '#22c55e',
+                '#3b82f6',
+                '#8b5cf6',
+                '#ec4899',
+            ],
         });
         confetti({
             particleCount: 4,
             angle: 120,
             spread: 55,
             origin: { x: 1, y: 0.7 },
-            colors: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'],
+            colors: [
+                '#ef4444',
+                '#f97316',
+                '#eab308',
+                '#22c55e',
+                '#3b82f6',
+                '#8b5cf6',
+                '#ec4899',
+            ],
         });
 
         if (Date.now() < end) {
@@ -90,13 +106,15 @@ async function testTmt2() {
 
     try {
         const url = ExternalApiController.testTmt2().url;
-        const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+        const csrfToken =
+            document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+                ?.content ?? '';
 
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'X-CSRF-TOKEN': csrfToken,
             },
         });
@@ -109,7 +127,8 @@ async function testTmt2() {
             fireConfetti();
         } else {
             testResult.value = 'failure';
-            testStatusLabel.value = data.status === 'auth_failed' ? 'Auth Failed' : 'Unreachable';
+            testStatusLabel.value =
+                data.status === 'auth_failed' ? 'Auth Failed' : 'Unreachable';
             testError.value = data.error || '';
         }
     } catch {
@@ -134,7 +153,8 @@ const testButtonClass = computed(() => {
 const testButtonLabel = computed(() => {
     if (testingTmt2.value) return 'Testing...';
     if (testResult.value === 'success') return 'Connected!';
-    if (testResult.value === 'failure') return testStatusLabel.value || 'Failed';
+    if (testResult.value === 'failure')
+        return testStatusLabel.value || 'Failed';
     return 'Test Connection';
 });
 
@@ -154,13 +174,15 @@ async function testStripe() {
 
     try {
         const url = ExternalApiController.testStripe().url;
-        const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+        const csrfToken =
+            document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+                ?.content ?? '';
 
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'X-CSRF-TOKEN': csrfToken,
             },
         });
@@ -174,7 +196,12 @@ async function testStripe() {
             fireConfetti();
         } else {
             stripeResult.value = 'failure';
-            stripeStatusLabel.value = data.status === 'auth_failed' ? 'Auth Failed' : data.status === 'not_configured' ? 'Not Configured' : 'Unreachable';
+            stripeStatusLabel.value =
+                data.status === 'auth_failed'
+                    ? 'Auth Failed'
+                    : data.status === 'not_configured'
+                      ? 'Not Configured'
+                      : 'Unreachable';
             stripeError.value = data.error || '';
         }
     } catch {
@@ -199,7 +226,8 @@ const stripeButtonClass = computed(() => {
 const stripeButtonLabel = computed(() => {
     if (testingStripe.value) return 'Testing...';
     if (stripeResult.value === 'success') return 'Connected!';
-    if (stripeResult.value === 'failure') return stripeStatusLabel.value || 'Failed';
+    if (stripeResult.value === 'failure')
+        return stripeStatusLabel.value || 'Failed';
     return 'Test Connection';
 });
 </script>
@@ -357,7 +385,9 @@ const stripeButtonLabel = computed(() => {
                                 : 'bg-gray-50 text-gray-500 dark:bg-gray-900 dark:text-gray-500'
                         "
                     >
-                        {{ connections.stripe.enabled ? 'Enabled' : 'Disabled' }}
+                        {{
+                            connections.stripe.enabled ? 'Enabled' : 'Disabled'
+                        }}
                     </Badge>
                 </div>
 
@@ -427,7 +457,9 @@ const stripeButtonLabel = computed(() => {
                     </div>
                     <div class="flex items-center justify-between">
                         <dt class="text-muted-foreground">Currency</dt>
-                        <dd class="text-xs">{{ connections.stripe.currency }}</dd>
+                        <dd class="text-xs">
+                            {{ connections.stripe.currency }}
+                        </dd>
                     </div>
                 </dl>
 

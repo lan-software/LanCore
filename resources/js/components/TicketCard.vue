@@ -171,8 +171,10 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                         <Eye v-if="!showValidationToken" class="size-4" />
                         <EyeOff v-else class="size-4" />
                         <span class="sr-only"
-                            >{{ showValidationToken ? 'Hide' : 'Show' }} validation
-                            ID</span
+                            >{{
+                                showValidationToken ? 'Hide' : 'Show'
+                            }}
+                            validation ID</span
                         >
                     </button>
                 </div>
@@ -207,7 +209,9 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                     :alt="`QR Code for ticket ${ticket.validation_id}`"
                     class="size-48"
                 />
-                <p class="font-mono text-sm font-bold tracking-normal text-foreground sm:tracking-[0.2em]">
+                <p
+                    class="font-mono text-sm font-bold tracking-normal text-foreground sm:tracking-[0.2em]"
+                >
                     {{ ticket.validation_id }}
                 </p>
                 <p class="text-xs text-muted-foreground">Scan at entrance</p>

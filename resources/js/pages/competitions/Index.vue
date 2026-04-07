@@ -64,9 +64,9 @@ const statusColors: Record<string, string> = {
         'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
     registration_closed:
         'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
-    running: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-    finished:
-        'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+    running:
+        'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+    finished: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
     archived: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
 };
 
@@ -94,7 +94,8 @@ const perPageOptions = [10, 20, 50, 100];
                 <Select
                     :model-value="filters.status ?? 'all'"
                     @update:model-value="
-                        (val) => setFilter('status', val === 'all' ? undefined : val)
+                        (val) =>
+                            setFilter('status', val === 'all' ? undefined : val)
                     "
                 >
                     <SelectTrigger class="w-40">
@@ -176,9 +177,7 @@ const perPageOptions = [10, 20, 50, 100];
                                 <TableCell class="px-4 py-3">
                                     <Badge
                                         variant="outline"
-                                        :class="
-                                            statusColors[comp.status] ?? ''
-                                        "
+                                        :class="statusColors[comp.status] ?? ''"
                                     >
                                         {{
                                             comp.status
@@ -214,9 +213,7 @@ const perPageOptions = [10, 20, 50, 100];
                     class="flex items-center justify-between border-t border-sidebar-border/70 px-4 py-3 dark:border-sidebar-border"
                 >
                     <span class="text-xs text-muted-foreground">
-                        <template
-                            v-if="competitions.from && competitions.to"
-                        >
+                        <template v-if="competitions.from && competitions.to">
                             Showing {{ competitions.from }}-{{
                                 competitions.to
                             }}

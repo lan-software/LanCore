@@ -159,10 +159,7 @@ function resolveIcon(name: string | null): Component {
                                 class="inline-flex size-9 items-center justify-center rounded-full border border-border/70 bg-background/80 text-muted-foreground shadow-sm transition hover:bg-accent hover:text-accent-foreground"
                                 aria-label="Toggle navigation menu"
                             >
-                                <Menu
-                                    v-if="!mobileMenuOpen"
-                                    class="size-4"
-                                />
+                                <Menu v-if="!mobileMenuOpen" class="size-4" />
                                 <X v-else class="size-4" />
                             </button>
                         </CollapsibleTrigger>
@@ -170,7 +167,9 @@ function resolveIcon(name: string | null): Component {
                 </div>
 
                 <CollapsibleContent class="border-t">
-                    <nav class="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:px-6">
+                    <nav
+                        class="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:px-6"
+                    >
                         <Link
                             :href="shopIndex().url"
                             class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
@@ -194,8 +193,13 @@ function resolveIcon(name: string | null): Component {
                         </a>
 
                         <template v-if="$page.props.auth.user">
-                            <div class="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2">
-                                <span class="text-sm font-medium text-foreground">Notifications</span>
+                            <div
+                                class="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2"
+                            >
+                                <span
+                                    class="text-sm font-medium text-foreground"
+                                    >Notifications</span
+                                >
                                 <NotificationBell />
                             </div>
                             <Link
@@ -258,10 +262,7 @@ function resolveIcon(name: string | null): Component {
                     >
                         Dashboard
                     </Link>
-                    <NavUser
-                        v-if="$page.props.auth.user"
-                        variant="topbar"
-                    />
+                    <NavUser v-if="$page.props.auth.user" variant="topbar" />
                     <template v-else>
                         <Link
                             :href="login()"
@@ -672,34 +673,98 @@ function resolveIcon(name: string | null): Component {
                             </div>
                         </div>
                         <!-- Open Competitions -->
-                        <div v-if="openCompetitions.length > 0" class="space-y-6">
+                        <div
+                            v-if="openCompetitions.length > 0"
+                            class="space-y-6"
+                        >
                             <div class="flex items-center gap-2">
                                 <Trophy class="size-5 text-muted-foreground" />
-                                <h2 class="text-2xl font-semibold">Open Competitions</h2>
+                                <h2 class="text-2xl font-semibold">
+                                    Open Competitions
+                                </h2>
                             </div>
 
-                            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <div
+                                class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                            >
                                 <Link
                                     v-for="comp in openCompetitions"
                                     :key="comp.id"
-                                    :href="myCompetitionShow({ competition: comp.id }).url"
+                                    :href="
+                                        myCompetitionShow({
+                                            competition: comp.id,
+                                        }).url
+                                    "
                                     class="group flex flex-col rounded-lg border p-4 transition-colors hover:border-foreground/20"
                                 >
-                                    <div class="mb-2 flex items-center justify-between">
-                                        <Badge variant="secondary" class="text-[10px] capitalize">{{ comp.type }}</Badge>
-                                        <span v-if="comp.game" class="text-xs text-muted-foreground">{{ comp.game.name }}</span>
+                                    <div
+                                        class="mb-2 flex items-center justify-between"
+                                    >
+                                        <Badge
+                                            variant="secondary"
+                                            class="text-[10px] capitalize"
+                                            >{{ comp.type }}</Badge
+                                        >
+                                        <span
+                                            v-if="comp.game"
+                                            class="text-xs text-muted-foreground"
+                                            >{{ comp.game.name }}</span
+                                        >
                                     </div>
-                                    <h3 class="font-semibold transition-colors group-hover:text-primary">{{ comp.name }}</h3>
-                                    <p v-if="comp.description" class="mt-1 line-clamp-2 text-sm text-muted-foreground">{{ comp.description }}</p>
-                                    <div class="mt-auto flex items-center gap-3 pt-3 text-xs text-muted-foreground">
-                                        <span v-if="comp.teams_count !== undefined">
-                                            {{ comp.teams_count }}<template v-if="comp.max_teams"> / {{ comp.max_teams }}</template> teams
+                                    <h3
+                                        class="font-semibold transition-colors group-hover:text-primary"
+                                    >
+                                        {{ comp.name }}
+                                    </h3>
+                                    <p
+                                        v-if="comp.description"
+                                        class="mt-1 line-clamp-2 text-sm text-muted-foreground"
+                                    >
+                                        {{ comp.description }}
+                                    </p>
+                                    <div
+                                        class="mt-auto flex items-center gap-3 pt-3 text-xs text-muted-foreground"
+                                    >
+                                        <span
+                                            v-if="
+                                                comp.teams_count !== undefined
+                                            "
+                                        >
+                                            {{ comp.teams_count
+                                            }}<template v-if="comp.max_teams">
+                                                / {{ comp.max_teams }}</template
+                                            >
+                                            teams
                                         </span>
-                                        <span v-if="comp.team_size">{{ comp.team_size }}v{{ comp.team_size }}</span>
-                                        <span v-if="comp.stage_type" class="capitalize">{{ comp.stage_type.replace(/_/g, ' ') }}</span>
+                                        <span v-if="comp.team_size"
+                                            >{{ comp.team_size }}v{{
+                                                comp.team_size
+                                            }}</span
+                                        >
+                                        <span
+                                            v-if="comp.stage_type"
+                                            class="capitalize"
+                                            >{{
+                                                comp.stage_type.replace(
+                                                    /_/g,
+                                                    ' ',
+                                                )
+                                            }}</span
+                                        >
                                     </div>
-                                    <div v-if="comp.registration_closes_at" class="mt-2 text-[11px] text-muted-foreground">
-                                        Registration closes {{ new Date(comp.registration_closes_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) }}
+                                    <div
+                                        v-if="comp.registration_closes_at"
+                                        class="mt-2 text-[11px] text-muted-foreground"
+                                    >
+                                        Registration closes
+                                        {{
+                                            new Date(
+                                                comp.registration_closes_at,
+                                            ).toLocaleDateString(undefined, {
+                                                month: 'short',
+                                                day: 'numeric',
+                                            })
+                                        }}
                                     </div>
                                 </Link>
                             </div>

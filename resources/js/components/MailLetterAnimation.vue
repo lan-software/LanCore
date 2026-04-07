@@ -10,7 +10,11 @@ function onAnimationEnd(event: AnimationEvent) {
 </script>
 
 <template>
-    <div v-if="show" class="pointer-events-none mt-2 flex justify-center" aria-hidden="true">
+    <div
+        v-if="show"
+        class="pointer-events-none mt-2 flex justify-center"
+        aria-hidden="true"
+    >
         <svg
             class="mail-letter size-10 text-primary"
             viewBox="0 0 24 24"

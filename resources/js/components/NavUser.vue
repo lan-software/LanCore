@@ -72,15 +72,14 @@ const dropdownSide = computed(() => {
         <DropdownMenuTrigger as-child>
             <button
                 type="button"
-                :class="cn(
-                    'flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-2 py-1.5 text-sm shadow-sm transition hover:bg-accent hover:text-accent-foreground sm:gap-3 sm:px-3 sm:py-2',
-                )"
+                :class="
+                    cn(
+                        'flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-2 py-1.5 text-sm shadow-sm transition hover:bg-accent hover:text-accent-foreground sm:gap-3 sm:px-3 sm:py-2',
+                    )
+                "
                 data-test="topbar-user-button"
             >
-                <UserInfo
-                    :user="user"
-                    :hide-details-on-mobile="true"
-                />
+                <UserInfo :user="user" :hide-details-on-mobile="true" />
                 <ChevronsUpDown class="size-4 text-muted-foreground sm:block" />
             </button>
         </DropdownMenuTrigger>

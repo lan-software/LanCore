@@ -611,7 +611,11 @@ export type WebhookDelivery = {
 
 // Orchestration Domain
 
-export type GameServerStatus = 'available' | 'in_use' | 'offline' | 'maintenance';
+export type GameServerStatus =
+    | 'available'
+    | 'in_use'
+    | 'offline'
+    | 'maintenance';
 
 export type GameServerAllocationType = 'competition' | 'casual' | 'flexible';
 

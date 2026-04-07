@@ -46,18 +46,27 @@ let debounce: ReturnType<typeof setTimeout>;
 watch(search, (val) => {
     clearTimeout(debounce);
     debounce = setTimeout(() => {
-        router.get(adminTeamsRoute().url, { search: val || undefined }, { preserveState: true, replace: true });
+        router.get(
+            adminTeamsRoute().url,
+            { search: val || undefined },
+            { preserveState: true, replace: true },
+        );
     }, 300);
 });
 
 function statusColor(status: string): string {
     const map: Record<string, string> = {
         draft: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
-        registration_open: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
-        registration_closed: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
-        running: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
-        finished: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
-        archived: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500',
+        registration_open:
+            'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+        registration_closed:
+            'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
+        running:
+            'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+        finished:
+            'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
+        archived:
+            'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500',
     };
     return map[status] ?? '';
 }
@@ -69,24 +78,37 @@ function statusColor(status: string): string {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-4">
             <div class="flex items-center justify-between">
-                <Heading title="Teams" description="Manage all competition teams." />
+                <Heading
+                    title="Teams"
+                    description="Manage all competition teams."
+                />
             </div>
 
             <div class="flex items-center gap-3">
                 <div class="relative max-w-sm flex-1">
-                    <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input v-model="search" placeholder="Search teams..." class="pl-9" />
+                    <Search
+                        class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                        v-model="search"
+                        placeholder="Search teams..."
+                        class="pl-9"
+                    />
                 </div>
             </div>
 
             <div class="rounded-xl border">
                 <table class="w-full text-sm">
                     <thead>
-                        <tr class="border-b text-left text-xs text-muted-foreground">
+                        <tr
+                            class="border-b text-left text-xs text-muted-foreground"
+                        >
                             <th class="px-4 py-3 font-medium">Team</th>
                             <th class="px-4 py-3 font-medium">Competition</th>
                             <th class="px-4 py-3 font-medium">Captain</th>
-                            <th class="px-4 py-3 font-medium text-center">Members</th>
+                            <th class="px-4 py-3 text-center font-medium">
+                                Members
+                            </th>
                             <th class="px-4 py-3 font-medium">Status</th>
                         </tr>
                     </thead>
@@ -98,12 +120,20 @@ function statusColor(status: string): string {
                         >
                             <td class="px-4 py-3">
                                 <Link
-                                    :href="AdminTeamController.edit({ team: team.id }).url"
+                                    :href="
+                                        AdminTeamController.edit({
+                                            team: team.id,
+                                        }).url
+                                    "
                                     class="font-medium text-primary hover:underline"
                                 >
                                     {{ team.name }}
                                 </Link>
-                                <span v-if="team.tag" class="ml-1 text-xs text-muted-foreground">[{{ team.tag }}]</span>
+                                <span
+                                    v-if="team.tag"
+                                    class="ml-1 text-xs text-muted-foreground"
+                                    >[{{ team.tag }}]</span
+                                >
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">
                                 {{ team.competition?.name ?? '—' }}
@@ -120,15 +150,25 @@ function statusColor(status: string): string {
                             <td class="px-4 py-3">
                                 <Badge
                                     v-if="team.competition?.status"
-                                    :class="statusColor(team.competition.status)"
+                                    :class="
+                                        statusColor(team.competition.status)
+                                    "
                                     class="text-[10px] capitalize"
                                 >
-                                    {{ team.competition.status.replace(/_/g, ' ') }}
+                                    {{
+                                        team.competition.status.replace(
+                                            /_/g,
+                                            ' ',
+                                        )
+                                    }}
                                 </Badge>
                             </td>
                         </tr>
                         <tr v-if="teams.data.length === 0">
-                            <td colspan="5" class="px-4 py-8 text-center text-muted-foreground">
+                            <td
+                                colspan="5"
+                                class="px-4 py-8 text-center text-muted-foreground"
+                            >
                                 No teams found.
                             </td>
                         </tr>
@@ -136,7 +176,10 @@ function statusColor(status: string): string {
                 </table>
             </div>
 
-            <div v-if="teams.last_page > 1" class="flex items-center justify-between">
+            <div
+                v-if="teams.last_page > 1"
+                class="flex items-center justify-between"
+            >
                 <span class="text-sm text-muted-foreground">
                     Page {{ teams.current_page }} of {{ teams.last_page }}
                 </span>

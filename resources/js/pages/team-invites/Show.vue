@@ -39,17 +39,25 @@ const declining = ref(false);
 
 function accept() {
     accepting.value = true;
-    router.post(`/team-invites/${props.invite.token}/accept`, {}, {
-        onFinish: () => (accepting.value = false),
-    });
+    router.post(
+        `/team-invites/${props.invite.token}/accept`,
+        {},
+        {
+            onFinish: () => (accepting.value = false),
+        },
+    );
 }
 
 function decline() {
     if (!window.confirm('Decline this invite?')) return;
     declining.value = true;
-    router.post(`/team-invites/${props.invite.token}/decline`, {}, {
-        onFinish: () => (declining.value = false),
-    });
+    router.post(
+        `/team-invites/${props.invite.token}/decline`,
+        {},
+        {
+            onFinish: () => (declining.value = false),
+        },
+    );
 }
 </script>
 
@@ -64,7 +72,9 @@ function decline() {
                     <CheckCircle2 class="mx-auto size-12 text-green-500" />
                     <h1 class="mt-4 text-xl font-bold">Invite Accepted</h1>
                     <p class="mt-2 text-sm text-muted-foreground">
-                        You've already joined <strong>{{ invite.team.name }}</strong>.
+                        You've already joined
+                        <strong>{{ invite.team.name }}</strong
+                        >.
                     </p>
                 </template>
 
@@ -80,7 +90,8 @@ function decline() {
                     <Clock class="mx-auto size-12 text-muted-foreground" />
                     <h1 class="mt-4 text-xl font-bold">Invite Expired</h1>
                     <p class="mt-2 text-sm text-muted-foreground">
-                        This invite expired on {{ new Date(invite.expires_at).toLocaleDateString() }}.
+                        This invite expired on
+                        {{ new Date(invite.expires_at).toLocaleDateString() }}.
                         Ask the team captain to send a new one.
                     </p>
                 </template>
@@ -90,40 +101,76 @@ function decline() {
                     <Users class="mx-auto size-12 text-primary" />
                     <h1 class="mt-4 text-xl font-bold">You're invited!</h1>
                     <p class="mt-2 text-sm text-muted-foreground">
-                        <strong>{{ invite.invited_by }}</strong> invited you to join
+                        <strong>{{ invite.invited_by }}</strong> invited you to
+                        join
                     </p>
 
                     <div class="mt-4 rounded-lg border p-4 text-left">
                         <div class="font-semibold">
                             {{ invite.team.name }}
-                            <span v-if="invite.team.tag" class="text-muted-foreground">[{{ invite.team.tag }}]</span>
+                            <span
+                                v-if="invite.team.tag"
+                                class="text-muted-foreground"
+                                >[{{ invite.team.tag }}]</span
+                            >
                         </div>
-                        <div v-if="invite.competition" class="mt-1 text-sm text-muted-foreground">
+                        <div
+                            v-if="invite.competition"
+                            class="mt-1 text-sm text-muted-foreground"
+                        >
                             {{ invite.competition.name }}
-                            <span v-if="invite.competition.game"> &middot; {{ invite.competition.game }}</span>
+                            <span v-if="invite.competition.game">
+                                &middot; {{ invite.competition.game }}</span
+                            >
                         </div>
                         <div class="mt-1 text-xs text-muted-foreground">
-                            {{ invite.team.members_count }}<template v-if="invite.team.team_size"> / {{ invite.team.team_size }}</template> members
+                            {{ invite.team.members_count
+                            }}<template v-if="invite.team.team_size">
+                                / {{ invite.team.team_size }}</template
+                            >
+                            members
                         </div>
                     </div>
 
                     <div class="mt-2 text-xs text-muted-foreground">
-                        Expires {{ new Date(invite.expires_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) }}
+                        Expires
+                        {{
+                            new Date(invite.expires_at).toLocaleDateString(
+                                undefined,
+                                {
+                                    month: 'long',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                },
+                            )
+                        }}
                     </div>
 
                     <template v-if="user">
-                        <div class="mt-6 flex items-center justify-center gap-3">
+                        <div
+                            class="mt-6 flex items-center justify-center gap-3"
+                        >
                             <Button :disabled="accepting" @click="accept">
                                 {{ accepting ? 'Joining...' : 'Accept & Join' }}
                             </Button>
-                            <Button variant="outline" :disabled="declining" @click="decline">
+                            <Button
+                                variant="outline"
+                                :disabled="declining"
+                                @click="decline"
+                            >
                                 {{ declining ? 'Declining...' : 'Decline' }}
                             </Button>
                         </div>
                     </template>
                     <template v-else>
                         <p class="mt-6 text-sm text-muted-foreground">
-                            You need to <a href="/login" class="font-medium text-primary hover:underline">log in</a> to accept this invite.
+                            You need to
+                            <a
+                                href="/login"
+                                class="font-medium text-primary hover:underline"
+                                >log in</a
+                            >
+                            to accept this invite.
                         </p>
                     </template>
                 </template>

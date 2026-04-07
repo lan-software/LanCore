@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Check, Crown, Mail, Shield, Users, X } from 'lucide-vue-next';
+import {
+    ArrowLeft,
+    Check,
+    Crown,
+    Mail,
+    Shield,
+    Users,
+    X,
+} from 'lucide-vue-next';
 import { ref } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -75,14 +83,21 @@ function leaveTeam() {
 
     leaving.value = true;
     router.post(
-        TeamController.leave({ competition: props.team.competition.id, team: props.team.id }).url,
+        TeamController.leave({
+            competition: props.team.competition.id,
+            team: props.team.id,
+        }).url,
         {},
         { onFinish: () => (leaving.value = false) },
     );
 }
 
 function resolveRequest(requestId: number, action: 'approve' | 'deny') {
-    router.post(`/teams/join-requests/${requestId}/resolve`, { action }, { preserveScroll: true });
+    router.post(
+        `/teams/join-requests/${requestId}/resolve`,
+        { action },
+        { preserveScroll: true },
+    );
 }
 
 const inviteForm = useForm({ email: '' });
@@ -90,7 +105,10 @@ const inviteForm = useForm({ email: '' });
 function sendInvite() {
     if (!props.team.competition) return;
     inviteForm.post(
-        TeamController.invite({ competition: props.team.competition.id, team: props.team.id }).url,
+        TeamController.invite({
+            competition: props.team.competition.id,
+            team: props.team.id,
+        }).url,
         {
             preserveScroll: true,
             onSuccess: () => inviteForm.reset(),
@@ -100,12 +118,19 @@ function sendInvite() {
 
 function statusColor(status: string): string {
     const map: Record<string, string> = {
-        registration_open: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
-        registration_closed: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
-        running: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
-        finished: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
+        registration_open:
+            'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+        registration_closed:
+            'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
+        running:
+            'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+        finished:
+            'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
     };
-    return map[status] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+    return (
+        map[status] ??
+        'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+    );
 }
 </script>
 
@@ -114,7 +139,10 @@ function statusColor(status: string): string {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-4">
-            <Link :href="myTeamsRoute().url" class="text-sm text-muted-foreground hover:text-foreground">
+            <Link
+                :href="myTeamsRoute().url"
+                class="text-sm text-muted-foreground hover:text-foreground"
+            >
                 <ArrowLeft class="mr-1 inline size-3" /> Back to My Teams
             </Link>
 
@@ -124,22 +152,40 @@ function statusColor(status: string): string {
                     <div>
                         <div class="flex items-center gap-3">
                             <h1 class="text-2xl font-bold">{{ team.name }}</h1>
-                            <span v-if="team.tag" class="text-lg text-muted-foreground">[{{ team.tag }}]</span>
+                            <span
+                                v-if="team.tag"
+                                class="text-lg text-muted-foreground"
+                                >[{{ team.tag }}]</span
+                            >
                             <Badge v-if="team.is_captain" variant="outline">
                                 <Shield class="mr-1 size-3" /> Captain
                             </Badge>
                         </div>
-                        <div v-if="team.competition" class="mt-2 flex items-center gap-2">
+                        <div
+                            v-if="team.competition"
+                            class="mt-2 flex items-center gap-2"
+                        >
                             <Link
-                                :href="myCompetitionShow({ competition: team.competition.id }).url"
+                                :href="
+                                    myCompetitionShow({
+                                        competition: team.competition.id,
+                                    }).url
+                                "
                                 class="text-sm font-medium text-primary hover:underline"
                             >
                                 {{ team.competition.name }}
                             </Link>
-                            <Badge :class="statusColor(team.competition.status)" class="text-[10px] capitalize">
+                            <Badge
+                                :class="statusColor(team.competition.status)"
+                                class="text-[10px] capitalize"
+                            >
                                 {{ team.competition.status.replace(/_/g, ' ') }}
                             </Badge>
-                            <span v-if="team.competition.game" class="text-xs text-muted-foreground">{{ team.competition.game }}</span>
+                            <span
+                                v-if="team.competition.game"
+                                class="text-xs text-muted-foreground"
+                                >{{ team.competition.game }}</span
+                            >
                         </div>
                     </div>
 
@@ -148,7 +194,10 @@ function statusColor(status: string): string {
                         <div class="mb-4 flex items-center justify-between">
                             <h2 class="text-sm font-semibold">Members</h2>
                             <span class="text-xs text-muted-foreground">
-                                {{ team.members.length }}<template v-if="team.competition?.team_size"> / {{ team.competition.team_size }}</template>
+                                {{ team.members.length
+                                }}<template v-if="team.competition?.team_size">
+                                    / {{ team.competition.team_size }}</template
+                                >
                             </span>
                         </div>
 
@@ -159,20 +208,43 @@ function statusColor(status: string): string {
                                 class="flex items-center justify-between rounded-lg border px-4 py-3"
                             >
                                 <div class="flex items-center gap-3">
-                                    <div class="flex size-8 items-center justify-center rounded-full bg-muted text-xs font-bold">
-                                        {{ (member.name ?? '?').charAt(0).toUpperCase() }}
+                                    <div
+                                        class="flex size-8 items-center justify-center rounded-full bg-muted text-xs font-bold"
+                                    >
+                                        {{
+                                            (member.name ?? '?')
+                                                .charAt(0)
+                                                .toUpperCase()
+                                        }}
                                     </div>
                                     <div>
-                                        <div class="flex items-center gap-2 text-sm font-medium">
+                                        <div
+                                            class="flex items-center gap-2 text-sm font-medium"
+                                        >
                                             {{ member.name }}
-                                            <Crown v-if="member.is_captain" class="size-3 text-amber-500" />
+                                            <Crown
+                                                v-if="member.is_captain"
+                                                class="size-3 text-amber-500"
+                                            />
                                         </div>
-                                        <div class="text-xs text-muted-foreground">{{ member.email }}</div>
+                                        <div
+                                            class="text-xs text-muted-foreground"
+                                        >
+                                            {{ member.email }}
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="text-xs text-muted-foreground">
                                     <template v-if="member.joined_at">
-                                        Joined {{ new Date(member.joined_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) }}
+                                        Joined
+                                        {{
+                                            new Date(
+                                                member.joined_at,
+                                            ).toLocaleDateString(undefined, {
+                                                month: 'short',
+                                                day: 'numeric',
+                                            })
+                                        }}
                                     </template>
                                 </div>
                             </div>
@@ -180,8 +252,13 @@ function statusColor(status: string): string {
                     </div>
 
                     <!-- Pending Join Requests (captain only) -->
-                    <div v-if="canManage && pendingRequests.length > 0" class="rounded-xl border border-blue-200 bg-blue-50/50 p-5 dark:border-blue-900 dark:bg-blue-950/30">
-                        <h2 class="mb-4 text-sm font-semibold">Join Requests ({{ pendingRequests.length }})</h2>
+                    <div
+                        v-if="canManage && pendingRequests.length > 0"
+                        class="rounded-xl border border-blue-200 bg-blue-50/50 p-5 dark:border-blue-900 dark:bg-blue-950/30"
+                    >
+                        <h2 class="mb-4 text-sm font-semibold">
+                            Join Requests ({{ pendingRequests.length }})
+                        </h2>
                         <div class="space-y-3">
                             <div
                                 v-for="req in pendingRequests"
@@ -189,15 +266,36 @@ function statusColor(status: string): string {
                                 class="flex items-center justify-between rounded-lg border bg-background px-4 py-3"
                             >
                                 <div>
-                                    <div class="text-sm font-medium">{{ req.user_name }}</div>
-                                    <div class="text-xs text-muted-foreground">{{ req.user_email }}</div>
-                                    <div v-if="req.message" class="mt-1 text-xs italic text-muted-foreground">"{{ req.message }}"</div>
+                                    <div class="text-sm font-medium">
+                                        {{ req.user_name }}
+                                    </div>
+                                    <div class="text-xs text-muted-foreground">
+                                        {{ req.user_email }}
+                                    </div>
+                                    <div
+                                        v-if="req.message"
+                                        class="mt-1 text-xs text-muted-foreground italic"
+                                    >
+                                        "{{ req.message }}"
+                                    </div>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <Button size="sm" variant="outline" class="text-green-600 hover:text-green-700" @click="resolveRequest(req.id, 'approve')">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        class="text-green-600 hover:text-green-700"
+                                        @click="
+                                            resolveRequest(req.id, 'approve')
+                                        "
+                                    >
                                         <Check class="mr-1 size-3" /> Approve
                                     </Button>
-                                    <Button size="sm" variant="outline" class="text-red-600 hover:text-red-700" @click="resolveRequest(req.id, 'deny')">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        class="text-red-600 hover:text-red-700"
+                                        @click="resolveRequest(req.id, 'deny')"
+                                    >
                                         <X class="mr-1 size-3" /> Deny
                                     </Button>
                                 </div>
@@ -214,13 +312,20 @@ function statusColor(status: string): string {
                         <div class="space-y-2">
                             <Link
                                 v-if="team.competition"
-                                :href="myCompetitionShow({ competition: team.competition.id }).url"
+                                :href="
+                                    myCompetitionShow({
+                                        competition: team.competition.id,
+                                    }).url
+                                "
                                 class="flex w-full items-center rounded-lg border px-4 py-2.5 text-sm transition hover:bg-accent"
                             >
                                 View Competition
                             </Link>
                             <Button
-                                v-if="team.competition?.status === 'registration_open'"
+                                v-if="
+                                    team.competition?.status ===
+                                    'registration_open'
+                                "
                                 variant="outline"
                                 size="sm"
                                 class="w-full text-destructive hover:text-destructive"
@@ -233,13 +338,21 @@ function statusColor(status: string): string {
                     </div>
 
                     <!-- Invite (captain only, registration open) -->
-                    <div v-if="canManage && team.competition?.status === 'registration_open'" class="rounded-xl border p-4">
+                    <div
+                        v-if="
+                            canManage &&
+                            team.competition?.status === 'registration_open'
+                        "
+                        class="rounded-xl border p-4"
+                    >
                         <h3 class="mb-3 text-sm font-semibold">
                             <Mail class="mr-1 inline size-3.5" /> Invite Player
                         </h3>
                         <form class="space-y-3" @submit.prevent="sendInvite">
                             <div class="grid gap-1.5">
-                                <Label for="invite-email" class="text-xs">Email</Label>
+                                <Label for="invite-email" class="text-xs"
+                                    >Email</Label
+                                >
                                 <Input
                                     id="invite-email"
                                     v-model="inviteForm.email"
@@ -248,13 +361,29 @@ function statusColor(status: string): string {
                                     placeholder="player@example.com"
                                 />
                             </div>
-                            <Button type="submit" size="sm" class="w-full" :disabled="inviteForm.processing">
-                                {{ inviteForm.processing ? 'Sending...' : 'Send Invite' }}
+                            <Button
+                                type="submit"
+                                size="sm"
+                                class="w-full"
+                                :disabled="inviteForm.processing"
+                            >
+                                {{
+                                    inviteForm.processing
+                                        ? 'Sending...'
+                                        : 'Send Invite'
+                                }}
                             </Button>
                         </form>
 
-                        <div v-if="pendingInvites.length > 0" class="mt-4 space-y-2">
-                            <p class="text-xs font-medium text-muted-foreground">Pending Invites</p>
+                        <div
+                            v-if="pendingInvites.length > 0"
+                            class="mt-4 space-y-2"
+                        >
+                            <p
+                                class="text-xs font-medium text-muted-foreground"
+                            >
+                                Pending Invites
+                            </p>
                             <div
                                 v-for="inv in pendingInvites"
                                 :key="inv.id"
@@ -262,7 +391,15 @@ function statusColor(status: string): string {
                             >
                                 <span>{{ inv.email }}</span>
                                 <span class="text-muted-foreground">
-                                    expires {{ new Date(inv.expires_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) }}
+                                    expires
+                                    {{
+                                        new Date(
+                                            inv.expires_at,
+                                        ).toLocaleDateString(undefined, {
+                                            month: 'short',
+                                            day: 'numeric',
+                                        })
+                                    }}
                                 </span>
                             </div>
                         </div>
@@ -272,18 +409,34 @@ function statusColor(status: string): string {
                     <div class="rounded-xl border p-4">
                         <h3 class="mb-3 text-sm font-semibold">Details</h3>
                         <dl class="space-y-2 text-sm">
-                            <div v-if="team.captain" class="flex justify-between">
+                            <div
+                                v-if="team.captain"
+                                class="flex justify-between"
+                            >
                                 <dt class="text-muted-foreground">Captain</dt>
                                 <dd>{{ team.captain.name }}</dd>
                             </div>
-                            <div v-if="team.competition?.type" class="flex justify-between">
+                            <div
+                                v-if="team.competition?.type"
+                                class="flex justify-between"
+                            >
                                 <dt class="text-muted-foreground">Type</dt>
-                                <dd class="capitalize">{{ team.competition.type }}</dd>
+                                <dd class="capitalize">
+                                    {{ team.competition.type }}
+                                </dd>
                             </div>
                             <div class="flex justify-between">
                                 <dt class="text-muted-foreground">Members</dt>
                                 <dd>
-                                    {{ team.members.length }}<template v-if="team.competition?.team_size"> / {{ team.competition.team_size }}</template>
+                                    {{ team.members.length
+                                    }}<template
+                                        v-if="team.competition?.team_size"
+                                    >
+                                        /
+                                        {{
+                                            team.competition.team_size
+                                        }}</template
+                                    >
                                 </dd>
                             </div>
                         </dl>

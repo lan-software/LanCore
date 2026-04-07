@@ -54,8 +54,8 @@ function cancelJob() {
 
 function formatDate(date: string | null): string {
     if (!date) {
-return '—';
-}
+        return '—';
+    }
 
     return new Date(date).toLocaleString();
 }

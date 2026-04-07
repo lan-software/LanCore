@@ -133,7 +133,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                             placeholder="http://localhost:84/auth/callback"
                         />
                         <p class="text-xs text-muted-foreground">
-                            The URL LanCore redirects to after SSO authentication.
+                            The URL LanCore redirects to after SSO
+                            authentication.
                         </p>
                         <InputError :message="errors.callback_url" />
                     </div>
@@ -148,7 +149,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                             placeholder="http://localhost:84"
                         />
                         <p class="text-xs text-muted-foreground">
-                            The URL users are directed to when clicking the Entrance link in the navigation.
+                            The URL users are directed to when clicking the
+                            Entrance link in the navigation.
                         </p>
                         <InputError :message="errors.nav_url" />
                     </div>
@@ -163,7 +165,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                             placeholder="http://localhost:84/api/webhooks/roles"
                         />
                         <p class="text-xs text-muted-foreground">
-                            The endpoint LanCore will call when user roles change.
+                            The endpoint LanCore will call when user roles
+                            change.
                         </p>
                         <InputError :message="errors.roles_endpoint" />
                     </div>

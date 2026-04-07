@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ChevronLeft, ChevronRight, ExternalLink, Swords } from 'lucide-vue-next';
+import {
+    ChevronLeft,
+    ChevronRight,
+    ExternalLink,
+    Swords,
+} from 'lucide-vue-next';
 import UserCompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/UserCompetitionController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,9 +39,9 @@ const statusColors: Record<string, string> = {
         'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
     registration_closed:
         'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
-    running: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-    finished:
-        'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+    running:
+        'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+    finished: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
     archived: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
 };
 </script>
@@ -47,7 +52,10 @@ const statusColors: Record<string, string> = {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <EventSelector variant="my" :sidebar="false" />
-            <div v-if="competitions.data.length" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div
+                v-if="competitions.data.length"
+                class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            >
                 <Link
                     v-for="comp in competitions.data"
                     :key="comp.id"
@@ -84,11 +92,7 @@ const statusColors: Record<string, string> = {
                         {{ comp.teams_count ?? 0 }} teams
                         <template v-if="comp.starts_at">
                             &middot;
-                            {{
-                                new Date(
-                                    comp.starts_at,
-                                ).toLocaleDateString()
-                            }}
+                            {{ new Date(comp.starts_at).toLocaleDateString() }}
                         </template>
                     </div>
                 </Link>
@@ -114,7 +118,11 @@ const statusColors: Record<string, string> = {
                     :disabled="!link.url || link.active"
                     as-child
                 >
-                    <Link v-if="link.url" :href="link.url" v-html="link.label" />
+                    <Link
+                        v-if="link.url"
+                        :href="link.url"
+                        v-html="link.label"
+                    />
                     <span v-else v-html="link.label" />
                 </Button>
             </div>

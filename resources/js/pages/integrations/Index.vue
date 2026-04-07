@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ChevronDown, DoorOpen, LifeBuoy, Megaphone, Plus, Swords } from 'lucide-vue-next';
+import {
+    ChevronDown,
+    DoorOpen,
+    LifeBuoy,
+    Megaphone,
+    Plus,
+    Swords,
+} from 'lucide-vue-next';
 import {
     edit,
     create as integrationCreate,

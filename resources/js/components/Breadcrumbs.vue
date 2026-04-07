@@ -23,11 +23,18 @@ defineProps<Props>();
             <template v-for="(item, index) in breadcrumbs" :key="index">
                 <BreadcrumbItem>
                     <template v-if="index === breadcrumbs.length - 1">
-                        <BreadcrumbPage class="max-w-[40vw] truncate sm:max-w-none">{{ item.title }}</BreadcrumbPage>
+                        <BreadcrumbPage
+                            class="max-w-[40vw] truncate sm:max-w-none"
+                            >{{ item.title }}</BreadcrumbPage
+                        >
                     </template>
                     <template v-else>
                         <BreadcrumbLink as-child>
-                            <Link :href="item.href" class="max-w-[40vw] truncate sm:max-w-none">{{ item.title }}</Link>
+                            <Link
+                                :href="item.href"
+                                class="max-w-[40vw] truncate sm:max-w-none"
+                                >{{ item.title }}</Link
+                            >
                         </BreadcrumbLink>
                     </template>
                 </BreadcrumbItem>

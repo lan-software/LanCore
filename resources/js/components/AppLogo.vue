@@ -34,6 +34,8 @@ const orgName = computed<string | null>(
         />
     </div>
     <div class="ml-1 grid flex-1 text-left text-sm">
-        <span class="mb-0.5 truncate leading-tight font-semibold">{{ orgName ?? 'LanCore' }}</span>
+        <span class="mb-0.5 truncate leading-tight font-semibold">{{
+            orgName ?? 'LanCore'
+        }}</span>
     </div>
 </template>

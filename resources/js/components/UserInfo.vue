@@ -33,10 +33,12 @@ const showAvatar = computed(
     </Avatar>
 
     <div
-        :class="cn(
-            'grid flex-1 text-left text-sm leading-tight',
-            props.hideDetailsOnMobile && 'hidden sm:grid',
-        )"
+        :class="
+            cn(
+                'grid flex-1 text-left text-sm leading-tight',
+                props.hideDetailsOnMobile && 'hidden sm:grid',
+            )
+        "
     >
         <span class="truncate font-medium">{{ user.name }}</span>
         <span v-if="showEmail" class="truncate text-xs text-muted-foreground">{{

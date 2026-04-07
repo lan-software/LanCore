@@ -208,7 +208,9 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         </p>
                                     </div>
 
-                                    <div class="col-span-2 flex items-center justify-between gap-2 sm:col-span-1 sm:contents">
+                                    <div
+                                        class="col-span-2 flex items-center justify-between gap-2 sm:col-span-1 sm:contents"
+                                    >
                                         <div class="flex items-center gap-2">
                                             <Button
                                                 variant="outline"
@@ -246,7 +248,9 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                             </Button>
                                         </div>
 
-                                        <div class="text-right font-medium sm:w-24">
+                                        <div
+                                            class="text-right font-medium sm:w-24"
+                                        >
                                             {{ formatPrice(item.line_total) }}
                                         </div>
 
@@ -295,7 +299,9 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         </p>
                                     </div>
 
-                                    <div class="col-span-2 flex items-center justify-between gap-2 sm:col-span-1 sm:contents">
+                                    <div
+                                        class="col-span-2 flex items-center justify-between gap-2 sm:col-span-1 sm:contents"
+                                    >
                                         <div class="flex items-center gap-2">
                                             <Button
                                                 variant="outline"
@@ -333,7 +339,9 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                             </Button>
                                         </div>
 
-                                        <div class="text-right font-medium sm:w-24">
+                                        <div
+                                            class="text-right font-medium sm:w-24"
+                                        >
                                             {{ formatPrice(item.line_total) }}
                                         </div>
 
