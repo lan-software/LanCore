@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\OrganizationSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -40,6 +41,8 @@ class OrganizationSettingsController extends Controller
             OrganizationSetting::set($key, $value);
         }
 
+        Cache::forget('inertia.organization');
+
         return back();
     }
 
@@ -57,6 +60,8 @@ class OrganizationSettingsController extends Controller
         $path = $request->file('logo')->store('organization', 'public');
         OrganizationSetting::set('logo', $path);
 
+        Cache::forget('inertia.organization');
+
         return back();
     }
 
@@ -67,6 +72,8 @@ class OrganizationSettingsController extends Controller
             Storage::delete($path);
             OrganizationSetting::set('logo', null);
         }
+
+        Cache::forget('inertia.organization');
 
         return back();
     }

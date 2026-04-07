@@ -188,10 +188,10 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                 <div
                                     v-for="item in ticketItems"
                                     :key="item.id"
-                                    class="flex items-center gap-4 rounded-lg border p-4"
+                                    class="grid grid-cols-[1fr_auto] gap-3 rounded-lg border p-4 sm:flex sm:items-center sm:gap-4"
                                 >
                                     <div class="min-w-0 flex-1">
-                                        <h3 class="font-medium">
+                                        <h3 class="truncate font-medium">
                                             {{ item.name }}
                                         </h3>
                                         <p
@@ -208,55 +208,57 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         </p>
                                     </div>
 
-                                    <div class="flex items-center gap-2">
+                                    <div class="col-span-2 flex items-center justify-between gap-2 sm:col-span-1 sm:contents">
+                                        <div class="flex items-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                class="size-8"
+                                                @click="
+                                                    updateQuantity(
+                                                        item,
+                                                        item.quantity - 1,
+                                                    )
+                                                "
+                                            >
+                                                <Minus class="size-3" />
+                                            </Button>
+                                            <span
+                                                class="w-8 text-center text-sm font-medium"
+                                                >{{ item.quantity }}</span
+                                            >
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                class="size-8"
+                                                :disabled="
+                                                    item.quantity >=
+                                                    item.max_quantity
+                                                "
+                                                @click="
+                                                    updateQuantity(
+                                                        item,
+                                                        item.quantity + 1,
+                                                    )
+                                                "
+                                            >
+                                                <Plus class="size-3" />
+                                            </Button>
+                                        </div>
+
+                                        <div class="text-right font-medium sm:w-24">
+                                            {{ formatPrice(item.line_total) }}
+                                        </div>
+
                                         <Button
-                                            variant="outline"
+                                            variant="ghost"
                                             size="icon"
-                                            class="size-8"
-                                            @click="
-                                                updateQuantity(
-                                                    item,
-                                                    item.quantity - 1,
-                                                )
-                                            "
+                                            class="size-8 text-muted-foreground hover:text-destructive"
+                                            @click="removeItem(item)"
                                         >
-                                            <Minus class="size-3" />
-                                        </Button>
-                                        <span
-                                            class="w-8 text-center text-sm font-medium"
-                                            >{{ item.quantity }}</span
-                                        >
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            class="size-8"
-                                            :disabled="
-                                                item.quantity >=
-                                                item.max_quantity
-                                            "
-                                            @click="
-                                                updateQuantity(
-                                                    item,
-                                                    item.quantity + 1,
-                                                )
-                                            "
-                                        >
-                                            <Plus class="size-3" />
+                                            <Trash2 class="size-4" />
                                         </Button>
                                     </div>
-
-                                    <div class="w-24 text-right font-medium">
-                                        {{ formatPrice(item.line_total) }}
-                                    </div>
-
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        class="size-8 text-muted-foreground hover:text-destructive"
-                                        @click="removeItem(item)"
-                                    >
-                                        <Trash2 class="size-4" />
-                                    </Button>
                                 </div>
                             </div>
 
@@ -266,11 +268,11 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                 <div
                                     v-for="item in addonItems"
                                     :key="item.id"
-                                    class="flex items-center gap-4 rounded-lg border p-4"
+                                    class="grid grid-cols-[1fr_auto] gap-3 rounded-lg border p-4 sm:flex sm:items-center sm:gap-4"
                                 >
                                     <div class="min-w-0 flex-1">
                                         <div class="flex items-center gap-2">
-                                            <h3 class="font-medium">
+                                            <h3 class="truncate font-medium">
                                                 {{ item.name }}
                                             </h3>
                                             <Badge
@@ -293,55 +295,57 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         </p>
                                     </div>
 
-                                    <div class="flex items-center gap-2">
+                                    <div class="col-span-2 flex items-center justify-between gap-2 sm:col-span-1 sm:contents">
+                                        <div class="flex items-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                class="size-8"
+                                                @click="
+                                                    updateQuantity(
+                                                        item,
+                                                        item.quantity - 1,
+                                                    )
+                                                "
+                                            >
+                                                <Minus class="size-3" />
+                                            </Button>
+                                            <span
+                                                class="w-8 text-center text-sm font-medium"
+                                                >{{ item.quantity }}</span
+                                            >
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                class="size-8"
+                                                :disabled="
+                                                    item.quantity >=
+                                                    item.max_quantity
+                                                "
+                                                @click="
+                                                    updateQuantity(
+                                                        item,
+                                                        item.quantity + 1,
+                                                    )
+                                                "
+                                            >
+                                                <Plus class="size-3" />
+                                            </Button>
+                                        </div>
+
+                                        <div class="text-right font-medium sm:w-24">
+                                            {{ formatPrice(item.line_total) }}
+                                        </div>
+
                                         <Button
-                                            variant="outline"
+                                            variant="ghost"
                                             size="icon"
-                                            class="size-8"
-                                            @click="
-                                                updateQuantity(
-                                                    item,
-                                                    item.quantity - 1,
-                                                )
-                                            "
+                                            class="size-8 text-muted-foreground hover:text-destructive"
+                                            @click="removeItem(item)"
                                         >
-                                            <Minus class="size-3" />
-                                        </Button>
-                                        <span
-                                            class="w-8 text-center text-sm font-medium"
-                                            >{{ item.quantity }}</span
-                                        >
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            class="size-8"
-                                            :disabled="
-                                                item.quantity >=
-                                                item.max_quantity
-                                            "
-                                            @click="
-                                                updateQuantity(
-                                                    item,
-                                                    item.quantity + 1,
-                                                )
-                                            "
-                                        >
-                                            <Plus class="size-3" />
+                                            <Trash2 class="size-4" />
                                         </Button>
                                     </div>
-
-                                    <div class="w-24 text-right font-medium">
-                                        {{ formatPrice(item.line_total) }}
-                                    </div>
-
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        class="size-8 text-muted-foreground hover:text-destructive"
-                                        @click="removeItem(item)"
-                                    >
-                                        <Trash2 class="size-4" />
-                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -416,12 +420,12 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                             <Label for="voucher_code"
                                                 >Voucher Code</Label
                                             >
-                                            <div class="flex gap-2">
+                                            <div class="flex flex-wrap gap-2">
                                                 <Input
                                                     v-model="voucherInput"
                                                     id="voucher_code"
                                                     placeholder="Enter code"
-                                                    class="font-mono"
+                                                    class="min-w-0 flex-1 font-mono"
                                                     @keyup.enter="applyVoucher"
                                                 />
                                                 <Button

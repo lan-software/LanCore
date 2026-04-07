@@ -197,6 +197,7 @@ function updateCartQuantity(
                             class="relative text-muted-foreground hover:text-foreground"
                         >
                             <ShoppingCart class="size-5" />
+                            <span class="hidden sm:inline">Cart</span>
                             <Badge
                                 v-if="cartItemCount > 0"
                                 class="absolute -top-2 -right-2 flex size-5 items-center justify-center rounded-full p-0 text-xs"
@@ -560,6 +561,18 @@ function updateCartQuantity(
                 </div>
             </template>
         </main>
+
+        <div
+            v-if="cartItemCount > 0"
+            class="sticky bottom-0 z-20 border-t bg-background/95 px-4 py-3 backdrop-blur"
+        >
+            <Button as-child class="w-full" size="lg">
+                <Link :href="CartController.show().url" class="gap-2">
+                    <ShoppingCart class="size-4" />
+                    View Cart ({{ cartItemCount }}) · Proceed to Checkout
+                </Link>
+            </Button>
+        </div>
 
         <footer class="border-t">
             <div

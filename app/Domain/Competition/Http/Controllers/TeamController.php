@@ -86,9 +86,13 @@ class TeamController extends Controller
     {
         $this->authorize('leave', $team);
 
-        $this->leaveTeam->execute($team, $request->user());
+        $teamDeleted = $this->leaveTeam->execute($team, $request->user());
 
-        return back();
+        $message = $teamDeleted
+            ? 'You left the team. As the last member, the team has been disbanded.'
+            : 'You have left the team.';
+
+        return redirect()->route('my-competitions.show', $competition)->with('success', $message);
     }
 
     public function destroy(Competition $competition, CompetitionTeam $team): RedirectResponse
@@ -97,6 +101,6 @@ class TeamController extends Controller
 
         $team->delete();
 
-        return back();
+        return redirect()->route('my-competitions.show', $competition)->with('success', 'Team deleted.');
     }
 }

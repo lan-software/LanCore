@@ -3,20 +3,20 @@
 namespace App\Domain\Ticketing\Http\Controllers;
 
 use App\Domain\Ticketing\Actions\UpdateTicketAssignments;
+use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
-use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -34,13 +34,16 @@ class TicketController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
+        $selectedEventId = $request->session()->get('my_selected_event_id');
 
         $ownedTickets = $user->ownedTickets()
+            ->when($selectedEventId, fn ($q) => $q->where('event_id', $selectedEventId))
             ->with(['ticketType', 'event', 'manager', 'users', 'addons', 'order'])
             ->get();
 
         $managedTickets = $user->managedTickets()
             ->where('owner_id', '!=', $user->id)
+            ->when($selectedEventId, fn ($q) => $q->where('event_id', $selectedEventId))
             ->with(['ticketType', 'event', 'owner', 'users', 'addons', 'order'])
             ->get();
 
@@ -50,6 +53,7 @@ class TicketController extends Controller
                 $query->where('manager_id', '!=', $user->id)
                     ->orWhereNull('manager_id');
             })
+            ->when($selectedEventId, fn ($q) => $q->where('tickets.event_id', $selectedEventId))
             ->with(['ticketType', 'event', 'owner', 'users', 'addons', 'order'])
             ->get();
 
@@ -166,7 +170,7 @@ class TicketController extends Controller
 
         $renderer = new ImageRenderer(
             new RendererStyle(400),
-            new SvgImageBackEnd(),
+            new SvgImageBackEnd,
         );
 
         $writer = new Writer($renderer);

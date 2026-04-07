@@ -15,8 +15,11 @@ class UserOrderController extends Controller
 {
     public function index(Request $request): Response
     {
+        $selectedEventId = $request->session()->get('my_selected_event_id');
+
         $orders = $request->user()
             ->orders()
+            ->when($selectedEventId, fn ($q) => $q->where('event_id', $selectedEventId))
             ->with(['event', 'tickets.ticketType', 'orderLines'])
             ->latest()
             ->get();

@@ -153,9 +153,9 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                 >
                     Validation Token
                 </p>
-                <div class="flex items-center gap-2">
+                <div class="flex min-w-0 items-center gap-2">
                     <code
-                        class="rounded bg-muted px-2 py-1 font-mono text-sm tracking-widest"
+                        class="min-w-0 flex-1 overflow-x-auto rounded bg-muted px-2 py-1 font-mono text-sm tracking-normal sm:tracking-widest"
                     >
                         {{
                             showValidationToken
@@ -207,7 +207,7 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                     :alt="`QR Code for ticket ${ticket.validation_id}`"
                     class="size-48"
                 />
-                <p class="font-mono text-sm font-bold tracking-[0.2em] text-foreground">
+                <p class="font-mono text-sm font-bold tracking-normal text-foreground sm:tracking-[0.2em]">
                     {{ ticket.validation_id }}
                 </p>
                 <p class="text-xs text-muted-foreground">Scan at entrance</p>

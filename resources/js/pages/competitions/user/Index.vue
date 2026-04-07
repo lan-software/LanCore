@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, Swords } from 'lucide-vue-next
 import UserCompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/UserCompetitionController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import EventSelector from '@/components/EventSelector.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index as myCompetitionsRoute } from '@/routes/my-competitions';
 import type { BreadcrumbItem } from '@/types';
@@ -45,6 +46,7 @@ const statusColors: Record<string, string> = {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
+            <EventSelector variant="my" :sidebar="false" />
             <div v-if="competitions.data.length" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <Link
                     v-for="comp in competitions.data"

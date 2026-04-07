@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { ShoppingCart } from 'lucide-vue-next';
+import EventSelector from '@/components/EventSelector.vue';
 import TicketCard from '@/components/TicketCard.vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -39,6 +40,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </Link>
                 </Button>
             </div>
+
+            <EventSelector variant="my" :sidebar="false" />
 
             <!-- Owned Tickets -->
             <div class="space-y-3">

@@ -4,14 +4,17 @@ namespace App\Domain\Event\Models;
 
 use App\Concerns\HasModelCache;
 use App\Domain\Announcement\Models\Announcement;
+use App\Domain\Competition\Models\Competition;
 use App\Domain\Event\Enums\EventStatus;
 use App\Domain\Program\Models\Program;
 use App\Domain\Seating\Models\SeatPlan;
+use App\Domain\Shop\Models\Order;
 use App\Domain\Sponsoring\Models\Sponsor;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketType;
 use App\Domain\Venue\Models\Venue;
+use App\Models\User;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -132,5 +135,28 @@ class Event extends Model implements AuditableContract
     public function scopeUpcoming(Builder $query): void
     {
         $query->where('start_date', '>', now());
+    }
+
+    /**
+     * Events the user has any participation in (ticket owner/manager/assignee, order, or competition team membership).
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeForUser(Builder $query, User $user): void
+    {
+        $userId = $user->id;
+
+        $query->where(function (Builder $q) use ($userId) {
+            $q->whereHas('tickets', function (Builder $t) use ($userId) {
+                $t->where('owner_id', $userId)
+                    ->orWhere('manager_id', $userId)
+                    ->orWhereHas('users', fn (Builder $u) => $u->where('users.id', $userId));
+            })
+                ->orWhereIn('id', Competition::query()
+                    ->whereHas('teams.activeMembers', fn (Builder $m) => $m->where('user_id', $userId))
+                    ->whereNotNull('event_id')
+                    ->select('event_id'))
+                ->orWhereIn('id', Order::query()->where('user_id', $userId)->whereNotNull('event_id')->select('event_id'));
+        });
     }
 }

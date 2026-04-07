@@ -10,8 +10,11 @@ use App\Domain\Program\Enums\Permission as ProgramPermission;
 use App\Domain\Seating\Enums\Permission as SeatingPermission;
 use App\Domain\Ticketing\Enums\Permission as TicketingPermission;
 use App\Enums\RoleName;
+use App\Models\OrganizationSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -68,7 +71,16 @@ class HandleInertiaRequests extends Middleware
             ) : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'sidebarFavorites' => $user ? ($user->sidebar_favorites ?? []) : [],
+            'organization' => fn () => Cache::remember('inertia.organization', 3600, function () {
+                $logoPath = OrganizationSetting::get('logo');
+
+                return [
+                    'logoUrl' => $logoPath ? Storage::url($logoPath) : null,
+                    'name' => OrganizationSetting::get('name'),
+                ];
+            }),
             'eventContext' => fn () => $this->eventContext($request),
+            'myEventContext' => fn () => $this->myEventContext($request),
             'vapidPublicKey' => config('services.vapid.public_key'),
             'integrationLinks' => fn () => IntegrationApp::query()
                 ->where('is_active', true)
@@ -129,6 +141,38 @@ class HandleInertiaRequests extends Middleware
             'selectedEventId' => $selectedEventId,
             'selectedEvent' => $selectedEvent,
             'events' => Event::dropdownOptions(),
+        ];
+    }
+
+    /**
+     * @return array{selectedEventId: int|null, events: array<int, array{id: int, name: string}>}|null
+     */
+    private function myEventContext(Request $request): ?array
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return null;
+        }
+
+        $events = Event::query()
+            ->forUser($user)
+            ->orderByDesc('start_date')
+            ->get(['id', 'name'])
+            ->map(fn (Event $e) => ['id' => $e->id, 'name' => $e->name])
+            ->values()
+            ->all();
+
+        $selectedEventId = $request->session()->get('my_selected_event_id');
+
+        if ($selectedEventId && ! collect($events)->contains('id', $selectedEventId)) {
+            $request->session()->forget('my_selected_event_id');
+            $selectedEventId = null;
+        }
+
+        return [
+            'selectedEventId' => $selectedEventId,
+            'events' => $events,
         ];
     }
 }

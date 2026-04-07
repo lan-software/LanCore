@@ -13,9 +13,11 @@ class UserTeamController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
+        $selectedEventId = $request->session()->get('my_selected_event_id');
 
         $teams = CompetitionTeam::query()
             ->whereHas('activeMembers', fn ($q) => $q->where('user_id', $user->id))
+            ->when($selectedEventId, fn ($q) => $q->whereHas('competition', fn ($c) => $c->where('event_id', $selectedEventId)))
             ->with([
                 'competition:id,name,slug,status,type,stage_type,team_size',
                 'competition.game:id,name',

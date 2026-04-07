@@ -11,6 +11,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import EventSelector from '@/components/EventSelector.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index as myOrdersIndex } from '@/routes/my-orders';
 import { index as shopIndex } from '@/routes/shop';
@@ -84,6 +85,8 @@ function paymentMethodLabel(method: string): string {
                     </Link>
                 </Button>
             </div>
+
+            <EventSelector variant="my" :sidebar="false" />
 
             <div
                 v-if="orders.length > 0"

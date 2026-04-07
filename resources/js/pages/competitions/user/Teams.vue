@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { Shield, Swords, Users } from 'lucide-vue-next';
 import { Badge } from '@/components/ui/badge';
+import EventSelector from '@/components/EventSelector.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index as myTeamsRoute, show as myTeamShow } from '@/routes/my-teams';
 import { show as myCompetitionShow } from '@/routes/my-competitions';
@@ -52,6 +53,8 @@ function statusColor(status: string): string {
                 <h1 class="text-2xl font-bold">My Teams</h1>
                 <p class="mt-1 text-sm text-muted-foreground">Teams you are a member of across all competitions.</p>
             </div>
+
+            <EventSelector variant="my" :sidebar="false" />
 
             <div v-if="teams.length > 0" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <Link

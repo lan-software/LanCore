@@ -10,7 +10,7 @@ use App\Models\User;
  */
 class LeaveTeam
 {
-    public function execute(CompetitionTeam $team, User $user): void
+    public function execute(CompetitionTeam $team, User $user): bool
     {
         $team->activeMembers()
             ->where('user_id', $user->id)
@@ -25,7 +25,11 @@ class LeaveTeam
                 $team->update(['captain_user_id' => $nextCaptain->user_id]);
             } else {
                 $team->delete();
+
+                return true;
             }
         }
+
+        return false;
     }
 }

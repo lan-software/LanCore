@@ -22,6 +22,14 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             sidebarFavorites: string[];
             eventContext: EventContext | null;
+            myEventContext: {
+                selectedEventId: number | null;
+                events: { id: number; name: string }[];
+            } | null;
+            organization: {
+                logoUrl: string | null;
+                name: string | null;
+            };
             vapidPublicKey: string;
             integrationLinks: {
                 url: string;

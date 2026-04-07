@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { ExternalLink, Users } from 'lucide-vue-next';
+import { ref } from 'vue';
 import UserCompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/UserCompetitionController';
 import TeamController from '@/actions/App/Domain/Competition/Http/Controllers/TeamController';
-import Heading from '@/components/Heading.vue';
+import MailLetterAnimation from '@/components/MailLetterAnimation.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +34,54 @@ function submitCreateTeam() {
     createTeamForm.post(
         TeamController.store(props.competition.id).url,
         { preserveScroll: true },
+    );
+}
+
+const leaving = ref(false);
+
+const page = usePage();
+
+function leaveTeam() {
+    if (!props.userTeam) return;
+    const authUserId = (page.props.auth as { user?: { id: number } } | undefined)?.user?.id;
+    const isCaptain = authUserId != null
+        && props.userTeam.captain_user_id === authUserId;
+    const msg = isCaptain
+        ? 'You are the captain. If you leave, captaincy transfers to another member. If you are the last member, the team is deleted. Continue?'
+        : `Leave team "${props.userTeam.name}"?`;
+    if (!window.confirm(msg)) return;
+
+    leaving.value = true;
+    router.post(
+        TeamController.leave({
+            competition: props.competition.id,
+            team: props.userTeam.id,
+        }).url,
+        {},
+        { onFinish: () => (leaving.value = false) },
+    );
+}
+
+const requestingTeamId = ref<number | null>(null);
+const mailAnimTeamId = ref<number | null>(null);
+
+function requestJoin(teamId: number) {
+    requestingTeamId.value = teamId;
+    router.post(
+        TeamController.requestJoin({
+            competition: props.competition.id,
+            team: teamId,
+        }).url,
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                mailAnimTeamId.value = teamId;
+            },
+            onFinish: () => {
+                requestingTeamId.value = null;
+            },
+        },
     );
 }
 </script>
@@ -140,16 +189,10 @@ function submitCreateTeam() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                @click="
-                                    $inertia.post(
-                                        TeamController.leave(
-                                            competition.id,
-                                            userTeam.id,
-                                        ).url,
-                                    )
-                                "
+                                :disabled="leaving"
+                                @click="leaveTeam"
                             >
-                                Leave Team
+                                {{ leaving ? 'Leaving...' : 'Leave Team' }}
                             </Button>
                         </div>
                     </div>
@@ -241,17 +284,19 @@ function submitCreateTeam() {
                                     variant="outline"
                                     size="sm"
                                     class="mt-1"
-                                    @click="
-                                        $inertia.post(
-                                            TeamController.requestJoin(
-                                                competition.id,
-                                                team.id,
-                                            ).url,
-                                        )
-                                    "
+                                    :disabled="requestingTeamId === team.id"
+                                    @click="requestJoin(team.id)"
                                 >
-                                    Request to Join
+                                    {{
+                                        requestingTeamId === team.id
+                                            ? 'Sending…'
+                                            : 'Request to Join'
+                                    }}
                                 </Button>
+                                <MailLetterAnimation
+                                    :show="mailAnimTeamId === team.id"
+                                    @done="mailAnimTeamId = null"
+                                />
                             </div>
                             <p
                                 v-if="!competition.teams?.length"

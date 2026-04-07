@@ -297,3 +297,44 @@ it('passes null selectedEventId to announcement create page when no event contex
                 ->where('selectedEventId', null)
         );
 });
+
+// --- My Pages User-Scoped Event Context ---
+
+it('shares myEventContext for any authenticated user', function () {
+    $user = User::factory()->withRole(RoleName::User)->create();
+
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->has('myEventContext')
+                ->where('myEventContext.selectedEventId', null)
+        );
+});
+
+it('rejects my-event-context store for events the user has no participation in', function () {
+    $user = User::factory()->withRole(RoleName::User)->create();
+    $event = Event::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/my-event-context', ['event_id' => $event->id])
+        ->assertSessionHasErrors(['event_id']);
+
+    expect(session('my_selected_event_id'))->toBeNull();
+});
+
+it('clears my event context independently from admin selector', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+
+    $this->actingAs($admin)
+        ->withSession([
+            'selected_event_id' => 1,
+            'my_selected_event_id' => 2,
+        ])
+        ->delete('/my-event-context')
+        ->assertRedirect();
+
+    expect(session('my_selected_event_id'))->toBeNull();
+    expect(session('selected_event_id'))->toBe(1);
+});

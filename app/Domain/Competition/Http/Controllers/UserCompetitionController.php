@@ -16,9 +16,11 @@ class UserCompetitionController extends Controller
     public function index(Request $request): Response
     {
         $userId = $request->user()->id;
+        $selectedEventId = $request->session()->get('my_selected_event_id');
 
         $competitions = Competition::query()
             ->whereHas('teams.activeMembers', fn ($q) => $q->where('user_id', $userId))
+            ->when($selectedEventId, fn ($q) => $q->where('event_id', $selectedEventId))
             ->with(['game', 'event'])
             ->withCount('teams')
             ->orderByDesc('created_at')

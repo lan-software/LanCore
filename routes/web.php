@@ -20,6 +20,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('event-context', [EventContextController::class, 'store'])->name('event-context.store');
     Route::delete('event-context', [EventContextController::class, 'destroy'])->name('event-context.destroy');
+    Route::post('my-event-context', [EventContextController::class, 'storeMy'])->name('my-event-context.store');
+    Route::delete('my-event-context', [EventContextController::class, 'destroyMy'])->name('my-event-context.destroy');
 });
 
 require __DIR__.'/settings.php';
