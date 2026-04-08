@@ -244,7 +244,6 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | manager_id | bigint FK (nullable) | References users.id (manager) |
 | order_id | bigint FK (nullable) | References orders.id |
 | status | varchar | TicketStatus enum |
-| validation_id | varchar (unique, nullable) | **Deprecated** — legacy plaintext check-in validation code; nullable; to be removed in a follow-up migration once all consumers use LCT1 tokens |
 | validation_nonce_hash | CHAR(64) (unique, nullable) | HMAC-SHA256(nonce, pepper) in lowercase hex; used for token-to-ticket lookup without storing the nonce; NULL when ticket is cancelled or no token has been issued |
 | validation_kid | VARCHAR(16) (nullable) | Key identifier of the Ed25519 signing key used for the current token; NULL when no token is active |
 | validation_issued_at | timestamp (nullable) | When the current LCT1 token was issued |
@@ -255,11 +254,6 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 
 **Indexes on tickets:**
 - `UNIQUE (validation_nonce_hash)` — enforces the DB≠QR invariant; no two active tokens can map to the same hash
-- Existing `UNIQUE (validation_id)` retained until the column is dropped
-
-**Deprecation plan for `validation_id`:**
-1. Phase 1 (current): Column is nullable; new tokens are issued as LCT1 and stored in `validation_nonce_hash`; `validation_id` is not populated for new tokens
-2. Phase 2 (follow-up migration): Column dropped; index removed; any remaining code paths referencing `validation_id` removed
 
 #### 4.4.2a ticket_user (pivot)
 

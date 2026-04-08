@@ -318,6 +318,18 @@ See [IRS](IRS.md) for detailed interface requirements.
 | Object Storage | S3-compatible (AWS S3, Minio, Garage) |
 | HTTP Server | FrankenPHP (via Laravel Octane) |
 
+#### 3.7.3 Deployment and Container Requirements (ENV-DEP)
+
+| Req ID | Requirement | Verification |
+|--------|------------|--------------|
+| ENV-DEP-010 | Container images for LanCore and all satellite apps (LanBrackets, LanShout, LanHelp, LanEntrance) shall be built from multi-stage Dockerfiles with all base images pinned by immutable `@sha256:` digest to guarantee reproducible builds | Inspection of Dockerfiles |
+| ENV-DEP-011 | Supervisord and all application processes in production container images shall run as the unprivileged `www-data` user; the image shall declare `USER www-data` and drop root before executing supervisord | Inspection of Dockerfile + `docker inspect` runtime user |
+| ENV-DEP-012 | Runtime secrets (`APP_KEY`, database credentials, `TICKET_TOKEN_PEPPER`, Stripe keys, S3 credentials) shall be injected via environment variables at container start and shall never be baked into any image layer or committed to a Dockerfile | Image layer inspection, source review |
+| ENV-DEP-013 | Each production image shall expose runtime role selection via a `ROLE` environment variable supporting at minimum the values `web`, `worker`, and `all` (where applicable) | Inspection of entrypoint and supervisor configs |
+| ENV-DEP-014 | Each production image shall honour a `SKIP_MIGRATE` environment variable so that in multi-container deployments exactly one container may be designated as the schema migrator | Inspection of entrypoint script |
+| ENV-DEP-015 | Each production image shall ship a Docker `HEALTHCHECK` against the Laravel `/up` endpoint with a start period sufficient to cover cold boot and migration on the migrator container | `docker inspect` of the built image |
+| ENV-DEP-016 | Octane-based images (LanCore, LanBrackets) shall allow operators to tune worker count and recycle threshold at runtime via `OCTANE_WORKERS` and `OCTANE_MAX_REQUESTS` without rebuilding the image | Inspection of supervisor web config |
+
 ### 3.8 Design and Implementation Constraints
 
 | Constraint | Description |
@@ -386,3 +398,4 @@ Requirements in this document trace to:
 | JWKS | JSON Web Key Set |
 | kid | Key Identifier |
 | LCT1 | LanCore Token version 1 (signed ticket token scheme) |
+| ENV-DEP | Environment / Deployment requirement category |

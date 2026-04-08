@@ -24,7 +24,6 @@ class TicketFactory extends Factory
     {
         return [
             'status' => TicketStatus::Active,
-            'validation_id' => 'TKT-'.bin2hex(random_bytes(16)),
             'checked_in_at' => null,
             'ticket_type_id' => TicketType::factory(),
             'event_id' => Event::factory(),

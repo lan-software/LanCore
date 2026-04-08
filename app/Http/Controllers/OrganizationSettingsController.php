@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\OrganizationSetting;
+use App\Support\StorageRole;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,7 +19,7 @@ class OrganizationSettingsController extends Controller
 
         return Inertia::render('settings/Organization', [
             'settings' => $settings,
-            'logoUrl' => $logoPath ? Storage::url($logoPath) : null,
+            'logoUrl' => $logoPath ? StorageRole::public()->url($logoPath) : null,
         ]);
     }
 
@@ -54,10 +54,10 @@ class OrganizationSettingsController extends Controller
 
         $oldPath = OrganizationSetting::get('logo');
         if ($oldPath) {
-            Storage::delete($oldPath);
+            StorageRole::public()->delete($oldPath);
         }
 
-        $path = $request->file('logo')->store('organization', 'public');
+        $path = $request->file('logo')->store('organization', StorageRole::publicDiskName());
         OrganizationSetting::set('logo', $path);
 
         Cache::forget('inertia.organization');
@@ -69,7 +69,7 @@ class OrganizationSettingsController extends Controller
     {
         $path = OrganizationSetting::get('logo');
         if ($path) {
-            Storage::delete($path);
+            StorageRole::public()->delete($path);
             OrganizationSetting::set('logo', null);
         }
 

@@ -33,7 +33,7 @@ it('seeds demo data successfully', function () {
         ->and(Program::count())->toBeGreaterThanOrEqual(3)
         ->and(TimeSlot::count())->toBeGreaterThanOrEqual(6)
         ->and(SponsorLevel::count())->toBe(3)
-        ->and(Sponsor::count())->toBe(4)
+        ->and(Sponsor::count())->toBe(3)
         ->and(NewsArticle::count())->toBe(3);
 });
 

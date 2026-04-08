@@ -81,26 +81,85 @@ The `.env.example` is pre-configured for the shared infrastructure — no manual
 
 ### 3.4 Quick Start (Production Docker Compose)
 
+The production image built from `LanCore/Dockerfile` is a single artifact that serves all three runtime **roles** (`web`, `worker`, `all`) selected via the `ROLE` environment variable. See [SSDD §3.1.1](SSDD.md#311-deployment-architecture-production) for the full topology.
+
+#### 3.4.1 Single-container deployment (role=all)
+
+Suitable for small sites and demo instances:
+
 ```bash
-# 1. Create deployment directory
-mkdir lancore && cd lancore
-
-# 2. Download deployment files
-# (docker-compose.yml and .env.example from docs/deployment/)
-
-# 3. Configure environment
-cp .env.example .env
-# Edit .env with your settings (APP_URL, DB credentials, etc.)
-
-# 4. Start services
-docker compose up -d
-
-# 5. Run migrations
-docker compose exec app php artisan migrate --force
-
-# 6. Create admin user
-docker compose exec app php artisan make:admin
+docker run -d \
+  --name lancore \
+  -e ROLE=all \
+  -e SKIP_MIGRATE=0 \
+  -e APP_KEY="base64:..." \
+  -e APP_URL=https://lan.example.org \
+  -e DB_CONNECTION=pgsql \
+  -e DB_HOST=postgres -e DB_DATABASE=lancore -e DB_USERNAME=lancore -e DB_PASSWORD=... \
+  -e REDIS_HOST=redis \
+  -p 80:80 -p 443:443 \
+  ghcr.io/lan-software/lancore:latest
 ```
+
+#### 3.4.2 Split-container deployment (role=web + role=worker)
+
+Suitable for any serious production deployment. The key rule: **exactly one container** sets `SKIP_MIGRATE=0`; all others set `SKIP_MIGRATE=1` to avoid migration races.
+
+```yaml
+# docker-compose.yml (excerpt)
+services:
+  lancore-web-migrator:
+    image: ghcr.io/lan-software/lancore:latest
+    environment:
+      ROLE: web
+      SKIP_MIGRATE: "0"            # designated migrator — only ONE container
+      OCTANE_WORKERS: "16"
+      OCTANE_MAX_REQUESTS: "500"
+    env_file: [.env]
+    ports: ["80:80"]
+
+  lancore-web:
+    image: ghcr.io/lan-software/lancore:latest
+    environment:
+      ROLE: web
+      SKIP_MIGRATE: "1"            # every replica
+      OCTANE_WORKERS: "16"
+      OCTANE_MAX_REQUESTS: "500"
+    env_file: [.env]
+    deploy:
+      replicas: 3
+
+  lancore-worker:
+    image: ghcr.io/lan-software/lancore:latest
+    environment:
+      ROLE: worker
+      SKIP_MIGRATE: "1"
+    env_file: [.env]
+```
+
+After the stack comes up, create the first admin user:
+
+```bash
+docker compose exec lancore-web-migrator php artisan make:admin
+```
+
+#### 3.4.3 Required runtime environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `APP_KEY` | Laravel encryption key (`base64:...`). **Never** bake into the image — inject via secret manager. |
+| `APP_URL` | Public HTTPS URL of the application. |
+| `DB_*` | PostgreSQL host, database, user, password. |
+| `REDIS_HOST` / `REDIS_PASSWORD` | Redis connection. |
+| `ROLE` | `web`, `worker`, or `all`. |
+| `SKIP_MIGRATE` | `0` for the designated migrator, `1` for everything else. |
+| `OCTANE_WORKERS` | Octane worker count (default 80). Tunable without rebuilding. |
+| `OCTANE_MAX_REQUESTS` | Worker recycle threshold (default 500). |
+| `TICKET_TOKEN_PEPPER` | HMAC pepper for ticket nonce hashing (see [SSDD §5a.1](SSDD.md#5a1-trust-boundary)). |
+
+#### 3.4.4 Satellite apps
+
+LanBrackets, LanShout, LanHelp, and LanEntrance each publish their own image built from an adapted version of this Dockerfile and follow the identical `ROLE` / `SKIP_MIGRATE` contract. LanBrackets runs Octane like LanCore; LanShout/LanHelp/LanEntrance use `frankenphp php-server` without Octane and neither ships Horizon — their `worker` role runs `queue:work --tries=3 --max-time=3600` plus the scheduler. See [SSDD §3.1.1.5](SSDD.md#31115-satellite-app-topology) for the per-app matrix.
 
 ---
 

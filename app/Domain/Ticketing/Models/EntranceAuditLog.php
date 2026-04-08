@@ -11,7 +11,7 @@ class EntranceAuditLog extends Model
 
     protected $fillable = [
         'ticket_id',
-        'validation_id',
+        'token_fingerprint',
         'action',
         'decision',
         'operator_id',

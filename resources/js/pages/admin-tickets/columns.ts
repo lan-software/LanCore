@@ -54,13 +54,13 @@ const statusVariant: Record<
 
 export const columns: ColumnDef<Ticket>[] = [
     {
-        accessorKey: 'validation_id',
-        header: sortableHeader('Validation ID'),
+        accessorKey: 'id',
+        header: sortableHeader('Ticket'),
         cell: ({ row }) =>
             h(
                 'span',
                 { class: 'font-medium font-mono text-sm' },
-                row.getValue('validation_id'),
+                `#${row.getValue('id')}`,
             ),
     },
     {

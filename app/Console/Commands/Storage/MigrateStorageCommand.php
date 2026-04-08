@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Throwable;
 
-#[Signature('storage:migrate {--from=local : Source disk (local or s3)} {--to=s3 : Destination disk (local or s3)} {--path= : Only migrate files under this path prefix} {--delete : Delete files from source after successful copy} {--dry-run : Preview files that would be migrated without actually migrating}')]
-#[Description('Migrate storage files between disks (e.g. local to s3 or s3 to local)')]
+#[Signature('storage:migrate {--from=local : Source disk (local, public, s3, s3_public, s3_private)} {--to=s3 : Destination disk (local, public, s3, s3_public, s3_private)} {--path= : Only migrate files under this path prefix} {--delete : Delete files from source after successful copy} {--dry-run : Preview files that would be migrated without actually migrating}')]
+#[Description('Migrate storage files between disks (e.g. local to s3_private or s3 to s3_public)')]
 class MigrateStorageCommand extends Command
 {
-    private const VALID_DISKS = ['local', 's3'];
+    private const VALID_DISKS = ['local', 'public', 's3', 's3_public', 's3_private'];
 
     public function handle(): int
     {
@@ -27,7 +27,7 @@ class MigrateStorageCommand extends Command
             return self::FAILURE;
         }
 
-        $label = "'{$from}' → '{$to}'" . ($pathPrefix ? " (path: {$pathPrefix})" : '');
+        $label = "'{$from}' → '{$to}'".($pathPrefix ? " (path: {$pathPrefix})" : '');
         $this->info("Migrating storage {$label}...");
 
         if ($dryRun) {
@@ -104,13 +104,13 @@ class MigrateStorageCommand extends Command
     private function validateOptions(mixed $from, mixed $to): bool
     {
         if (! in_array($from, self::VALID_DISKS, strict: true)) {
-            $this->error("Invalid source disk '{$from}'. Valid options: " . implode(', ', self::VALID_DISKS) . '.');
+            $this->error("Invalid source disk '{$from}'. Valid options: ".implode(', ', self::VALID_DISKS).'.');
 
             return false;
         }
 
         if (! in_array($to, self::VALID_DISKS, strict: true)) {
-            $this->error("Invalid destination disk '{$to}'. Valid options: " . implode(', ', self::VALID_DISKS) . '.');
+            $this->error("Invalid destination disk '{$to}'. Valid options: ".implode(', ', self::VALID_DISKS).'.');
 
             return false;
         }

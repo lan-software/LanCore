@@ -36,7 +36,7 @@ class EntranceController extends Controller
         ]);
 
         $token = $request->input('token');
-        [$ticket, $rejectionCode] = $this->resolveSignedDecision($token);
+        [$ticket, $rejectionCode] = $this->resolveDecision($token);
         $auditId = $this->audit($request, 'validate', $ticket, $rejectionCode);
 
         if ($rejectionCode !== null) {
@@ -71,7 +71,6 @@ class EntranceController extends Controller
     {
         $request->validate([
             'token' => ['required', 'string', 'max:512'],
-            'validation_id' => ['required', 'string'],
             'operator_id' => ['required', 'integer'],
             'event_id' => ['sometimes', 'integer'],
         ]);
@@ -95,7 +94,6 @@ class EntranceController extends Controller
     {
         $request->validate([
             'token' => ['required', 'string', 'max:512'],
-            'validation_id' => ['required', 'string'],
             'operator_id' => ['required', 'integer'],
             'event_id' => ['sometimes', 'integer'],
         ]);
@@ -226,11 +224,12 @@ class EntranceController extends Controller
         $this->audit($request, 'search', null, null, null, ['query' => $query, 'results_count' => $tickets->count()]);
 
         $results = $tickets->map(fn (Ticket $t) => [
-            'token' => $t->validation_id,
+            'token' => null,
+            'ticket_id' => $t->id,
             'name' => $t->owner?->name ?? 'Unknown',
             'email' => $t->owner?->email ?? '',
             'ticket_type' => $t->ticketType?->name ?? 'General',
-            'validation_token_suffix' => substr($t->validation_id, -4),
+            'validation_token_suffix' => substr((string) ($t->validation_nonce_hash ?? ''), -4),
             'addons' => $t->addons->pluck('name')->all(),
             'seat' => null,
             'status' => $t->status === TicketStatus::CheckedIn ? 'checked_in' : 'not_checked_in',
@@ -301,36 +300,16 @@ class EntranceController extends Controller
 
     private function findTicketByToken(string $token): ?Ticket
     {
-        if (config('tickets.signed_tokens_enabled')) {
-            try {
-                $verification = $this->tokenService->verify($token);
-            } catch (InvalidSignatureException|UnknownKidException|ExpiredTokenException|MalformedTokenException) {
-                return null;
-            }
+        [$ticket] = $this->resolveDecision($token);
 
-            $ticket = $this->tokenService->locate($verification);
-
-            if ($ticket === null) {
-                return null;
-            }
-
-            return $ticket->load(['ticketType', 'owner', 'order.orderLines', 'order.voucher', 'addons', 'users', 'event']);
-        }
-
-        return Ticket::where('validation_id', $token)
-            ->with(['ticketType', 'owner', 'order.orderLines', 'order.voucher', 'addons', 'users', 'event'])
-            ->first();
+        return $ticket;
     }
 
     /**
      * @return array{0: ?Ticket, 1: ?string}
      */
-    private function resolveSignedDecision(string $token): array
+    private function resolveDecision(string $token): array
     {
-        if (! config('tickets.signed_tokens_enabled')) {
-            return [$this->findTicketByToken($token), null];
-        }
-
         try {
             $verification = $this->tokenService->verify($token);
         } catch (InvalidSignatureException) {
@@ -414,7 +393,6 @@ class EntranceController extends Controller
         $response = [
             'decision' => $decision,
             'message' => $message,
-            'validation_id' => 'val_'.Str::random(8),
             'attendee' => $ticket?->owner ? ['name' => $ticket->owner->name, 'group' => null] : null,
             'seating' => null,
             'addons' => $ticket && $ticket->addons->isNotEmpty()
@@ -463,9 +441,12 @@ class EntranceController extends Controller
     {
         $auditId = 'aud_'.Str::random(8);
 
+        $token = (string) $request->input('token');
+        $fingerprint = $token !== '' ? substr(hash('sha256', $token), 0, 16) : null;
+
         EntranceAuditLog::create([
             'ticket_id' => $ticket?->id,
-            'validation_id' => $ticket?->validation_id ?? substr((string) $request->input('token'), 0, 64),
+            'token_fingerprint' => $fingerprint,
             'action' => $action,
             'decision' => $decision ?? $action,
             'operator_id' => $request->input('operator_id', 0),

@@ -5,8 +5,10 @@ namespace App\Domain\Ticketing\Http\Controllers;
 use App\Domain\Ticketing\Actions\UpdateTicketAssignments;
 use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
 use App\Domain\Ticketing\Models\Ticket;
+use App\Domain\Ticketing\Security\TicketTokenService;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\StorageRole;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -16,7 +18,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -29,6 +30,7 @@ class TicketController extends Controller
 {
     public function __construct(
         private readonly UpdateTicketAssignments $updateTicketAssignments,
+        private readonly TicketTokenService $tokenService,
     ) {}
 
     public function index(Request $request): Response
@@ -155,13 +157,13 @@ class TicketController extends Controller
 
         $path = "tickets/{$ticket->id}.pdf";
 
-        if (! Storage::disk('local')->exists($path)) {
-            // Generate synchronously so the user gets the PDF immediately
-            $job = new GenerateTicketPdf($ticket->id);
+        if (! StorageRole::private()->exists($path)) {
+            $payload = $ticket->issueSignedToken($this->tokenService);
+            $job = new GenerateTicketPdf($ticket->id, $payload);
             $job->handle();
         }
 
-        return Storage::disk('local')->download($path, "ticket-{$ticket->validation_id}.pdf");
+        return StorageRole::private()->download($path, "ticket-{$ticket->id}.pdf");
     }
 
     public function qrCode(Ticket $ticket): HttpResponse
@@ -173,8 +175,9 @@ class TicketController extends Controller
             new SvgImageBackEnd,
         );
 
+        $payload = $ticket->issueSignedToken($this->tokenService);
         $writer = new Writer($renderer);
-        $svg = $writer->writeString($ticket->validation_id);
+        $svg = $writer->writeString($payload);
 
         return response($svg, 200, [
             'Content-Type' => 'image/svg+xml',

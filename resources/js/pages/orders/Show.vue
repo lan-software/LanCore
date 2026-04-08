@@ -306,7 +306,7 @@ const statusVariant: Record<
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Validation ID</TableHead>
+                                <TableHead>Ticket</TableHead>
                                 <TableHead>Type</TableHead>
                                 <TableHead>Owner</TableHead>
                                 <TableHead>Status</TableHead>
@@ -320,9 +320,9 @@ const statusVariant: Record<
                                 v-for="ticket in order.tickets"
                                 :key="ticket.id"
                             >
-                                <TableCell class="font-mono text-sm">{{
-                                    ticket.validation_id
-                                }}</TableCell>
+                                <TableCell class="font-mono text-sm"
+                                    >#{{ ticket.id }}</TableCell
+                                >
                                 <TableCell>
                                     <Link
                                         v-if="ticket.ticket_type"

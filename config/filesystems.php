@@ -17,6 +17,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Semantic Storage Roles
+    |--------------------------------------------------------------------------
+    |
+    | LanCore separates storage into two semantic roles: a "public" role for
+    | non-sensitive assets (organization logos, public images) and a "private"
+    | role for sensitive artifacts (invoices, receipts, ticket PDFs). Each role
+    | is independently routed to one of the disks defined below, allowing
+    | operators to put sensitive files into a separate, non-public bucket.
+    |
+    */
+
+    'public_disk' => env('FILESYSTEM_PUBLIC_DISK', 'public'),
+    'private_disk' => env('FILESYSTEM_PRIVATE_DISK', 'local'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |
@@ -57,6 +73,34 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'anonymous_bucket_access' => env('AWS_ANONYMOUS_BUCKET_ACCESS', false),
+            'throw' => false,
+            'report' => false,
+        ],
+
+        's3_public' => [
+            'driver' => 's3',
+            'key' => env('AWS_PUBLIC_ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID')),
+            'secret' => env('AWS_PUBLIC_SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY')),
+            'region' => env('AWS_PUBLIC_DEFAULT_REGION', env('AWS_DEFAULT_REGION')),
+            'bucket' => env('AWS_PUBLIC_BUCKET', env('AWS_BUCKET')),
+            'url' => env('AWS_PUBLIC_URL', env('AWS_URL')),
+            'endpoint' => env('AWS_PUBLIC_ENDPOINT', env('AWS_ENDPOINT')),
+            'use_path_style_endpoint' => env('AWS_PUBLIC_USE_PATH_STYLE_ENDPOINT', env('AWS_USE_PATH_STYLE_ENDPOINT', false)),
+            'anonymous_bucket_access' => env('AWS_PUBLIC_ANONYMOUS_BUCKET_ACCESS', env('AWS_ANONYMOUS_BUCKET_ACCESS', false)),
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        's3_private' => [
+            'driver' => 's3',
+            'key' => env('AWS_PRIVATE_ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID')),
+            'secret' => env('AWS_PRIVATE_SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY')),
+            'region' => env('AWS_PRIVATE_DEFAULT_REGION', env('AWS_DEFAULT_REGION')),
+            'bucket' => env('AWS_PRIVATE_BUCKET', env('AWS_BUCKET')),
+            'url' => env('AWS_PRIVATE_URL', env('AWS_URL')),
+            'endpoint' => env('AWS_PRIVATE_ENDPOINT', env('AWS_ENDPOINT')),
+            'use_path_style_endpoint' => env('AWS_PRIVATE_USE_PATH_STYLE_ENDPOINT', env('AWS_USE_PATH_STYLE_ENDPOINT', false)),
             'throw' => false,
             'report' => false,
         ],

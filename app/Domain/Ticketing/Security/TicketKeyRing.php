@@ -114,11 +114,19 @@ class TicketKeyRing
             return;
         }
 
+        if ((string) config('tickets.pepper') === '') {
+            throw new \RuntimeException('TICKET_TOKEN_PEPPER is not configured.');
+        }
+
         $path = (string) config('tickets.signing.keys_path');
         $verifyKids = (array) config('tickets.signing.verify_kids', []);
         $activeKid = (string) config('tickets.signing.active_kid', '');
 
-        if ($activeKid !== '' && ! in_array($activeKid, $verifyKids, true)) {
+        if ($activeKid === '') {
+            throw new UnknownKidException('TICKET_SIGNING_ACTIVE_KID is not configured.');
+        }
+
+        if (! in_array($activeKid, $verifyKids, true)) {
             $verifyKids[] = $activeKid;
         }
 

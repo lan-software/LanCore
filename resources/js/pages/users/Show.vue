@@ -297,7 +297,7 @@ const ticketStatusVariant: Record<
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Validation ID</TableHead>
+                                <TableHead>Ticket</TableHead>
                                 <TableHead>Type</TableHead>
                                 <TableHead>Event</TableHead>
                                 <TableHead>Status</TableHead>
@@ -311,9 +311,9 @@ const ticketStatusVariant: Record<
                                 v-for="ticket in recentTickets"
                                 :key="ticket.id"
                             >
-                                <TableCell class="font-mono text-sm">{{
-                                    ticket.validation_id
-                                }}</TableCell>
+                                <TableCell class="font-mono text-sm"
+                                    >#{{ ticket.id }}</TableCell
+                                >
                                 <TableCell>{{
                                     ticket.ticket_type?.name ?? '—'
                                 }}</TableCell>

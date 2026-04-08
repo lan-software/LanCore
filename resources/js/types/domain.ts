@@ -389,7 +389,9 @@ export type TicketStatus = 'Active' | 'CheckedIn' | 'Cancelled';
 export type Ticket = {
     id: number;
     status: TicketStatus;
-    validation_id: string;
+    validation_kid: string | null;
+    validation_issued_at: string | null;
+    validation_expires_at: string | null;
     checked_in_at: string | null;
     ticket_type_id: number;
     event_id: number;

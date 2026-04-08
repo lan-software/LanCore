@@ -34,6 +34,8 @@ services:
       MAIL_FROM_ADDRESS: "${MAIL_FROM_ADDRESS}"
       MAIL_FROM_NAME: "${MAIL_FROM_NAME:-LanCore}"
       FILESYSTEM_DISK: s3
+      FILESYSTEM_PUBLIC_DISK: "${FILESYSTEM_PUBLIC_DISK:-s3_public}"
+      FILESYSTEM_PRIVATE_DISK: "${FILESYSTEM_PRIVATE_DISK:-s3_private}"
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
       AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION:-us-east-1}"
@@ -41,6 +43,10 @@ services:
       AWS_ENDPOINT: "${AWS_ENDPOINT:-http://minio:9000}"
       AWS_URL: "${AWS_URL}"
       AWS_USE_PATH_STYLE_ENDPOINT: "true"
+      AWS_PUBLIC_BUCKET: "${AWS_PUBLIC_BUCKET:-lancore-public}"
+      AWS_PUBLIC_URL: "${AWS_PUBLIC_URL:-}"
+      AWS_PRIVATE_BUCKET: "${AWS_PRIVATE_BUCKET:-lancore-private}"
+      AWS_PRIVATE_URL: "${AWS_PRIVATE_URL:-}"
     depends_on:
       pgsql:
         condition: service_healthy

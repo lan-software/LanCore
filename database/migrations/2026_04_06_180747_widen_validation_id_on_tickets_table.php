@@ -1,6 +1,5 @@
 <?php
 
-use App\Domain\Ticketing\Models\Ticket;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +23,7 @@ return new class extends Migration
         DB::table('tickets')->eachById(function ($ticket) {
             DB::table('tickets')
                 ->where('id', $ticket->id)
-                ->update(['validation_id' => Ticket::generateValidationId()]);
+                ->update(['validation_id' => 'TKT-'.bin2hex(random_bytes(16))]);
         });
     }
 

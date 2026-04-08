@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\StorageRole;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class OrganizationSetting extends Model
@@ -33,7 +35,7 @@ class OrganizationSetting extends Model
     /**
      * @return array<string, mixed>
      */
-    public static function all($columns = ['*']): \Illuminate\Database\Eloquent\Collection
+    public static function all($columns = ['*']): Collection
     {
         return parent::all($columns);
     }
@@ -70,7 +72,7 @@ class OrganizationSetting extends Model
 
     private static function logoToBase64(string $path): ?string
     {
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $disk = StorageRole::public();
 
         if (! $disk->exists($path)) {
             return null;

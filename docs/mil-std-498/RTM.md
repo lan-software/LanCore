@@ -504,6 +504,13 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | SEC-018 | TKT-F-023 (expired decision code) | **Pending** |
 | SEC-019 | TKT-F-022 (tickets:keys:rotate command, kid, retention) | **Pending** |
 | SEC-020 | TKT-F-021 (JWKS endpoint, Bearer auth) | **Pending** |
+| ENV-DEP-010 | [SSDD §3.1.1.1](SSDD.md#3111-build-stages), Dockerfile base image digest pins | Inspection |
+| ENV-DEP-011 | [SSDD §3.1.1](SSDD.md#311-deployment-architecture-production), [SSDD §5.3](SSDD.md#53-container-security-design), Dockerfile `USER www-data` | Inspection |
+| ENV-DEP-012 | [SSDD §3.1.1.1](SSDD.md#3111-build-stages), [SSDD §5.3](SSDD.md#53-container-security-design), [SIP §3.4.3](SIP.md#343-required-runtime-environment-variables) | Inspection |
+| ENV-DEP-013 | [SSDD §3.1.1.2](SSDD.md#3112-runtime-roles), `docker/entrypoint.sh`, `docker/supervisor/supervisord-*.conf` | Inspection |
+| ENV-DEP-014 | [SSDD §3.1.1.3](SSDD.md#3113-migration-ownership), `docker/entrypoint.sh` | Inspection |
+| ENV-DEP-015 | Dockerfile `HEALTHCHECK` directive, Laravel `/up` endpoint | `docker inspect` |
+| ENV-DEP-016 | [SSDD §3.1.1.2](SSDD.md#3112-runtime-roles), `docker/supervisor/supervisord-web.conf` (`%(ENV_OCTANE_WORKERS)s`) | Inspection |
 
 ---
 

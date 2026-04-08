@@ -80,7 +80,7 @@
             <img src="{{ $qrCode }}" alt="QR Code">
         </div>
         <div class="validation-label">Scan at entrance</div>
-        <div class="validation-id">{{ $ticket->validation_id }}</div>
+        <div class="validation-id">Ticket #{{ $ticket->id }}</div>
     </div>
 
     <!-- Ticket info grid -->

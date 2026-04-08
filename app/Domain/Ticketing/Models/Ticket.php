@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @see docs/mil-std-498/SRS.md TKT-F-004, TKT-F-005, TKT-F-006, TKT-F-014
  */
 #[Fillable([
-    'status', 'checked_in_at', 'validation_id',
+    'status', 'checked_in_at',
     'validation_nonce_hash', 'validation_kid',
     'validation_issued_at', 'validation_expires_at',
     'ticket_type_id', 'event_id', 'order_id',
@@ -29,19 +29,6 @@ class Ticket extends Model
 {
     /** @use HasFactory<TicketFactory> */
     use HasFactory;
-
-    protected static function booted(): void
-    {
-        static::creating(function (Ticket $ticket): void {
-            if (config('tickets.signed_tokens_enabled')) {
-                return;
-            }
-
-            if (empty($ticket->validation_id)) {
-                $ticket->validation_id = self::generateValidationId();
-            }
-        });
-    }
 
     /**
      * Issue a signed LCT1 token for this ticket and persist its nonce hash + metadata.
@@ -62,23 +49,6 @@ class Ticket extends Model
         ])->save();
 
         return $issued->qrPayload;
-    }
-
-    /**
-     * Generate an opaque, non-guessable ticket token for QR code scanning.
-     *
-     * Format: "TKT-" prefix + 32 hex chars (128 bits of cryptographic entropy).
-     * Compact enough for fast QR scanning, non-guessable, contains no PII.
-     *
-     * @see LanEntrance/docs/LanCore-API-Contract.md Section 1 — QR code token format
-     */
-    public static function generateValidationId(): string
-    {
-        do {
-            $id = 'TKT-'.bin2hex(random_bytes(16));
-        } while (self::where('validation_id', $id)->exists());
-
-        return $id;
     }
 
     protected static function newFactory(): TicketFactory

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { Armchair, Download, Eye, EyeOff, QrCode, X } from 'lucide-vue-next';
+import { Armchair, Download, QrCode, X } from 'lucide-vue-next';
 import { ref } from 'vue';
 import TicketController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketController';
 import InputError from '@/components/InputError.vue';
@@ -15,7 +15,6 @@ const props = defineProps<{
     canUpdateUser?: boolean;
 }>();
 
-const showValidationToken = ref(false);
 const showQrCode = ref(false);
 
 function formatPrice(cents: number): string {
@@ -43,10 +42,6 @@ function statusVariant(
         default:
             return 'secondary';
     }
-}
-
-function maskedValidationToken(id: string): string {
-    return '•'.repeat(id.length);
 }
 
 const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
@@ -145,40 +140,6 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                 </div>
             </div>
 
-            <!-- Validation Token (Preshared Secret) -->
-            <div class="space-y-1">
-                <p
-                    class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
-                >
-                    Validation Token
-                </p>
-                <div class="flex min-w-0 items-center gap-2">
-                    <code
-                        class="min-w-0 flex-1 overflow-x-auto rounded bg-muted px-2 py-1 font-mono text-sm tracking-normal sm:tracking-widest"
-                    >
-                        {{
-                            showValidationToken
-                                ? ticket.validation_id
-                                : maskedValidationToken(ticket.validation_id)
-                        }}
-                    </code>
-                    <button
-                        type="button"
-                        class="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        @click="showValidationToken = !showValidationToken"
-                    >
-                        <Eye v-if="!showValidationToken" class="size-4" />
-                        <EyeOff v-else class="size-4" />
-                        <span class="sr-only"
-                            >{{
-                                showValidationToken ? 'Hide' : 'Show'
-                            }}
-                            validation ID</span
-                        >
-                    </button>
-                </div>
-            </div>
-
             <!-- QR Code & Download -->
             <div class="flex items-center gap-2">
                 <Button
@@ -205,13 +166,13 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
             >
                 <img
                     :src="`/tickets/${ticket.id}/qr`"
-                    :alt="`QR Code for ticket ${ticket.validation_id}`"
+                    :alt="`QR Code for ticket #${ticket.id}`"
                     class="size-48"
                 />
                 <p
                     class="font-mono text-sm font-bold tracking-normal text-foreground sm:tracking-[0.2em]"
                 >
-                    {{ ticket.validation_id }}
+                    Ticket #{{ ticket.id }}
                 </p>
                 <p class="text-xs text-muted-foreground">Scan at entrance</p>
             </div>

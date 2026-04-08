@@ -4,6 +4,7 @@ namespace App\Domain\Ticketing\Jobs;
 
 use App\Domain\Ticketing\Models\Ticket;
 use App\Models\OrganizationSetting;
+use App\Support\StorageRole;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -14,7 +15,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Storage;
 
 class GenerateTicketPdf implements ShouldQueue
 {
@@ -22,7 +22,7 @@ class GenerateTicketPdf implements ShouldQueue
 
     public function __construct(
         private readonly int $ticketId,
-        private readonly ?string $qrPayload = null,
+        private readonly string $qrPayload,
     ) {}
 
     public function handle(): void
@@ -37,7 +37,7 @@ class GenerateTicketPdf implements ShouldQueue
             'order',
         ])->findOrFail($this->ticketId);
 
-        $qrBase64 = $this->generateQrCode($this->qrPayload ?? $ticket->validation_id);
+        $qrBase64 = $this->generateQrCode($this->qrPayload);
         $org = OrganizationSetting::forInvoice();
 
         $pdf = Pdf::loadView('pdf.ticket', [
@@ -47,7 +47,7 @@ class GenerateTicketPdf implements ShouldQueue
         ]);
 
         $path = "tickets/{$ticket->id}.pdf";
-        Storage::disk('local')->put($path, $pdf->output());
+        StorageRole::private()->put($path, $pdf->output());
     }
 
     private function generateQrCode(string $data): string

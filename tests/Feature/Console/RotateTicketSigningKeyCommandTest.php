@@ -6,7 +6,6 @@ beforeEach(function (): void {
     $this->dir = sys_get_temp_dir().'/lan-keys-rotate-'.bin2hex(random_bytes(4));
     mkdir($this->dir, 0700, true);
     config()->set('tickets.signing.keys_path', $this->dir);
-    config()->set('tickets.signed_tokens_enabled', true);
     config()->set('tickets.pepper', 'test');
 });
 

@@ -25,13 +25,13 @@ it('allows admins to view admin tickets index', function () {
         );
 });
 
-it('allows admins to search tickets by validation id', function () {
+it('allows admins to search tickets by ticket id', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
-    $ticket = Ticket::factory()->create(['validation_id' => 'UNIQUEVALID12345']);
     Ticket::factory()->count(2)->create();
+    $ticket = Ticket::factory()->create();
 
     $this->actingAs($admin)
-        ->get('/admin-tickets?search=UNIQUEVALID12345')
+        ->get('/admin-tickets?search='.$ticket->id)
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

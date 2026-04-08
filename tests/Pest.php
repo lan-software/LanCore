@@ -17,10 +17,16 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
+    ->beforeEach(function (): void {
+        setUpTicketSigningKey();
+    })
     ->in('Feature');
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
+    ->beforeEach(function (): void {
+        setUpTicketSigningKey();
+    })
     ->in('Unit');
 
 /*
@@ -71,7 +77,6 @@ function setUpTicketSigningKey(?string $kid = null): string
     file_put_contents($dir.'/'.$kid.'.key', $keypair);
     chmod($dir.'/'.$kid.'.key', 0600);
 
-    config()->set('tickets.signed_tokens_enabled', true);
     config()->set('tickets.pepper', 'test-pepper-'.bin2hex(random_bytes(8)));
     config()->set('tickets.signing.keys_path', $dir);
     config()->set('tickets.signing.active_kid', $kid);

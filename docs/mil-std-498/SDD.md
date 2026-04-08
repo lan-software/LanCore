@@ -144,7 +144,7 @@ The ticket signing subsystem is implemented as two service classes in `app/Domai
 
 Private key files reside at `storage/keys/ticket_signing/{kid}.key` with mode 0600. `TicketKeyRing` reads them on boot and caches in memory for the Octane process lifetime. On `tickets:keys:rotate`, a new key pair is written to disk and `TicketKeyRing` is re-initialized.
 
-**`GenerateTicketPdf` job change:** The job receives a new optional constructor argument `?string $qrPayload`. When present, this value is used as the QR code content; when absent (legacy path), the job falls back to the deprecated `validation_id`. The `qrPayload` string is never stored beyond the job execution.
+**`GenerateTicketPdf` job:** The job takes a required `string $qrPayload` constructor argument carrying the signed LCT1 token payload to render into the QR code. The `qrPayload` is never persisted beyond the job execution.
 
 #### 3.3.4 Role-Permission Matrix
 

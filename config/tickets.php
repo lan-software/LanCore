@@ -4,18 +4,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Signed Ticket Token Feature Flag
-    |--------------------------------------------------------------------------
-    |
-    | Phase A safe rollout flag. When false, legacy plaintext validation_id
-    | path remains active. When true, the issuer mints LCT1 signed tokens
-    | and persists only the HMAC nonce hash in the tickets table.
-    |
-    */
-    'signed_tokens_enabled' => env('TICKET_SIGNED_TOKENS_ENABLED', false),
-
-    /*
-    |--------------------------------------------------------------------------
     | HMAC Pepper
     |--------------------------------------------------------------------------
     |

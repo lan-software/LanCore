@@ -7,9 +7,9 @@ use App\Domain\Shop\Http\Requests\OrderIndexRequest;
 use App\Domain\Shop\Jobs\GenerateReceiptPdf;
 use App\Domain\Shop\Models\Order;
 use App\Http\Controllers\Controller;
+use App\Support\StorageRole;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -99,9 +99,9 @@ class OrderController extends Controller
 
         $path = "invoices/{$order->id}.pdf";
 
-        abort_unless(Storage::disk('local')->exists($path), 404, 'Invoice not yet generated.');
+        abort_unless(StorageRole::private()->exists($path), 404, 'Invoice not yet generated.');
 
-        return Storage::disk('local')->download($path, "invoice-{$order->invoice_number}.pdf");
+        return StorageRole::private()->download($path, "invoice-{$order->invoice_number}.pdf");
     }
 
     public function downloadReceipt(Order $order): StreamedResponse
@@ -110,8 +110,8 @@ class OrderController extends Controller
 
         $path = "receipts/{$order->id}.pdf";
 
-        abort_unless(Storage::disk('local')->exists($path), 404, 'Receipt not yet generated.');
+        abort_unless(StorageRole::private()->exists($path), 404, 'Receipt not yet generated.');
 
-        return Storage::disk('local')->download($path, "receipt-{$order->invoice_number}.pdf");
+        return StorageRole::private()->download($path, "receipt-{$order->invoice_number}.pdf");
     }
 }

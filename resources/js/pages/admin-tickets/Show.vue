@@ -85,7 +85,7 @@ const statusVariant: Record<
 
             <Heading
                 :title="ticket.ticket_type?.name ?? `Ticket #${ticket.id}`"
-                :description="`Validation ID: ${ticket.validation_id}`"
+                :description="`Ticket #${ticket.id}`"
             />
 
             <!-- Ticket Details -->
@@ -109,16 +109,6 @@ const statusVariant: Record<
                                     "
                                     >{{ ticket.status }}</Badge
                                 >
-                            </dd>
-                        </div>
-                        <div>
-                            <dt
-                                class="text-sm font-medium text-muted-foreground"
-                            >
-                                Validation ID
-                            </dt>
-                            <dd class="mt-1 font-mono text-sm">
-                                {{ ticket.validation_id }}
                             </dd>
                         </div>
                         <div>

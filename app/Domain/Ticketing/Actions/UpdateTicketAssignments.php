@@ -86,15 +86,9 @@ class UpdateTicketAssignments
         $this->dispatchPdf($ticket->fresh() ?? $ticket, $payload);
     }
 
-    private function rotateTokenInternal(Ticket $ticket): ?string
+    private function rotateTokenInternal(Ticket $ticket): string
     {
-        if (config('tickets.signed_tokens_enabled')) {
-            return $ticket->issueSignedToken($this->tokenService);
-        }
-
-        $ticket->update(['validation_id' => Ticket::generateValidationId()]);
-
-        return null;
+        return $ticket->issueSignedToken($this->tokenService);
     }
 
     public function checkIn(Ticket $ticket, int $performedBy, ?int $userId = null): Ticket
@@ -152,7 +146,7 @@ class UpdateTicketAssignments
         });
     }
 
-    private function dispatchPdf(Ticket $ticket, ?string $qrPayload): void
+    private function dispatchPdf(Ticket $ticket, string $qrPayload): void
     {
         GenerateTicketPdf::dispatch($ticket->id, $qrPayload);
     }

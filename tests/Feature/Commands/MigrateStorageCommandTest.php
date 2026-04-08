@@ -4,7 +4,10 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     Storage::fake('local');
+    Storage::fake('public');
     Storage::fake('s3');
+    Storage::fake('s3_public');
+    Storage::fake('s3_private');
 });
 
 it('migrates all files from local to s3', function () {
@@ -96,7 +99,7 @@ it('does not delete source files in dry-run mode even with --delete', function (
 
 it('fails when source and destination disk are the same', function () {
     $this->artisan('storage:migrate --from=local --to=local')
-        ->expectsOutputToContain("Source and destination disks must be different")
+        ->expectsOutputToContain('Source and destination disks must be different')
         ->assertFailed();
 });
 
@@ -110,4 +113,22 @@ it('fails when destination disk is invalid', function () {
     $this->artisan('storage:migrate --from=local --to=ftp')
         ->expectsOutputToContain("Invalid destination disk 'ftp'")
         ->assertFailed();
+});
+
+it('migrates files from local to s3_private', function () {
+    Storage::disk('local')->put('invoices/1.pdf', 'invoice-content');
+
+    $this->artisan('storage:migrate --from=local --to=s3_private')
+        ->assertSuccessful();
+
+    Storage::disk('s3_private')->assertExists('invoices/1.pdf');
+});
+
+it('migrates files from public to s3_public', function () {
+    Storage::disk('public')->put('organization/logo.png', 'logo-bytes');
+
+    $this->artisan('storage:migrate --from=public --to=s3_public')
+        ->assertSuccessful();
+
+    Storage::disk('s3_public')->assertExists('organization/logo.png');
 });

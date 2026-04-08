@@ -569,7 +569,7 @@ This ensures complete isolation between test cases.
 | cache invalidated on update | Cache populated | PATCH /settings/organization {name} | `Cache::has('inertia.organization')` is false after response |
 | cache invalidated on uploadLogo | Cache populated | POST /settings/organization/logo | Cache cleared |
 | cache invalidated on removeLogo | Cache populated, logo exists | DELETE /settings/organization/logo | Cache cleared, logo file deleted from public disk |
-| uploadLogo writes file to public disk | Admin authenticated | POST /settings/organization/logo {logo file} | File exists on Storage::disk('public') |
+| uploadLogo writes file to public role disk | Admin authenticated | POST /settings/organization/logo {logo file} | File exists on StorageRole::public() (disk configured by filesystems.public_disk) |
 | non-admin blocked on update | Regular user | PATCH /settings/organization | 403 Forbidden |
 | non-admin blocked on uploadLogo | Regular user | POST /settings/organization/logo | 403 Forbidden |
 | non-admin blocked on removeLogo | Regular user | DELETE /settings/organization/logo | 403 Forbidden |

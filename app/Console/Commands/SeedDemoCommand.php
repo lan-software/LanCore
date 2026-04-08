@@ -41,6 +41,7 @@ use App\Models\User;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 #[Signature('db:seed-demo')]
@@ -71,6 +72,7 @@ class SeedDemoCommand extends Command
 
         if ($events !== null) {
             $this->attempt('Ticketing', $results, fn () => $this->seedTicketing($events));
+            $this->attempt('Seat Plans', $results, fn () => $this->seedSeatPlans($events));
             $this->attempt('Programs', $results, fn () => $this->seedPrograms($events));
             $this->attempt('Sponsors', $results, fn () => $this->seedSponsors($events));
 
@@ -82,6 +84,7 @@ class SeedDemoCommand extends Command
             }
         } else {
             $results['Ticketing'] = 'Skipped — events not seeded';
+            $results['Seat Plans'] = 'Skipped — events not seeded';
             $results['Programs'] = 'Skipped — events not seeded';
             $results['Sponsors'] = 'Skipped — events not seeded';
             $results['Competitions'] = 'Skipped — events not seeded';
@@ -167,55 +170,124 @@ class SeedDemoCommand extends Command
         return true;
     }
 
+    /**
+     * Demo venues used by `db:seed-demo`.
+     *
+     * The accompanying images live in `database/seeders/images/venues/demo-venu-{n}/`
+     * and are AI-generated demo material (watermarked accordingly). The original
+     * generation prompts are kept here for traceability of the demo dataset.
+     *
+     * @return list<array{
+     *     name: string,
+     *     description: string,
+     *     street: string,
+     *     zip_code: string,
+     *     city: string,
+     *     state: string,
+     *     country: string,
+     *     image_dir: string,
+     *     image_prompts: list<string>
+     * }>
+     */
+    private function demoVenues(): array
+    {
+        return [
+            [
+                'name' => 'Hafenwerk Stralsund',
+                'description' => 'Das Hafenwerk Stralsund ist eine moderne Eventhalle im industrial Look direkt am Wasser. Die Venue eignet sich für mittelgroße bis große Veranstaltungen, Messen und Community-Formate. Große offene Flächen, hohe Decken, gute Stromversorgung und getrennte Nebenbereiche für Empfang, Catering oder Backoffice machen die Location vielseitig nutzbar.',
+                'street' => 'Werftstraße 18',
+                'zip_code' => '18439',
+                'city' => 'Stralsund',
+                'state' => 'Mecklenburg-Vorpommern',
+                'country' => 'Deutschland',
+                'image_dir' => 'demo-venu-1',
+                'image_prompts' => [
+                    'A realistic architectural photo of a modern industrial event venue at a harbor in northern Germany, large brick building with steel elements, clean forecourt, no people, no event setup, overcast daylight, professional real estate photography',
+                    'A realistic interior photo of a large empty industrial event hall with high ceilings, exposed steel beams, polished concrete floor, clean walls, no chairs, no tables, no stage, no people, professional venue photography',
+                    'A realistic photo of a modern venue entrance foyer with industrial interior design, reception area, wide walkways, clean lighting, empty and tidy, no people, no branding, professional commercial interior photography',
+                ],
+            ],
+            [
+                'name' => 'Campus Forum Greifswald',
+                'description' => 'Das Campus Forum Greifswald ist ein heller, funktionaler Veranstaltungsort in Hochschulnähe. Die Venue eignet sich für Tagungen, Workshops, kleinere Messen und studentische Veranstaltungen. Mehrere kombinierbare Räume, offene Architektur und eine sachlich-moderne Gestaltung machen sie zu einer flexiblen Demo-Location.',
+                'street' => 'Ernst-Lohmeyer-Platz 6',
+                'zip_code' => '17489',
+                'city' => 'Greifswald',
+                'state' => 'Mecklenburg-Vorpommern',
+                'country' => 'Deutschland',
+                'image_dir' => 'demo-venu-2',
+                'image_prompts' => [
+                    'A realistic architectural photo of a contemporary university event building in Germany, modern facade, wide glass entrance, clean surroundings, no people, no banners, no event setup, daylight, professional property photography',
+                    'A realistic interior photo of a bright modern event hall with clean flooring, white walls, ceiling lights, flexible open space, no furniture, no people, no stage equipment, professional commercial real estate photography',
+                    'A realistic photo of a modern lounge or seminar area inside a campus event venue, minimal interior, natural light, clean seating corners, tidy and empty, no people, no signage, professional venue brochure photography',
+                ],
+            ],
+            [
+                'name' => 'Nordlicht Messehalle Rostock',
+                'description' => 'Die Nordlicht Messehalle Rostock ist eine große, flexible Veranstaltungsfläche für Messen, Kongresse und größere Events. Sie bietet viel Platz für variable Flächenkonzepte, mehrere Hallenbereiche und logistisch gut nutzbare Zugänge. Für LanCore-Demos ist sie ideal, um größere Venue-Strukturen mit mehreren Bereichen abzubilden.',
+                'street' => 'Zur HanseMesse 1',
+                'zip_code' => '18106',
+                'city' => 'Rostock',
+                'state' => 'Mecklenburg-Vorpommern',
+                'country' => 'Deutschland',
+                'image_dir' => 'demo-venu-3',
+                'image_prompts' => [
+                    'A realistic architectural photo of a large modern exhibition hall in northern Germany, broad entrance plaza, clean facade, no people, no event branding, no vehicles in focus, cloudy daylight, professional real estate photography',
+                    'A realistic interior photo of a huge empty exhibition hall with wide open floor space, high ceiling structure, industrial lighting, clean walls, no booths, no stage, no people, professional venue documentation photography',
+                    'A realistic photo of the main entrance or interior access corridor of a modern exhibition center, spacious, clean, neutral design, no people, no event signage, no temporary installations, professional commercial photography',
+                ],
+            ],
+        ];
+    }
+
     private function seedVenues(): bool
     {
-        if (Venue::query()->where('name', 'Community Hall')->exists()) {
+        if (Venue::query()->where('name', 'Hafenwerk Stralsund')->exists()) {
             return false;
         }
 
         $this->components->task('Seeding venues', function (): void {
-            $communityHall = Venue::factory()->create([
-                'name' => 'Community Hall',
-                'description' => 'A large community hall with excellent network infrastructure.',
-                'address_id' => Address::factory()->create([
-                    'street' => 'Musterstraße 42',
-                    'city' => 'Berlin',
-                    'zip_code' => '10115',
-                    'state' => 'Berlin',
-                    'country' => 'Germany',
-                ])->id,
-            ]);
+            foreach ($this->demoVenues() as $data) {
+                $venue = Venue::factory()->create([
+                    'name' => $data['name'],
+                    'description' => $data['description'],
+                    'address_id' => Address::factory()->create([
+                        'street' => $data['street'],
+                        'city' => $data['city'],
+                        'zip_code' => $data['zip_code'],
+                        'state' => $data['state'],
+                        'country' => $data['country'],
+                    ])->id,
+                ]);
 
-            VenueImage::factory()->count(3)->create(['venue_id' => $communityHall->id]);
+                $sourceDir = database_path('seeders/images/venues/'.$data['image_dir']);
+                $sources = glob($sourceDir.'/*.png') ?: [];
+                sort($sources);
 
-            $techArena = Venue::factory()->create([
-                'name' => 'Tech Arena',
-                'description' => 'Modern esports arena with 200 seats and streaming setup.',
-                'address_id' => Address::factory()->create([
-                    'street' => 'Techpark 7',
-                    'city' => 'Munich',
-                    'zip_code' => '80333',
-                    'state' => 'Bavaria',
-                    'country' => 'Germany',
-                ])->id,
-            ]);
+                foreach ($sources as $index => $source) {
+                    $storedPath = $this->copyDemoImageToStorage($source, 'venues/images');
 
-            VenueImage::factory()->count(2)->create(['venue_id' => $techArena->id]);
-
-            Venue::factory()->create([
-                'name' => 'Turnhalle Mitte',
-                'description' => 'A renovated gym perfect for medium-sized LAN events.',
-                'address_id' => Address::factory()->create([
-                    'street' => 'Sportplatz 1',
-                    'city' => 'Hamburg',
-                    'zip_code' => '20095',
-                    'state' => 'Hamburg',
-                    'country' => 'Germany',
-                ])->id,
-            ]);
+                    VenueImage::create([
+                        'venue_id' => $venue->id,
+                        'path' => $storedPath,
+                        'alt_text' => $data['name'].' – AI-generated demo image',
+                        'sort_order' => $index,
+                    ]);
+                }
+            }
         });
 
         return true;
+    }
+
+    private function copyDemoImageToStorage(string $sourcePath, string $directory): string
+    {
+        $contents = (string) file_get_contents($sourcePath);
+        $targetPath = $directory.'/'.basename($sourcePath);
+
+        Storage::put($targetPath, $contents);
+
+        return $targetPath;
     }
 
     private function seedGames(): bool
@@ -357,7 +429,7 @@ class SeedDemoCommand extends Command
                 'description' => 'Last year\'s winter edition — a huge success.',
                 'start_date' => '2025-12-27 14:00:00',
                 'end_date' => '2025-12-29 18:00:00',
-                'venue_id' => $venues->first()?->id,
+                'venue_id' => $venues->skip(2)->first()?->id,
             ]);
         });
 
@@ -463,15 +535,101 @@ class SeedDemoCommand extends Command
                     'price' => 800,
                     'event_id' => $event->id,
                 ]);
-
-                SeatPlan::factory()->create([
-                    'name' => 'Main Hall',
-                    'event_id' => $event->id,
-                ]);
             }
         });
 
         return true;
+    }
+
+    /**
+     * @param  array{published: Event, draft: Event, past: Event}  $events
+     */
+    private function seedSeatPlans(array $events): bool
+    {
+        if (SeatPlan::query()->whereIn('event_id', [
+            $events['published']->id,
+            $events['draft']->id,
+            $events['past']->id,
+        ])->exists()) {
+            return false;
+        }
+
+        $this->components->task('Seeding seat plans', function () use ($events): void {
+            // Hafenwerk Stralsund (industrial mid-size) — two blocks, 100 seats.
+            SeatPlan::factory()->withBlocks([
+                $this->buildGridBlock('block-1', 'Halle Nord', '#1f6feb', 10, 6, 0, 0),
+                $this->buildGridBlock('block-2', 'Halle Süd', '#0ea5e9', 8, 5, 0, 260),
+            ])->create([
+                'name' => 'Hafenwerk – Hauptflächen',
+                'event_id' => $events['published']->id,
+            ]);
+
+            // Campus Forum Greifswald (small flexible workshop space) — one block, 40 seats.
+            SeatPlan::factory()->withBlocks([
+                $this->buildGridBlock('block-1', 'Forum', '#22c55e', 8, 5, 0, 0),
+            ])->create([
+                'name' => 'Campus Forum – Workshop-Setup',
+                'event_id' => $events['draft']->id,
+            ]);
+
+            // Nordlicht Messehalle Rostock (largest exhibition venue) — three blocks, 224 seats.
+            SeatPlan::factory()->withBlocks([
+                $this->buildGridBlock('block-1', 'Halle A', '#f97316', 12, 8, 0, 0),
+                $this->buildGridBlock('block-2', 'Halle B', '#ef4444', 12, 8, 420, 0),
+                $this->buildGridBlock('block-3', 'VIP Lounge', '#a855f7', 8, 4, 0, 320),
+            ])->create([
+                'name' => 'Nordlicht – Messeflächen',
+                'event_id' => $events['past']->id,
+            ]);
+        });
+
+        return true;
+    }
+
+    /**
+     * Build a grid-shaped seat block for SeatPlanFactory::withBlocks().
+     *
+     * @return array{
+     *     id: string,
+     *     title: string,
+     *     color: string,
+     *     seats: list<array{id: int, title: string, x: int, y: int, salable: bool}>,
+     *     labels: list<array{title: string, x: int, y: int}>,
+     * }
+     */
+    private function buildGridBlock(string $id, string $title, string $color, int $cols, int $rows, int $offsetX, int $offsetY): array
+    {
+        $pitch = 30;
+        $seats = [];
+        $labels = [];
+        $seatId = 1;
+
+        for ($row = 0; $row < $rows; $row++) {
+            $rowLetter = chr(ord('A') + $row);
+            $labels[] = [
+                'title' => 'Row '.$rowLetter,
+                'x' => $offsetX - $pitch,
+                'y' => $offsetY + ($row * $pitch),
+            ];
+
+            for ($col = 0; $col < $cols; $col++) {
+                $seats[] = [
+                    'id' => $seatId++,
+                    'title' => $rowLetter.($col + 1),
+                    'x' => $offsetX + ($col * $pitch),
+                    'y' => $offsetY + ($row * $pitch),
+                    'salable' => true,
+                ];
+            }
+        }
+
+        return [
+            'id' => $id,
+            'title' => $title,
+            'color' => $color,
+            'seats' => $seats,
+            'labels' => $labels,
+        ];
     }
 
     /**
@@ -580,6 +738,52 @@ class SeedDemoCommand extends Command
     /**
      * @param  array{published: Event, draft: Event, past: Event}  $events
      */
+    /**
+     * Demo sponsors used by `db:seed-demo`.
+     *
+     * Logos live in `database/seeders/images/sponsors/demo-sponsor-{n}/` and are
+     * AI-generated demo material (watermarked accordingly). The original
+     * generation prompts are kept here for traceability.
+     *
+     * @return list<array{
+     *     name: string,
+     *     description: string,
+     *     link: string,
+     *     level: 'gold'|'silver'|'bronze',
+     *     image_dir: string,
+     *     logo_prompt: string
+     * }>
+     */
+    private function demoSponsors(): array
+    {
+        return [
+            [
+                'name' => 'Northbyte Hosting',
+                'description' => 'Northbyte Hosting ist ein fiktiver Infrastruktur- und Hosting-Partner für Community-Events, Turniere und moderne Webplattformen. Das Unternehmen positioniert sich als techniknaher Sponsor für dedizierte Server, Cloud-Ressourcen und zuverlässige Event-Infrastruktur.',
+                'link' => 'https://northbyte-hosting.example',
+                'level' => 'gold',
+                'image_dir' => 'demo-sponsor-1',
+                'logo_prompt' => 'A clean modern tech company logo for "Northbyte Hosting", minimalist geometric symbol, subtle connection to servers, cloud infrastructure and networking, professional B2B style, white background, flat vector design, dark blue and cyan color palette, no mockup, no 3D, no text outside the logo composition',
+            ],
+            [
+                'name' => 'PixelForge Systems',
+                'description' => 'PixelForge Systems ist ein fiktiver Technologie-Sponsor für Gaming-Hardware, Displays und Event-Arbeitsplätze. Die Marke steht für leistungsfähige Systeme, klare Formsprache und einen modernen, leicht gaming-nahen, aber professionellen Auftritt.',
+                'link' => 'https://pixelforge-systems.example',
+                'level' => 'silver',
+                'image_dir' => 'demo-sponsor-2',
+                'logo_prompt' => 'A sharp modern logo for "PixelForge Systems", combining a subtle pixel motif with a forged angular emblem, professional technology brand identity, flat vector design, white background, bold but clean, orange and graphite color palette, no mockup, no 3D effects, suitable for website header and sponsor wall',
+            ],
+            [
+                'name' => 'Gournament',
+                'description' => 'Gournament ist eine fiktive Softwarelösung zur Erstellung und Verwaltung von Turnierbäumen, entwickelt in Go. Die Plattform richtet sich an Veranstalter, E-Sport-Teams und Community-Projekte, die schnell und zuverlässig Brackets, Turnierstrukturen und Match-Abläufe organisieren möchten. Als Sponsor passt Gournament besonders gut in das LanCore-Ökosystem rund um Competitions und LanBrackets.',
+                'link' => 'https://gournament.example',
+                'level' => 'bronze',
+                'image_dir' => 'demo-sponsor-3',
+                'logo_prompt' => 'A clean modern software logo for "Gournament", inspired by tournament brackets and the Go programming language ecosystem, minimalist geometric emblem, professional SaaS style, flat vector design, white background, teal and dark slate color palette, no mockup, no 3D, scalable for web and sponsor walls',
+            ],
+        ];
+    }
+
     private function seedSponsors(array $events): bool
     {
         if (SponsorLevel::query()->where('name', 'Gold')->exists()) {
@@ -587,49 +791,38 @@ class SeedDemoCommand extends Command
         }
 
         $this->components->task('Seeding sponsors', function () use ($events): void {
-            $gold = SponsorLevel::create(['name' => 'Gold', 'color' => '#FFD700', 'sort_order' => 0]);
-            $silver = SponsorLevel::create(['name' => 'Silver', 'color' => '#C0C0C0', 'sort_order' => 1]);
-            $bronze = SponsorLevel::create(['name' => 'Bronze', 'color' => '#CD7F32', 'sort_order' => 2]);
+            $levels = [
+                'gold' => SponsorLevel::create(['name' => 'Gold', 'color' => '#FFD700', 'sort_order' => 0]),
+                'silver' => SponsorLevel::create(['name' => 'Silver', 'color' => '#C0C0C0', 'sort_order' => 1]),
+                'bronze' => SponsorLevel::create(['name' => 'Bronze', 'color' => '#CD7F32', 'sort_order' => 2]),
+            ];
 
-            $sponsor1 = Sponsor::factory()->create([
-                'name' => 'TechCorp Gaming',
-                'description' => 'Leading provider of gaming peripherals.',
-                'link' => 'https://example.com/techcorp',
-                'sponsor_level_id' => $gold->id,
-            ]);
+            $sponsors = [];
 
-            $sponsor2 = Sponsor::factory()->create([
-                'name' => 'NetSpeed ISP',
-                'description' => 'High-speed internet for gamers.',
-                'link' => 'https://example.com/netspeed',
-                'sponsor_level_id' => $silver->id,
-            ]);
+            foreach ($this->demoSponsors() as $data) {
+                $logoPath = null;
+                $sourceDir = database_path('seeders/images/sponsors/'.$data['image_dir']);
+                $sources = glob($sourceDir.'/*.png') ?: [];
+                if ($sources !== []) {
+                    $logoPath = $this->copyDemoImageToStorage($sources[0], 'sponsors/logos');
+                }
 
-            $sponsor3 = Sponsor::factory()->create([
-                'name' => 'PixelDrink Energy',
-                'description' => 'Energy drinks for late-night gaming sessions.',
-                'sponsor_level_id' => $bronze->id,
-            ]);
-
-            $sponsor4 = Sponsor::factory()->create([
-                'name' => 'CloudHost Pro',
-                'description' => 'Game server hosting for competitive events.',
-                'link' => 'https://example.com/cloudhost',
-                'sponsor_level_id' => $silver->id,
-            ]);
+                $sponsors[] = Sponsor::factory()->create([
+                    'name' => $data['name'],
+                    'description' => $data['description'],
+                    'link' => $data['link'],
+                    'logo' => $logoPath,
+                    'sponsor_level_id' => $levels[$data['level']]->id,
+                ]);
+            }
 
             $publishedEvent = $events['published'];
-            $publishedEvent->sponsors()->attach([
-                $sponsor1->id,
-                $sponsor2->id,
-                $sponsor3->id,
-                $sponsor4->id,
-            ]);
+            $publishedEvent->sponsors()->attach(collect($sponsors)->pluck('id')->all());
 
             $sponsorManager = User::query()->where('email', 'sponsor@example.com')->first();
             if ($sponsorManager) {
-                $sponsor1->managers()->attach($sponsorManager->id);
-                $sponsor4->managers()->attach($sponsorManager->id);
+                $sponsors[0]->managers()->attach($sponsorManager->id);
+                $sponsors[2]->managers()->attach($sponsorManager->id);
             }
         });
 
@@ -1115,7 +1308,7 @@ class SeedDemoCommand extends Command
                     ."2. **Transferability** — Tickets may be transferred to another person via the ticket transfer feature. The new holder must have a LanCore account.\n"
                     ."3. **Code of Conduct** — All attendees must follow the event's Code of Conduct. Violations may result in removal without refund.\n"
                     ."4. **Liability** — The organizer is not responsible for personal belongings. Bring your own locks and keep valuables secure.\n"
-                    ."5. **Photography** — Event photography and videography will take place. By attending, you consent to being photographed.",
+                    .'5. **Photography** — Event photography and videography will take place. By attending, you consent to being photographed.',
                 'acknowledgement_label' => 'I accept the Terms of Service',
                 'is_required' => true,
                 'is_active' => true,
@@ -1153,7 +1346,7 @@ class SeedDemoCommand extends Command
                 'content' => "Payment is processed securely via Stripe. Your card will be charged immediately upon purchase.\n\n"
                     ."- We do not store your full card details. All payment data is handled by Stripe.\n"
                     ."- A payment confirmation will be sent to your email address.\n"
-                    ."- For chargebacks or disputes, contact us before contacting your bank.",
+                    .'- For chargebacks or disputes, contact us before contacting your bank.',
                 'acknowledgement_label' => 'I agree to the credit card payment terms',
                 'is_required' => true,
                 'is_active' => true,
@@ -1168,7 +1361,7 @@ class SeedDemoCommand extends Command
                 'content' => "On-site payment reserves your ticket but does not guarantee it. Your reservation is held for 48 hours.\n\n"
                     ."- Payment must be made in cash at the check-in desk.\n"
                     ."- If payment is not received within 48 hours, your reservation may be released.\n"
-                    ."- On-site payments do not include online payment processing fees.",
+                    .'- On-site payments do not include online payment processing fees.',
                 'acknowledgement_label' => 'I understand the on-site payment terms',
                 'is_required' => true,
                 'is_active' => true,
@@ -1184,7 +1377,7 @@ class SeedDemoCommand extends Command
                     ."Please note:\n"
                     ."- Premium seats are assigned first-come, first-served within the premium zone.\n"
                     ."- Seat swaps within the premium zone must be coordinated with staff.\n"
-                    ."- The premium zone has a noise limit policy — no open speakers.",
+                    .'- The premium zone has a noise limit policy — no open speakers.',
                 'acknowledgements' => [
                     'I understand the premium zone rules',
                     'I agree to the noise limit policy',
@@ -1200,7 +1393,7 @@ class SeedDemoCommand extends Command
                     ."Requirements:\n"
                     ."- Minimum 4 tickets must be purchased together for a clan row.\n"
                     ."- All clan members must check in within the first 2 hours of the event.\n"
-                    ."- Unclaimed seats after 2 hours may be reassigned.",
+                    .'- Unclaimed seats after 2 hours may be reassigned.',
                 'acknowledgements' => [
                     'I confirm I am purchasing for a group of at least 4',
                     'I understand the check-in deadline policy',

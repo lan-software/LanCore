@@ -13,6 +13,7 @@ use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketType;
+use App\Domain\Ticketing\Security\TicketTokenService;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +23,8 @@ use Illuminate\Support\Facades\DB;
  */
 class FulfillOrder
 {
+    public function __construct(private readonly TicketTokenService $tokenService) {}
+
     public function execute(Order $order): void
     {
         if ($order->status === OrderStatus::Completed) {
@@ -72,7 +75,8 @@ class FulfillOrder
                         ]);
                     }
 
-                    GenerateTicketPdf::dispatch($ticket->id);
+                    $payload = $ticket->issueSignedToken($this->tokenService);
+                    GenerateTicketPdf::dispatch($ticket->id, $payload);
                 }
             }
 

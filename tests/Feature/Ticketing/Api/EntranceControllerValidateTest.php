@@ -121,5 +121,4 @@ it('does not find tickets by raw QR payload in DB', function (): void {
 
     // The raw payload must not match any DB column — confirms QR leak is safe.
     expect(Ticket::query()->where('validation_nonce_hash', $payload)->exists())->toBeFalse();
-    expect(Ticket::query()->where('validation_id', $payload)->exists())->toBeFalse();
 });

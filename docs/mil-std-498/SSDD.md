@@ -75,30 +75,67 @@ In development, all Lan-Software ecosystem apps share infrastructure services vi
 
 ### 3.1.1 Deployment Architecture (Production)
 
-In production, LanCore is deployed as a standalone Docker container stack with its own database, cache, and storage.
+In production, LanCore is deployed as a Docker container stack with its own PostgreSQL database, Redis cache, object storage, and SMTP relay. The application image is built from a reproducible three-stage Dockerfile and can be launched in one of three **roles** selected at runtime via the `ROLE` environment variable.
+
+#### 3.1.1.1 Build Stages
+
+| Stage | Base image | Purpose |
+|-------|-----------|---------|
+| 1. `deps` | `composer:2` (digest-pinned) | `composer install --no-dev`, autoload optimisation, Wayfinder TypeScript generation (`actions/`, `routes/`, `wayfinder/`) |
+| 2. `frontend` | `node:22-alpine` (digest-pinned) | `npm ci` + `npm run build`; overlays the Wayfinder TS produced in stage 1 |
+| 3. `production` | `dunglas/frankenphp:php8.5-alpine` (digest-pinned) | FrankenPHP + Laravel Octane, PHP extensions (pdo_pgsql, bcmath, pcntl, zip, gd, opcache, intl, redis), supervisor, entrypoint |
+
+Build-time secrets (`BUILD_APP_KEY`) are supplied only as a throwaway `ARG` for Wayfinder generation; the runtime `APP_KEY` **must** be injected by the orchestrator — never baked into the image (see [SSS](SSS.md) ENV-DEP-012).
+
+#### 3.1.1.2 Runtime Roles
+
+| `ROLE` | Supervisor config | Processes | Intended use |
+|--------|-------------------|-----------|--------------|
+| `web` | `supervisord-web.conf` | Octane (FrankenPHP workers) | Horizontally scalable HTTP tier |
+| `worker` | `supervisord-worker.conf` | Horizon + scheduler (`schedule:run` loop) | Dedicated queue / cron tier |
+| `all` | `supervisord.conf` | Octane + Horizon + scheduler | Single-container deployments (small sites, demo) |
+
+Octane worker count and max-request recycling are parametrised via `OCTANE_WORKERS` and `OCTANE_MAX_REQUESTS` environment variables so operators can tune without rebuilding the image.
+
+#### 3.1.1.3 Migration Ownership
+
+The entrypoint runs `php artisan migrate --force` unless `SKIP_MIGRATE=1`. In multi-container deployments **exactly one** container (typically a dedicated `web` or init container) must run with `SKIP_MIGRATE=0`; all others must set `SKIP_MIGRATE=1` to prevent schema races. See [SIP §3.4](SIP.md#34-quick-start-production-docker-compose) for the deployment pattern.
+
+#### 3.1.1.4 Topology Diagram
 
 ```
-┌─────────────────────────────────────────┐
-│              Docker Host                 │
-│                                          │
-│  ┌──────────────────┐  ┌──────────────┐ │
-│  │  LanCore App     │  │  PostgreSQL  │ │
-│  │  (FrankenPHP +   │  │  Database    │ │
-│  │   Laravel Octane) │  │             │ │
-│  └────────┬─────────┘  └──────────────┘ │
-│           │                              │
-│  ┌────────┴─────────┐  ┌──────────────┐ │
-│  │  Horizon Workers  │  │    Redis     │ │
-│  │  (Queue Processing│  │  (Cache)     │ │
-│  │   via Supervisor) │  │             │ │
-│  └──────────────────┘  └──────────────┘ │
-│                                          │
-│  ┌──────────────────┐  ┌──────────────┐ │
-│  │  S3/Garage       │  │  SMTP        │ │
-│  │  (Object Storage) │  │  (Mail)      │ │
-│  └──────────────────┘  └──────────────┘ │
-└─────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                        Docker Host                             │
+│                                                                 │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────┐ │
+│  │ LanCore (ROLE=   │  │ LanCore (ROLE=   │  │  PostgreSQL  │ │
+│  │  web, migrator)  │  │  web, replica)   │  │              │ │
+│  │ FrankenPHP+Octane│  │ FrankenPHP+Octane│  └──────────────┘ │
+│  │ SKIP_MIGRATE=0   │  │ SKIP_MIGRATE=1   │  ┌──────────────┐ │
+│  └────────┬─────────┘  └────────┬─────────┘  │    Redis     │ │
+│           │                     │             └──────────────┘ │
+│  ┌────────┴─────────────────────┴─────┐     ┌──────────────┐ │
+│  │    LanCore (ROLE=worker)           │     │  S3 / Garage │ │
+│  │    Horizon + scheduler             │     └──────────────┘ │
+│  │    SKIP_MIGRATE=1                  │     ┌──────────────┐ │
+│  └────────────────────────────────────┘     │     SMTP     │ │
+│                                               └──────────────┘ │
+└───────────────────────────────────────────────────────────────┘
 ```
+
+#### 3.1.1.5 Satellite App Topology
+
+LanBrackets, LanShout, LanHelp, and LanEntrance each ship their **own** Dockerfile that follows the same three-stage pattern and `ROLE`/`SKIP_MIGRATE` contract. Differences:
+
+| App | Base image | Octane | Horizon | Typical roles |
+|-----|-----------|--------|---------|---------------|
+| LanCore | `frankenphp:php8.5-alpine` | Yes | Yes | `web` + `worker` (split) or `all` |
+| LanBrackets | `frankenphp:php8.3-alpine` | Yes | No (plain `queue:work` + scheduler) | `web` + optional `worker` |
+| LanHelp | `frankenphp:php8.3-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
+| LanEntrance | `frankenphp:php8.3-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
+| LanShout | `frankenphp:php8.3-alpine` (after PHP 8.3 / Laravel 13 upgrade prerequisite) | No | No | `web` + optional `worker` |
+
+All five images: non-root (`www-data`), pinned base image digests, healthcheck on `/up`, runtime secrets via env only.
 
 ### 3.2 Subsystem Inventory
 
@@ -144,6 +181,19 @@ TBD — To be detailed with health check endpoints, container orchestration (Kub
 Development uses a single external Docker bridge network (`lanparty`) for all inter-service communication. The `infrastructure` network has been eliminated to reduce complexity. Each app may maintain an internal `sail` network for app-specific services (e.g., LanCore's Garage).
 
 Production network architecture (TLS termination, reverse proxy) is TBD.
+
+### 5.3 Container Security Design
+
+Production container images for LanCore and all satellite apps share a common security posture:
+
+- Supervisord and all application processes run as the unprivileged `www-data` user; `USER www-data` is set in the final image stage. The entrypoint drops privileges via `su-exec` before `exec`-ing supervisord.
+- Base images are pinned by `@sha256:` digest to guarantee reproducible builds and to prevent silent upstream drift.
+- Runtime secrets (`APP_KEY`, database credentials, pepper for ticket token HMAC — see §5a.1, Stripe keys, S3 credentials) are injected exclusively through environment variables at container start; no secret is ever baked into a layer.
+- `expose_php=Off`, OPcache with `validate_timestamps=0`, and a tuned `memory_limit` are enforced via `docker/php/*.ini`.
+- Only the single designated migrator container runs with `SKIP_MIGRATE=0`; all other containers ship schema migrations disabled to prevent races.
+- The `/up` healthcheck endpoint is wired to the Docker `HEALTHCHECK` directive with a 60 s start period to allow Octane cold boot + migrations on the migrator container.
+
+These rules trace to SSS requirements ENV-DEP-010, ENV-DEP-011, and ENV-DEP-012.
 
 ### 5.2 Monitoring Integration
 
@@ -250,6 +300,9 @@ Previously issued tokens signed by the retired `kid` remain verifiable because r
 | SSS 3.1 Required States and Modes (Demo) | Section 3.1 — Demo mode uses the same Docker deployment topology as Normal mode; the distinction is data content (seeded via `SeedDemoCommand`) and payment provider configuration (simulated), not infrastructure topology |
 | CAP-TKT-013, CAP-TKT-014 | Section 5a |
 | SEC-014..020 | Section 5a.1 |
+| ENV-DEP-010 (pinned base images) | Section 3.1.1.1, Section 5.3 |
+| ENV-DEP-011 (non-root runtime) | Section 3.1.1, Section 5.3 |
+| ENV-DEP-012 (runtime secrets via env) | Section 3.1.1.1, Section 5.3 |
 
 ---
 

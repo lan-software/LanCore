@@ -4,8 +4,9 @@ namespace App\Domain\Shop\Jobs;
 
 use App\Domain\Shop\Mail\InvoiceMail;
 use App\Domain\Shop\Models\Order;
-use App\Models\OrganizationSetting;
 use App\Domain\Shop\Models\ShopSetting;
+use App\Models\OrganizationSetting;
+use App\Support\StorageRole;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,7 +14,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 
 class GenerateInvoicePdf implements ShouldQueue
 {
@@ -39,7 +39,7 @@ class GenerateInvoicePdf implements ShouldQueue
         ]);
 
         $path = "invoices/{$order->id}.pdf";
-        Storage::disk('local')->put($path, $pdf->output());
+        StorageRole::private()->put($path, $pdf->output());
 
         Mail::to($order->user->email)->send(new InvoiceMail($order, $path));
     }

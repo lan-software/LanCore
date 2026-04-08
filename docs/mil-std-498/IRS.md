@@ -72,16 +72,18 @@ This document describes the requirements for all external interfaces of the LanC
 | IF-S3-004 | The system shall generate signed URLs for private file access |
 | IF-S3-005 | The system shall support anonymous bucket access (configurable) |
 | IF-S3-006 | The system shall provide a StorageFileController for file serving |
+| IF-S3-007 | The system shall expose two semantic storage roles — `public` and `private` — each independently routable to a distinct disk/bucket |
+| IF-S3-008 | The system shall keep sensitive artifacts (invoices, receipts, ticket PDFs) on the `private` role and never on a publicly readable bucket |
+| IF-S3-009 | The system shall fall back from per-role S3 credentials (`AWS_PUBLIC_*` / `AWS_PRIVATE_*`) to the legacy single-bucket `AWS_*` credentials when role-specific values are unset |
 
 **Configuration:**
-- `AWS_ACCESS_KEY_ID` — S3 access key
-- `AWS_SECRET_ACCESS_KEY` — S3 secret key
-- `AWS_DEFAULT_REGION` — Storage region
-- `AWS_BUCKET` — Bucket name (default: `lancore`)
-- `AWS_ENDPOINT` — S3 endpoint URL
-- `AWS_URL` — Public URL for file access
-- `AWS_USE_PATH_STYLE_ENDPOINT` — Path-style addressing flag
+- `FILESYSTEM_PUBLIC_DISK` — Disk that backs the public role (default: `public`; e.g. `s3_public`)
+- `FILESYSTEM_PRIVATE_DISK` — Disk that backs the private role (default: `local`; e.g. `s3_private`)
+- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_DEFAULT_REGION` / `AWS_BUCKET` / `AWS_ENDPOINT` / `AWS_URL` / `AWS_USE_PATH_STYLE_ENDPOINT` — Legacy single-bucket S3 settings; also act as fallback for the per-role variants below
+- `AWS_PUBLIC_BUCKET`, `AWS_PUBLIC_URL`, `AWS_PUBLIC_ENDPOINT`, `AWS_PUBLIC_ACCESS_KEY_ID`, `AWS_PUBLIC_SECRET_ACCESS_KEY`, `AWS_PUBLIC_DEFAULT_REGION`, `AWS_PUBLIC_USE_PATH_STYLE_ENDPOINT`, `AWS_PUBLIC_ANONYMOUS_BUCKET_ACCESS` — Public-role S3 overrides
+- `AWS_PRIVATE_BUCKET`, `AWS_PRIVATE_URL`, `AWS_PRIVATE_ENDPOINT`, `AWS_PRIVATE_ACCESS_KEY_ID`, `AWS_PRIVATE_SECRET_ACCESS_KEY`, `AWS_PRIVATE_DEFAULT_REGION`, `AWS_PRIVATE_USE_PATH_STYLE_ENDPOINT` — Private-role S3 overrides
 - Config file: `config/filesystems.php`
+- Helper: `App\Support\StorageRole::public()` / `::private()`
 
 ### 3.3 SMTP Mail Service (IF-SMTP)
 

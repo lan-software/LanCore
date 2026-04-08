@@ -356,17 +356,39 @@ Inertia.js forms submit via standard HTTP methods (POST, PUT, DELETE) and receiv
 
 ### 3.6 S3-Compatible Storage
 
+LanCore exposes two semantic storage roles via `App\Support\StorageRole`:
+
+- **Public role** (`StorageRole::public()`) — non-sensitive assets such as organization logos and public images. Backed by the disk named in `filesystems.public_disk` (default `public`, typically `s3_public` in production).
+- **Private role** (`StorageRole::private()`) — sensitive artifacts such as invoices, receipts, and ticket PDFs. Backed by the disk named in `filesystems.private_disk` (default `local`, typically `s3_private` in production).
+
+Each role is independently routable. Operators may keep both on a single bucket (legacy behavior), split them across two S3 buckets with separate credentials, or mix local + S3.
+
 #### 3.6.1 File Upload
 
-Files uploaded via form requests are stored using Laravel's Storage facade:
+Files are written through the role helper rather than a hardcoded disk name:
 
 ```php
-Storage::disk('s3')->put($path, $file);
+use App\Support\StorageRole;
+
+// sensitive artifact
+StorageRole::private()->put("invoices/{$order->id}.pdf", $pdf->output());
+
+// public asset
+$path = $request->file('logo')->store('organization', StorageRole::publicDiskName());
 ```
 
 #### 3.6.2 File Serving
 
-`StorageFileController` serves files from S3 with appropriate headers. Supports both signed URLs and anonymous access (configurable).
+`StorageFileController` serves files from S3 with appropriate headers. Supports both signed URLs and anonymous access (configurable). Sensitive artifacts on the private role are never served via anonymous access.
+
+#### 3.6.3 Migrating Between Buckets
+
+The `storage:migrate` Artisan command supports the role disks (`s3_public`, `s3_private`) and can move existing files from a single legacy bucket into the split layout, e.g.:
+
+```
+php artisan storage:migrate --from=s3 --to=s3_private --path=invoices --delete
+php artisan storage:migrate --from=s3 --to=s3_public --path=organization
+```
 
 ### 3.7 Web Push
 
