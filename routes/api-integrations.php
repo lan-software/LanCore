@@ -4,6 +4,7 @@ use App\Domain\Competition\Http\Controllers\LanBracketsWebhookController;
 use App\Domain\Integration\Http\Controllers\IntegrationSsoController;
 use App\Domain\Integration\Http\Controllers\IntegrationUserController;
 use App\Domain\Ticketing\Http\Controllers\Api\EntranceController;
+use App\Domain\Ticketing\Http\Controllers\Api\SigningKeysController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,6 +36,7 @@ Route::prefix('api/entrance')
         Route::get('search', [EntranceController::class, 'search'])->name('api.entrance.search');
         Route::get('stats', [EntranceController::class, 'stats'])->name('api.entrance.stats');
         Route::get('events', [EntranceController::class, 'events'])->name('api.entrance.events');
+        Route::get('signing-keys', SigningKeysController::class)->name('api.entrance.signing-keys');
     });
 
 /*

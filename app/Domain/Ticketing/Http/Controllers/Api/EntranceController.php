@@ -10,6 +10,11 @@ use App\Domain\Ticketing\Actions\UpdateTicketAssignments;
 use App\Domain\Ticketing\Enums\TicketStatus;
 use App\Domain\Ticketing\Models\EntranceAuditLog;
 use App\Domain\Ticketing\Models\Ticket;
+use App\Domain\Ticketing\Security\Exceptions\ExpiredTokenException;
+use App\Domain\Ticketing\Security\Exceptions\InvalidSignatureException;
+use App\Domain\Ticketing\Security\Exceptions\MalformedTokenException;
+use App\Domain\Ticketing\Security\Exceptions\UnknownKidException;
+use App\Domain\Ticketing\Security\TicketTokenService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,6 +24,7 @@ class EntranceController extends Controller
 {
     public function __construct(
         private readonly UpdateTicketAssignments $ticketAssignments,
+        private readonly TicketTokenService $tokenService,
     ) {}
 
     public function validateTicket(Request $request): JsonResponse
@@ -30,8 +36,12 @@ class EntranceController extends Controller
         ]);
 
         $token = $request->input('token');
-        $ticket = $this->findTicketByToken($token);
-        $auditId = $this->audit($request, 'validate', $ticket);
+        [$ticket, $rejectionCode] = $this->resolveSignedDecision($token);
+        $auditId = $this->audit($request, 'validate', $ticket, $rejectionCode);
+
+        if ($rejectionCode !== null) {
+            return $this->decision($rejectionCode, $this->messageForCode($rejectionCode), $token, auditId: $auditId);
+        }
 
         if (! $ticket) {
             return $this->decision('invalid', 'Ticket not found or invalid.', $token, auditId: $auditId);
@@ -291,9 +301,55 @@ class EntranceController extends Controller
 
     private function findTicketByToken(string $token): ?Ticket
     {
+        if (config('tickets.signed_tokens_enabled')) {
+            try {
+                $verification = $this->tokenService->verify($token);
+            } catch (InvalidSignatureException|UnknownKidException|ExpiredTokenException|MalformedTokenException) {
+                return null;
+            }
+
+            $ticket = $this->tokenService->locate($verification);
+
+            if ($ticket === null) {
+                return null;
+            }
+
+            return $ticket->load(['ticketType', 'owner', 'order.orderLines', 'order.voucher', 'addons', 'users', 'event']);
+        }
+
         return Ticket::where('validation_id', $token)
             ->with(['ticketType', 'owner', 'order.orderLines', 'order.voucher', 'addons', 'users', 'event'])
             ->first();
+    }
+
+    /**
+     * @return array{0: ?Ticket, 1: ?string}
+     */
+    private function resolveSignedDecision(string $token): array
+    {
+        if (! config('tickets.signed_tokens_enabled')) {
+            return [$this->findTicketByToken($token), null];
+        }
+
+        try {
+            $verification = $this->tokenService->verify($token);
+        } catch (InvalidSignatureException) {
+            return [null, 'invalid_signature'];
+        } catch (UnknownKidException) {
+            return [null, 'unknown_kid'];
+        } catch (ExpiredTokenException) {
+            return [null, 'expired'];
+        } catch (MalformedTokenException) {
+            return [null, 'invalid_signature'];
+        }
+
+        $ticket = $this->tokenService->locate($verification);
+
+        if ($ticket === null) {
+            return [null, 'revoked'];
+        }
+
+        return [$ticket->load(['ticketType', 'owner', 'order.orderLines', 'order.voucher', 'addons', 'users', 'event']), null];
     }
 
     private function resolveTicketForAction(Request $request): Ticket|JsonResponse
@@ -376,6 +432,17 @@ class EntranceController extends Controller
         return response()->json($response);
     }
 
+    private function messageForCode(string $code): string
+    {
+        return match ($code) {
+            'invalid_signature' => 'Token signature is invalid.',
+            'unknown_kid' => 'Token signing key is not recognised.',
+            'expired' => 'This ticket token has expired.',
+            'revoked' => 'This ticket token is no longer valid.',
+            default => 'Ticket not found or invalid.',
+        };
+    }
+
     private function buildPaymentObject(Ticket $ticket): array
     {
         $order = $ticket->order;
@@ -398,7 +465,7 @@ class EntranceController extends Controller
 
         EntranceAuditLog::create([
             'ticket_id' => $ticket?->id,
-            'validation_id' => $ticket?->validation_id ?? $request->input('token'),
+            'validation_id' => $ticket?->validation_id ?? substr((string) $request->input('token'), 0, 64),
             'action' => $action,
             'decision' => $decision ?? $action,
             'operator_id' => $request->input('operator_id', 0),

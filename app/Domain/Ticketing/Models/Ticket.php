@@ -5,6 +5,7 @@ namespace App\Domain\Ticketing\Models;
 use App\Domain\Event\Models\Event;
 use App\Domain\Shop\Models\Order;
 use App\Domain\Ticketing\Enums\TicketStatus;
+use App\Domain\Ticketing\Security\TicketTokenService;
 use App\Models\User;
 use Database\Factories\TicketFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -12,7 +13,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Str;
 
 /**
  * @see docs/mil-std-498/SSS.md CAP-TKT-005, CAP-TKT-006, CAP-TKT-011
@@ -20,6 +20,8 @@ use Illuminate\Support\Str;
  */
 #[Fillable([
     'status', 'checked_in_at', 'validation_id',
+    'validation_nonce_hash', 'validation_kid',
+    'validation_issued_at', 'validation_expires_at',
     'ticket_type_id', 'event_id', 'order_id',
     'owner_id', 'manager_id',
 ])]
@@ -31,10 +33,35 @@ class Ticket extends Model
     protected static function booted(): void
     {
         static::creating(function (Ticket $ticket): void {
+            if (config('tickets.signed_tokens_enabled')) {
+                return;
+            }
+
             if (empty($ticket->validation_id)) {
                 $ticket->validation_id = self::generateValidationId();
             }
         });
+    }
+
+    /**
+     * Issue a signed LCT1 token for this ticket and persist its nonce hash + metadata.
+     *
+     * Returns the QR payload to hand to PDF generation. The raw token is never stored.
+     *
+     * @see docs/mil-std-498/SDD.md §3.3.2
+     */
+    public function issueSignedToken(TicketTokenService $service): string
+    {
+        $issued = $service->issue($this);
+
+        $this->forceFill([
+            'validation_nonce_hash' => $issued->nonceHash,
+            'validation_kid' => $issued->kid,
+            'validation_issued_at' => $issued->issuedAt,
+            'validation_expires_at' => $issued->expiresAt,
+        ])->save();
+
+        return $issued->qrPayload;
     }
 
     /**
@@ -67,6 +94,8 @@ class Ticket extends Model
         return [
             'status' => TicketStatus::class,
             'checked_in_at' => 'datetime',
+            'validation_issued_at' => 'datetime',
+            'validation_expires_at' => 'datetime',
         ];
     }
 

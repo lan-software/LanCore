@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { edit as eventEdit } from '@/actions/App/Domain/Event/Http/Controllers/EventController';
 import OrderController from '@/actions/App/Domain/Shop/Http/Controllers/OrderController';
 import { show as adminTicketShow } from '@/actions/App/Domain/Ticketing/Http/Controllers/AdminTicketController';
@@ -14,9 +14,31 @@ import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import type { BreadcrumbItem } from '@/types';
 import type { Ticket } from '@/types/domain';
 
+interface ValidationToken {
+    kid: string | null;
+    issued_at: string | null;
+    expires_at: string | null;
+    status: 'Active' | 'Expired' | 'Revoked';
+}
+
 const props = defineProps<{
     ticket: Ticket;
+    validation_token?: ValidationToken;
 }>();
+
+function rotateToken(): void {
+    if (!confirm('Rotate the validation token for this ticket? The current QR code will stop working.')) {
+        return;
+    }
+
+    router.post(`/admin-tickets/${props.ticket.id}/rotate-token`, {}, { preserveScroll: true });
+}
+
+const tokenStatusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+    Active: 'default',
+    Expired: 'secondary',
+    Revoked: 'destructive',
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: adminTicketsIndex().url },
@@ -120,6 +142,41 @@ const statusVariant: Record<
                             </dd>
                         </div>
                     </dl>
+                </CardContent>
+            </Card>
+
+            <!-- Validation Token -->
+            <Card v-if="validation_token">
+                <CardHeader>
+                    <div class="flex items-center justify-between">
+                        <CardTitle>Validation Token</CardTitle>
+                        <Badge :variant="tokenStatusVariant[validation_token.status] ?? 'outline'">
+                            {{ validation_token.status }}
+                        </Badge>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <dt class="text-sm font-medium text-muted-foreground">Key ID</dt>
+                            <dd class="mt-1 font-mono text-sm">{{ validation_token.kid ?? '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-muted-foreground">Issued At</dt>
+                            <dd class="mt-1 text-sm">
+                                {{ validation_token.issued_at ? formatDate(validation_token.issued_at) : '—' }}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-muted-foreground">Expires At</dt>
+                            <dd class="mt-1 text-sm">
+                                {{ validation_token.expires_at ? formatDate(validation_token.expires_at) : '—' }}
+                            </dd>
+                        </div>
+                    </dl>
+                    <div class="mt-4">
+                        <Button variant="outline" size="sm" @click="rotateToken">Rotate token</Button>
+                    </div>
                 </CardContent>
             </Card>
 

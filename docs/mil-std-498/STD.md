@@ -574,6 +574,62 @@ This ensures complete isolation between test cases.
 | non-admin blocked on uploadLogo | Regular user | POST /settings/organization/logo | 403 Forbidden |
 | non-admin blocked on removeLogo | Regular user | DELETE /settings/organization/logo | 403 Forbidden |
 
+### 4.20 Signed Ticket Token Tests
+
+**File:** `tests/Feature/Ticketing/TicketTokenTest.php` and `tests/Unit/Ticketing/TicketTokenServiceTest.php`
+
+#### 4.20.1 Happy Path Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| valid token passes signature check | Issued LCT1 token, active key pair | Token string submitted to validate endpoint | `decision: "valid"`, ticket located by nonce hash |
+| token embedded in QR after fulfillment | Order fulfilled | Order fulfillment triggers PDF dispatch | `GenerateTicketPdf` dispatched with `qrPayload` matching LCT1 format; `validation_nonce_hash` set on ticket |
+| validate locates ticket by nonce hash only | Token present, ticket has nonce_hash | Validate called with valid token | Ticket found via HMAC lookup (not via validation_id) |
+
+#### 4.20.2 Signature Tamper Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| tampered body returns invalid_signature | Valid token | Modify body segment, resubmit | `decision: "invalid_signature"` |
+| tampered sig returns invalid_signature | Valid token | Replace sig with random base64url | `decision: "invalid_signature"` |
+| wrong kid returns unknown_kid | Valid token | Replace kid with non-existent kid value | `decision: "unknown_kid"` |
+| truncated token (missing segment) returns invalid | Any | Submit "LCT1.kid.body" (3 segments only) | `decision: "invalid"` |
+| non-LCT1 prefix returns invalid | Any | Submit old-style UUID validation_id | `decision: "invalid"` |
+
+#### 4.20.3 Expiry and Revocation Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| expired token returns expired | Token with exp in the past | Submit valid but expired token | `decision: "expired"` |
+| cancelled ticket returns revoked | Ticket cancelled (nonce_hash cleared) | Submit token that was valid before cancellation | `decision: "revoked"` |
+| token from before regeneration returns revoked | Token reissued (nonce rotated) | Submit old token after assignment change | `decision: "revoked"` (old nonce_hash no longer in DB) |
+| unknown ticket ID in body returns revoked | Body references non-existent tid | Submit structurally valid token, tid does not exist | `decision: "revoked"` |
+
+#### 4.20.4 Key Rotation Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| rotation generates new key pair | No keys present | Run `tickets:keys:rotate` | New .key file created, TicketKeyRing returns new kid as active |
+| new tokens use new kid after rotation | Key rotated | Issue new token | Token kid matches new active kid |
+| old tokens still validate after rotation | Token issued before rotation, old key retained | Submit pre-rotation token | `decision: "valid"` (retired key still in verify set) |
+| JWKS includes both active and retired keys | One rotation performed | GET /api/entrance/signing-keys | Response contains 2 JWKS entries |
+| JWKS requires authentication | Unauthenticated request | GET /api/entrance/signing-keys (no Bearer) | 401 Unauthorized |
+| JWKS returns 200 with active key | Active key present | GET /api/entrance/signing-keys (valid Bearer) | 200, `keys` array has at least one entry with `kty: "OKP"`, `crv: "Ed25519"` |
+
+#### 4.20.5 Admin Token Rotation and Cancel Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| admin rotateToken issues new LCT1 token | Admin, ticket with existing token | POST /admin/tickets/{id}/rotate-token | `validation_nonce_hash` changed, `validation_kid` updated, `GenerateTicketPdf` dispatched |
+| admin cancel clears token fields | Admin, ticket with active token | Ticket cancellation action | `validation_nonce_hash` NULL, `validation_kid` NULL, `validation_issued_at` NULL, `validation_expires_at` NULL |
+
+#### 4.20.6 Threat Model Simulation Tests
+
+| Test | Threat Scenario | Input | Expected Result |
+|------|----------------|-------|-----------------|
+| DB dump cannot produce valid token | Attacker has full DB dump | Attempt to construct token using validation_nonce_hash only (no private key) | `decision: "invalid_signature"` — signature cannot be reconstructed without private key |
+| QR photo leak cannot query DB record | Attacker has scanned QR string | Submit token but attempt to derive nonce_hash without pepper | Cannot derive matching nonce_hash — pepper not in token or DB |
+
 ### 4.15 CI Pipeline Verification
 
 **Scope:** GitHub Actions workflows (`.github/workflows/`)
@@ -609,6 +665,9 @@ This ensures complete isolation between test cases.
 | NTF-F-001..006 | Notification tests (4.4) |
 | ACH-F-001..007 | Achievement CRUD tests (4.12), notification tests (4.4.1) |
 | TKT-F-001..016 | Ticketing tests (4.5, 4.5.1) |
+| TKT-F-017..023 | Signed ticket token tests (4.20) |
+| SEC-014..020 | Signed ticket token tests (4.20) |
+| CAP-TKT-013..014 | Signed ticket token tests (4.20) |
 | SHP-F-003, SHP-F-015, SHP-F-016 | Shop/Payment tests (4.6) |
 | SHP-F-017 | User order views (4.6.2) |
 | VEN-F-001..003 | Venue tests (4.8) |

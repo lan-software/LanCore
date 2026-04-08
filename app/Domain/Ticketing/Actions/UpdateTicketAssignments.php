@@ -6,6 +6,7 @@ use App\Domain\Ticketing\Enums\CheckInMode;
 use App\Domain\Ticketing\Enums\TicketStatus;
 use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
 use App\Domain\Ticketing\Models\Ticket;
+use App\Domain\Ticketing\Security\TicketTokenService;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -17,20 +18,22 @@ use InvalidArgumentException;
  */
 class UpdateTicketAssignments
 {
+    public function __construct(
+        private readonly TicketTokenService $tokenService,
+    ) {}
+
     public function updateManager(Ticket $ticket, ?User $manager, int $performedBy): Ticket
     {
         $this->ensureNotCheckedIn($ticket);
 
-        $result = DB::transaction(function () use ($ticket, $manager): Ticket {
-            $ticket->update([
-                'manager_id' => $manager?->id,
-                'validation_id' => Ticket::generateValidationId(),
-            ]);
+        [$result, $payload] = DB::transaction(function () use ($ticket, $manager): array {
+            $ticket->update(['manager_id' => $manager?->id]);
+            $payload = $this->rotateTokenInternal($ticket);
 
-            return $ticket->fresh();
+            return [$ticket->fresh(), $payload];
         });
 
-        GenerateTicketPdf::dispatch($ticket->id);
+        $this->dispatchPdf($result, $payload);
 
         return $result;
     }
@@ -39,7 +42,7 @@ class UpdateTicketAssignments
     {
         $this->ensureNotCheckedIn($ticket);
 
-        $result = DB::transaction(function () use ($ticket, $user): Ticket {
+        [$result, $payload] = DB::transaction(function () use ($ticket, $user): array {
             $maxUsers = $ticket->ticketType->max_users_per_ticket;
             $currentCount = $ticket->users()->count();
 
@@ -48,12 +51,12 @@ class UpdateTicketAssignments
             }
 
             $ticket->users()->attach($user->id);
-            $ticket->update(['validation_id' => Ticket::generateValidationId()]);
+            $payload = $this->rotateTokenInternal($ticket);
 
-            return $ticket->fresh();
+            return [$ticket->fresh(), $payload];
         });
 
-        GenerateTicketPdf::dispatch($ticket->id);
+        $this->dispatchPdf($result, $payload);
 
         return $result;
     }
@@ -62,16 +65,36 @@ class UpdateTicketAssignments
     {
         $this->ensureNotCheckedIn($ticket);
 
-        $result = DB::transaction(function () use ($ticket, $user): Ticket {
+        [$result, $payload] = DB::transaction(function () use ($ticket, $user): array {
             $ticket->users()->detach($user->id);
-            $ticket->update(['validation_id' => Ticket::generateValidationId()]);
+            $payload = $this->rotateTokenInternal($ticket);
 
-            return $ticket->fresh();
+            return [$ticket->fresh(), $payload];
         });
 
-        GenerateTicketPdf::dispatch($ticket->id);
+        $this->dispatchPdf($result, $payload);
 
         return $result;
+    }
+
+    public function rotateToken(Ticket $ticket): void
+    {
+        $this->ensureNotCheckedIn($ticket);
+
+        $payload = $this->rotateTokenInternal($ticket);
+
+        $this->dispatchPdf($ticket->fresh() ?? $ticket, $payload);
+    }
+
+    private function rotateTokenInternal(Ticket $ticket): ?string
+    {
+        if (config('tickets.signed_tokens_enabled')) {
+            return $ticket->issueSignedToken($this->tokenService);
+        }
+
+        $ticket->update(['validation_id' => Ticket::generateValidationId()]);
+
+        return null;
     }
 
     public function checkIn(Ticket $ticket, int $performedBy, ?int $userId = null): Ticket
@@ -97,13 +120,11 @@ class UpdateTicketAssignments
                 ]);
             } else {
                 if ($userId === null) {
-                    // For single-user tickets, check in the only assigned user (or ticket itself)
                     $assignedUsers = $ticket->users;
 
                     if ($assignedUsers->count() === 1) {
                         $userId = $assignedUsers->first()->id;
                     } elseif ($assignedUsers->isEmpty()) {
-                        // No users assigned — just check in the ticket directly
                         $ticket->update([
                             'status' => TicketStatus::CheckedIn,
                             'checked_in_at' => now(),
@@ -129,6 +150,21 @@ class UpdateTicketAssignments
 
             return $ticket->fresh();
         });
+    }
+
+    private function dispatchPdf(Ticket $ticket, ?string $qrPayload): void
+    {
+        GenerateTicketPdf::dispatch($ticket->id, $qrPayload);
+    }
+
+    private function invalidateToken(Ticket $ticket): void
+    {
+        $ticket->forceFill([
+            'validation_nonce_hash' => null,
+            'validation_kid' => null,
+            'validation_issued_at' => null,
+            'validation_expires_at' => null,
+        ])->save();
     }
 
     private function ensureNotCheckedIn(Ticket $ticket): void

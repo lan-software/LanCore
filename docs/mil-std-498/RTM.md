@@ -24,9 +24,9 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 - **Gap** — No test coverage exists for this requirement
 
 **Statistics:**
-- Total SRS Requirements: 148 (added EVT-F-011, COMP-F-013..015, ORG-F-001..005, CAP-ORC-001..010, CAP-ORG-001..004)
-- Total Test Files: 121 (tests for new requirements pending per Workstream B)
-- Total Test Cases: 834 (new test cases documented in STD §4.16..4.18, pending implementation)
+- Total SRS Requirements: 162 (added TKT-F-017..023 +7, SEC-014..020 +7; prior total was 148)
+- Total Test Files: 121 + 2 pending (TicketTokenTest.php, TicketTokenServiceTest.php)
+- Total Test Cases: 834 + 22 pending (new test cases documented in STD §4.20)
 
 ---
 
@@ -64,6 +64,13 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 | TKT-F-014 | Multi-user assignment via ticket_user pivot | `Domain/Ticketing/Models/Ticket.php` | `Ticketing/GroupTicketTest.php` (3 tests) | Covered |
 | TKT-F-015 | Individual vs group check-in modes | `Domain/Ticketing/Enums/CheckInMode.php`, `Domain/Ticketing/Actions/UpdateTicketAssignments.php` | `Ticketing/GroupTicketTest.php` (3 tests) | Covered |
 | TKT-F-016 | Seat capacity = seats_per_user × max_users_per_ticket | `Domain/Event/Models/Event.php`, `Domain/Shop/Actions/` | `Ticketing/GroupTicketTest.php` (2 tests) | Covered |
+| TKT-F-017 | LCT1 signed token issuance (Ed25519, body, sig) | `Domain/Ticketing/Security/TicketTokenService.php`, `Domain/Ticketing/Security/TicketKeyRing.php` | `Ticketing/TicketTokenTest.php`, `Unit/Ticketing/TicketTokenServiceTest.php` | **Pending** |
+| TKT-F-018 | DB columns: validation_nonce_hash, validation_kid, validation_issued_at, validation_expires_at; no plaintext nonce stored | `Domain/Ticketing/Security/TicketTokenService.php` | `Ticketing/TicketTokenTest.php` (§4.20.1) | **Pending** |
+| TKT-F-019 | Token regeneration on UpdateTicketAssignments + rotateToken admin action | `Domain/Ticketing/Actions/UpdateTicketAssignments.php` | `Ticketing/TicketTokenTest.php` (§4.20.5) | **Pending** |
+| TKT-F-020 | Cancel clears nonce hash fields | `Domain/Ticketing/Actions/` (cancel path) | `Ticketing/TicketTokenTest.php` (§4.20.5) | **Pending** |
+| TKT-F-021 | JWKS endpoint GET /api/entrance/signing-keys | `Domain/Ticketing/Http/Controllers/SigningKeysController.php` | `Ticketing/TicketTokenTest.php` (§4.20.4) | **Pending** |
+| TKT-F-022 | `tickets:keys:rotate` Artisan command | `Console/Commands/RotateTicketKeysCommand.php` | `Ticketing/TicketTokenTest.php` (§4.20.4) | **Pending** |
+| TKT-F-023 | New validate error codes: invalid_signature, unknown_kid, expired, revoked | `Domain/Ticketing/Security/TicketTokenService.php` | `Ticketing/TicketTokenTest.php` (§4.20.2..4.20.3) | **Pending** |
 | TKT-F-010 | Admin ticket management views | `Domain/Ticketing/Http/Controllers/AdminTicketController.php` | `Ticketing/AdminTicketControllerTest.php` (6 tests) | Covered |
 | TKT-F-011 | Ticket locking | `Domain/Ticketing/Actions/UpdateTicketType.php` (locked field handling) | `Ticketing/TicketTypeCrudTest.php` (locked fields test) | Covered |
 | TKT-F-012 | Audit trails for types, categories, add-ons | Audit controllers | `Domain/Ticketing/TicketTypeAuditTest.php` (3), `TicketCategoryAuditTest.php` (3), `AddonAuditTest.php` (3) | Covered |
@@ -488,6 +495,15 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | CAP-ORG-002 | ORG-F-002 | Covered |
 | CAP-ORG-003 | ORG-F-003 | Covered |
 | CAP-ORG-004 | ORG-F-004 | Covered |
+| CAP-TKT-013 | TKT-F-017..020, TKT-F-022, TKT-F-023 | **Pending** |
+| CAP-TKT-014 | TKT-F-021 | **Pending** |
+| SEC-014 | TKT-F-017 (Ed25519, private key not in DB) | **Pending** |
+| SEC-015 | TKT-F-018 (no plaintext nonce/token in DB) | **Pending** |
+| SEC-016 | TKT-F-018 (HMAC-SHA256 nonce hash + pepper env var) | **Pending** |
+| SEC-017 | DBDD §4.4.2 (UNIQUE index on validation_nonce_hash) | **Pending** |
+| SEC-018 | TKT-F-023 (expired decision code) | **Pending** |
+| SEC-019 | TKT-F-022 (tickets:keys:rotate command, kid, retention) | **Pending** |
+| SEC-020 | TKT-F-021 (JWKS endpoint, Bearer auth) | **Pending** |
 
 ---
 
@@ -510,19 +526,28 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | COMP-F-014 | Competition | Join request resolution (approve/reject) | Medium | `Competition/JoinRequestTest.php` |
 | COMP-F-015 | Competition | Duplicate/capacity guards on join requests | Medium | `Competition/JoinRequestTest.php` |
 
-**Total: 13 gaps out of 148 requirements (91.2% coverage by requirement count)**
+| TKT-F-017 | Ticketing | LCT1 token issuance | High | `Ticketing/TicketTokenTest.php` |
+| TKT-F-018 | Ticketing | DB column constraints; no plaintext stored | High | `Ticketing/TicketTokenTest.php` |
+| TKT-F-019 | Ticketing | Token regen on assignment change + rotateToken | High | `Ticketing/TicketTokenTest.php` |
+| TKT-F-020 | Ticketing | Cancel clears token fields | High | `Ticketing/TicketTokenTest.php` |
+| TKT-F-021 | Ticketing | JWKS endpoint | High | `Ticketing/TicketTokenTest.php` |
+| TKT-F-022 | Ticketing | tickets:keys:rotate command | High | `Ticketing/TicketTokenTest.php` |
+| TKT-F-023 | Ticketing | New validate error codes | High | `Ticketing/TicketTokenTest.php` |
 
-*Note: TKT-F-009 deprecated and replaced by TKT-F-013..016 (4 new requirements, all now covered). COMP-F-013..015 (join request flow) are newly added and pending test implementation.*
+**Total: 20 gaps out of 162 requirements (87.7% coverage by requirement count)**
+
+*Note: TKT-F-009 deprecated and replaced by TKT-F-013..016 (4 new requirements, all now covered). COMP-F-013..015 (join request flow) are newly added and pending test implementation. TKT-F-017..023 and SEC-014..020 (signed ticket token scheme) are newly added and pending implementation.*
 
 ### Priority Order for Implementation
 
-1. **SHP-F-005** — PaymentProviderManager (architecture)
-2. **PRG-F-004** — Time slot notifications (user-facing)
-3. **NTF-F-003** — Push subscriptions (user-facing)
-4. **TKT-F-003** — Ticket groups (feature completeness)
-5. **NWS-F-006** — Article read analytics (analytics)
-6. **SHP-F-013** — CartItemAdded event (event architecture)
-7. **USR-F-010** — Appearance settings (UI preference)
-8. **USR-F-011** — Stripe customer (payment infrastructure)
-9. **USR-F-019** — usePermissions composable (frontend unit test)
-10. **USR-F-020** — Permission-based sidebar rendering (frontend component test)
+1. **TKT-F-017..023** — Signed ticket token scheme (security critical; blocks LanEntrance integration)
+2. **SHP-F-005** — PaymentProviderManager (architecture)
+3. **PRG-F-004** — Time slot notifications (user-facing)
+4. **NTF-F-003** — Push subscriptions (user-facing)
+5. **TKT-F-003** — Ticket groups (feature completeness)
+6. **NWS-F-006** — Article read analytics (analytics)
+7. **SHP-F-013** — CartItemAdded event (event architecture)
+8. **USR-F-010** — Appearance settings (UI preference)
+9. **USR-F-011** — Stripe customer (payment infrastructure)
+10. **USR-F-019** — usePermissions composable (frontend unit test)
+11. **USR-F-020** — Permission-based sidebar rendering (frontend component test)

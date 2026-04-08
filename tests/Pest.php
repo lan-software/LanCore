@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Ticketing\Security\TicketKeyRing;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -51,4 +52,32 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * Provision an isolated ticket signing key in a temp directory and switch the
+ * `tickets.*` config to use it. Returns the kid.
+ */
+function setUpTicketSigningKey(?string $kid = null): string
+{
+    $kid ??= 'test'.bin2hex(random_bytes(4));
+    $dir = sys_get_temp_dir().'/lan-ticket-keys-'.bin2hex(random_bytes(4));
+
+    if (! is_dir($dir)) {
+        mkdir($dir, 0700, true);
+    }
+
+    $keypair = sodium_crypto_sign_keypair();
+    file_put_contents($dir.'/'.$kid.'.key', $keypair);
+    chmod($dir.'/'.$kid.'.key', 0600);
+
+    config()->set('tickets.signed_tokens_enabled', true);
+    config()->set('tickets.pepper', 'test-pepper-'.bin2hex(random_bytes(8)));
+    config()->set('tickets.signing.keys_path', $dir);
+    config()->set('tickets.signing.active_kid', $kid);
+    config()->set('tickets.signing.verify_kids', [$kid]);
+
+    app()->forgetInstance(TicketKeyRing::class);
+
+    return $kid;
 }

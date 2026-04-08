@@ -4,11 +4,11 @@ namespace App\Domain\Ticketing\Jobs;
 
 use App\Domain\Ticketing\Models\Ticket;
 use App\Models\OrganizationSetting;
-use Barryvdh\DomPDF\Facade\Pdf;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,7 +20,10 @@ class GenerateTicketPdf implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private readonly int $ticketId) {}
+    public function __construct(
+        private readonly int $ticketId,
+        private readonly ?string $qrPayload = null,
+    ) {}
 
     public function handle(): void
     {
@@ -34,7 +37,7 @@ class GenerateTicketPdf implements ShouldQueue
             'order',
         ])->findOrFail($this->ticketId);
 
-        $qrBase64 = $this->generateQrCode($ticket->validation_id);
+        $qrBase64 = $this->generateQrCode($this->qrPayload ?? $ticket->validation_id);
         $org = OrganizationSetting::forInvoice();
 
         $pdf = Pdf::loadView('pdf.ticket', [
@@ -51,7 +54,7 @@ class GenerateTicketPdf implements ShouldQueue
     {
         $renderer = new ImageRenderer(
             new RendererStyle(300),
-            new SvgImageBackEnd(),
+            new SvgImageBackEnd,
         );
 
         $writer = new Writer($renderer);

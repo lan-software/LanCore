@@ -2,9 +2,11 @@
 
 namespace App\Domain\Ticketing\Http\Controllers;
 
+use App\Domain\Ticketing\Actions\UpdateTicketAssignments;
 use App\Domain\Ticketing\Http\Requests\AdminTicketIndexRequest;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -59,6 +61,34 @@ class AdminTicketController extends Controller
 
         return Inertia::render('admin-tickets/Show', [
             'ticket' => $ticket,
+            'validation_token' => [
+                'kid' => $ticket->validation_kid,
+                'issued_at' => $ticket->validation_issued_at?->toIso8601String(),
+                'expires_at' => $ticket->validation_expires_at?->toIso8601String(),
+                'status' => $this->tokenStatus($ticket),
+            ],
         ]);
+    }
+
+    public function rotateToken(Ticket $ticket, UpdateTicketAssignments $action): RedirectResponse
+    {
+        $this->authorize('update', $ticket);
+
+        $action->rotateToken($ticket);
+
+        return back()->with('success', 'Ticket token rotated.');
+    }
+
+    private function tokenStatus(Ticket $ticket): string
+    {
+        if ($ticket->validation_nonce_hash === null) {
+            return 'Revoked';
+        }
+
+        if ($ticket->validation_expires_at && $ticket->validation_expires_at->isPast()) {
+            return 'Expired';
+        }
+
+        return 'Active';
     }
 }

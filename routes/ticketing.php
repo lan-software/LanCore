@@ -50,4 +50,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin: Tickets Management
     Route::get('admin-tickets', [AdminTicketController::class, 'index'])->name('admin-tickets.index');
     Route::get('admin-tickets/{ticket}', [AdminTicketController::class, 'show'])->name('admin-tickets.show');
+    Route::post('admin-tickets/{ticket}/rotate-token', [AdminTicketController::class, 'rotateToken'])->name('admin-tickets.rotate-token');
 });
