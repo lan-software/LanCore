@@ -55,4 +55,7 @@ case "${ROLE}" in
 esac
 
 log "Exec supervisord with ${CONF}"
-exec su-exec www-data /usr/bin/supervisord -c "${CONF}"
+# supervisord itself must run as root so it can open /dev/stdout and /dev/stderr
+# (owned by the root-started container's PID 1). All supervised programs are
+# configured with `user=www-data` and therefore run as the unprivileged user.
+exec /usr/bin/supervisord -c "${CONF}"

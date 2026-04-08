@@ -130,10 +130,10 @@ LanBrackets, LanShout, LanHelp, and LanEntrance each ship their **own** Dockerfi
 | App | Base image | Octane | Horizon | Typical roles |
 |-----|-----------|--------|---------|---------------|
 | LanCore | `frankenphp:php8.5-alpine` | Yes | Yes | `web` + `worker` (split) or `all` |
-| LanBrackets | `frankenphp:php8.3-alpine` | Yes | No (plain `queue:work` + scheduler) | `web` + optional `worker` |
-| LanHelp | `frankenphp:php8.3-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
-| LanEntrance | `frankenphp:php8.3-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
-| LanShout | `frankenphp:php8.3-alpine` (after PHP 8.3 / Laravel 13 upgrade prerequisite) | No | No | `web` + optional `worker` |
+| LanBrackets | `frankenphp:php8.5-alpine` | Yes | No (plain `queue:work` + scheduler) | `web` + optional `worker` |
+| LanHelp | `frankenphp:php8.5-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
+| LanEntrance | `frankenphp:php8.5-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
+| LanShout | `frankenphp:php8.5-alpine` (after Laravel 13 upgrade prerequisite) | No | No | `web` + optional `worker` |
 
 All five images: non-root (`www-data`), pinned base image digests, healthcheck on `/up`, runtime secrets via env only.
 
@@ -186,7 +186,7 @@ Production network architecture (TLS termination, reverse proxy) is TBD.
 
 Production container images for LanCore and all satellite apps share a common security posture:
 
-- Supervisord and all application processes run as the unprivileged `www-data` user; `USER www-data` is set in the final image stage. The entrypoint drops privileges via `su-exec` before `exec`-ing supervisord.
+- All supervised application processes (Octane/FrankenPHP, Horizon / `queue:work`, the scheduler loop) are declared with `user=www-data` in the supervisor configs and therefore run as the unprivileged user. supervisord itself runs as PID 1 under root — this is required so it can open `/dev/stdout` and `/dev/stderr` for its child programs — but it has no network exposure and no external attack surface.
 - Base images are pinned by `@sha256:` digest to guarantee reproducible builds and to prevent silent upstream drift.
 - Runtime secrets (`APP_KEY`, database credentials, pepper for ticket token HMAC — see §5a.1, Stripe keys, S3 credentials) are injected exclusively through environment variables at container start; no secret is ever baked into a layer.
 - `expose_php=Off`, OPcache with `validate_timestamps=0`, and a tuned `memory_limit` are enforced via `docker/php/*.ini`.
