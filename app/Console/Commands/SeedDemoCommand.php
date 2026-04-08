@@ -4,6 +4,9 @@ namespace App\Console\Commands;
 
 use App\Domain\Achievements\Enums\GrantableEvent;
 use App\Domain\Achievements\Models\Achievement;
+use App\Domain\Announcement\Enums\AnnouncementAudience;
+use App\Domain\Announcement\Enums\AnnouncementPriority;
+use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Competition\Enums\CompetitionStatus;
 use App\Domain\Competition\Enums\CompetitionType;
 use App\Domain\Competition\Enums\ResultSubmissionMode;
@@ -95,6 +98,7 @@ class SeedDemoCommand extends Command
         $this->attempt('Shop Conditions', $results, fn () => $this->seedShopConditions());
         $this->attempt('Organization', $results, fn () => $this->seedOrganization());
         $this->attempt('Webhooks', $results, fn () => $this->seedWebhooks());
+        $this->attempt('Announcements', $results, fn () => $this->seedDemoAnnouncement());
 
         $this->newLine();
         $this->info('Seeding summary:');
@@ -1286,6 +1290,36 @@ class SeedDemoCommand extends Command
                 'event' => WebhookEvent::IntegrationAccessed,
                 'secret' => null,
                 'is_active' => true,
+            ]);
+        });
+
+        return true;
+    }
+
+    private function seedDemoAnnouncement(): bool
+    {
+        $marker = 'Welcome to the Lan-Software public demo!';
+
+        if (Announcement::query()->where('title', $marker)->exists()) {
+            return false;
+        }
+
+        $author = User::query()->where('email', 'admin@example.com')->first()
+            ?? User::query()->whereNotNull('email')->first();
+
+        if ($author === null) {
+            return false;
+        }
+
+        $this->components->task('Seeding demo announcement', function () use ($marker, $author): void {
+            Announcement::query()->create([
+                'title' => $marker,
+                'description' => 'This environment resets hourly. Feel free to explore — any changes will be wiped on the next reset.',
+                'priority' => AnnouncementPriority::Normal,
+                'audience' => AnnouncementAudience::All,
+                'event_id' => null,
+                'author_id' => $author->id,
+                'published_at' => now(),
             ]);
         });
 

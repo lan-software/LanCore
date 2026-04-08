@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Contracts\PermissionEnum;
+use App\Domain\Announcement\Services\ActiveAnnouncementsProvider;
 use App\Domain\Event\Enums\Permission as EventPermission;
 use App\Domain\Event\Models\Event;
 use App\Domain\Integration\Models\IntegrationApp;
@@ -96,6 +97,11 @@ class HandleInertiaRequests extends Middleware
                 ->all(),
             'pushSubscribed' => fn () => $user ? $user->pushSubscriptions()->exists() : false,
             'pushPromptDismissed' => fn () => (bool) $request->session()->get('push_prompt_dismissed', false),
+            'demoBanner' => fn () => config('app.demo') ? [
+                'message' => config('app.demo_banner_message'),
+                'mailpit_url' => config('app.demo_mailpit_url'),
+            ] : null,
+            'announcements' => fn () => app(ActiveAnnouncementsProvider::class)->forCurrentUser($request->user()),
             'unreadNotificationsCount' => fn () => $user ? $user->unreadNotifications()->whereNull('archived_at')->count() : 0,
             'recentNotifications' => fn () => $user
                 ? $user->notifications()->whereNull('archived_at')->latest()->limit(5)->get()->map(fn ($n) => [

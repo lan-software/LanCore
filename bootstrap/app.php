@@ -2,9 +2,11 @@
 
 use App\Domain\Integration\Http\Middleware\AuthenticateIntegration;
 use App\Http\Middleware\AddRequestId;
+use App\Http\Middleware\EnforceDemoGuardrails;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RecordDemoActivity;
 use App\Http\Middleware\TrackHttpMetrics;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -32,6 +34,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             TrackHttpMetrics::class,
             HandleAppearance::class,
+            EnforceDemoGuardrails::class,
+            RecordDemoActivity::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);

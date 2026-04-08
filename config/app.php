@@ -123,4 +123,22 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Public Demo Mode
+    |--------------------------------------------------------------------------
+    |
+    | When the application is running as a public demo instance, destructive
+    | self-service actions (registration, profile edits, password changes,
+    | account deletion) are blocked and a persistent banner is rendered via
+    | Inertia shared props.
+    |
+    */
+
+    'demo' => env('APP_DEMO', false),
+
+    'demo_banner_message' => env('APP_DEMO_BANNER_MESSAGE', 'This is a public demo — resets hourly. Please don\'t enter real data.'),
+
+    'demo_mailpit_url' => env('APP_DEMO_MAILPIT_URL'),
+
 ];

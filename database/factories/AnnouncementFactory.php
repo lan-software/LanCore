@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Domain\Announcement\Enums\AnnouncementAudience;
 use App\Domain\Announcement\Enums\AnnouncementPriority;
 use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Event\Models\Event;
@@ -24,6 +25,7 @@ class AnnouncementFactory extends Factory
             'title' => fake()->sentence(4),
             'description' => fake()->paragraph(),
             'priority' => AnnouncementPriority::Normal,
+            'audience' => AnnouncementAudience::LancoreOnly,
             'event_id' => Event::factory(),
             'author_id' => User::factory(),
             'published_at' => null,
@@ -48,6 +50,13 @@ class AnnouncementFactory extends Factory
     {
         return $this->state(fn (array $attributes): array => [
             'priority' => AnnouncementPriority::Emergency,
+        ]);
+    }
+
+    public function audience(AnnouncementAudience $audience): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'audience' => $audience,
         ]);
     }
 }

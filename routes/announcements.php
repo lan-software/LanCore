@@ -3,7 +3,13 @@
 use App\Domain\Announcement\Http\Controllers\AnnouncementController;
 use App\Domain\Announcement\Http\Controllers\AnnouncementDismissalController;
 use App\Domain\Announcement\Http\Controllers\PublicAnnouncementController;
+use App\Domain\Announcement\Http\Controllers\PublicAnnouncementFeedController;
 use Illuminate\Support\Facades\Route;
+
+// Public JSON feed consumed by satellite apps.
+Route::get('/api/announcements/feed', PublicAnnouncementFeedController::class)
+    ->middleware('throttle:60,1')
+    ->name('announcements.feed');
 
 // Public announcement archive page (authenticated)
 Route::middleware(['auth', 'verified'])->group(function () {

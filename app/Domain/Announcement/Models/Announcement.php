@@ -2,6 +2,7 @@
 
 namespace App\Domain\Announcement\Models;
 
+use App\Domain\Announcement\Enums\AnnouncementAudience;
 use App\Domain\Announcement\Enums\AnnouncementPriority;
 use App\Domain\Event\Models\Event;
 use App\Models\User;
@@ -16,7 +17,7 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable([
-    'title', 'description', 'priority', 'event_id', 'author_id', 'published_at',
+    'title', 'description', 'priority', 'audience', 'event_id', 'author_id', 'published_at',
 ])]
 class Announcement extends Model implements AuditableContract
 {
@@ -37,6 +38,7 @@ class Announcement extends Model implements AuditableContract
     {
         return [
             'priority' => AnnouncementPriority::class,
+            'audience' => AnnouncementAudience::class,
             'published_at' => 'datetime',
         ];
     }

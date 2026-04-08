@@ -31,6 +31,24 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+        $this->configureDemoMode();
+    }
+
+    /**
+     * Disable the Fortify registration feature when the application runs in demo mode.
+     */
+    private function configureDemoMode(): void
+    {
+        if (! config('app.demo')) {
+            return;
+        }
+
+        config([
+            'fortify.features' => array_values(array_filter(
+                (array) config('fortify.features'),
+                fn ($feature): bool => $feature !== Features::registration(),
+            )),
+        ]);
     }
 
     /**
