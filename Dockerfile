@@ -7,12 +7,14 @@
 # Three-stage build:
 #   1. deps      — composer install + Wayfinder TypeScript generation
 #   2. frontend  — Vite asset build (Node 22)
-#   3. production — FrankenPHP + Laravel Octane runtime
+#   3. production — inherits ghcr.io/lan-software/lanbase (FrankenPHP + Octane)
 #
-# Runtime is controlled by two environment variables (see docker/entrypoint.sh):
+# Runtime is controlled by environment variables handled by LanBase's baked
+# entrypoint. See LanBase/README.md for the full contract:
 #
-#   ROLE          = web | worker | all     (default: all)
-#   SKIP_MIGRATE  = 0 | 1                  (default: 1 — safe)
+#   FLAVOR        = octane | server       (LanCore: octane — the default)
+#   ROLE          = web | worker | all    (default: all)
+#   SKIP_MIGRATE  = 0 | 1                 (default: 1 — safe)
 #
 # Exactly ONE container in a multi-container deployment must run with
 # SKIP_MIGRATE=0 so the schema is migrated exactly once. All others must
@@ -22,10 +24,9 @@
 # S3 credentials) MUST be injected via environment variables by the
 # orchestrator. They are never baked into any image layer.
 #
-# NOTE on base image pinning: the tags below should be replaced by immutable
-# @sha256:... digests before tagging a production release. Digest pinning is
-# required by SSS ENV-DEP-010 but is intentionally left as a release-time
-# operation so the Dockerfile remains readable in source control.
+# NOTE on base image pinning: the LanBase tag below should be replaced by an
+# immutable :php8.5-sha-<shortsha> tag (or @sha256:... digest) before tagging
+# a production release. Digest pinning is required by SSS ENV-DEP-010.
 
 # =============================================================================
 # Stage 1: PHP dependency install + Wayfinder type generation
@@ -86,9 +87,9 @@ RUN printf '#!/bin/sh\nexit 0\n' > /usr/local/bin/php && chmod +x /usr/local/bin
 RUN npm run build
 
 # =============================================================================
-# Stage 3: Production image (FrankenPHP + Octane)
+# Stage 3: Production image (LanBase = FrankenPHP + Octane runtime)
 # =============================================================================
-FROM dunglas/frankenphp:php8.5-alpine AS production
+FROM ghcr.io/lan-software/lanbase:php8.5 AS production
 
 LABEL org.opencontainers.image.title="LanCore" \
       org.opencontainers.image.description="LanCore — LAN party management application" \
@@ -96,70 +97,13 @@ LABEL org.opencontainers.image.title="LanCore" \
       org.opencontainers.image.source="https://github.com/lan-software/lancore" \
       org.opencontainers.image.vendor="Lan-Software.de" \
       org.opencontainers.image.authors="Markus Kohn <post@markus-kohn.de>" \
-      org.opencontainers.image.licenses="AGPL-3.0" \
-      org.opencontainers.image.base.name="dunglas/frankenphp:php8.5-alpine"
+      org.opencontainers.image.licenses="AGPL-3.0"
 
-# System dependencies. su-exec lets entrypoint.sh drop from root to www-data
-# before exec'ing supervisord; curl is retained for the HEALTHCHECK probe.
-RUN apk add --no-cache supervisor curl su-exec
-
-# PHP extensions — install-php-extensions resolves all transitive deps.
-RUN install-php-extensions \
-    pdo_pgsql \
-    pgsql \
-    bcmath \
-    mbstring \
-    exif \
-    pcntl \
-    zip \
-    gd \
-    opcache \
-    intl \
-    redis
-
-# PHP production configuration
-COPY docker/php/php.ini     /usr/local/etc/php/conf.d/app.ini
-COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
-
-# FrankenPHP Caddyfile
-COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
-
-# Supervisor configs — one combined + two split-role configs.
-# The ROLE env var in entrypoint.sh selects which one runs.
-COPY docker/supervisor/supervisord.conf        /etc/supervisor/conf.d/supervisord.conf
-COPY docker/supervisor/supervisord-web.conf    /etc/supervisor/conf.d/supervisord-web.conf
-COPY docker/supervisor/supervisord-worker.conf /etc/supervisor/conf.d/supervisord-worker.conf
-
-# Entrypoint
-COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-WORKDIR /var/www/html
-
-# Copy application from build stages
+# Copy application from build stages. LanBase provides the runtime; this
+# image just layers in the app code and compiled assets.
 COPY --from=deps     /app              /var/www/html
 COPY --from=frontend /app/public/build /var/www/html/public/build
 
-# Permissions + runtime dirs for supervisor.
-RUN mkdir -p storage/framework/sessions storage/framework/views \
-             storage/framework/cache storage/logs bootstrap/cache \
-             /var/log/supervisor /var/run/supervisor \
- && chown -R www-data:www-data storage bootstrap/cache /var/log/supervisor /var/run/supervisor
-
-EXPOSE 80 443
-
-# Healthcheck hits Laravel's built-in /up endpoint. Start period covers
-# Octane cold boot plus an optional one-shot migration on the migrator
-# container.
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-    CMD curl -fsS http://localhost/up || exit 1
-
-# Default tunables — overridable at runtime via `docker run -e`.
-ENV ROLE=all \
-    SKIP_MIGRATE=1 \
-    OCTANE_WORKERS=auto \
-    OCTANE_MAX_REQUESTS=500
-
-# The entrypoint itself needs root briefly (chown of runtime dirs) then
-# drops privileges to www-data via su-exec before supervisord starts.
-ENTRYPOINT ["/entrypoint.sh"]
+# Fix ownership of runtime-writable dirs. Everything else (PHP, extensions,
+# supervisor, entrypoint, healthcheck, ENV defaults) is inherited from LanBase.
+RUN chown -R www-data:www-data storage bootstrap/cache
