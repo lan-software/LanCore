@@ -133,7 +133,7 @@ LanBrackets, LanShout, LanHelp, and LanEntrance each ship their **own** Dockerfi
 | LanBrackets | `frankenphp:php8.5-alpine` | Yes | No (plain `queue:work` + scheduler) | `web` + optional `worker` |
 | LanHelp | `frankenphp:php8.5-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
 | LanEntrance | `frankenphp:php8.5-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
-| LanShout | `frankenphp:php8.5-alpine` (after Laravel 13 upgrade prerequisite) | No | No | `web` + optional `worker` |
+| LanShout | `frankenphp:php8.5-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
 
 All five images: non-root (`www-data`), pinned base image digests, healthcheck on `/up`, runtime secrets via env only.
 
