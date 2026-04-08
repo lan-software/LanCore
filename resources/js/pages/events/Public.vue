@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { CalendarDays, MapPin } from 'lucide-vue-next';
 import BannerCarousel from '@/components/BannerCarousel.vue';
+import PublicTopbar from '@/components/PublicTopbar.vue';
 import {
     Card,
     CardContent,
@@ -9,7 +10,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { login, register } from '@/routes';
 import type { Event } from '@/types/domain';
 
 interface PaginatedEvents {
@@ -23,9 +23,20 @@ interface PaginatedEvents {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
-defineProps<{
-    events: PaginatedEvents;
-}>();
+const props = withDefaults(
+    defineProps<{
+        events: PaginatedEvents;
+        mode?: 'upcoming' | 'past';
+    }>(),
+    { mode: 'upcoming' },
+);
+
+const isPast = props.mode === 'past';
+const pageTitle = isPast ? 'Past Events' : 'Upcoming Events';
+const emptyTitle = isPast ? 'No past events' : 'No upcoming events';
+const emptyHint = isPast
+    ? 'Past events will appear here once they have ended.'
+    : 'Check back later for new events.';
 
 function formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString(undefined, {
@@ -40,42 +51,16 @@ function formatDate(dateString: string): string {
 </script>
 
 <template>
-    <Head title="Upcoming Events" />
+    <Head :title="pageTitle" />
 
-    <div class="min-h-screen bg-[#FDFDFC] dark:bg-[#0a0a0a]">
-        <!-- Header -->
-        <header class="border-b bg-white dark:bg-[#161615]">
-            <div
-                class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4"
-            >
-                <h1 class="text-xl font-semibold text-foreground">
-                    Upcoming Events
-                </h1>
-                <nav class="flex items-center gap-4">
-                    <Link
-                        v-if="$page.props.auth.user"
-                        href="/dashboard"
-                        class="text-sm text-muted-foreground hover:text-foreground"
-                    >
-                        Dashboard
-                    </Link>
-                    <template v-else>
-                        <Link
-                            :href="login()"
-                            class="text-sm text-muted-foreground hover:text-foreground"
-                        >
-                            Log in
-                        </Link>
-                        <Link
-                            :href="register()"
-                            class="text-sm text-muted-foreground hover:text-foreground"
-                        >
-                            Register
-                        </Link>
-                    </template>
-                </nav>
-            </div>
-        </header>
+    <div class="min-h-screen bg-background text-foreground">
+        <PublicTopbar />
+
+        <div class="mx-auto max-w-6xl px-6 pt-10">
+            <h1 class="text-2xl font-semibold text-foreground">
+                {{ pageTitle }}
+            </h1>
+        </div>
 
         <!-- Content -->
         <main class="mx-auto max-w-6xl px-6 py-10">
@@ -85,18 +70,22 @@ function formatDate(dateString: string): string {
             >
                 <CalendarDays class="mb-4 size-12 text-muted-foreground/50" />
                 <h2 class="text-lg font-medium text-foreground">
-                    No upcoming events
+                    {{ emptyTitle }}
                 </h2>
                 <p class="mt-1 text-sm text-muted-foreground">
-                    Check back later for new events.
+                    {{ emptyHint }}
                 </p>
             </div>
 
             <div v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                <Card
+                <Link
                     v-for="event in events.data"
                     :key="event.id"
-                    class="flex flex-col overflow-hidden"
+                    :href="`/events/${event.id}/public`"
+                    class="block transition hover:opacity-90"
+                >
+                <Card
+                    class="flex h-full flex-col overflow-hidden"
                 >
                     <BannerCarousel
                         v-if="event.banner_image_urls.length > 0"
@@ -135,6 +124,7 @@ function formatDate(dateString: string): string {
                         {{ formatDate(event.end_date) }}
                     </CardFooter>
                 </Card>
+                </Link>
             </div>
 
             <!-- Pagination -->

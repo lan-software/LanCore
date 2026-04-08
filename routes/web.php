@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', WelcomeController::class)->name('home');
 
-Route::get('upcoming-events', PublicEventController::class)->name('events.public');
+Route::get('upcoming-events', [PublicEventController::class, 'index'])->name('events.public');
+Route::get('past-events', [PublicEventController::class, 'past'])->name('events.public.past');
+Route::get('events/{event}/public', [PublicEventController::class, 'show'])->name('events.public.show');
 
 Route::get('files/{path}', StorageFileController::class)
     ->where('path', '.*')

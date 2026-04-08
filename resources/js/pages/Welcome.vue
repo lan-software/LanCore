@@ -19,6 +19,7 @@ import AppLogo from '@/components/AppLogo.vue';
 import BannerCarousel from '@/components/BannerCarousel.vue';
 import NavUser from '@/components/NavUser.vue';
 import NotificationBell from '@/components/NotificationBell.vue';
+import PublicTopbar from '@/components/PublicTopbar.vue';
 import SeatMapCanvas from '@/components/SeatMapCanvas.vue';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -35,6 +36,7 @@ const props = withDefaults(
     defineProps<{
         canRegister: boolean;
         nextEvent: Event | null;
+        eventLabel?: string;
         latestNews: NewsArticle[];
         announcements: Announcement[];
         dismissedAnnouncementIds: number[];
@@ -56,6 +58,7 @@ const props = withDefaults(
     }>(),
     {
         canRegister: true,
+        eventLabel: 'Next Event',
         latestNews: () => [],
         announcements: () => [],
         dismissedAnnouncementIds: () => [],
@@ -140,8 +143,9 @@ function resolveIcon(name: string | null): Component {
     <Head title="Welcome" />
 
     <div class="flex min-h-screen flex-col bg-background text-foreground">
-        <!-- Header -->
-        <header class="border-b">
+        <PublicTopbar :can-register="canRegister" />
+        <!-- Header (removed: replaced by <PublicTopbar />) -->
+        <header v-if="false" class="border-b">
             <Collapsible v-model:open="mobileMenuOpen" class="md:hidden">
                 <div
                     class="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6"
@@ -170,6 +174,20 @@ function resolveIcon(name: string | null): Component {
                     <nav
                         class="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:px-6"
                     >
+                        <Link
+                            href="/upcoming-events"
+                            class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
+                        >
+                            <Calendar class="size-4" />
+                            Upcoming Events
+                        </Link>
+                        <Link
+                            href="/past-events"
+                            class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
+                        >
+                            <Clock class="size-4" />
+                            Past Events
+                        </Link>
                         <Link
                             :href="shopIndex().url"
                             class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
@@ -234,6 +252,20 @@ function resolveIcon(name: string | null): Component {
                 <AppLogo />
                 <nav class="flex items-center gap-4">
                     <Link
+                        href="/upcoming-events"
+                        class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        <Calendar class="size-4" />
+                        Upcoming Events
+                    </Link>
+                    <Link
+                        href="/past-events"
+                        class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        <Clock class="size-4" />
+                        Past Events
+                    </Link>
+                    <Link
                         :href="shopIndex().url"
                         class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
@@ -293,7 +325,7 @@ function resolveIcon(name: string | null): Component {
                             <p
                                 class="text-sm font-medium tracking-wider text-muted-foreground uppercase"
                             >
-                                Next Event
+                                {{ eventLabel }}
                             </p>
                             <h1 class="mt-2 text-4xl font-bold tracking-tight">
                                 {{ nextEvent.name }}
