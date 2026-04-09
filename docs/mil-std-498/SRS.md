@@ -421,6 +421,26 @@ The LanCore CSCI shall support the following operational states:
 | ORG-F-004 | The software shall cache the `organization` shared prop under cache key `inertia.organization` with a 1-hour TTL and invalidate this cache whenever `OrganizationSettingsController::update`, `uploadLogo`, or `removeLogo` is called |
 | ORG-F-005 | The software shall support logo upload to the `public` disk and return a signed URL; logo removal shall delete the file and null the setting |
 
+#### 3.2.19 Integration Client Library CSCI (CSCI-ICLIB)
+
+**Package:** `lan-software/lancore-client` (standalone Composer package, separate repository, published on Packagist)
+
+**Primary components:** `LanCoreClient`, `EntranceClient` (opt-in sub-client), `LanCoreUser` DTO, exception hierarchy, `VerifyLanCoreWebhook` middleware, `HandlesLanCore*Webhook` abstract controllers (one per event), `LanCoreServiceProvider`.
+
+This CSCI is consumed by all Lan\* satellite applications (LanBrackets, LanEntrance, LanShout, LanHelp, LanChart, LanBase) as the canonical LanCore Integration API client. It replaces per-satellite implementations of `app/Services/LanCoreClient.php`, duplicated webhook verification middleware, and ad-hoc exception handling.
+
+| Req ID | Requirement |
+|--------|------------|
+| ICLIB-F-001 | The package shall expose a `LanCoreClient` service with at least the following public methods: `ssoAuthorizeUrl(): string`, `exchangeCode(string $code): LanCoreUser`, `resolveUserById(int $id): LanCoreUser`, `resolveUserByEmail(string $email): LanCoreUser`, `currentUser(): LanCoreUser` |
+| ICLIB-F-002 | The package shall expose a `LanCoreUser` DTO as the canonical return type for all user-returning client methods, containing at minimum: `id: int`, `username: string`, `email: ?string`, `locale: ?string`, `avatar: ?string`, `roles: string[]`, `createdAt: ?CarbonImmutable` |
+| ICLIB-F-003 | The package shall expose the following exception hierarchy, all extending a common `LanCoreException` base: `LanCoreDisabledException` (raised when `config('lancore.enabled') === false`), `LanCoreUnavailableException` (raised on connection failure or HTTP 5xx), `LanCoreRequestException` (raised on HTTP 4xx, exposing a `statusCode` property), `InvalidLanCoreUserException` (raised on malformed user payload) |
+| ICLIB-F-004 | The package shall provide a `VerifyLanCoreWebhook` Laravel middleware that verifies the `X-Webhook-Signature` header as `sha256=<hex>` against `hash_hmac('sha256', $rawBody, config('lancore.webhooks.secret'))`, rejects requests whose `X-Webhook-Event` is not in the controller's allowlist, and bypasses verification when the configured secret is an empty string (local development only) |
+| ICLIB-F-005 | The package shall provide one abstract invokable controller per webhook event type (`HandlesLanCoreUserRegisteredWebhook`, `HandlesLanCoreUserRolesUpdatedWebhook`, `HandlesLanCoreProfileUpdatedWebhook`, `HandlesLanCoreAnnouncementPublishedWebhook`, `HandlesLanCoreNewsArticlePublishedWebhook`, `HandlesLanCoreEventPublishedWebhook`, `HandlesLanCoreTicketPurchasedWebhook`, `HandlesLanCoreIntegrationAccessedWebhook`), each receiving a typed payload DTO specific to its event and exposing template-method hooks (`resolveUser`, `handle`) that satellites implement with their own domain logic |
+| ICLIB-F-006 | The package shall provide an opt-in `$client->entrance()` sub-client returning an `EntranceClient` with methods `validate`, `confirmCheckin`, `verifyCheckin`, `confirmPayment`, `submitOverride`, `searchAttendees`, `stats`, `events`, `fetchSigningKeys`; the `fetchSigningKeys` method shall cache results under key `lancore.jwks` in the configured cache store with TTL from `config('lancore.entrance.signing_keys_cache_ttl')`; the sub-client shall raise a `LanCoreDisabledException` variant when `config('lancore.entrance.enabled') === false` |
+| ICLIB-F-007 | The package shall ship a `LanCoreServiceProvider` that: merges and publishes `config/lancore.php`, binds `LanCoreClient` as a singleton resolving config at first use (Octane-safe — no request state captured at bind time), registers the `VerifyLanCoreWebhook` middleware under alias `lancore.webhook`, and throws `LanCoreDisabledException` from the client early when `config('lancore.enabled') === false` |
+| ICLIB-F-008 | The package shall retry transient HTTP failures using Laravel's `Http::retry($retries, $delayMs)` with values from `config('lancore.http.retries')` and `config('lancore.http.retry_delay')`, defaulting to 2 retries and 100 ms |
+| ICLIB-F-009 | The package shall expose a `LanCoreClient::fake()` factory for use in satellite test suites that registers `Http::fake()` responses and returns an assertion API sufficient to verify outbound request shape without a live LanCore instance |
+
 ### 3.3 CSCI External Interface Requirements
 
 See [IRS](IRS.md) for detailed external interface requirements.
@@ -532,6 +552,7 @@ Additional CSCI-level requirements:
 | CAP-COMP-* | COMP-F-* |
 | CAP-ORC-* | ORC-F-* |
 | CAP-ORG-* | ORG-F-* |
+| CAP-ICLIB-001..005 | ICLIB-F-001..009 |
 
 ---
 

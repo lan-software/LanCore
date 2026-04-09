@@ -642,6 +642,58 @@ This ensures complete isolation between test cases.
 | Docker pipeline executes | `docker-publish.yml` builds multi-platform image and pushes to GHCR |
 | All pipelines gate merges | Pull requests cannot merge with failing required status checks |
 
+### 4.21 Integration Client Library Tests
+
+**Package:** `lan-software/lancore-client` (separate repository; tests executed in the package's own CI pipeline using Pest + `Http::fake()`)
+
+These qualification tests trace to CAP-ICLIB-001..005 and ICLIB-F-001..006. They exercise the consumer-side contract that every Lan\* satellite relies on. They run in the package repository rather than in LanCore, but are enumerated here because the package is a system-level CSCI of the Lan Software ecosystem.
+
+#### 4.21.1 LanCoreClient Transport Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| exchange code returns LanCoreUser DTO | `Http::fake` returns 200 with valid user payload | `$client->exchangeCode('abc')` | Returns `LanCoreUser` with populated id, username, email, roles, locale, avatar |
+| exchange code throws InvalidLanCoreUserException on malformed payload | `Http::fake` returns 200 with missing `id` field | `$client->exchangeCode('abc')` | `InvalidLanCoreUserException` thrown |
+| exchange code throws LanCoreRequestException on 4xx | `Http::fake` returns 400 | `$client->exchangeCode('bad')` | `LanCoreRequestException` with `statusCode === 400` |
+| exchange code throws LanCoreUnavailableException on 5xx | `Http::fake` returns 503 | `$client->exchangeCode('abc')` | `LanCoreUnavailableException` thrown |
+| exchange code throws LanCoreUnavailableException on connection failure | `Http::fake` throws ConnectionException | `$client->exchangeCode('abc')` | `LanCoreUnavailableException` thrown |
+| client throws LanCoreDisabledException when disabled | `config('lancore.enabled') === false` | any client call | `LanCoreDisabledException` thrown before any HTTP attempt |
+| client applies configured retries | `Http::fake` returns 500 twice then 200 | `$client->exchangeCode('abc')` | Succeeds on third attempt; exactly three outbound requests recorded |
+| client sends Bearer token from config | `config('lancore.token') === 'xyz'` | any client call | Outbound request has `Authorization: Bearer xyz` |
+| resolveUser by id returns DTO | `Http::fake` returns 200 | `$client->resolveUser(id: 42)` | Returns `LanCoreUser` with `id === 42` |
+| resolveUser by email returns DTO | `Http::fake` returns 200 | `$client->resolveUser(email: 'a@b')` | Returns `LanCoreUser` with `email === 'a@b'` |
+
+#### 4.21.2 Webhook Verification Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| middleware accepts valid HMAC signature | `LANCORE_WEBHOOK_SECRET` set; request body HMAC-SHA256 matches `X-Webhook-Signature` header | POST with correct signature | Middleware passes request through |
+| middleware rejects invalid HMAC signature | Valid secret; tampered body | POST with stale signature | 401 response; request does not reach controller |
+| middleware rejects missing signature header | Valid secret | POST with no signature | 401 response |
+| middleware rejects disallowed event header | Signature valid; `X-Webhook-Event` not in controller's allowlist | POST | 400 response |
+| middleware accepts signature-less requests when secret empty | `LANCORE_WEBHOOK_SECRET` is empty string | POST with no signature | Middleware passes request through (local dev bypass) |
+
+#### 4.21.3 Abstract Webhook Controller Tests
+
+Parameterised across all eight webhook event types (`user.registered`, `user.roles_updated`, `user.profile_updated`, `announcement.published`, `news_article.published`, `event.published`, `ticket.purchased`, `integration.accessed`):
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| abstract controller dispatches typed payload DTO | Subclass implements `handle()` hook | POST with valid signed payload for event X | Subclass receives typed payload DTO matching event X's schema |
+| abstract controller returns 202 when resolveUser returns null | Subclass's `resolveUser` returns `null` (UserRolesUpdated only) | POST with valid payload | 202 `{status: user_not_found}` |
+| abstract controller returns 200 on successful handle | Subclass's `handle` completes without exception | POST with valid payload | 200 `{status: ok}` |
+| abstract controller propagates handler exceptions | Subclass's `handle` throws | POST with valid payload | Exception propagates to Laravel exception handler |
+
+#### 4.21.4 Entrance Sub-Client Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| validate ticket returns decision DTO | `Http::fake` returns 200 valid decision | `$client->entrance()->validate($token)` | Returns `CheckinResult` with `decision === 'valid'` |
+| validate ticket propagates LanCoreUnavailableException on 5xx | `Http::fake` returns 503 | `$client->entrance()->validate($token)` | `LanCoreUnavailableException` thrown |
+| JWKS is cached within TTL | First call fetches and caches; second call within TTL | Two consecutive `fetchSigningKeys()` | Exactly one outbound HTTP request recorded |
+| JWKS cache miss after TTL expiry | First call caches; TTL elapses; second call | Two consecutive `fetchSigningKeys()` spanning TTL | Two outbound HTTP requests recorded |
+| entrance sub-client unavailable when not enabled | `config('lancore.entrance.enabled') === false` | `$client->entrance()` | Throws or returns guard object that rejects all calls |
+
 ### 4.19 Demo Mode Tests
 
 **File:** `tests/Feature/Demo/`
@@ -679,6 +731,7 @@ This ensures complete isolation between test cases.
 | EVT-F-011 | My Pages event selector tests (4.17) |
 | ORG-F-001..005 | Organization settings tests (4.18) |
 | SSS 3.1 Required States (Demo) | Demo mode tests (4.19) |
+| CAP-ICLIB-001..005, ICLIB-F-001..006 | Integration Client Library tests (4.21) |
 
 ---
 

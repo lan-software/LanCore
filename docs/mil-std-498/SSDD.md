@@ -147,6 +147,7 @@ All five images: non-root (`www-data`), pinned base image digests, healthcheck o
 | Cache | Redis 7+ | Caching, sessions, rate limiting | Yes (shared instance) |
 | Object Storage | S3-compatible (Garage) | File and image storage | No (LanCore only) |
 | Mail | SMTP (Mailpit in dev) | Transactional email delivery | Yes (shared Mailpit) |
+| Integration Client Library | Composer package `lan-software/lancore-client` | Shared HTTP client, webhook verification, SSO exchange, and entrance sub-client consumed by all Lan\* satellites in place of per-app implementations | Published on Packagist; consumed via `composer require` in each satellite |
 
 ---
 
@@ -163,6 +164,8 @@ In development, all app containers and shared infrastructure services communicat
 | Any app | Mailpit SMTP | `infrastructure-mailpit` | 1025 | TCP (SMTP) |
 | Any app | LanCore | `lancore.test` | 80 | HTTP |
 | LanCore | Garage S3 | `garage` | 3900 | HTTP (S3 API) |
+
+Satellite-to-LanCore HTTP communication (SSO exchange, user resolution, entrance operations, webhook receipt) is not implemented independently in each satellite. All five satellites (LanBrackets, LanEntrance, LanShout, LanHelp, and the forthcoming LanChart / LanBase) route their LanCore interactions through the shared `lan-software/lancore-client` Composer package, which provides the `LanCoreClient` service, `VerifyLanCoreWebhook` middleware, and abstract webhook controllers. See §5.4 for the client library architecture.
 
 ### 4.2 Scaling Considerations
 
@@ -194,6 +197,81 @@ Production container images for LanCore and all satellite apps share a common se
 - The `/up` healthcheck endpoint is wired to the Docker `HEALTHCHECK` directive with a 60 s start period to allow Octane cold boot + migrations on the migrator container.
 
 These rules trace to SSS requirements ENV-DEP-010, ENV-DEP-011, and ENV-DEP-012.
+
+### 5.4 Integration Client Library Architecture
+
+The `lan-software/lancore-client` Composer package is the canonical implementation of the LanCore Integration API consumer side. It exists to eliminate the per-satellite duplication of HTTP client code, webhook signature verification, SSO exchange, exception handling, and (for LanEntrance) JWKS caching that previously lived as independently-maintained copies inside each satellite's `app/Services/LanCoreClient.php`.
+
+#### 5.4.1 Ownership and Distribution
+
+- **Source of truth (documentation):** this repository, under `docs/mil-std-498/`. No duplicate MIL-STD-498 documentation is maintained in the package repo.
+- **Source of truth (code):** `https://github.com/lan-software/lancore-client`, a standalone public repository published on Packagist as `lan-software/lancore-client`.
+- **Versioning:** independent SemVer. Satellites adopt new capabilities by bumping the Composer constraint.
+- **Release coupling:** the package is versioned independently from LanCore itself. Breaking changes to the Integration API in LanCore require a coordinated major-version bump of the package.
+
+#### 5.4.2 Package Boundary
+
+The package owns **transport and protocol** concerns:
+
+| Concern | Component |
+|---------|-----------|
+| HTTP transport, retries, timeouts, Bearer authentication | `LanCoreClient` |
+| Typed response shapes | `LanCoreUser` DTO, entrance DTOs (`AttendeeTicket`, `CheckinResult`, `EntranceStats`, `SigningKey`) |
+| Error taxonomy | `LanCoreException` base + `LanCoreDisabled`, `LanCoreUnavailable`, `LanCoreRequest`, `InvalidLanCoreUser` |
+| Webhook signature verification | `VerifyLanCoreWebhook` middleware (HMAC-SHA256 over request body, event header allowlist) |
+| Webhook payload parsing | One typed payload DTO per `WebhookEvent` enum case |
+| Abstract webhook controllers | One base controller per event type with abstract hooks for user resolution and event handling |
+| SSO authorization URL construction and code exchange | `LanCoreClient::ssoAuthorizeUrl()`, `LanCoreClient::exchangeCode()` |
+| Opt-in entrance sub-client | `LanCoreClient->entrance()` returning `EntranceClient` with JWKS caching |
+| Laravel integration | `LanCoreServiceProvider` — publishes config, binds singleton, registers middleware alias |
+| Test ergonomics | `LanCoreClient::fake()` factory for Pest/PHPUnit |
+
+Satellites retain ownership of all **domain and policy** concerns: how roles map to local user models (enum vs. pivot table), how users are resolved from LanCore IDs (dedicated `lancore_user_id` column vs. `external_provider` + `external_id` pair), display-name preservation rules, shadow-user creation, and per-app business response to webhook events. The abstract webhook controllers expose these as `resolveUser()` and `syncRoles()` (or equivalent) template methods.
+
+#### 5.4.3 Dependency Topology
+
+```
+        ┌─────────────────────────────────────────────────┐
+        │               LanCore (server)                   │
+        │  routes/api-integrations.php                     │
+        │  app/Domain/Integration/*                        │
+        │  app/Domain/Webhook/Actions/DispatchWebhooks     │
+        └───────────────┬─────────────────────────────────┘
+                        │ HTTPS (Bearer token)
+                        │ + outbound webhooks (HMAC-signed)
+                        │
+        ┌───────────────┴─────────────────────────────────┐
+        │      lan-software/lancore-client (package)       │
+        │                                                  │
+        │   LanCoreClient  ──  EntranceClient (opt-in)     │
+        │   VerifyLanCoreWebhook middleware                │
+        │   HandlesLanCore*Webhook abstract controllers    │
+        │   LanCoreUser DTO, Exception hierarchy           │
+        └───────────────┬──────────────────────────────────┘
+                        │ composer require
+                        │
+   ┌──────┬──────┬──────┼──────┬──────┬──────┐
+   │      │      │      │      │      │      │
+LanBrackets LanEntrance LanShout LanHelp LanChart LanBase
+(satellite domain code: role models, user sync services,
+ webhook event handlers, UI, per-app policies)
+```
+
+#### 5.4.4 Configuration Contract
+
+Every satellite consuming the package resolves the following environment variables into a unified `config/lancore.php`:
+
+| Variable | Purpose |
+|----------|---------|
+| `LANCORE_ENABLED` | Master kill-switch; when `false` the client throws `LanCoreDisabledException` |
+| `LANCORE_BASE_URL` | Browser-facing LanCore base URL (used for SSO redirects) |
+| `LANCORE_INTERNAL_URL` | Server-to-server LanCore base URL (falls back to `LANCORE_BASE_URL`) |
+| `LANCORE_TOKEN` | Bearer token issued by LanCore integration registration |
+| `LANCORE_APP_SLUG` | Satellite identity slug (e.g. `lanbrackets`) |
+| `LANCORE_CALLBACK_URL` | SSO callback URL on the satellite |
+| `LANCORE_WEBHOOK_SECRET` | HMAC-SHA256 secret for webhook signature verification (single secret covers all event types; replaces the legacy per-event `LANCORE_ROLES_WEBHOOK_SECRET`) |
+| `LANCORE_TIMEOUT`, `LANCORE_RETRIES`, `LANCORE_RETRY_DELAY` | HTTP tuning |
+| `LANCORE_ENTRANCE_ENABLED` and `LANCORE_SIGNING_KEYS_*` | Opt-in entrance sub-client + JWKS cache configuration (LanEntrance only) |
 
 ### 5.2 Monitoring Integration
 
@@ -303,6 +381,9 @@ Previously issued tokens signed by the retired `kid` remain verifiable because r
 | ENV-DEP-010 (pinned base images) | Section 3.1.1.1, Section 5.3 |
 | ENV-DEP-011 (non-root runtime) | Section 3.1.1, Section 5.3 |
 | ENV-DEP-012 (runtime secrets via env) | Section 3.1.1.1, Section 5.3 |
+| CAP-INT-001..006 (server-side integration registration, API tokens, SSO, webhook subscriptions, navigation hints, access logging) | Section 4.1 (network topology), Section 5.4 (consumer-side client library) |
+| CAP-WHK-001..004 (webhook registration, signing, delivery tracking, event types) | Section 4.1 (outbound delivery path), Section 5.4.2 (consumer-side verification + abstract controllers) |
+| CAP-ICLIB-001..005 (shared Integration Client Library) | Section 3.2 (subsystem inventory), Section 5.4 (architecture) |
 
 ---
 

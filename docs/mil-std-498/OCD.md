@@ -225,9 +225,19 @@ Key management is performed by operators via the `php artisan tickets:keys:rotat
 1. Admin registers an integration app with name, callback URL, and webhook subscriptions
 2. System generates API tokens for the integration
 3. Integration authenticates via Bearer token on stateless API routes
-4. Integration receives webhook events for subscribed event types
+4. Integration receives webhook events for subscribed event types. The full set of dispatched events is: `user.registered`, `user.roles_updated`, `user.profile_updated`, `announcement.published`, `news_article.published`, `event.published`, `ticket.purchased`, `integration.accessed`
 5. Integration can initiate SSO flow for user authentication
 6. Integration appears in navigation for users who have authorized it
+
+#### 5.2.6a Shared Integration Client (Lan\* Satellite Apps)
+
+The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanChart, LanBase) consumes the LanCore Integration API through a shared Composer package, `lan-software/lancore-client`, rather than each app maintaining its own HTTP client, webhook verification, and exception handling. This establishes a single operational protocol between LanCore and its satellites:
+
+1. Each satellite declares `lan-software/lancore-client` as a Composer dependency
+2. Satellites configure LanCore access via a uniform environment contract (`LANCORE_URL`, `LANCORE_TOKEN`, `LANCORE_APP_SLUG`, `LANCORE_WEBHOOK_SECRET`, …)
+3. The package provides the SSO exchange, user resolution, webhook signature verification, and abstract webhook controllers for all eight event types; satellites supply only domain concerns (role model, user persistence, business response to events)
+4. LanEntrance additionally uses the package's opt-in `entrance()` sub-client for ticket validation and JWKS caching
+5. Package releases are versioned independently; satellites adopt new capabilities by bumping the dependency and implementing any newly-exposed hooks
 
 #### 5.2.7 Achievement Tracking
 
@@ -310,6 +320,8 @@ Key management is performed by operators via the `php artisan tickets:keys:rotat
 | Group Ticket | A ticket that allows multiple users to gain entry, purchased by one owner and assignable to multiple attendees |
 | Webhook | An HTTP callback that delivers event notifications to external systems |
 | Integration App | A third-party application registered with LanCore for API access and SSO |
+| lancore-client | Shared Composer package (`lan-software/lancore-client`) consumed by all Lan\* satellite applications as the canonical LanCore Integration API client |
+| Lan\* Satellite | A companion application (LanBrackets, LanEntrance, LanShout, LanHelp, LanChart, LanBase) that integrates with LanCore via the shared lancore-client package |
 | LCT1 Token | Signed ticket validation token in the format `LCT1.<kid>.<body>.<sig>` issued by LanCore and verified by LanEntrance |
 | kid | Key identifier — a short string (up to 16 characters) that identifies which Ed25519 signing key was used for a given token |
 | JWKS | JSON Web Key Set — a JSON document listing public keys, served by LanCore to LanEntrance for token verification |

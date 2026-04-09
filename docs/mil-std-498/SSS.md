@@ -238,6 +238,16 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-ORG-003 | The system shall make organization identity globally available to all frontend pages via Inertia shared props (the `organization` prop) |
 | CAP-ORG-004 | The system shall cache the organization shared prop (cache key `inertia.organization`, TTL 1 hour) and invalidate the cache on any update, logo upload, or logo removal |
 
+#### 3.2.18 Integration Client Library (CAP-ICLIB)
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-ICLIB-001 | The system shall provide a shared Composer package (`lan-software/lancore-client`) as the canonical client implementation of the LanCore Integration API, to be consumed by all Lan\* satellite applications (LanBrackets, LanEntrance, LanShout, LanHelp, LanChart, LanBase) in place of per-app HTTP client implementations |
+| CAP-ICLIB-002 | The package shall expose a unified exception hierarchy covering: disabled integration, upstream unavailability (connection failure / 5xx), client request errors (4xx with status code), and invalid user payload schema |
+| CAP-ICLIB-003 | The package shall provide abstract webhook controllers and typed payload DTOs for every webhook event type defined by LanCore's `WebhookEvent` enum (the eight events enumerated in CAP-WHK-004), such that satellites implement only domain-specific handling |
+| CAP-ICLIB-004 | The package shall provide a webhook verification middleware implementing HMAC-SHA256 signature verification using a single environment secret (`LANCORE_WEBHOOK_SECRET`), rejecting any request whose signature or event header does not match |
+| CAP-ICLIB-005 | The package shall provide an opt-in `entrance()` sub-client for LanEntrance consumers, offering ticket validation, check-in confirmation, attendee search, entrance statistics, and JWKS fetching with configurable TTL-based caching; the sub-client shall not be loaded by satellites that do not enable it |
+
 ### 3.3 System External Interface Requirements
 
 #### 3.3.1 External Interfaces
@@ -324,7 +334,7 @@ See [IRS](IRS.md) for detailed interface requirements.
 |--------|------------|--------------|
 | ENV-DEP-010 | Container images for LanCore and all satellite apps (LanBrackets, LanShout, LanHelp, LanEntrance) shall be built from multi-stage Dockerfiles with all base images pinned by immutable `@sha256:` digest to guarantee reproducible builds | Inspection of Dockerfiles |
 | ENV-DEP-011 | All supervised application processes in production container images (Octane/FrankenPHP, queue workers, scheduler) shall run as the unprivileged `www-data` user via supervisord `user=` directives. supervisord itself runs as PID 1 under root so it can manage child-process stdio, but has no network exposure | Inspection of supervisor configs + `docker exec <container> ps -o user=,comm=` |
-| ENV-DEP-012 | Runtime secrets (`APP_KEY`, database credentials, `TICKET_TOKEN_PEPPER`, Stripe keys, S3 credentials) shall be injected via environment variables at container start and shall never be baked into any image layer or committed to a Dockerfile | Image layer inspection, source review |
+| ENV-DEP-012 | Runtime secrets (`APP_KEY`, database credentials, `TICKET_TOKEN_PEPPER`, Stripe keys, S3 credentials, `LANCORE_TOKEN` and `LANCORE_WEBHOOK_SECRET` on satellite apps consuming the lancore-client package) shall be injected via environment variables at container start and shall never be baked into any image layer or committed to a Dockerfile | Image layer inspection, source review |
 | ENV-DEP-013 | Each production image shall expose runtime role selection via a `ROLE` environment variable supporting at minimum the values `web`, `worker`, and `all` (where applicable) | Inspection of entrypoint and supervisor configs |
 | ENV-DEP-014 | Each production image shall honour a `SKIP_MIGRATE` environment variable so that in multi-container deployments exactly one container may be designated as the schema migrator | Inspection of entrypoint script |
 | ENV-DEP-015 | Each production image shall ship a Docker `HEALTHCHECK` against the Laravel `/up` endpoint with a start period sufficient to cover cold boot and migration on the migrator container | `docker inspect` of the built image |
@@ -399,3 +409,4 @@ Requirements in this document trace to:
 | kid | Key Identifier |
 | LCT1 | LanCore Token version 1 (signed ticket token scheme) |
 | ENV-DEP | Environment / Deployment requirement category |
+| ICLIB | Integration Client Library (shared `lan-software/lancore-client` package) |

@@ -590,6 +590,162 @@ When `APP_DEMO=true` is set in the environment, the system enters Demo mode:
 3. **Stripe routes disabled:** The Stripe Checkout and webhook routes remain registered but `DemoPaymentProvider` is never dispatched via those routes; attempting to submit with `payment_method: stripe` is rejected at the `PaymentProviderManager` layer.
 4. **Normal mode restoration:** Setting `APP_DEMO=false` (and clearing application cache) returns `PaymentProviderManager` to resolving `StripePaymentProvider`. Demo data is not automatically purged — admins must run a migration rollback or a dedicated cleanup seeder if clean-slate state is desired.
 
+### 5.5 Integration Client Library Design (CSCI-ICLIB)
+
+The `lan-software/lancore-client` package is designed as a thin, Laravel-native Composer library. Its source of truth lives in a separate public repository (`https://github.com/lan-software/lancore-client`) but its documentation is maintained here as part of the LanCore MIL-STD-498 set (see SSDD §5.4 for the ownership rationale).
+
+#### 5.5.1 Package Structure
+
+```
+lan-software/lancore-client/
+├── composer.json                    # php ^8.3, laravel/framework ^13.0
+├── config/
+│   └── lancore.php                  # publishable template, all env bindings
+├── src/
+│   ├── LanCoreServiceProvider.php
+│   ├── LanCoreClient.php            # core: SSO + user resolution
+│   ├── Entrance/
+│   │   ├── EntranceClient.php       # opt-in sub-client
+│   │   └── JwksCache.php            # Laravel Cache facade wrapper
+│   ├── DTOs/
+│   │   ├── LanCoreUser.php          # readonly class
+│   │   ├── AttendeeTicket.php
+│   │   ├── CheckinResult.php
+│   │   ├── EntranceStats.php
+│   │   └── SigningKey.php
+│   ├── Exceptions/
+│   │   ├── LanCoreException.php                # base
+│   │   ├── LanCoreDisabledException.php
+│   │   ├── LanCoreUnavailableException.php
+│   │   ├── LanCoreRequestException.php         # exposes statusCode
+│   │   └── InvalidLanCoreUserException.php
+│   ├── Webhooks/
+│   │   ├── Middleware/
+│   │   │   └── VerifyLanCoreWebhook.php
+│   │   ├── Payloads/
+│   │   │   ├── UserRegisteredPayload.php
+│   │   │   ├── UserRolesUpdatedPayload.php
+│   │   │   ├── UserProfileUpdatedPayload.php
+│   │   │   ├── AnnouncementPublishedPayload.php
+│   │   │   ├── NewsArticlePublishedPayload.php
+│   │   │   ├── EventPublishedPayload.php
+│   │   │   ├── TicketPurchasedPayload.php
+│   │   │   └── IntegrationAccessedPayload.php
+│   │   └── Controllers/
+│   │       ├── HandlesLanCoreWebhook.php              # abstract base
+│   │       ├── HandlesLanCoreUserRegisteredWebhook.php
+│   │       ├── HandlesLanCoreUserRolesUpdatedWebhook.php
+│   │       ├── HandlesLanCoreUserProfileUpdatedWebhook.php
+│   │       ├── HandlesLanCoreAnnouncementPublishedWebhook.php
+│   │       ├── HandlesLanCoreNewsArticlePublishedWebhook.php
+│   │       ├── HandlesLanCoreEventPublishedWebhook.php
+│   │       ├── HandlesLanCoreTicketPurchasedWebhook.php
+│   │       └── HandlesLanCoreIntegrationAccessedWebhook.php
+│   └── Testing/
+│       └── LanCoreClientFake.php    # ::fake() helper
+└── tests/                            # Pest, Http::fake()
+```
+
+#### 5.5.2 LanCoreClient Class Design
+
+```php
+final class LanCoreClient
+{
+    public function __construct(
+        private readonly LanCoreConfig $config,
+    ) {}
+
+    public function ssoAuthorizeUrl(): string;
+    public function exchangeCode(string $code): LanCoreUser;
+    public function currentUser(): LanCoreUser;
+    public function resolveUserById(int $id): LanCoreUser;
+    public function resolveUserByEmail(string $email): LanCoreUser;
+    public function entrance(): EntranceClient;  // opt-in
+}
+```
+
+The client is bound as an Octane-safe singleton via `LanCoreServiceProvider`. It reads configuration lazily at each method call through the injected `LanCoreConfig` value object, so a change to `config('lancore.*')` between requests does not require container re-binding. No request state is captured at construction.
+
+All HTTP calls go through `Http::withToken($this->config->token)->retry($this->config->retries, $this->config->retryDelay)->timeout($this->config->timeout)`. Server-to-server calls use `$this->config->internalUrl`; browser-facing URL construction uses `$this->config->baseUrl`. 4xx and 5xx responses are distinguished after `->throw()` is called: `Illuminate\Http\Client\RequestException` with `$e->response->status() >= 500` (or underlying `ConnectionException`) becomes `LanCoreUnavailableException`; 4xx becomes `LanCoreRequestException`. Response bodies are validated against `LanCoreUser::fromArray()`, which throws `InvalidLanCoreUserException` on schema mismatch.
+
+#### 5.5.3 LanCoreUser DTO
+
+```php
+final readonly class LanCoreUser
+{
+    public function __construct(
+        public int $id,
+        public string $username,
+        public ?string $email,
+        public ?string $locale,
+        public ?string $avatar,
+        public array $roles,               // list<string>
+        public ?CarbonImmutable $createdAt,
+    ) {}
+
+    public static function fromArray(array $data): self;
+    public function toArray(): array;
+}
+```
+
+Readonly to match PHP 8.3 capability and to guarantee immutability across Octane workers.
+
+#### 5.5.4 Webhook Verification Middleware
+
+`VerifyLanCoreWebhook` accepts an event-name argument: `->middleware('lancore.webhook:user.roles_updated')`. Behavior:
+
+1. Reject if `X-Webhook-Event` header is absent or not equal to the argument — 400.
+2. Compute `expected = 'sha256=' . hash_hmac('sha256', $request->getContent(), config('lancore.webhooks.secret'))`.
+3. Compare against `X-Webhook-Signature` header using `hash_equals()` — 401 on mismatch.
+4. If `config('lancore.webhooks.secret')` is an empty string, skip verification (local dev only; the config template documents this).
+5. Pass request through.
+
+#### 5.5.5 Abstract Webhook Controller Contract
+
+Each concrete abstract controller corresponds to one webhook event. Example for the roles-updated variant:
+
+```php
+abstract class HandlesLanCoreUserRolesUpdatedWebhook
+{
+    public function __invoke(Request $request): JsonResponse
+    {
+        $payload = UserRolesUpdatedPayload::fromRequest($request);
+
+        $user = $this->resolveUser($payload->lancoreUserId);
+        if ($user === null) {
+            return response()->json(['status' => 'user_not_found'], 202);
+        }
+
+        $this->handle($user, $payload);
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    abstract protected function resolveUser(int $lancoreUserId): ?Model;
+    abstract protected function handle(Model $user, UserRolesUpdatedPayload $payload): void;
+}
+```
+
+Satellites subclass the relevant controllers, implement `resolveUser()` using their preferred lookup strategy (dedicated `lancore_user_id` column or `external_provider` + `external_id` pair), and implement `handle()` using their preferred role model (single `UserRole` enum or pivot-table role sync). The payload DTO normalises inputs so satellites never hand-parse request arrays.
+
+#### 5.5.6 Entrance Sub-Client
+
+`$client->entrance()` returns an `EntranceClient` only when `config('lancore.entrance.enabled') === true`; otherwise it throws `LanCoreDisabledException`. The sub-client wraps `/api/entrance/*` endpoints with the same retry/exception semantics as the core client and provides JWKS caching via `JwksCache`, which writes to the cache store named in `config('lancore.entrance.signing_keys_cache_store')` under key `lancore.jwks` with TTL `config('lancore.entrance.signing_keys_cache_ttl')`. A bootstrap JWKS (`config('lancore.entrance.signing_keys_bootstrap')`) is parsed from a comma-separated `kid:x` list and used when the cache is cold and the upstream endpoint is unreachable.
+
+#### 5.5.7 Satellite Integration Pattern
+
+A typical satellite consumes the package as follows:
+
+1. `composer require lan-software/lancore-client`
+2. `php artisan vendor:publish --tag=lancore-config` (publishes `config/lancore.php`)
+3. Populate `.env` with `LANCORE_*` variables (see SSDD §5.4.4)
+4. Inject `LanCoreClient` into SSO controllers (replaces the satellite's own `app/Services/LanCoreClient.php`)
+5. Subclass the abstract webhook controllers the satellite cares about; register routes with `->middleware('lancore.webhook:<event>')`
+6. Delete the satellite's legacy `LanCoreClient`, middleware, and inline webhook signature code
+7. Update satellite tests to use `LanCoreClient::fake()` from the package's Testing namespace
+
+The migration PR for each satellite is expected to be net-negative in lines of code.
+
 ---
 
 ## 6. Requirements Traceability
@@ -617,6 +773,7 @@ When `APP_DEMO=true` is set in the environment, the system enters Demo mode:
 | EVT-F-011 | app/Domain/Event/Http/Controllers/EventContextController.php, app/Http/Middleware/HandleInertiaRequests.php, app/Domain/Event/Models/Event.php (scopeForUser) |
 | ORG-F-001..005 | app/Domain/Settings/Http/Controllers/OrganizationSettingsController.php, app/Http/Middleware/HandleInertiaRequests.php, resources/js/components/AppLogo.vue |
 | SRS 3.1 Required States (Demo) | app/Console/Commands/SeedDemoCommand.php (data seeding), app/Domain/Shop/Providers/DemoPaymentProvider.php (simulated payments), app/Domain/Shop/Services/PaymentProviderManager.php (provider resolution via APP_DEMO flag) |
+| ICLIB-F-001..009 | `lan-software/lancore-client` package (separate repository); see §5.5 for class-level design |
 
 ---
 
