@@ -106,7 +106,7 @@ class SetupDevIntegrationCommand extends Command
         ];
 
         if ($rolesSecret) {
-            $envLines[] = "LANCORE_ROLES_WEBHOOK_SECRET={$rolesSecret}";
+            $envLines[] = "LANCORE_WEBHOOK_SECRET={$rolesSecret}";
         }
 
         foreach ($envLines as $line) {
