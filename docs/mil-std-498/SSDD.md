@@ -83,7 +83,7 @@ In production, LanCore is deployed as a Docker container stack with its own Post
 |-------|-----------|---------|
 | 1. `deps` | `composer:2` (digest-pinned) | `composer install --no-dev`, autoload optimisation, Wayfinder TypeScript generation (`actions/`, `routes/`, `wayfinder/`) |
 | 2. `frontend` | `node:22-alpine` (digest-pinned) | `npm ci` + `npm run build`; overlays the Wayfinder TS produced in stage 1 |
-| 3. `production` | `dunglas/frankenphp:php8.5-alpine` (digest-pinned) | FrankenPHP + Laravel Octane, PHP extensions (pdo_pgsql, bcmath, pcntl, zip, gd, opcache, intl, redis), supervisor, entrypoint |
+| 3. `production` | `dunglas/frankenphp:php8.3-alpine` (digest-pinned) | FrankenPHP + Laravel Octane, PHP extensions (pdo_pgsql, bcmath, pcntl, zip, gd, opcache, intl, redis), supervisor, entrypoint |
 
 Build-time secrets (`BUILD_APP_KEY`) are supplied only as a throwaway `ARG` for Wayfinder generation; the runtime `APP_KEY` **must** be injected by the orchestrator — never baked into the image (see [SSS](SSS.md) ENV-DEP-012).
 
@@ -129,11 +129,11 @@ LanBrackets, LanShout, LanHelp, and LanEntrance each ship their **own** Dockerfi
 
 | App | Base image | Octane | Horizon | Typical roles |
 |-----|-----------|--------|---------|---------------|
-| LanCore | `frankenphp:php8.5-alpine` | Yes | Yes | `web` + `worker` (split) or `all` |
-| LanBrackets | `frankenphp:php8.5-alpine` | Yes | No (plain `queue:work` + scheduler) | `web` + optional `worker` |
-| LanHelp | `frankenphp:php8.5-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
-| LanEntrance | `frankenphp:php8.5-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
-| LanShout | `frankenphp:php8.5-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
+| LanCore | `frankenphp:php8.3-alpine` | Yes | Yes | `web` + `worker` (split) or `all` |
+| LanBrackets | `frankenphp:php8.3-alpine` | Yes | No (plain `queue:work` + scheduler) | `web` + optional `worker` |
+| LanHelp | `frankenphp:php8.3-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
+| LanEntrance | `frankenphp:php8.3-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
+| LanShout | `frankenphp:php8.3-alpine` | No (`frankenphp php-server`) | No | `web` + optional `worker` |
 
 All five images: non-root (`www-data`), pinned base image digests, healthcheck on `/up`, runtime secrets via env only.
 

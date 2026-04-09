@@ -51,7 +51,7 @@ The LanCore CSCI shall support the following operational states:
 | Maintenance | `php artisan down`; returns 503 to all non-allowed requests |
 | Queue Processing | Horizon workers active, processing background jobs |
 | Migrating | Database migrations in progress; application temporarily unavailable |
-| Demo | Database pre-seeded with synthetic data via `SeedDemoCommand`; the `demo` payment provider is active in place of Stripe, completing orders without real transactions; all other CSCI capabilities function normally |
+| Demo | Database pre-seeded with synthetic data via `SeedDemoCommand`; Stripe test-mode API keys (`STRIPE_KEY=pk_test_...`, `STRIPE_SECRET=sk_test_...`) are configured via environment so `StripePaymentProvider` handles all transactions through Stripe's sandbox with no real charges; all other CSCI capabilities function normally |
 
 ### 3.2 CSCI Capability Requirements
 

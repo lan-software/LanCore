@@ -701,8 +701,8 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | Test | Preconditions | Input | Expected Result |
 |------|--------------|-------|-----------------|
 | demo seed produces expected event | Demo mode active | Run `artisan db:seed --class=DemoSeeder` | At least one published event with tickets and users exists in the database |
-| simulated payment completes without Stripe | Demo mode active, demo event with ticket | POST `/cart/checkout` `{payment_method: demo}` | Order created with status Completed, ticket issued, no Stripe API call made |
-| real payment methods unavailable in demo mode | Demo mode active | POST `/cart/checkout` `{payment_method: stripe}` | 422 validation error or redirect with error message |
+| payment completes via Stripe test mode | Demo mode active (`APP_DEMO=true`, `STRIPE_SECRET=sk_test_...`), demo event with ticket | POST `/cart/checkout` with Stripe test card `4242 4242 4242 4242` | Order created with status Completed, ticket issued, Stripe sandbox API called, no real charge created |
+| Stripe test-mode keys prevent real charges | Demo mode active, live Stripe card used | POST `/cart/checkout` with a real card number | Stripe sandbox rejects or ignores charge; no financial transaction occurs |
 | admin can exit demo mode | Superadmin, demo mode active | Artisan `app:demo --disable` or equivalent env toggle | Application returns to Normal mode, demo data remains until manually purged |
 
 ---

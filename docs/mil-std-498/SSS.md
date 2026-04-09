@@ -49,7 +49,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | Maintenance | Application returns 503, scheduled work paused | To Normal |
 | Queue-Only | Web interface disabled, queue workers process jobs | To Normal |
 | Development | Debug features enabled, Telescope active | To Normal |
-| Demo | System operates with pre-seeded synthetic data; payment processing is simulated (no real transactions); intended for showcasing platform capabilities to prospective organizers or stakeholders | To Normal |
+| Demo | System operates with pre-seeded synthetic data; payment provider is configured in test mode so no real transactions occur; intended for showcasing platform capabilities to prospective organizers or stakeholders | To Normal |
 
 ### 3.2 System Capability Requirements
 
@@ -322,7 +322,7 @@ See [IRS](IRS.md) for detailed interface requirements.
 | Component | Requirement |
 |-----------|------------|
 | Container Runtime | Docker Engine 20+ |
-| PHP | 8.5 |
+| PHP | 8.3+ |
 | Database | PostgreSQL 15+ |
 | Cache/Queue | Redis 7+ |
 | Object Storage | S3-compatible (AWS S3, Minio, Garage) |

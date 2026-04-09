@@ -92,7 +92,7 @@ app/
 | JSONB for flexible data | Seat plans and banner images benefit from schemaless storage |
 | Laravel Octane/FrankenPHP | Application boot once, reuse across requests for performance |
 | Redis for caching | Tag-based invalidation, high throughput, shared cache across workers |
-| Demo mode via `SeedDemoCommand` + `DemoPaymentProvider` | Enables self-contained showcases without external payment dependencies; activated via environment flag `APP_DEMO=true`; `PaymentProviderManager` resolves `DemoPaymentProvider` when the flag is set |
+| Demo mode via `SeedDemoCommand` + Stripe test-mode keys | Enables end-to-end showcases using Stripe's sandbox; activated via environment flag `APP_DEMO=true` paired with `STRIPE_KEY=pk_test_...` / `STRIPE_SECRET=sk_test_...`; `PaymentProviderManager` resolves `StripePaymentProvider` as normal — no custom provider is needed |
 
 ### 3.3 Security Design
 
@@ -586,9 +586,9 @@ The `myEventContext` Inertia shared prop (set by `HandleInertiaRequests`) re-res
 When `APP_DEMO=true` is set in the environment, the system enters Demo mode:
 
 1. **Data seeding:** `SeedDemoCommand` (existing) populates the database with a synthetic published event, ticket types, a demo admin user, and sample attendees. It is idempotent — running it multiple times does not duplicate records.
-2. **Payment simulation:** `PaymentProviderManager` detects `APP_DEMO=true` and resolves `DemoPaymentProvider` instead of `StripePaymentProvider`. `DemoPaymentProvider` implements `PaymentProvider` and immediately returns a successful `PaymentResult` with a fake session reference, causing `FulfillOrder` to issue tickets without any Stripe API call.
-3. **Stripe routes disabled:** The Stripe Checkout and webhook routes remain registered but `DemoPaymentProvider` is never dispatched via those routes; attempting to submit with `payment_method: stripe` is rejected at the `PaymentProviderManager` layer.
-4. **Normal mode restoration:** Setting `APP_DEMO=false` (and clearing application cache) returns `PaymentProviderManager` to resolving `StripePaymentProvider`. Demo data is not automatically purged — admins must run a migration rollback or a dedicated cleanup seeder if clean-slate state is desired.
+2. **Payment provider:** No custom payment provider is used in demo mode. `PaymentProviderManager` resolves `StripePaymentProvider` as it does in normal mode. The demo environment is configured with Stripe test-mode keys (`STRIPE_KEY=pk_test_...`, `STRIPE_SECRET=sk_test_...`). All checkout flows run end-to-end against Stripe's sandbox API using test card numbers (e.g., `4242 4242 4242 4242`). No real charges are created.
+3. **Stripe Checkout and webhook routes:** Both routes function normally and hit Stripe's sandbox API. A webhook endpoint must be registered in the Stripe test-mode dashboard and forwarded to the application (e.g., via the Stripe CLI `stripe listen --forward-to`). Stripe test-mode keys prevent any real charges regardless of the card number used.
+4. **Normal mode restoration:** Replacing the Stripe test-mode keys with live keys (`pk_live_...` / `sk_live_...`) and setting `APP_DEMO=false` (then clearing application cache) returns the system to normal operation. Demo data is not automatically purged — admins must run a migration rollback or a dedicated cleanup seeder if clean-slate state is desired.
 
 ### 5.5 Integration Client Library Design (CSCI-ICLIB)
 
@@ -772,7 +772,7 @@ The migration PR for each satellite is expected to be net-negative in lines of c
 | ORC-F-001..015 | app/Domain/Orchestration/ |
 | EVT-F-011 | app/Domain/Event/Http/Controllers/EventContextController.php, app/Http/Middleware/HandleInertiaRequests.php, app/Domain/Event/Models/Event.php (scopeForUser) |
 | ORG-F-001..005 | app/Domain/Settings/Http/Controllers/OrganizationSettingsController.php, app/Http/Middleware/HandleInertiaRequests.php, resources/js/components/AppLogo.vue |
-| SRS 3.1 Required States (Demo) | app/Console/Commands/SeedDemoCommand.php (data seeding), app/Domain/Shop/Providers/DemoPaymentProvider.php (simulated payments), app/Domain/Shop/Services/PaymentProviderManager.php (provider resolution via APP_DEMO flag) |
+| SRS 3.1 Required States (Demo) | app/Console/Commands/SeedDemoCommand.php (data seeding), app/Domain/Shop/Services/PaymentProviderManager.php (resolves StripePaymentProvider in all modes), environment configuration: STRIPE_KEY / STRIPE_SECRET set to Stripe test-mode values when APP_DEMO=true |
 | ICLIB-F-001..009 | `lan-software/lancore-client` package (separate repository); see §5.5 for class-level design |
 
 ---
