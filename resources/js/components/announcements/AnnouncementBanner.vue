@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AnnouncementDismissals from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementDismissalController';
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
+import AnnouncementDismissals from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementDismissalController';
 
 type SharedAnnouncement = {
     id: number;

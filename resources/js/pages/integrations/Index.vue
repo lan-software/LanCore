@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed } from 'vue';
 import {
     ChevronDown,
     DoorOpen,
@@ -9,6 +8,7 @@ import {
     Plus,
     Swords,
 } from 'lucide-vue-next';
+import { computed } from 'vue';
 import {
     edit,
     create as integrationCreate,
