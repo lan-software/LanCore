@@ -49,6 +49,7 @@ class IntegrationAppController extends Controller
         return Inertia::render('integrations/Index', [
             'integrationApps' => $apps,
             'filters' => $request->only(['search', 'sort', 'direction', 'per_page']),
+            'configManagedSlugs' => array_keys((array) config('integrations.apps', [])),
         ]);
     }
 
@@ -118,6 +119,7 @@ class IntegrationAppController extends Controller
                 'roles_webhook_secret' => $rolesWebhook?->secret,
             ]),
             'availableScopes' => self::availableScopes(),
+            'configManaged' => array_key_exists($integration->slug, (array) config('integrations.apps', [])),
         ]);
     }
 

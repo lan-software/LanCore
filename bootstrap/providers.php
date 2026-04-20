@@ -3,6 +3,7 @@
 use App\Providers\AppServiceProvider;
 use App\Providers\FortifyServiceProvider;
 use App\Providers\HorizonServiceProvider;
+use App\Providers\IntegrationServiceProvider;
 use App\Providers\PrometheusServiceProvider;
 use App\Providers\TelescopeServiceProvider;
 use Laravel\Horizon\HorizonApplicationServiceProvider;
@@ -14,6 +15,7 @@ return array_values(array_filter([
     class_exists(HorizonApplicationServiceProvider::class)
         ? HorizonServiceProvider::class
         : null,
+    IntegrationServiceProvider::class,
     PrometheusServiceProvider::class,
     class_exists(TelescopeApplicationServiceProvider::class)
         ? TelescopeServiceProvider::class

@@ -255,7 +255,7 @@ The LanCore CSCI shall support the following operational states:
 
 | Req ID | Requirement |
 |--------|------------|
-| INT-F-001 | The software shall support integration app registration with: name, description, callback URL, webhook subscriptions |
+| INT-F-001 | The software shall support integration app registration with: name, description, callback URL, webhook subscriptions — created via the admin UI, via Artisan commands, or via a declarative configuration file (`config/integrations.php`) reconciled at boot or on demand via the `integrations:sync` Artisan command |
 | INT-F-002 | The software shall generate API tokens with support for rotation and revocation |
 | INT-F-003 | The software shall hash API tokens before database storage |
 | INT-F-004 | The software shall provide OAuth2-like SSO with authorization code flow |
@@ -265,6 +265,10 @@ The LanCore CSCI shall support the following operational states:
 | INT-F-008 | The software shall provide stateless API routes under `/api/integration/` |
 | INT-F-009 | The software shall enforce IntegrationAppPolicy |
 | INT-F-010 | The software shall provide Artisan commands for integration management (create, list, revoke tokens) |
+| INT-F-011 | The software shall support declarative integration-app registration via `config/integrations.php`. Each configured app shall specify: slug, display name, host (or a computed host derived from a deployment domain plus a style selector), callback path, allowed scopes, optional navigation hints (`nav_url`, `nav_icon`, `nav_label`), webhook subscription flags plus endpoints (`send_announcements` / `announcement_path`, `send_role_updates` / `roles_path`), optional pre-shared token, optional pre-shared announcement and role webhook secrets |
+| INT-F-012 | The software shall provide an `integrations:sync` Artisan command that reconciles `config/integrations.php` against the database: for each configured slug it shall upsert the `IntegrationApp` row; it shall delete and recreate the app's `IntegrationToken` rows and subscribed `Webhook` rows from configuration; and it shall leave rows for slugs not listed in the configuration untouched |
+| INT-F-013 | The software shall accept a caller-supplied plaintext token value at reconciliation time, hash it with SHA-256 before storage, and persist only the hash plus an 8-character display prefix (preserving the storage contract from INT-F-003) |
+| INT-F-014 | The reconciler shall log at INFO level every app upsert, token rotation, and webhook refresh, including the release identifier (`LANCORE_RELEASE_NAME` and `LANCORE_RELEASE_REVISION` when set by the Helm chart) and a UTC timestamp, so operators can correlate token invalidations with a specific deployment |
 
 #### 3.2.12 Webhook Domain (CSCI-WHK)
 

@@ -136,6 +136,44 @@ This document describes the requirements for all external interfaces of the LanC
 
 **Endpoints defined in:** `routes/api-integrations.php`
 
+### 3.5a Integration Declarative Configuration (IF-INTCFG)
+
+A file-based interface that lets operators declare the full set of integration apps (slug, host, callback, scopes, nav, webhooks, pre-shared token + webhook secrets) in one place, rather than creating them through the UI or the imperative Artisan commands.
+
+| Req ID | Requirement |
+|--------|------------|
+| IF-INTCFG-001 | The system shall read integration-app declarations from `config/integrations.php` at boot |
+| IF-INTCFG-002 | The system shall resolve every config value from an environment variable (with a sensible default) so operators configure the subsystem via env vars rather than by editing the source file |
+| IF-INTCFG-003 | The system shall support a `satellite_host_style` selector with values `flat`, `prefixed`, or `custom` to derive satellite hostnames from a single `domain` value |
+| IF-INTCFG-004 | The system shall provide an `integrations:sync` Artisan command that reconciles `config/integrations.php` against the database (upsert app rows, delete and recreate tokens, delete and recreate webhooks — scoped to the slugs listed in config) |
+| IF-INTCFG-005 | The system shall optionally reconcile at application boot when `LANCORE_INTEGRATIONS_RECONCILE_ON_BOOT=true`, using a process-global lock to prevent duplicate reconciliations under Octane |
+| IF-INTCFG-006 | The system shall accept a caller-supplied plaintext token (via the `token` config field) and persist only its SHA-256 hash plus an 8-character display prefix |
+| IF-INTCFG-007 | The system shall accept caller-supplied webhook secrets (via `announcement_webhook_secret` and `roles_webhook_secret`) and persist them verbatim in the corresponding `webhooks.secret` columns |
+| IF-INTCFG-008 | The system shall leave integration-app rows whose slug is NOT listed in `config/integrations.php` untouched by the reconciler |
+
+**Config file shape (abbreviated):**
+
+```php
+return [
+    'domain'                => env('LANCORE_DOMAIN'),
+    'lancore_host'          => env('LANCORE_HOST'),
+    'satellite_host_style'  => env('LANCORE_SATELLITE_HOST_STYLE', 'flat'),
+    'scheme'                => env('LANCORE_SATELLITE_SCHEME', 'https'),
+    'reconcile_on_boot'     => env('LANCORE_INTEGRATIONS_RECONCILE_ON_BOOT', false),
+    'apps' => [
+        '<slug>' => [
+            'name', 'description', 'host', 'callback_path', 'scopes',
+            'nav_url', 'nav_icon', 'nav_label',
+            'send_announcements', 'announcement_path',
+            'send_role_updates',  'roles_path',
+            'token', 'announcement_webhook_secret', 'roles_webhook_secret',
+        ],
+    ],
+];
+```
+
+**Primary consumer:** the `lan-software` Helm umbrella chart populates every env var from operator `values.yaml` plus a shared auto-generated seed Secret. See SSDD §5.4.5 for the reconciler flow.
+
 ### 3.6 LanCore SSO Interface (IF-SSO)
 
 | Req ID | Requirement |

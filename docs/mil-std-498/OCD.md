@@ -57,6 +57,9 @@ LanCore aims to provide a single, integrated platform that:
 - User data must remain under the control of the event organizer
 - The system must support both online (Stripe) and on-site payment methods
 - The system must be accessible on mobile devices
+- The system shall provide two supported installation paths:
+  - **Docker Compose** — canonical single-host install; primary target for small events and demo stacks. See [SIP](SIP.md) §3.4.
+  - **Helm chart on Kubernetes** — canonical multi-service install; primary target for production, multi-satellite deployments, and operator-managed stateful infrastructure. Distributed as an OCI artifact at `oci://ghcr.io/lan-software/charts/lan-software`. See [SIP](SIP.md) §3.5.
 
 ---
 
@@ -301,6 +304,7 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 ### 6.2 Organizational Impacts
 
 - Organizers need basic Docker/server administration skills for self-hosting
+- Operators deploying on Kubernetes additionally need familiarity with Helm values and Kubernetes primitives (Deployments, Services, Ingress, Secrets, NetworkPolicy); the `lan-software` umbrella chart ships sensible defaults so the happy path does not require writing manifests by hand
 - Staff roles map to application roles (Admin, Sponsor Manager)
 - Companion app developers interact via documented Integration API
 

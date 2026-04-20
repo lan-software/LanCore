@@ -47,6 +47,8 @@ This document describes the detailed design of each interface, including data fo
 **Content-Type:** `application/json`
 **Middleware:** `AuthenticateIntegration`
 
+**Registration:** Integration apps are registered by one of three means — the admin UI, the imperative Artisan commands (`integration:create`, `integration:token`), or the declarative `config/integrations.php` + `integrations:sync` command (see [IRS §3.5a IF-INTCFG](IRS.md#35a-integration-declarative-configuration-if-intcfg) for the interface contract and [SSDD §5.4.5](SSDD.md#545-integration-declarative-config-reconciler) for the reconciliation design). The Helm-deployed LanCore sub-chart uses the declarative path via a pre-install/pre-upgrade Job; Docker Compose deployments may opt into boot-time reconciliation through `LANCORE_INTEGRATIONS_RECONCILE_ON_BOOT`.
+
 #### 3.1.1 Authentication
 
 ```

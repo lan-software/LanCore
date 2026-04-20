@@ -75,6 +75,7 @@ type IntegrationApp = {
 const props = defineProps<{
     integrationApp: IntegrationApp;
     availableScopes: { value: string; label: string; description: string }[];
+    configManaged?: boolean;
 }>();
 
 const page = usePage();
@@ -171,6 +172,23 @@ function isTokenActive(token: IntegrationToken): boolean {
                 >
                     &larr; Back to Integrations
                 </Link>
+            </div>
+
+            <!-- Config-managed banner -->
+            <div
+                v-if="configManaged"
+                class="rounded-md border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950"
+            >
+                <p class="text-sm font-medium text-amber-900 dark:text-amber-100">
+                    This integration is reconciled from configuration
+                </p>
+                <p class="mt-1 text-xs text-amber-800 dark:text-amber-200">
+                    The slug
+                    <code class="rounded bg-amber-100 px-1 py-0.5 font-mono text-amber-900 dark:bg-amber-900 dark:text-amber-100">{{ integrationApp.slug }}</code>
+                    appears in <code>config/integrations.php</code>. Edits here persist until the next
+                    <code>integrations:sync</code> run (typically the next Helm upgrade), which will
+                    overwrite them from configuration. See SIP &sect;3.5.
+                </p>
             </div>
 
             <!-- New Token Alert -->

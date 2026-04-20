@@ -53,6 +53,7 @@ LanCore is deployed as a Docker container stack, making installation consistent 
 | Docker Compose | Deploy using provided `docker-compose.yml` | Available |
 | Docker Image (GHCR) | Pull pre-built image from GitHub Container Registry | Available |
 | Source Build | Clone repo and build with Sail | Available |
+| Helm Chart (Kubernetes) | `lan-software` umbrella chart at `oci://ghcr.io/lan-software/charts/lan-software` — deploys LanCore plus all satellites with operator-managed Postgres, Dragonfly, and S3 | Available |
 
 ### 3.3 Quick Start (Development with Shared Infrastructure)
 
@@ -160,6 +161,72 @@ docker compose exec lancore-web-migrator php artisan make:admin
 #### 3.4.4 Satellite apps
 
 LanBrackets, LanShout, LanHelp, and LanEntrance each publish their own image built from an adapted version of this Dockerfile and follow the identical `ROLE` / `SKIP_MIGRATE` contract. LanBrackets runs Octane like LanCore; LanShout/LanHelp/LanEntrance use `frankenphp php-server` without Octane and neither ships Horizon — their `worker` role runs `queue:work --tries=3 --max-time=3600` plus the scheduler. See [SSDD §3.1.1.5](SSDD.md#31115-satellite-app-topology) for the per-app matrix.
+
+### 3.5 Quick Start (Production Kubernetes via Helm)
+
+The `lan-software` Helm umbrella chart packages LanCore plus all satellite apps into a single `helm install` on Kubernetes 1.29+. The chart is published as an OCI artifact at `oci://ghcr.io/lan-software/charts/lan-software` and depends on the following cluster-scoped prerequisites, which are NOT installed by the chart:
+
+| Prerequisite | Purpose | Install reference |
+|--------------|---------|-------------------|
+| Kubernetes 1.29+ with RBAC enabled | Target cluster | Cluster-provider-specific |
+| `ingress-nginx` (or any Ingress controller) | External traffic + TLS termination | `helm install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace` |
+| `cert-manager` | TLS certificate lifecycle | `helm install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --set crds.enabled=true` |
+| CloudNativePG operator | PostgreSQL CR controller | `helm install cnpg cnpg/cloudnative-pg -n cnpg-system --create-namespace` |
+| Dragonfly Operator | Dragonfly CR controller (Redis-compatible) | `kubectl apply -f https://raw.githubusercontent.com/dragonflydb/dragonfly-operator/main/manifests/dragonfly-operator.yaml` |
+| MinIO Operator (optional, required only if `storage.mode: minio-tenant`) | S3 Tenant CR controller | `helm install minio-operator minio-operator/operator -n minio-operator --create-namespace` |
+| `prometheus-operator` (optional, required only if `monitoring.enabled: true`) | `ServiceMonitor` + `PrometheusRule` CRDs | `helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -n monitoring --create-namespace` |
+
+Happy-path install:
+
+```bash
+# 1. Create the release namespace and apply PSA restricted profile.
+kubectl create namespace lan-software
+kubectl label namespace lan-software pod-security.kubernetes.io/enforce=restricted
+
+# 2. Create a values file (see examples/values-prod.yaml in the LanChart repo).
+#    At minimum, override:
+#      global.domain: your-event.example.com
+#      global.tls.issuer.name: letsencrypt-prod
+#    and provide credentials Secrets (mail, Stripe, WebPush, S3) out-of-band or
+#    via an ExternalSecret if using External Secrets Operator.
+
+# 3. Install.
+helm install lan-software \
+    oci://ghcr.io/lan-software/charts/lan-software \
+    --version 0.1.0 \
+    -n lan-software \
+    -f values-prod.yaml
+
+# 4. Watch pods come up. Two pre-install/pre-upgrade Helm hook Jobs per
+#    release run BEFORE any Deployment rolls:
+#      - `*-migrate-<ts>` per app — runs `php artisan migrate --force`
+#      - `lan-software-lancore-integrations-sync` — runs
+#        `php artisan integrations:sync` against LanCore to reconcile the
+#        declarative `config/integrations.php` (see SSDD §5.4.5 +
+#        IRS §3.5a) into the database: upserts the satellite IntegrationApp
+#        rows, writes the config-seeded tokens, refreshes the webhooks.
+#    Satellites boot already knowing their LANCORE_TOKEN because the shared
+#    `lan-software-integrations-seed` Secret is mounted at startup. No
+#    post-install Job, no `kubectl exec` dance.
+kubectl -n lan-software get pods --watch
+kubectl -n lan-software logs job/lan-software-lancore-integrations-sync
+```
+
+**First-adoption note:** The reconciler is destructive by design for slugs listed in `config/integrations.php`. On first adoption (or after editing the config), any pre-existing tokens for those slugs are deleted and replaced with the config-seeded ones. The Helm chart keeps token values stable across upgrades via its seed-Secret `lookup` idiom, so ordinary upgrades do not invalidate tokens. Operators can preview with `helm upgrade --dry-run` + manually running `kubectl exec deploy/lancore-web -- php artisan integrations:sync --dry-run` before flipping the release.
+
+**Docker Compose deployments** can opt into the same reconciler at container boot by setting `LANCORE_INTEGRATIONS_RECONCILE_ON_BOOT=true` on the LanCore service — see §3.4.
+
+Verification:
+
+```bash
+# Each app exposes /up for readiness.
+for app in lancore lanbrackets lanentrance lanshout lanhelp; do
+  kubectl -n lan-software run --rm -it curl --image=curlimages/curl --restart=Never -- \
+    curl -fsSL http://${app}-web.lan-software.svc.cluster.local/up || echo "FAIL: $app"
+done
+```
+
+See [SCOM](SCOM.md) for ongoing operations (pod restart, log access, backup/restore, key rotation) and [SSDD §4.3](SSDD.md#43-high-availability) for the HA topology.
 
 ---
 

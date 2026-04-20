@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import {
     ChevronDown,
     DoorOpen,
@@ -60,7 +61,7 @@ export type IntegrationApp = {
     updated_at: string;
 };
 
-defineProps<{
+const props = defineProps<{
     integrationApps: {
         data: IntegrationApp[];
         current_page: number;
@@ -75,7 +76,10 @@ defineProps<{
         direction?: 'asc' | 'desc';
         per_page?: number;
     };
+    configManagedSlugs?: string[];
 }>();
+
+const configManagedSlugs = computed(() => props.configManagedSlugs ?? []);
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: integrationsRoute().url },
@@ -197,10 +201,20 @@ const { setSearch, setPerPage } = useDataTable(
                                 app.name
                             }}</TableCell>
                             <TableCell>
-                                <code
-                                    class="rounded bg-muted px-1.5 py-0.5 text-xs"
-                                    >{{ app.slug }}</code
-                                >
+                                <div class="flex items-center gap-2">
+                                    <code
+                                        class="rounded bg-muted px-1.5 py-0.5 text-xs"
+                                        >{{ app.slug }}</code
+                                    >
+                                    <Badge
+                                        v-if="configManagedSlugs.includes(app.slug)"
+                                        variant="outline"
+                                        class="border-amber-300 bg-amber-50 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
+                                        title="Reconciled from config/integrations.php on every release"
+                                    >
+                                        config-managed
+                                    </Badge>
+                                </div>
                             </TableCell>
                             <TableCell>
                                 <Badge
