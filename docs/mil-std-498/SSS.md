@@ -213,6 +213,19 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-USR-006 | The system shall support ticket discovery settings (user visibility control) |
 | CAP-USR-007 | The system shall support sidebar favorites for navigation customization |
 | CAP-USR-008 | The system shall support appearance settings (theme preferences) |
+| CAP-USR-010 | The system shall store a `locale` field on the user record representing the user's preferred display language, selectable from the supported locales: `en`, `de`, `fr`, `es` |
+
+#### 3.2.19 Internationalization (CAP-I18N)
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-I18N-001 | The system shall support four display locales: English (`en`), German (`de`), French (`fr`), and Spanish (`es`); `en` shall be the default when no locale is set |
+| CAP-I18N-002 | LanCore shall be the authoritative store of `User.locale`; the locale shall be included in the `LanCoreUser` DTO returned by the SSO exchange and user-resolution endpoints so that satellite apps can adopt it without an independent locale preference store |
+| CAP-I18N-003 | LanCore shall expose a language-switcher UI in the user profile settings; satellite apps shall render a read-only locale indicator linking back to the LanCore profile settings page |
+| CAP-I18N-004 | The system shall apply the authenticated user's stored locale on each request; unauthenticated requests shall use the browser `Accept-Language` header, falling back to `en` |
+| CAP-I18N-005 | Backend translated strings shall be managed via Laravel `lang/{en,de,fr,es}/` directories; frontend translated strings shall be managed via `resources/js/locales/{en,de,fr,es}.json` and delivered through `vue-i18n` |
+| CAP-I18N-006 | Translation strings shall be managed in Tolgee Cloud (one project, one namespace per app); a nightly GitHub Actions workflow shall pull approved translations from Tolgee into each app repository, committing updated locale files |
+| CAP-I18N-007 | The `ResolveIntegrationUser` action shall pass `$user->locale` (the stored user locale) — not `app()->getLocale()` (the request locale) — when constructing the `LanCoreUser` DTO returned to SSO consumers |
 
 #### 3.2.16 Game Server Orchestration (CAP-ORC)
 
@@ -386,10 +399,15 @@ See [IRS](IRS.md) for detailed interface requirements.
 
 Requirements in this document trace to:
 
-- **Upstream:** Operational scenarios in [OCD](OCD.md)
+- **Upstream:** Operational scenarios in [OCD](OCD.md) — OCD §5.4 Localized Display mode, OCD §5.1.2 locale selection, OCD §7.1 glossary
 - **Downstream:** Detailed CSCI requirements in [SRS](SRS.md)
 - **Downstream:** Interface requirements in [IRS](IRS.md)
 - **Downstream:** Test cases in [STD](STD.md)
+
+| SSS Capability | Traces from OCD | Traces to SRS |
+|----------------|----------------|---------------|
+| CAP-USR-010 | OCD §5.1.2 (locale selection in profile) | USR-F-021 |
+| CAP-I18N-001..007 | OCD §5.4 (Localized Display mode), OCD §5.1.2 | I18N-F-001..007 |
 
 ---
 
@@ -414,3 +432,6 @@ Requirements in this document trace to:
 | LCT1 | LanCore Token version 1 (signed ticket token scheme) |
 | ENV-DEP | Environment / Deployment requirement category |
 | ICLIB | Integration Client Library (shared `lan-software/lancore-client` package) |
+| I18N | Internationalization |
+| L10N | Localization |
+| BCP 47 | IETF standard for language tags (e.g., `en`, `de`, `fr`, `es`) |

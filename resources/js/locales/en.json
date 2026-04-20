@@ -1,0 +1,61 @@
+{
+    "common": {
+        "appName": "LanCore",
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "close": "Close",
+        "submit": "Submit",
+        "search": "Search",
+        "settings": "Settings",
+        "logout": "Log out",
+        "profile": "Profile",
+        "dashboard": "Dashboard",
+        "admin": "Admin",
+        "users": "Users",
+        "back": "Back"
+    },
+    "auth": {
+        "login": {
+            "title": "Log in to your account",
+            "email": "Email address",
+            "password": "Password",
+            "rememberMe": "Remember me",
+            "forgotPassword": "Forgot password?",
+            "button": "Log in"
+        },
+        "register": {
+            "title": "Create an account",
+            "name": "Name",
+            "email": "Email address",
+            "password": "Password",
+            "confirmPassword": "Confirm Password",
+            "button": "Register"
+        }
+    },
+    "settings": {
+        "title": "Settings",
+        "profile": {
+            "title": "Profile",
+            "description": "Update your name and email address",
+            "name": "Name",
+            "email": "Email address",
+            "updateButton": "Save",
+            "updated": "Saved."
+        },
+        "language": {
+            "title": "Language",
+            "description": "Choose the language used across the LAN ecosystem. Your selection is propagated to all connected Lan* apps.",
+            "label": "Display language",
+            "saved": "Language preference updated"
+        }
+    },
+    "validation": {
+        "required": "This field is required",
+        "email": "Please enter a valid email address"
+    }
+}

@@ -37,7 +37,7 @@ class ResolveIntegrationUser
             $data['roles'] = $user->roles->pluck('name')->values()->all();
         }
 
-        $data['locale'] = app()->getLocale();
+        $data['locale'] = $user->locale ?? config('app.fallback_locale');
         $data['avatar_url'] = null;
         $data['created_at'] = $user->created_at?->toIso8601String();
 

@@ -29,7 +29,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @see docs/mil-std-498/SSS.md CAP-USR-001, CAP-USR-002, CAP-USR-003
  * @see docs/mil-std-498/SRS.md USR-F-001, USR-F-002, USR-F-003, USR-F-006
  */
-#[Fillable(['name', 'email', 'password', 'phone', 'street', 'city', 'zip_code', 'country', 'is_ticket_discoverable', 'ticket_discovery_allowlist', 'sidebar_favorites'])]
+#[Fillable(['name', 'email', 'password', 'phone', 'street', 'city', 'zip_code', 'country', 'locale', 'is_ticket_discoverable', 'ticket_discovery_allowlist', 'sidebar_favorites'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {

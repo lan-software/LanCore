@@ -185,7 +185,6 @@ As this is the initial PoC version, there is no previous version. Key capabiliti
 |-----------|------------|
 | Not production-ready | PoC stage; not recommended for production events until v1.0 |
 | Single-tenant | Each installation serves one organization |
-| No i18n | Interface is English-only; internationalization planned |
 | No offline support | Requires continuous internet connection |
 
 ---

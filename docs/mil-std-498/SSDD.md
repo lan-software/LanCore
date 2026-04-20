@@ -493,6 +493,64 @@ Admin
 
 Previously issued tokens signed by the retired `kid` remain verifiable because retired public keys stay in the JWKS response until all tokens signed by them have expired (`validation_expires_at < now()`).
 
+### 5.7 Internationalization Architecture
+
+This section describes the system-level design for multi-locale support (CAP-I18N-001..007).
+
+#### 5.7.1 Locale Authority and Propagation
+
+LanCore is the single authoritative source for `User.locale`. The propagation path is:
+
+```
+LanCore users.locale column (authoritative)
+  │
+  ├── SSO exchange / resolveUser endpoints
+  │     └── LanCoreUser DTO { locale: ?string }  ← ResolveIntegrationUser passes $user->locale
+  │
+  └── Satellite UserSyncService
+        └── local users.locale column  ← SetLocale middleware reads this per-request
+```
+
+The bug in `app/Domain/Integration/Actions/ResolveIntegrationUser.php` (passing `app()->getLocale()` instead of `$user->locale`) is addressed by CAP-I18N-007 and the corresponding SRS requirement I18N-F-007. After the fix, the DTO always carries the user's stored preference, not the server's current request locale.
+
+#### 5.7.2 Per-Request Locale Resolution
+
+| Layer | Component | Behaviour |
+|-------|-----------|-----------|
+| Authenticated requests | `SetLocale` middleware | Calls `app()->setLocale($user->locale)` using the locale stored on the authenticated user record; falls back to `config('app.locale')` (`en`) when `locale` is null |
+| Unauthenticated requests | `SetLocale` middleware | Parses `Accept-Language` header, matches against supported locales (`en`, `de`, `fr`, `es`); falls back to `en` |
+| Inertia shared props | `HandleInertiaRequests` | Shares `locale` (active locale string) and `availableLocales` (array of supported locale codes) with the Vue app on every response |
+| Frontend rendering | `vue-i18n` (per app) | Receives `locale` from Inertia shared props; loads the matching `resources/js/locales/{locale}.json` message file |
+
+#### 5.7.3 Language-Switcher UI Topology
+
+| App | UI Component | Behaviour |
+|-----|-------------|-----------|
+| LanCore | Language selector in profile settings (`/settings/profile`) | Persists chosen locale to `users.locale`; page reload applies the new locale immediately |
+| Satellite apps | Read-only locale indicator | Displays the active locale; links to `{LANCORE_BASE_URL}/settings/profile` for changes |
+
+#### 5.7.4 Translation Asset Management
+
+```
+Tolgee Cloud project (1 project, 6 namespaces)
+  namespaces: lancore, lanshout, lanbrackets, lanentrance, lanhelp, shared
+  │
+  └── Nightly GitHub Actions workflow (per app repo)
+        ├── Pulls approved strings via Tolgee CLI export
+        ├── Writes to lang/{en,de,fr,es}/*.php  (Laravel backend)
+        │   and resources/js/locales/{en,de,fr,es}.json  (Vue frontend)
+        └── Commits updated locale files
+```
+
+Backend strings use Laravel's `lang/` convention. Frontend strings use `vue-i18n` JSON flat-key format. The `shared` namespace is pulled by all apps and provides common terms (button labels, validation messages, etc.).
+
+#### 5.7.5 `LanCoreUser` DTO Locale Field
+
+The `locale` field (type `?string`, BCP 47 tag) already exists in the `LanCoreUser` DTO (see SRS ICLIB-F-002). The system-level interface requirement is:
+
+- `ResolveIntegrationUser` MUST populate `locale` from `$user->locale` (the database column), not from `app()->getLocale()`.
+- Satellite `UserSyncService` implementations MUST write the received `locale` value to the satellite's `users.locale` column when processing SSO exchange responses and webhook user-sync events (`user.registered`, `user.profile_updated`, `user.roles_updated`).
+
 ---
 
 ## 6. Requirements Traceability
@@ -511,6 +569,7 @@ Previously issued tokens signed by the retired `kid` remain verifiable because r
 | CAP-INT-001..006 (server-side integration registration, API tokens, SSO, webhook subscriptions, navigation hints, access logging) | Section 4.1 (network topology), Section 5.4 (consumer-side client library) |
 | CAP-WHK-001..004 (webhook registration, signing, delivery tracking, event types) | Section 4.1 (outbound delivery path), Section 5.4.2 (consumer-side verification + abstract controllers) |
 | CAP-ICLIB-001..005 (shared Integration Client Library) | Section 3.2 (subsystem inventory), Section 5.4 (architecture) |
+| CAP-USR-010, CAP-I18N-001..007 | Section 5.7 (Internationalization Architecture) |
 
 ---
 

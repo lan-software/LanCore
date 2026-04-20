@@ -694,6 +694,45 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | JWKS cache miss after TTL expiry | First call caches; TTL elapses; second call | Two consecutive `fetchSigningKeys()` spanning TTL | Two outbound HTTP requests recorded |
 | entrance sub-client unavailable when not enabled | `config('lancore.entrance.enabled') === false` | `$client->entrance()` | Throws or returns guard object that rejects all calls |
 
+### 4.22 Internationalization (i18n) Tests
+
+**Files:** `tests/Feature/I18n/LocaleSettingsTest.php`, `tests/Feature/I18n/SetLocaleMiddlewareTest.php`, `tests/Feature/Integration/ResolveIntegrationUserLocaleTest.php`, `tests/Unit/I18n/LocaleResolutionTest.php`
+
+#### 4.22.1 Locale Storage and Profile Update Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| profile page exposes locale selector | Authenticated user | GET /settings/profile | Response contains `availableLocales` Inertia prop with `['en', 'de', 'fr', 'es']` |
+| locale can be updated via profile settings | Authenticated user, current locale = `en` | PATCH /settings/profile `{locale: 'de'}` | 302, `users.locale` = `de` |
+| locale update rejects unsupported locale | Authenticated user | PATCH /settings/profile `{locale: 'zh'}` | 422 validation error |
+| locale defaults to null on registration | New user registration | POST /register | `users.locale` IS NULL |
+
+#### 4.22.2 SetLocale Middleware Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| authenticated user with stored locale gets correct app locale | User with `locale = 'de'` | GET /dashboard | `app()->getLocale()` = `de` during request handling |
+| authenticated user with null locale falls back to app default | User with `locale = null` | GET /dashboard | `app()->getLocale()` = `en` (config default) |
+| unauthenticated request uses Accept-Language header | No session, `Accept-Language: fr` | GET / | `app()->getLocale()` = `fr` |
+| unauthenticated request with unsupported Accept-Language falls back | No session, `Accept-Language: zh-CN` | GET / | `app()->getLocale()` = `en` |
+| unauthenticated request with no Accept-Language falls back to default | No session, no header | GET / | `app()->getLocale()` = `en` |
+
+#### 4.22.3 Inertia Shared Props Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| locale prop shared on every Inertia response | Authenticated user, `locale = 'fr'` | GET /dashboard | Inertia shared prop `locale` = `fr` |
+| availableLocales prop shared on every Inertia response | Any authenticated request | GET /dashboard | Inertia shared prop `availableLocales` = `['en', 'de', 'fr', 'es']` |
+| locale prop reflects null-locale fallback | User with `locale = null` | GET /dashboard | Inertia shared prop `locale` = `en` |
+
+#### 4.22.4 ResolveIntegrationUser Locale Bug-Fix Tests
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| SSO exchange returns user-stored locale, not request locale | User with `locale = 'de'`, request locale = `en` | POST /api/integration/sso/exchange `{code}` | Returned user payload contains `locale = 'de'` |
+| SSO exchange returns null when user has no locale preference | User with `locale = null` | POST /api/integration/sso/exchange `{code}` | Returned user payload contains `locale = null` |
+| resolveUser endpoint returns user-stored locale | User with `locale = 'fr'`, request in `en` context | GET /api/integration/user (Bearer token) | Response `locale` field = `fr`, not `en` |
+
 ### 4.19 Demo Mode Tests
 
 **File:** `tests/Feature/Demo/`
@@ -732,6 +771,10 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | ORG-F-001..005 | Organization settings tests (4.18) |
 | SSS 3.1 Required States (Demo) | Demo mode tests (4.19) |
 | CAP-ICLIB-001..005, ICLIB-F-001..006 | Integration Client Library tests (4.21) |
+| CAP-USR-010, USR-F-021 | Locale settings tests (4.22.1) |
+| CAP-I18N-001..004, I18N-F-001..004 | SetLocale middleware tests (4.22.2), Inertia shared props tests (4.22.3) |
+| CAP-I18N-002, CAP-I18N-007, I18N-F-007 | ResolveIntegrationUser locale bug-fix tests (4.22.4) |
+| CAP-I18N-005 | Locale asset presence verified by CI pipeline (4.15) |
 
 ---
 

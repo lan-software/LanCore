@@ -5,6 +5,7 @@ import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileCo
 import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,6 +38,10 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+const currentLocale = computed(
+    () => (user.value.locale as string | undefined) ?? (page.props.locale as string),
+);
+const availableLocales = computed(() => page.props.availableLocales as string[]);
 
 const countries = [
     { code: 'AT', name: 'Austria' },
@@ -239,6 +244,19 @@ const countries = [
                         </Transition>
                     </div>
                 </Form>
+
+                <Heading
+                    variant="small"
+                    :title="$t('settings.language.title')"
+                    :description="$t('settings.language.description')"
+                />
+
+                <LanguageSwitcher
+                    :current-locale="currentLocale"
+                    :available-locales="availableLocales"
+                    :user-name="user.name as string"
+                    :user-email="user.email as string"
+                />
             </div>
 
             <DeleteUser />

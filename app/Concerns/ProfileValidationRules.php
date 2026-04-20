@@ -2,6 +2,7 @@
 
 namespace App\Concerns;
 
+use App\Http\Middleware\SetLocale;
 use App\Models\User;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +23,16 @@ trait ProfileValidationRules
             'city' => ['nullable', 'string', 'max:255'],
             'zip_code' => ['nullable', 'string', 'max:20'],
             'country' => ['nullable', 'string', 'size:2'],
+            'locale' => $this->localeRules(),
         ];
+    }
+
+    /**
+     * @return array<int, \Illuminate\Contracts\Validation\Rule|array<mixed>|string>
+     */
+    protected function localeRules(): array
+    {
+        return ['nullable', 'string', Rule::in(SetLocale::AVAILABLE)];
     }
 
     /**

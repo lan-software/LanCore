@@ -1,0 +1,61 @@
+{
+    "common": {
+        "appName": "LanCore",
+        "loading": "Cargando...",
+        "error": "Error",
+        "success": "Éxito",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "delete": "Eliminar",
+        "edit": "Editar",
+        "close": "Cerrar",
+        "submit": "Enviar",
+        "search": "Buscar",
+        "settings": "Ajustes",
+        "logout": "Cerrar sesión",
+        "profile": "Perfil",
+        "dashboard": "Panel",
+        "admin": "Admin",
+        "users": "Usuarios",
+        "back": "Atrás"
+    },
+    "auth": {
+        "login": {
+            "title": "Inicia sesión en tu cuenta",
+            "email": "Correo electrónico",
+            "password": "Contraseña",
+            "rememberMe": "Recuérdame",
+            "forgotPassword": "¿Olvidaste tu contraseña?",
+            "button": "Iniciar sesión"
+        },
+        "register": {
+            "title": "Crear una cuenta",
+            "name": "Nombre",
+            "email": "Correo electrónico",
+            "password": "Contraseña",
+            "confirmPassword": "Confirmar contraseña",
+            "button": "Registrarse"
+        }
+    },
+    "settings": {
+        "title": "Ajustes",
+        "profile": {
+            "title": "Perfil",
+            "description": "Actualiza tu nombre y tu correo electrónico",
+            "name": "Nombre",
+            "email": "Correo electrónico",
+            "updateButton": "Guardar",
+            "updated": "Guardado."
+        },
+        "language": {
+            "title": "Idioma",
+            "description": "Elige el idioma que se usará en todo el ecosistema LAN. Tu selección se propagará a todas las aplicaciones Lan* conectadas.",
+            "label": "Idioma de visualización",
+            "saved": "Preferencia de idioma actualizada"
+        }
+    },
+    "validation": {
+        "required": "Este campo es obligatorio",
+        "email": "Introduce una dirección de correo electrónico válida"
+    }
+}

@@ -5,6 +5,7 @@ import { createApp, h } from 'vue';
 import '../css/app.css';
 import DemoShell from '@/components/demo/DemoShell.vue';
 import { initializeTheme } from '@/composables/useAppearance';
+import i18n, { type AvailableLocale } from '@/i18n';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -16,10 +17,20 @@ createInertiaApp({
             import.meta.glob<DefineComponent>('./pages/**/*.vue'),
         ),
     setup({ el, App, props, plugin }) {
+        const shared = props.initialPage.props as {
+            locale?: AvailableLocale;
+            auth?: { user?: { locale?: AvailableLocale } };
+        };
+        const locale = shared.auth?.user?.locale ?? shared.locale;
+        if (locale && i18n.global.availableLocales.includes(locale)) {
+            i18n.global.locale.value = locale;
+        }
+
         createApp({
             render: () => h(DemoShell, null, { default: () => h(App, props) }),
         })
             .use(plugin)
+            .use(i18n)
             .mount(el);
     },
     progress: {

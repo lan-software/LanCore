@@ -93,6 +93,9 @@ app/
 | Laravel Octane/FrankenPHP | Application boot once, reuse across requests for performance |
 | Redis for caching | Tag-based invalidation, high throughput, shared cache across workers |
 | Demo mode via `SeedDemoCommand` + Stripe test-mode keys | Enables end-to-end showcases using Stripe's sandbox; activated via environment flag `APP_DEMO=true` paired with `STRIPE_KEY=pk_test_...` / `STRIPE_SECRET=sk_test_...`; `PaymentProviderManager` resolves `StripePaymentProvider` as normal — no custom provider is needed |
+| LanCore as authoritative locale store | `users.locale` column on LanCore is the single source of truth for the user's display language; satellites receive the locale via `LanCoreUser` DTO and persist it locally; this avoids duplicated preference UIs across apps and ensures the user changes their language in one place |
+| `SetLocale` middleware for per-request locale application | A dedicated middleware (registered in the web group after session init) calls `app()->setLocale()` based on the authenticated user's stored locale; this keeps locale resolution out of controllers and ensures every translation call in a request cycle uses the correct locale |
+| `vue-i18n` + Tolgee for frontend i18n | `vue-i18n@9+` initialized from the `locale` Inertia shared prop; JSON locale files in `resources/js/locales/`; Tolgee Cloud nightly pull ensures translations stay current without manual file management |
 
 ### 3.3 Security Design
 
@@ -424,12 +427,13 @@ show({ id: 1 })
 | 1 | AddRequestId | Assigns X-Request-ID header for tracing |
 | 2 | TrackHttpMetrics | Records Prometheus metrics |
 | 3 | HandleAppearance | Reads appearance/theme preference |
-| 4 | HandleInertiaRequests | Shares global data with Inertia (auth, flash, push prompt dismissal, permissions, `organization`, `myEventContext`, etc.). The `organization` prop is read from cache key `inertia.organization` (1h TTL, invalidated by `OrganizationSettingsController::update/uploadLogo/removeLogo`). The `myEventContext` prop resolves the user's currently selected event from session key `my_selected_event_id`, validates participation via `Event::scopeForUser`, and auto-clears a stale selection. |
-| 5 | EncryptCookies | Cookie encryption |
-| 6 | StartSession | Session initialization |
-| 7 | VerifyCsrfToken | CSRF protection |
-| 8 | EnsureUserHasRole | Role-based route protection (alias: `role`) |
-| 9 | AuthenticateIntegration | Bearer token validation for API routes |
+| 4 | SetLocale | Applies the authenticated user's stored `locale` (from `users.locale`) via `app()->setLocale()`; for unauthenticated requests, parses `Accept-Language` and maps to the nearest supported locale (`en`, `de`, `fr`, `es`), falling back to `en`. Must run after `StartSession` so the authenticated user is available; runs before `HandleInertiaRequests` so the active locale is set when Inertia builds its shared props. Traces to I18N-F-002. |
+| 5 | HandleInertiaRequests | Shares global data with Inertia (auth, flash, push prompt dismissal, permissions, `organization`, `myEventContext`, `locale`, `availableLocales`, etc.). The `organization` prop is read from cache key `inertia.organization` (1h TTL, invalidated by `OrganizationSettingsController::update/uploadLogo/removeLogo`). The `myEventContext` prop resolves the user's currently selected event from session key `my_selected_event_id`, validates participation via `Event::scopeForUser`, and auto-clears a stale selection. The `locale` prop is `app()->getLocale()` after `SetLocale` has run; `availableLocales` is `['en', 'de', 'fr', 'es']`. Traces to I18N-F-003. |
+| 6 | EncryptCookies | Cookie encryption |
+| 7 | StartSession | Session initialization |
+| 8 | VerifyCsrfToken | CSRF protection |
+| 9 | EnsureUserHasRole | Role-based route protection (alias: `role`) |
+| 10 | AuthenticateIntegration | Bearer token validation for API routes |
 
 ### 5.2 Service Layer
 
@@ -746,6 +750,126 @@ A typical satellite consumes the package as follows:
 
 The migration PR for each satellite is expected to be net-negative in lines of code.
 
+### 5.6 Internationalization (i18n) Design
+
+#### 5.6.1 Database Schema Change
+
+A single new nullable column is added to the `users` table:
+
+```
+users.locale  VARCHAR(10)  nullable  default: null
+```
+
+Valid values: `en`, `de`, `fr`, `es`, or NULL. NULL means "use the application default locale (`en`)". Validation is enforced at the Form Request layer before the value is written.
+
+#### 5.6.2 SetLocale Middleware
+
+`app/Http/Middleware/SetLocale.php` — registered in the `web` middleware group after `StartSession` and before `HandleInertiaRequests`:
+
+```php
+public function handle(Request $request, Closure $next): Response
+{
+    $supportedLocales = ['en', 'de', 'fr', 'es'];
+    $defaultLocale    = config('app.locale', 'en');
+
+    if ($request->user()?->locale && in_array($request->user()->locale, $supportedLocales, true)) {
+        app()->setLocale($request->user()->locale);
+    } else {
+        // Unauthenticated or null locale: negotiate from Accept-Language
+        $preferred = $request->getPreferredLanguage($supportedLocales);
+        app()->setLocale($preferred ?? $defaultLocale);
+    }
+
+    return $next($request);
+}
+```
+
+This is the only place in the codebase where the active locale is set. All downstream code — views, mail, notifications, validation messages — calls `app()->getLocale()` implicitly through Laravel's `__()` helper.
+
+#### 5.6.3 UpdateUserAttributes Action Change
+
+`app/Domain/Notification/Actions/UpdateUserAttributes.php` (or equivalent profile action) gains a `locale` field in its update payload. The Form Request adds:
+
+```php
+'locale' => ['nullable', 'string', Rule::in(['en', 'de', 'fr', 'es'])],
+```
+
+#### 5.6.4 ResolveIntegrationUser Bug Fix
+
+`app/Domain/Integration/Actions/ResolveIntegrationUser.php`, approximately line 40, currently constructs the `LanCoreUser` DTO with:
+
+```php
+// BEFORE (bug): passes request locale, not user preference
+'locale' => app()->getLocale(),
+```
+
+The fix replaces this with:
+
+```php
+// AFTER (correct): passes the user's stored locale preference
+'locale' => $user->locale,
+```
+
+This satisfies I18N-F-007 and CAP-I18N-007. The `locale` field is already declared on the `LanCoreUser` DTO (see ICLIB-F-002 / SRS §3.2.19) — no DTO changes are required.
+
+#### 5.6.5 HandleInertiaRequests Shared Props Addition
+
+`app/Http/Middleware/HandleInertiaRequests.php` — the `share()` method gains two new entries:
+
+```php
+'locale'           => fn () => app()->getLocale(),
+'availableLocales' => fn () => ['en', 'de', 'fr', 'es'],
+```
+
+`locale` is a lazy closure so it reads the locale after `SetLocale` has already called `app()->setLocale()`. `availableLocales` is static data used by the language-switcher UI and by `vue-i18n` initialization.
+
+#### 5.6.6 Vue Frontend i18n Initialization
+
+In `resources/js/app.ts` (or the Inertia initialization file):
+
+```typescript
+import { createI18n } from 'vue-i18n'
+import en from './locales/en.json'
+import de from './locales/de.json'
+import fr from './locales/fr.json'
+import es from './locales/es.json'
+
+// locale is injected from Inertia shared props via usePage()
+const i18n = createI18n({
+    locale: usePage().props.locale as string,
+    fallbackLocale: 'en',
+    messages: { en, de, fr, es },
+})
+app.use(i18n)
+```
+
+Translation files live at `resources/js/locales/{en,de,fr,es}.json`. Vue components use the `t()` composable from `vue-i18n`.
+
+#### 5.6.7 Tolgee Pull Workflow
+
+A nightly GitHub Actions workflow (`.github/workflows/pull-translations.yml`) runs in each app repository:
+
+```yaml
+- name: Pull translations from Tolgee
+  run: |
+    npx tolgee pull \
+      --api-url https://app.tolgee.io \
+      --api-key ${{ secrets.TOLGEE_API_KEY }} \
+      --namespace lancore \
+      --namespace shared \
+      --path resources/js/locales/{locale}.json \
+      --backend-path lang/{locale}
+- name: Commit updated locale files
+  run: |
+    git config user.name "tolgee-bot"
+    git config user.email "bot@lan-software.dev"
+    git add lang/ resources/js/locales/
+    git diff --staged --quiet || git commit -m "chore(i18n): pull translations from Tolgee [skip ci]"
+    git push
+```
+
+The `shared` namespace is pulled by all six apps; each app additionally pulls its own namespace (`lancore`, `lanbrackets`, `lanshout`, `lanentrance`, `lanhelp`).
+
 ---
 
 ## 6. Requirements Traceability
@@ -774,6 +898,14 @@ The migration PR for each satellite is expected to be net-negative in lines of c
 | ORG-F-001..005 | app/Domain/Settings/Http/Controllers/OrganizationSettingsController.php, app/Http/Middleware/HandleInertiaRequests.php, resources/js/components/AppLogo.vue |
 | SRS 3.1 Required States (Demo) | app/Console/Commands/SeedDemoCommand.php (data seeding), app/Domain/Shop/Services/PaymentProviderManager.php (resolves StripePaymentProvider in all modes), environment configuration: STRIPE_KEY / STRIPE_SECRET set to Stripe test-mode values when APP_DEMO=true |
 | ICLIB-F-001..009 | `lan-software/lancore-client` package (separate repository); see §5.5 for class-level design |
+| USR-F-021 | `users` table migration (new `locale` VARCHAR column); `app/Domain/Notification/Actions/UpdateUserAttributes.php` or equivalent profile action; profile Form Request (`locale` validation rule); see §5.6.1, §5.6.3 |
+| I18N-F-001 | `config/app.php` supported locales config; `SetLocale` middleware validation set; Vue `availableLocales` shared prop; see §5.6.2, §5.6.5 |
+| I18N-F-002 | `app/Http/Middleware/SetLocale.php`; see §5.6.2 |
+| I18N-F-003 | `app/Http/Middleware/HandleInertiaRequests.php` (`locale`, `availableLocales` props); see §5.6.5 |
+| I18N-F-004 | `lang/{en,de,fr,es}/` directories (via `artisan lang:publish`); `__()` / `trans()` usage throughout backend |
+| I18N-F-005 | `resources/js/locales/{en,de,fr,es}.json`; `vue-i18n` initialization in `resources/js/app.ts`; see §5.6.6 |
+| I18N-F-006 | `.github/workflows/pull-translations.yml`; see §5.6.7 |
+| I18N-F-007 | `app/Domain/Integration/Actions/ResolveIntegrationUser.php` line ~40: `$user->locale` replaces `app()->getLocale()`; see §5.6.4 |
 
 ---
 

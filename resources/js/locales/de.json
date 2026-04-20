@@ -1,0 +1,61 @@
+{
+    "common": {
+        "appName": "LanCore",
+        "loading": "Lädt...",
+        "error": "Fehler",
+        "success": "Erfolg",
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "delete": "Löschen",
+        "edit": "Bearbeiten",
+        "close": "Schließen",
+        "submit": "Absenden",
+        "search": "Suchen",
+        "settings": "Einstellungen",
+        "logout": "Abmelden",
+        "profile": "Profil",
+        "dashboard": "Dashboard",
+        "admin": "Admin",
+        "users": "Benutzer",
+        "back": "Zurück"
+    },
+    "auth": {
+        "login": {
+            "title": "Bei deinem Konto anmelden",
+            "email": "E-Mail-Adresse",
+            "password": "Passwort",
+            "rememberMe": "Angemeldet bleiben",
+            "forgotPassword": "Passwort vergessen?",
+            "button": "Anmelden"
+        },
+        "register": {
+            "title": "Konto erstellen",
+            "name": "Name",
+            "email": "E-Mail-Adresse",
+            "password": "Passwort",
+            "confirmPassword": "Passwort bestätigen",
+            "button": "Registrieren"
+        }
+    },
+    "settings": {
+        "title": "Einstellungen",
+        "profile": {
+            "title": "Profil",
+            "description": "Aktualisiere deinen Namen und deine E-Mail-Adresse",
+            "name": "Name",
+            "email": "E-Mail-Adresse",
+            "updateButton": "Speichern",
+            "updated": "Gespeichert."
+        },
+        "language": {
+            "title": "Sprache",
+            "description": "Wähle die Sprache, die im gesamten LAN-Ökosystem verwendet wird. Deine Auswahl wird an alle verbundenen Lan*-Apps weitergegeben.",
+            "label": "Anzeigesprache",
+            "saved": "Spracheinstellung aktualisiert"
+        }
+    },
+    "validation": {
+        "required": "Dieses Feld ist erforderlich",
+        "email": "Bitte gib eine gültige E-Mail-Adresse ein"
+    }
+}

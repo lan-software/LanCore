@@ -371,6 +371,7 @@ The LanCore CSCI shall support the following operational states:
 | USR-F-018 | The software shall share the authenticated user's resolved permissions with the frontend via Inertia shared props as a flat string array |
 | USR-F-019 | The software shall provide a `usePermissions()` Vue composable exposing typed `can(PermissionValue)` and `canAny(PermissionValue...)` helper functions backed by a `Permission` TypeScript constant object for compile-time safety |
 | USR-F-020 | The software shall render sidebar navigation sections conditionally based on the user's resolved permissions |
+| USR-F-021 | The software shall store a `locale` column (VARCHAR, nullable) on the `users` table representing the user's preferred display language; the value shall be one of `en`, `de`, `fr`, `es` or NULL (meaning use the application default `en`); the profile settings form shall expose a locale selector and validate against this set |
 
 #### 3.2.16 Orchestration Domain (CSCI-ORC)
 
@@ -467,12 +468,31 @@ See [IRS](IRS.md) for detailed external interface requirements.
 - JSONB columns for flexible structured data (seat plans, banner images)
 - Polymorphic relationships for purchasable items
 
-### 3.6 Adaptation Requirements
+### 3.6 Adaptation and Internationalization Requirements
+
+#### 3.6.1 Adaptation
 
 - The system shall be configurable via `.env` environment variables
 - The system shall support timezone configuration per installation
-- The system shall support locale configuration for internationalization
 - The system shall support configurable bcrypt rounds for password hashing
+
+#### 3.6.2 Internationalization (CSCI-I18N)
+
+**Models:** User (locale column)
+**Middleware:** SetLocale
+**Actions:** UpdateUserAttributes (locale field)
+**Shared Props:** HandleInertiaRequests (locale, availableLocales)
+**Bug Fix:** ResolveIntegrationUser (§INT)
+
+| Req ID | Requirement |
+|--------|------------|
+| I18N-F-001 | The software shall support four display locales: `en` (English), `de` (German), `fr` (French), `es` (Spanish); `en` shall be the default locale |
+| I18N-F-002 | The software shall provide a `SetLocale` middleware that: (a) for authenticated requests, calls `app()->setLocale($user->locale ?? config('app.locale'))` using the locale stored on the authenticated user; (b) for unauthenticated requests, parses the `Accept-Language` header and maps it to the nearest supported locale, falling back to `en`; the middleware shall be registered in the web middleware group after session initialization |
+| I18N-F-003 | The software's `HandleInertiaRequests` middleware shall share two Inertia props on every response: `locale` (the active locale string) and `availableLocales` (the array `['en', 'de', 'fr', 'es']`) so that the Vue frontend can configure `vue-i18n` and display the locale switcher without an additional API call |
+| I18N-F-004 | The software shall provide backend translation files under `lang/{en,de,fr,es}/` via `php artisan lang:publish`; all user-facing string output from Laravel (validation messages, email subjects, notification titles) shall use the `__()` / `trans()` helper referencing these files |
+| I18N-F-005 | The software's Vue frontend shall use `vue-i18n@9+` initialized with the `locale` Inertia shared prop; translation strings shall reside in `resources/js/locales/{en,de,fr,es}.json`; all UI text shall use the `t()` composable rather than hard-coded strings |
+| I18N-F-006 | The software shall pull translation strings from Tolgee Cloud via a nightly GitHub Actions workflow that calls the Tolgee CLI export for the `lancore` and `shared` namespaces and commits updated locale files to the repository |
+| I18N-F-007 | The `ResolveIntegrationUser` action (`app/Domain/Integration/Actions/ResolveIntegrationUser.php`, line ~40) shall pass `$user->locale` — the value stored on the `User` model — when constructing the `LanCoreUser` DTO; it shall NOT pass `app()->getLocale()` (the current request locale), which was the prior behaviour and constitutes a bug causing satellites to receive the server's request locale instead of the user's preference |
 
 ### 3.7 Safety Requirements
 
@@ -557,6 +577,8 @@ Additional CSCI-level requirements:
 | CAP-ORC-* | ORC-F-* |
 | CAP-ORG-* | ORG-F-* |
 | CAP-ICLIB-001..005 | ICLIB-F-001..009 |
+| CAP-USR-010 | USR-F-021 |
+| CAP-I18N-001..007 | I18N-F-001..007 |
 
 ---
 

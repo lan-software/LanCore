@@ -14,12 +14,15 @@
         "test": "vitest run",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
-        "test:e2e": "playwright test"
+        "test:e2e": "playwright test",
+        "i18n:push": "tolgee push",
+        "i18n:pull": "tolgee pull"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
         "@laravel/vite-plugin-wayfinder": "^0.1.3",
         "@playwright/test": "^1.58.2",
+        "@tolgee/cli": "^2.6.0",
         "@stylistic/eslint-plugin": "^5.10.0",
         "@tailwindcss/vite": "^4.1.11",
         "@types/canvas-confetti": "^1.9.0",
@@ -64,6 +67,7 @@
         "tailwindcss": "^4.1.1",
         "tw-animate-css": "^1.2.5",
         "vue": "^3.5.13",
+        "vue-i18n": "^9.14.5",
         "vue-input-otp": "^0.3.2"
     },
     "optionalDependencies": {

@@ -1,0 +1,61 @@
+{
+    "common": {
+        "appName": "LanCore",
+        "loading": "Chargement...",
+        "error": "Erreur",
+        "success": "Succès",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "edit": "Modifier",
+        "close": "Fermer",
+        "submit": "Envoyer",
+        "search": "Rechercher",
+        "settings": "Paramètres",
+        "logout": "Se déconnecter",
+        "profile": "Profil",
+        "dashboard": "Tableau de bord",
+        "admin": "Admin",
+        "users": "Utilisateurs",
+        "back": "Retour"
+    },
+    "auth": {
+        "login": {
+            "title": "Connectez-vous à votre compte",
+            "email": "Adresse e-mail",
+            "password": "Mot de passe",
+            "rememberMe": "Se souvenir de moi",
+            "forgotPassword": "Mot de passe oublié ?",
+            "button": "Se connecter"
+        },
+        "register": {
+            "title": "Créer un compte",
+            "name": "Nom",
+            "email": "Adresse e-mail",
+            "password": "Mot de passe",
+            "confirmPassword": "Confirmer le mot de passe",
+            "button": "S'inscrire"
+        }
+    },
+    "settings": {
+        "title": "Paramètres",
+        "profile": {
+            "title": "Profil",
+            "description": "Mettez à jour votre nom et votre adresse e-mail",
+            "name": "Nom",
+            "email": "Adresse e-mail",
+            "updateButton": "Enregistrer",
+            "updated": "Enregistré."
+        },
+        "language": {
+            "title": "Langue",
+            "description": "Choisissez la langue utilisée dans tout l'écosystème LAN. Votre sélection est propagée à toutes les applications Lan* connectées.",
+            "label": "Langue d'affichage",
+            "saved": "Préférence de langue mise à jour"
+        }
+    },
+    "validation": {
+        "required": "Ce champ est obligatoire",
+        "email": "Veuillez saisir une adresse e-mail valide"
+    }
+}

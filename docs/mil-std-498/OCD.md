@@ -100,6 +100,7 @@ LanCore is a ground-up rewrite providing:
 - Purchase tickets for events
 - View and manage their own tickets
 - Manage profile and security settings (including 2FA)
+- Select preferred display language (English, German, French, Spanish) in their profile; the selected locale is stored in LanCore and propagated to all satellite apps at next SSO exchange
 - Customize notification preferences (email, web push)
 - Comment on and vote on news articles
 - Dismiss announcements
@@ -289,6 +290,7 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 | Development Mode | Debug toolbar, Telescope, detailed error pages enabled |
 | Queue Processing | Horizon manages background jobs (webhooks, notifications, email) |
 | Demo Purposes | System pre-loaded with synthetic event, ticket, and user data to showcase platform capabilities to prospective organizers or stakeholders; payments are processed through the real payment provider configured in test mode, so no real financial transactions occur |
+| Localized Display | Each authenticated user's UI is rendered in their chosen locale (English, German, French, or Spanish). LanCore is the authoritative store of the `User.locale` field; satellite apps receive the locale via the SSO exchange DTO and apply it per-request via a `SetLocale` middleware. Locale strings are sourced from Laravel `lang/` directories and the Vue front-end via `vue-i18n`; translation assets are managed in Tolgee Cloud and pulled nightly to each app repository via a GitHub Actions workflow |
 
 ---
 
@@ -333,3 +335,8 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 | Nonce | A 128-bit random value embedded in each ticket token, rotated on every token regeneration; never stored in plaintext |
 | Nonce Hash | HMAC-SHA256 of the nonce using a server-side pepper; stored in the database for token-to-ticket lookup without exposing the nonce |
 | Pepper | A secret value (not stored in the database) used as the HMAC key when deriving the nonce hash |
+| Locale | A BCP 47 language tag (e.g., `en`, `de`, `fr`, `es`) that identifies the user's preferred display language; stored as the `locale` column on the LanCore `users` table and propagated to satellite apps via the `LanCoreUser` DTO |
+| i18n | Internationalization — the process of designing software so that it can be adapted to multiple languages without code changes |
+| l10n | Localization — the process of adapting an internationalized application for a specific language or region |
+| vue-i18n | The Vue.js internationalization plugin (`vue-i18n@9+`) used in the LanCore and satellite Vue frontends to translate UI strings from JSON locale files |
+| Tolgee | Cloud-based translation management platform (free-plan, single project with per-app namespaces) used to maintain translation strings; a nightly GitHub Actions workflow pulls approved translations into each app repository |

@@ -1,0 +1,19 @@
+{
+    "$schema": "https://tolgee.io/schemas/tolgeerc-schema.json",
+    "apiUrl": "https://app.tolgee.io",
+    "projectId": 30625,
+    "push": {
+        "namespaces": ["lancore"],
+        "languages": ["en", "de", "fr", "es"],
+        "forceMode": "KEEP"
+    },
+    "pull": {
+        "path": "./resources/js/locales",
+        "format": "JSON_ICU",
+        "languages": ["en", "de", "fr", "es"],
+        "namespaces": ["lancore"],
+        "fileStructureTemplate": "{languageTag}.{extension}"
+    },
+    "extractor": "./resources/js/**/*.{ts,tsx,vue}",
+    "patterns": ["$t('{key}')", "t('{key}')"]
+}
