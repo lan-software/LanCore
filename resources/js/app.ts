@@ -17,8 +17,7 @@ createInertiaApp({
         ),
     setup({ el, App, props, plugin }) {
         createApp({
-            render: () =>
-                h(DemoShell, null, { default: () => h(App, props) }),
+            render: () => h(DemoShell, null, { default: () => h(App, props) }),
         })
             .use(plugin)
             .mount(el);

@@ -27,14 +27,25 @@ const props = defineProps<{
 }>();
 
 function rotateToken(): void {
-    if (!confirm('Rotate the validation token for this ticket? The current QR code will stop working.')) {
+    if (
+        !confirm(
+            'Rotate the validation token for this ticket? The current QR code will stop working.',
+        )
+    ) {
         return;
     }
 
-    router.post(`/admin-tickets/${props.ticket.id}/rotate-token`, {}, { preserveScroll: true });
+    router.post(
+        `/admin-tickets/${props.ticket.id}/rotate-token`,
+        {},
+        { preserveScroll: true },
+    );
 }
 
-const tokenStatusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const tokenStatusVariant: Record<
+    string,
+    'default' | 'secondary' | 'destructive' | 'outline'
+> = {
     Active: 'default',
     Expired: 'secondary',
     Revoked: 'destructive',
@@ -140,7 +151,12 @@ const statusVariant: Record<
                 <CardHeader>
                     <div class="flex items-center justify-between">
                         <CardTitle>Validation Token</CardTitle>
-                        <Badge :variant="tokenStatusVariant[validation_token.status] ?? 'outline'">
+                        <Badge
+                            :variant="
+                                tokenStatusVariant[validation_token.status] ??
+                                'outline'
+                            "
+                        >
                             {{ validation_token.status }}
                         </Badge>
                     </div>
@@ -148,24 +164,50 @@ const statusVariant: Record<
                 <CardContent>
                     <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <dt class="text-sm font-medium text-muted-foreground">Key ID</dt>
-                            <dd class="mt-1 font-mono text-sm">{{ validation_token.kid ?? '—' }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm font-medium text-muted-foreground">Issued At</dt>
-                            <dd class="mt-1 text-sm">
-                                {{ validation_token.issued_at ? formatDate(validation_token.issued_at) : '—' }}
+                            <dt
+                                class="text-sm font-medium text-muted-foreground"
+                            >
+                                Key ID
+                            </dt>
+                            <dd class="mt-1 font-mono text-sm">
+                                {{ validation_token.kid ?? '—' }}
                             </dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-muted-foreground">Expires At</dt>
+                            <dt
+                                class="text-sm font-medium text-muted-foreground"
+                            >
+                                Issued At
+                            </dt>
                             <dd class="mt-1 text-sm">
-                                {{ validation_token.expires_at ? formatDate(validation_token.expires_at) : '—' }}
+                                {{
+                                    validation_token.issued_at
+                                        ? formatDate(validation_token.issued_at)
+                                        : '—'
+                                }}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt
+                                class="text-sm font-medium text-muted-foreground"
+                            >
+                                Expires At
+                            </dt>
+                            <dd class="mt-1 text-sm">
+                                {{
+                                    validation_token.expires_at
+                                        ? formatDate(
+                                              validation_token.expires_at,
+                                          )
+                                        : '—'
+                                }}
                             </dd>
                         </div>
                     </dl>
                     <div class="mt-4">
-                        <Button variant="outline" size="sm" @click="rotateToken">Rotate token</Button>
+                        <Button variant="outline" size="sm" @click="rotateToken"
+                            >Rotate token</Button
+                        >
                     </div>
                 </CardContent>
             </Card>

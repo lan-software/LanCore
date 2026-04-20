@@ -84,46 +84,44 @@ function formatDate(dateString: string): string {
                     :href="`/events/${event.id}/public`"
                     class="block transition hover:opacity-90"
                 >
-                <Card
-                    class="flex h-full flex-col overflow-hidden"
-                >
-                    <BannerCarousel
-                        v-if="event.banner_image_urls.length > 0"
-                        :images="event.banner_image_urls"
-                        :alt="event.name"
-                        class="h-48 rounded-none border-0 border-b"
-                    />
-                    <CardHeader>
-                        <CardTitle class="line-clamp-2">{{
-                            event.name
-                        }}</CardTitle>
-                    </CardHeader>
-                    <CardContent class="flex-1 space-y-3">
-                        <div
-                            class="flex items-center gap-2 text-sm text-muted-foreground"
-                        >
-                            <CalendarDays class="size-4 shrink-0" />
-                            <span>{{ formatDate(event.start_date) }}</span>
-                        </div>
-                        <div
-                            v-if="event.venue"
-                            class="flex items-center gap-2 text-sm text-muted-foreground"
-                        >
-                            <MapPin class="size-4 shrink-0" />
-                            <span>{{ event.venue.name }}</span>
-                        </div>
-                        <p
-                            v-if="event.description"
-                            class="line-clamp-3 text-sm text-muted-foreground"
-                        >
-                            {{ event.description }}
-                        </p>
-                    </CardContent>
-                    <CardFooter class="text-xs text-muted-foreground">
-                        {{ formatDate(event.start_date) }} &ndash;
-                        {{ formatDate(event.end_date) }}
-                    </CardFooter>
-                </Card>
+                    <Card class="flex h-full flex-col overflow-hidden">
+                        <BannerCarousel
+                            v-if="event.banner_image_urls.length > 0"
+                            :images="event.banner_image_urls"
+                            :alt="event.name"
+                            class="h-48 rounded-none border-0 border-b"
+                        />
+                        <CardHeader>
+                            <CardTitle class="line-clamp-2">{{
+                                event.name
+                            }}</CardTitle>
+                        </CardHeader>
+                        <CardContent class="flex-1 space-y-3">
+                            <div
+                                class="flex items-center gap-2 text-sm text-muted-foreground"
+                            >
+                                <CalendarDays class="size-4 shrink-0" />
+                                <span>{{ formatDate(event.start_date) }}</span>
+                            </div>
+                            <div
+                                v-if="event.venue"
+                                class="flex items-center gap-2 text-sm text-muted-foreground"
+                            >
+                                <MapPin class="size-4 shrink-0" />
+                                <span>{{ event.venue.name }}</span>
+                            </div>
+                            <p
+                                v-if="event.description"
+                                class="line-clamp-3 text-sm text-muted-foreground"
+                            >
+                                {{ event.description }}
+                            </p>
+                        </CardContent>
+                        <CardFooter class="text-xs text-muted-foreground">
+                            {{ formatDate(event.start_date) }} &ndash;
+                            {{ formatDate(event.end_date) }}
+                        </CardFooter>
+                    </Card>
                 </Link>
             </div>
 

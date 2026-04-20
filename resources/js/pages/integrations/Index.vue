@@ -207,7 +207,11 @@ const { setSearch, setPerPage } = useDataTable(
                                         >{{ app.slug }}</code
                                     >
                                     <Badge
-                                        v-if="configManagedSlugs.includes(app.slug)"
+                                        v-if="
+                                            configManagedSlugs.includes(
+                                                app.slug,
+                                            )
+                                        "
                                         variant="outline"
                                         class="border-amber-300 bg-amber-50 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
                                         title="Reconciled from config/integrations.php on every release"

@@ -8,7 +8,9 @@ type DemoBannerProps = {
 };
 
 const page = usePage<{ demoBanner: DemoBannerProps | null }>();
-const banner = computed<DemoBannerProps | null>(() => page.props.demoBanner ?? null);
+const banner = computed<DemoBannerProps | null>(
+    () => page.props.demoBanner ?? null,
+);
 </script>
 
 <template>

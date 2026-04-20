@@ -70,10 +70,7 @@ function resolveIcon(name: string | null): Component {
                 </Link>
                 <div class="flex items-center gap-2">
                     <NotificationBell v-if="$page.props.auth.user" />
-                    <NavUser
-                        v-if="$page.props.auth.user"
-                        variant="topbar"
-                    />
+                    <NavUser v-if="$page.props.auth.user" variant="topbar" />
                     <CollapsibleTrigger as-child>
                         <button
                             type="button"
@@ -198,10 +195,7 @@ function resolveIcon(name: string | null): Component {
                     rel="noopener"
                     class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                 >
-                    <component
-                        :is="resolveIcon(link.icon)"
-                        class="size-4"
-                    />
+                    <component :is="resolveIcon(link.icon)" class="size-4" />
                     {{ link.label }}
                 </a>
                 <NotificationBell v-if="$page.props.auth.user" />
