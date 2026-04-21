@@ -224,7 +224,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-I18N-003 | LanCore shall expose a language-switcher UI in the user profile settings; satellite apps shall render a read-only locale indicator linking back to the LanCore profile settings page |
 | CAP-I18N-004 | The system shall apply the authenticated user's stored locale on each request; unauthenticated requests shall use the browser `Accept-Language` header, falling back to `en` |
 | CAP-I18N-005 | Backend translated strings shall be managed via Laravel `lang/{en,de,fr,es}/` directories; frontend translated strings shall be managed via `resources/js/locales/{en,de,fr,es}.json` and delivered through `vue-i18n` |
-| CAP-I18N-006 | Translation strings shall be managed in Tolgee Cloud (one project, one namespace per app); a nightly GitHub Actions workflow shall pull approved translations from Tolgee into each app repository, committing updated locale files |
+| CAP-I18N-006 | Translation strings shall be managed in the self-hosted Weblate instance at `https://weblate.sxcs.de` (project `lan-software`, one component per app); translator commits shall arrive via a dedicated `weblate` branch per app repository and be fast-forwarded onto `main` by the `.github/workflows/weblate-merge.yml` workflow, committing updated locale files |
 | CAP-I18N-007 | The `ResolveIntegrationUser` action shall pass `$user->locale` (the stored user locale) — not `app()->getLocale()` (the request locale) — when constructing the `LanCoreUser` DTO returned to SSO consumers |
 
 #### 3.2.16 Game Server Orchestration (CAP-ORC)

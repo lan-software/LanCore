@@ -532,17 +532,23 @@ The bug in `app/Domain/Integration/Actions/ResolveIntegrationUser.php` (passing 
 #### 5.7.4 Translation Asset Management
 
 ```
-Tolgee Cloud project (1 project, 6 namespaces)
-  namespaces: lancore, lanshout, lanbrackets, lanentrance, lanhelp, shared
+Weblate (self-hosted, https://weblate.sxcs.de)
+  project: lan-software  (1 project, 5 components — one per app)
+  components: lancore, lanshout, lanbrackets, lanentrance, lanhelp
+  [Note: the former `shared` namespace has been deliberately dropped;
+   it was never consumed by any app]
   │
-  └── Nightly GitHub Actions workflow (per app repo)
-        ├── Pulls approved strings via Tolgee CLI export
-        ├── Writes to lang/{en,de,fr,es}/*.php  (Laravel backend)
-        │   and resources/js/locales/{en,de,fr,es}.json  (Vue frontend)
-        └── Commits updated locale files
+  └── Per-app Git integration (SSH deploy key, write access)
+        ├── Weblate pushes translator commits to `weblate` branch
+        ├── .github/workflows/weblate-merge.yml fast-forwards
+        │   `weblate` branch onto `main` on push
+        ├── Source strings read directly from
+        │   resources/js/locales/{en,de,fr,es}.json (Vue frontend)
+        │   and lang/{en,de,fr,es}/*.php  (Laravel backend)
+        └── No separate extraction or push step required
 ```
 
-Backend strings use Laravel's `lang/` convention. Frontend strings use `vue-i18n` JSON flat-key format. The `shared` namespace is pulled by all apps and provides common terms (button labels, validation messages, etc.).
+Backend strings use Laravel's `lang/` convention. Frontend strings use `vue-i18n` JSON flat-key format. Weblate reads source strings directly from the repository files; no CLI export step is needed. The `shared` namespace present in the previous TMS plan has been deliberately removed — it was defined but never consumed by any application.
 
 #### 5.7.5 `LanCoreUser` DTO Locale Field
 

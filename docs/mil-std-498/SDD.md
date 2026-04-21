@@ -95,7 +95,7 @@ app/
 | Demo mode via `SeedDemoCommand` + Stripe test-mode keys | Enables end-to-end showcases using Stripe's sandbox; activated via environment flag `APP_DEMO=true` paired with `STRIPE_KEY=pk_test_...` / `STRIPE_SECRET=sk_test_...`; `PaymentProviderManager` resolves `StripePaymentProvider` as normal — no custom provider is needed |
 | LanCore as authoritative locale store | `users.locale` column on LanCore is the single source of truth for the user's display language; satellites receive the locale via `LanCoreUser` DTO and persist it locally; this avoids duplicated preference UIs across apps and ensures the user changes their language in one place |
 | `SetLocale` middleware for per-request locale application | A dedicated middleware (registered in the web group after session init) calls `app()->setLocale()` based on the authenticated user's stored locale; this keeps locale resolution out of controllers and ensures every translation call in a request cycle uses the correct locale |
-| `vue-i18n` + Tolgee for frontend i18n | `vue-i18n@9+` initialized from the `locale` Inertia shared prop; JSON locale files in `resources/js/locales/`; Tolgee Cloud nightly pull ensures translations stay current without manual file management |
+| `vue-i18n` + Weblate for frontend i18n | `vue-i18n@9+` initialized from the `locale` Inertia shared prop; JSON locale files in `resources/js/locales/`; Weblate (self-hosted, `https://weblate.sxcs.de`) reads source strings directly from these files and pushes translator commits to the `weblate` branch, which is fast-forwarded onto `main` by `.github/workflows/weblate-merge.yml` |
 
 ### 3.3 Security Design
 
@@ -845,30 +845,37 @@ app.use(i18n)
 
 Translation files live at `resources/js/locales/{en,de,fr,es}.json`. Vue components use the `t()` composable from `vue-i18n`.
 
-#### 5.6.7 Tolgee Pull Workflow
+#### 5.6.7 Weblate Sync Workflow
 
-A nightly GitHub Actions workflow (`.github/workflows/pull-translations.yml`) runs in each app repository:
+Weblate pushes translator commits directly to the `weblate` branch of each app repository via an SSH deploy key (write access). No CLI export or nightly pull step is required — Weblate reads source strings from the existing `resources/js/locales/{en,de,fr,es}.json` files in place. The `.github/workflows/weblate-merge.yml` workflow in each app repository fast-forwards the `weblate` branch onto `main`:
 
 ```yaml
-- name: Pull translations from Tolgee
-  run: |
-    npx tolgee pull \
-      --api-url https://app.tolgee.io \
-      --api-key ${{ secrets.TOLGEE_API_KEY }} \
-      --namespace lancore \
-      --namespace shared \
-      --path resources/js/locales/{locale}.json \
-      --backend-path lang/{locale}
-- name: Commit updated locale files
-  run: |
-    git config user.name "tolgee-bot"
-    git config user.email "bot@lan-software.dev"
-    git add lang/ resources/js/locales/
-    git diff --staged --quiet || git commit -m "chore(i18n): pull translations from Tolgee [skip ci]"
-    git push
+name: Merge Weblate translations
+
+on:
+  push:
+    branches:
+      - weblate
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fast-forward main with weblate branch
+        run: |
+          git config user.name "weblate-bot"
+          git config user.email "bot@lan-software.dev"
+          git checkout main
+          git merge --ff-only weblate
+          git push origin main
 ```
 
-The `shared` namespace is pulled by all six apps; each app additionally pulls its own namespace (`lancore`, `lanbrackets`, `lanshout`, `lanentrance`, `lanhelp`).
+Each app has its own Weblate component under the `lan-software` project (`lancore`, `lanbrackets`, `lanshout`, `lanentrance`, `lanhelp`). The former `shared` namespace (carried over from the previous TMS plan) is not present — it was defined but never consumed by any application and has been deliberately dropped.
 
 ---
 

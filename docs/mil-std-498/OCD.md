@@ -290,7 +290,7 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 | Development Mode | Debug toolbar, Telescope, detailed error pages enabled |
 | Queue Processing | Horizon manages background jobs (webhooks, notifications, email) |
 | Demo Purposes | System pre-loaded with synthetic event, ticket, and user data to showcase platform capabilities to prospective organizers or stakeholders; payments are processed through the real payment provider configured in test mode, so no real financial transactions occur |
-| Localized Display | Each authenticated user's UI is rendered in their chosen locale (English, German, French, or Spanish). LanCore is the authoritative store of the `User.locale` field; satellite apps receive the locale via the SSO exchange DTO and apply it per-request via a `SetLocale` middleware. Locale strings are sourced from Laravel `lang/` directories and the Vue front-end via `vue-i18n`; translation assets are managed in Tolgee Cloud and pulled nightly to each app repository via a GitHub Actions workflow |
+| Localized Display | Each authenticated user's UI is rendered in their chosen locale (English, German, French, or Spanish). LanCore is the authoritative store of the `User.locale` field; satellite apps receive the locale via the SSO exchange DTO and apply it per-request via a `SetLocale` middleware. Locale strings are sourced from Laravel `lang/` directories and the Vue front-end via `vue-i18n`; translation assets are managed in the self-hosted Weblate instance at `https://weblate.sxcs.de` and merged into each app repository via the `weblate` branch and a fast-forward workflow |
 
 ---
 
@@ -339,4 +339,4 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 | i18n | Internationalization — the process of designing software so that it can be adapted to multiple languages without code changes |
 | l10n | Localization — the process of adapting an internationalized application for a specific language or region |
 | vue-i18n | The Vue.js internationalization plugin (`vue-i18n@9+`) used in the LanCore and satellite Vue frontends to translate UI strings from JSON locale files |
-| Tolgee | Cloud-based translation management platform (free-plan, single project with per-app namespaces) used to maintain translation strings; a nightly GitHub Actions workflow pulls approved translations into each app repository |
+| Weblate | Self-hosted translation management system at `https://weblate.sxcs.de` used to maintain translation strings; organised as one project (`lan-software`) with five components (one per app); translator commits arrive via a dedicated `weblate` branch per app repository and are fast-forwarded onto `main` by the `.github/workflows/weblate-merge.yml` workflow; Weblate reads source strings directly from the existing `resources/js/locales/{en,de,fr,es}.json` files |
