@@ -41,7 +41,7 @@
     },
     "auth": {
         "login": {
-            "title": "Meldde dich an bei dein Gondo",
+            "title": "Meldde düsch an bei dein Gondo",
             "description": "Giff Mähl un Basswort ei, um dich anzumeln",
             "email": "Mähl-Adrässe",
             "emailPlaceholder": "mähl@beispiel.de",
