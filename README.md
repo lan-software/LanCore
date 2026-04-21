@@ -11,7 +11,8 @@
 
 <p align="center">
   <a href="https://github.com/lan-software/LanCore/actions/workflows/tests.yml"><img src="https://github.com/lan-software/LanCore/actions/workflows/tests.yml/badge.svg" alt="Tests" /></a>
-  <a href="https://github.com/lan-software/LanCore/actions/workflows/frontend-tests.yml"><img src="https://github.com/lan-software/LanCore/actions/workflows/frontend-tests.yml/badge.svg" alt="Frontend Tests" /></a>
+  <a href="https://github.com/lan-software/LanCore/actions/workflows/vitest.yml"><img src="https://github.com/lan-software/LanCore/actions/workflows/vitest.yml/badge.svg" alt="Vitest" /></a>
+  <a href="https://github.com/lan-software/LanCore/actions/workflows/playwright.yml"><img src="https://github.com/lan-software/LanCore/actions/workflows/playwright.yml/badge.svg" alt="Playwright" /></a>
   <a href="https://github.com/lan-software/LanCore/actions/workflows/lint.yml"><img src="https://github.com/lan-software/LanCore/actions/workflows/lint.yml/badge.svg" alt="Linter" /></a>
   <a href="https://github.com/lan-software/LanCore/actions/workflows/docker-publish.yml"><img src="https://github.com/lan-software/LanCore/actions/workflows/docker-publish.yml/badge.svg" alt="Docker" /></a>
   <a href="https://codecov.io/gh/lan-software/LanCore"><img src="https://codecov.io/gh/lan-software/LanCore/graph/badge.svg" alt="Coverage" /></a>
@@ -217,7 +218,8 @@ LanCore is part of a broader ecosystem of applications designed for LAN event or
 All pushes and pull requests run through automated pipelines:
 
 - **tests.yml** — PHP 8.5, Pest tests, coverage upload to Codecov
-- **frontend-tests.yml** — Vitest, Playwright
+- **vitest.yml** — Vitest component tests, coverage upload to Codecov
+- **playwright.yml** — Playwright end-to-end tests against a live Laravel server
 - **lint.yml** — Pint, ESLint, Prettier
 - **docker-publish.yml** — Multi-architecture Docker image builds
 

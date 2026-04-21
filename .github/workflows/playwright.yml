@@ -1,4 +1,4 @@
-name: frontend tests
+name: playwright
 
 on:
   push:
@@ -13,35 +13,6 @@ on:
       - master
 
 jobs:
-  vitest:
-    name: Vitest (Component Tests)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run Vitest
-        run: npm run test:coverage
-        env:
-          LARAVEL_BYPASS_ENV_CHECK: 1
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          flags: frontend
-          slug: lan-software/LanCore
-
   playwright:
     name: Playwright (E2E Tests)
     runs-on: ubuntu-latest
