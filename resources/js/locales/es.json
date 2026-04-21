@@ -1,61 +1,61 @@
 {
-    "common": {
-        "appName": "LanCore",
-        "loading": "Cargando...",
-        "error": "Error",
-        "success": "Éxito",
-        "save": "Guardar",
-        "cancel": "Cancelar",
-        "delete": "Eliminar",
-        "edit": "Editar",
-        "close": "Cerrar",
-        "submit": "Enviar",
-        "search": "Buscar",
-        "settings": "Ajustes",
-        "logout": "Cerrar sesión",
-        "profile": "Perfil",
-        "dashboard": "Panel",
-        "admin": "Admin",
-        "users": "Usuarios",
-        "back": "Atrás"
+  "auth": {
+    "login": {
+      "button": "Iniciar sesión",
+      "email": "Correo electrónico",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "password": "Contraseña",
+      "rememberMe": "Recuérdame",
+      "title": "Inicia sesión en tu cuenta"
     },
-    "auth": {
-        "login": {
-            "title": "Inicia sesión en tu cuenta",
-            "email": "Correo electrónico",
-            "password": "Contraseña",
-            "rememberMe": "Recuérdame",
-            "forgotPassword": "¿Olvidaste tu contraseña?",
-            "button": "Iniciar sesión"
-        },
-        "register": {
-            "title": "Crear una cuenta",
-            "name": "Nombre",
-            "email": "Correo electrónico",
-            "password": "Contraseña",
-            "confirmPassword": "Confirmar contraseña",
-            "button": "Registrarse"
-        }
-    },
-    "settings": {
-        "title": "Ajustes",
-        "profile": {
-            "title": "Perfil",
-            "description": "Actualiza tu nombre y tu correo electrónico",
-            "name": "Nombre",
-            "email": "Correo electrónico",
-            "updateButton": "Guardar",
-            "updated": "Guardado."
-        },
-        "language": {
-            "title": "Idioma",
-            "description": "Elige el idioma que se usará en todo el ecosistema LAN. Tu selección se propagará a todas las aplicaciones Lan* conectadas.",
-            "label": "Idioma de visualización",
-            "saved": "Preferencia de idioma actualizada"
-        }
-    },
-    "validation": {
-        "required": "Este campo es obligatorio",
-        "email": "Introduce una dirección de correo electrónico válida"
+    "register": {
+      "button": "Registrarse",
+      "confirmPassword": "Confirmar contraseña",
+      "email": "Correo electrónico",
+      "name": "Nombre",
+      "password": "Contraseña",
+      "title": "Crear una cuenta"
     }
+  },
+  "common": {
+    "admin": "Admin",
+    "appName": "LanCore",
+    "back": "Atrás",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "dashboard": "Panel",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "error": "Error",
+    "loading": "Cargando...",
+    "logout": "Cerrar sesión",
+    "profile": "Perfil",
+    "save": "Guardar",
+    "search": "Buscar",
+    "settings": "Ajustes",
+    "submit": "Enviar",
+    "success": "Éxito",
+    "users": "Usuarios"
+  },
+  "settings": {
+    "language": {
+      "description": "Elige el idioma que se usará en todo el ecosistema LAN. Tu selección se propagará a todas las aplicaciones Lan* conectadas.",
+      "label": "Idioma de visualización",
+      "saved": "Preferencia de idioma actualizada",
+      "title": "Idioma"
+    },
+    "profile": {
+      "description": "Actualiza tu nombre y tu correo electrónico",
+      "email": "Correo electrónico",
+      "name": "Nombre",
+      "title": "Perfil",
+      "updateButton": "Guardar",
+      "updated": "Guardado."
+    },
+    "title": "Ajustes"
+  },
+  "validation": {
+    "email": "Introduce una dirección de correo electrónico válida",
+    "required": "Este campo es obligatorio"
+  }
 }
