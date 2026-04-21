@@ -32,14 +32,18 @@ defineProps<{
         <div class="space-y-6">
             <Form v-bind="email.form()" v-slot="{ errors, processing }">
                 <div class="grid gap-2">
-                    <Label for="email">{{ $t('auth.forgotPassword.email') }}</Label>
+                    <Label for="email">{{
+                        $t('auth.forgotPassword.email')
+                    }}</Label>
                     <Input
                         id="email"
                         type="email"
                         name="email"
                         autocomplete="off"
                         autofocus
-                        :placeholder="$t('auth.forgotPassword.emailPlaceholder')"
+                        :placeholder="
+                            $t('auth.forgotPassword.emailPlaceholder')
+                        "
                     />
                     <InputError :message="errors.email" />
                 </div>

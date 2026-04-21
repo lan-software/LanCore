@@ -7,7 +7,8 @@ import fr from './locales/fr.json';
 export type MessageSchema = typeof en;
 export type AvailableLocale = 'en' | 'de' | 'fr' | 'es';
 
-const defaultLocale = (import.meta.env.VITE_DEFAULT_LOCALE as AvailableLocale) || 'en';
+const defaultLocale =
+    (import.meta.env.VITE_DEFAULT_LOCALE as AvailableLocale) || 'en';
 
 const i18n = createI18n<[MessageSchema], AvailableLocale>({
     legacy: false,

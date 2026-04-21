@@ -39,9 +39,13 @@ const breadcrumbItems: BreadcrumbItem[] = [
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 const currentLocale = computed(
-    () => (user.value.locale as string | undefined) ?? (page.props.locale as string),
+    () =>
+        (user.value.locale as string | undefined) ??
+        (page.props.locale as string),
 );
-const availableLocales = computed(() => page.props.availableLocales as string[]);
+const availableLocales = computed(
+    () => page.props.availableLocales as string[],
+);
 
 const countries = [
     { code: 'AT', name: 'Austria' },

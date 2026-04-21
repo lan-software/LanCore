@@ -62,11 +62,12 @@ function onSelect(value: string) {
     <div class="space-y-4">
         <div class="grid gap-2">
             <Label for="locale">{{ $t('settings.language.label') }}</Label>
-            <Select
-                :model-value="currentLocale"
-                @update:model-value="onSelect"
-            >
-                <SelectTrigger id="locale" class="mt-1 w-full" :disabled="saving">
+            <Select :model-value="currentLocale" @update:model-value="onSelect">
+                <SelectTrigger
+                    id="locale"
+                    class="mt-1 w-full"
+                    :disabled="saving"
+                >
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

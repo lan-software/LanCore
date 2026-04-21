@@ -82,9 +82,12 @@ const code = ref<string>('');
                         </div>
                         <InputError :message="errors.code" />
                     </div>
-                    <Button type="submit" class="w-full" :disabled="processing">{{
-                        $t('common.continue')
-                    }}</Button>
+                    <Button
+                        type="submit"
+                        class="w-full"
+                        :disabled="processing"
+                        >{{ $t('common.continue') }}</Button
+                    >
                     <div class="text-center text-sm text-muted-foreground">
                         <button
                             type="button"
@@ -107,14 +110,19 @@ const code = ref<string>('');
                     <Input
                         name="recovery_code"
                         type="text"
-                        :placeholder="$t('auth.twoFactorChallenge.recoveryCode')"
+                        :placeholder="
+                            $t('auth.twoFactorChallenge.recoveryCode')
+                        "
                         :autofocus="showRecoveryInput"
                         required
                     />
                     <InputError :message="errors.recovery_code" />
-                    <Button type="submit" class="w-full" :disabled="processing">{{
-                        $t('common.continue')
-                    }}</Button>
+                    <Button
+                        type="submit"
+                        class="w-full"
+                        :disabled="processing"
+                        >{{ $t('common.continue') }}</Button
+                    >
 
                     <div class="text-center text-sm text-muted-foreground">
                         <button

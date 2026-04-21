@@ -56,7 +56,9 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password">{{ $t('auth.register.password') }}</Label>
+                    <Label for="password">{{
+                        $t('auth.register.password')
+                    }}</Label>
                     <PasswordInput
                         id="password"
                         required
