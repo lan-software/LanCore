@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import {
     Calendar,
     CalendarCheck,
@@ -21,6 +19,8 @@ import {
     TicketCheck,
     Users,
 } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
     Card,
     CardContent,

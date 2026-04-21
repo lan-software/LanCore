@@ -17,6 +17,7 @@ onMounted((): void => {
     if (!bannersEl.value) {
         return;
     }
+
     observer = new ResizeObserver((entries): void => {
         setOffset(entries[0]?.contentRect.height ?? 0);
     });

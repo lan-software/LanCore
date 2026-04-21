@@ -5,7 +5,8 @@ import { createApp, h } from 'vue';
 import '../css/app.css';
 import DemoShell from '@/components/demo/DemoShell.vue';
 import { initializeTheme } from '@/composables/useAppearance';
-import i18n, { type AvailableLocale } from '@/i18n';
+import i18n from '@/i18n';
+import type {AvailableLocale} from '@/i18n';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -22,6 +23,7 @@ createInertiaApp({
             auth?: { user?: { locale?: AvailableLocale } };
         };
         const locale = shared.auth?.user?.locale ?? shared.locale;
+
         if (locale && i18n.global.availableLocales.includes(locale)) {
             i18n.global.locale.value = locale;
         }
