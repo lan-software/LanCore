@@ -12,13 +12,7 @@ type AppVersion = {
     laravelVersion: string;
 };
 
-type Organization = {
-    hasImpressum?: boolean;
-    hasPrivacy?: boolean;
-    name?: string | null;
-};
-
-const props = withDefaults(
+withDefaults(
     defineProps<{
         detailed?: boolean;
     }>(),
@@ -31,10 +25,6 @@ const page = usePage();
 
 const appVersion = computed<AppVersion | undefined>(
     () => (page.props.appVersion as AppVersion | undefined) ?? undefined,
-);
-
-const organization = computed<Organization>(
-    () => (page.props.organization as Organization | undefined) ?? {},
 );
 
 const versionLabel = computed(() => {
@@ -60,18 +50,10 @@ const versionLabel = computed(() => {
                 }}</span>
             </div>
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
-                <Link
-                    v-if="organization.hasImpressum"
-                    :href="impressum().url"
-                    class="hover:text-foreground"
-                >
+                <Link :href="impressum().url" class="hover:text-foreground">
                     {{ $t('legal.impressum.link') }}
                 </Link>
-                <Link
-                    v-if="organization.hasPrivacy"
-                    :href="privacy().url"
-                    class="hover:text-foreground"
-                >
+                <Link :href="privacy().url" class="hover:text-foreground">
                     {{ $t('legal.privacy.link') }}
                 </Link>
                 <button
