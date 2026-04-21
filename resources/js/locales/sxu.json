@@ -1,0 +1,240 @@
+{
+    "common": {
+        "appName": "LanCore",
+        "loading": "Lädd...",
+        "saving": "Speischere...",
+        "error": "Fähler",
+        "success": "Glabbt",
+        "save": "Speischorn",
+        "saved": "Abgespeischord.",
+        "cancel": "Abbrechn",
+        "delete": "Läschn",
+        "edit": "Beorbeiden",
+        "close": "Zumachn",
+        "submit": "Abschiggn",
+        "search": "Suchn",
+        "settings": "Eistellungn",
+        "logout": "Abmeln",
+        "profile": "Brofiel",
+        "dashboard": "Iebersischd",
+        "admin": "Administrasjon",
+        "users": "Bonutzor",
+        "back": "Zurigge",
+        "create": "Erstelln",
+        "update": "Aggduhalisiern",
+        "confirm": "Bestähtschen",
+        "continue": "Weidermachn",
+        "yes": "Schoh",
+        "no": "Nö",
+        "add": "Dazutun",
+        "remove": "Wägmachn",
+        "actions": "Aggsjon",
+        "view": "Anguggn",
+        "copy": "Gopiern",
+        "copied": "Gopiert",
+        "optional": "gannste, mussde aber nich",
+        "required": "mussde",
+        "loadingMore": "Lädd mähr...",
+        "noResults": "Nischt gefunn",
+        "showMore": "Mähr zeeschn",
+        "showLess": "Weniger zeeschn"
+    },
+    "auth": {
+        "login": {
+            "title": "Meldde dich an bei dein Gondo",
+            "description": "Giff Mähl un Basswort ei, um dich anzumeln",
+            "email": "Mähl-Adrässe",
+            "emailPlaceholder": "mähl@beispiel.de",
+            "password": "Basswort",
+            "passwordPlaceholder": "Basswort",
+            "rememberMe": "Merg mich dir",
+            "forgotPassword": "Basswort vorgässn?",
+            "button": "Anmeln",
+            "noAccount": "Haste geen Gondo?",
+            "signUp": "Aanmeln"
+        },
+        "register": {
+            "title": "Leesch dir een Gondo an",
+            "description": "Giff deine Informasjon ei, um dir een Gondo anzuleechn",
+            "name": "Nohme",
+            "namePlaceholder": "Ganzer Nohme",
+            "email": "Mähl-Adrässe",
+            "emailPlaceholder": "mähl@beispiel.de",
+            "password": "Basswort",
+            "passwordPlaceholder": "Basswort",
+            "confirmPassword": "Basswort bestähtschen",
+            "button": "Gondo erstelln",
+            "hasAccount": "Haste schonn een Gondo?",
+            "logIn": "Anmeln"
+        },
+        "forgotPassword": {
+            "title": "Basswort vorgässn?",
+            "description": "Giff deine Mähl-Adrässe ei un mir schiggn dir een Ling zum Zrigsetzn.",
+            "email": "Mähl-Adrässe",
+            "emailPlaceholder": "mähl@beispiel.de",
+            "button": "Ling abschiggn",
+            "backToLogin": "Zurigge zur Anmeldung"
+        },
+        "resetPassword": {
+            "title": "Setz dein Basswort zrigge",
+            "description": "Giff dein neues Basswort ei",
+            "email": "Mähl-Adrässe",
+            "password": "Basswort",
+            "passwordPlaceholder": "Basswort",
+            "confirmPassword": "Basswort bestähtschen",
+            "button": "Basswort zrigsetzn"
+        },
+        "verifyEmail": {
+            "title": "Bestähtsche deine Mähl-Adrässe",
+            "description": "Dangge, dass du dich anmäldtsd hast! Bevors loosgehd, gannsde deine Mähl-Adrässe bestähtschen, indems du uff den Ling glickst, den mir dir grade geschiggt hamm? Wennde de Mähl nich grigt hast, schiggn mir dir gärne noch eene.",
+            "resendButton": "Bestähtschungs-Mähl nochmal schiggn",
+            "linkSent": "Een neuer Bestähtschungs-Ling wurde an deine Mähl-Adrässe geschiggt.",
+            "logout": "Abmeln"
+        },
+        "confirmPassword": {
+            "title": "Bestähtsche dein Basswort",
+            "description": "Das is een sischrer Bereich vom Bruhgramm. Bestähtsche dein Basswort, bevors weidergehsd.",
+            "password": "Basswort",
+            "passwordPlaceholder": "Basswort",
+            "button": "Bestähtschen"
+        },
+        "twoFactorChallenge": {
+            "title": "Zwei-Fagdor-Anmäldung",
+            "description": "Giff den Anmäldungscode ei, den dir deine Anmäldungs-Abb gibt.",
+            "code": "Anmäldungscode",
+            "recoveryCode": "Nohdfallcode",
+            "recoveryDescription": "Bestähtsche den Zuchrief uff dein Gondo, indem du eenn von deinn Nohdfallcodes eigiffsd.",
+            "useRecovery": "mit eenm Nohdfallcode anmeln",
+            "useCode": "mit eenm Anmäldungscode anmeln",
+            "button": "Bestähtschen"
+        }
+    },
+    "settings": {
+        "title": "Eistellungn",
+        "description": "Vorwalde deine Gondo-Eistellungn un Vorleibn",
+        "profile": {
+            "title": "Brofiel",
+            "description": "Aggduhalisiere dein Nohme un deine Mähl-Adrässe",
+            "name": "Nohme",
+            "email": "Mähl-Adrässe",
+            "phone": "Dehläfonnummer",
+            "phonePlaceholder": "+49 123 456789",
+            "addressSection": "Adrässe un Gondagd",
+            "addressDescription": "Brauchste fer Gaifs. Giff deine Adrässe ei un wenigschns eene Gondagdmesche.",
+            "street": "Strohße",
+            "streetPlaceholder": "Strohße un Hausnummer",
+            "zipCode": "Bosdlzohl",
+            "zipCodePlaceholder": "12345",
+            "city": "Schdadt",
+            "cityPlaceholder": "Schdadt",
+            "country": "Land",
+            "countryPlaceholder": "Such dir een Land aus",
+            "updateButton": "Speischorn",
+            "updated": "Abgespeischord.",
+            "emailUnverified": "Deine Mähl-Adrässe is nisch bestähtscht.",
+            "resendLink": "Glick hier, um de Bestähtschungs-Mähl nochmal zu schiggn.",
+            "verificationSent": "Een neuer Bestähtschungs-Ling wurde an deine Mähl-Adrässe geschiggt.",
+            "deleteAccount": "Gondo läschn",
+            "deleteAccountDescription": "Läsche dein Gondo un alle seine Sachn",
+            "deleteAccountWarning": "Wenn dein Gondo gelöschd is, werrn alle seine Sachn fer immer wäg. Bevors dein Gondo läschsd, lad alle Dahdn runder, de du bhalden willsd.",
+            "deleteAccountButton": "Gondo läschn",
+            "deleteAccountConfirm": "Biste sischer, dass du dein Gondo läschn willsd?",
+            "deleteAccountConfirmDescription": "Wenn dein Gondo gelöschd is, werrn alle seine Sachn fer immer wäg. Giff dein Basswort ei, um zu bestähtschen, dass du dein Gondo fer immer läschn willsd."
+        },
+        "password": {
+            "title": "Basswort",
+            "description": "Sorsch dafier, dass dein Gondo een langes, zufällsches Basswort nutzd, um sischer zu bleibn.",
+            "currentPassword": "Aggduhelles Basswort",
+            "newPassword": "Neues Basswort",
+            "confirmPassword": "Basswort bestähtschen",
+            "updateButton": "Basswort speischorn",
+            "updated": "Basswort aggduhalisiert."
+        },
+        "appearance": {
+            "title": "Aussähn",
+            "description": "Aggduhalisiere de Aussähn-Eistellungn vonn deim Gondo",
+            "theme": "Dehmah",
+            "light": "Hell",
+            "dark": "Dungl",
+            "system": "Sysdehm"
+        },
+        "language": {
+            "title": "Sbrache",
+            "description": "Wähl de Sbrache aus, de im ganzn LAN-Egossysdehm bonutzd wird. Deine Ausswahl wird an alle vorbundenn Lan*-Abbs weidergeeem.",
+            "label": "Anzeie-Sbrache",
+            "saved": "Sbraach-Eistellung aggduhalisiert"
+        },
+        "notifications": {
+            "title": "Benachrischduschn"
+        },
+        "advancedTicketing": {
+            "title": "Forgeschriddnes Dicgedingsystehm"
+        },
+        "achievements": {
+            "title": "Erfolsche"
+        },
+        "manageDescription": "Vorwalde dein Brofiel un Gondo-Eistellungn",
+        "security": {
+            "title": "Sischerheid",
+            "description": "Vorwalde deine Zwei-Fagdor-Anmäldung un aggdiwe Siddzungn",
+            "twoFactor": {
+                "title": "Zwei-Fagdor-Anmäldung",
+                "description": "Pagg deim Gondo ne exdra Sischerheidsschischd drauff.",
+                "enable": "Anschalden",
+                "disable": "Ausschalden",
+                "enabled": "Zwei-Fagdor-Anmäldung is an.",
+                "disabled": "Zwei-Fagdor-Anmäldung is aus.",
+                "setupDescription": "Um de Zwei-Fagdor-Anmäldung fertsch eizustelln, scann den QR-Code mit deiner Anmäldungs-Abb un giff den erzeugdn Code ei.",
+                "recoveryCodes": "Nohdfallcodes",
+                "recoveryCodesDescription": "Speichore diese Nohdfallcodes in eem sischern Basswort-Managor. Se gönn bonutzd werrn, um widder Zuchrief uff dein Gondo zu griegn, wenn du dei Zwei-Fagdor-Gerähd vorlorn hast.",
+                "regenerateCodes": "Codes neu erzeegn",
+                "confirmCode": "Anmäldungscode",
+                "confirm": "Bestähtschen",
+                "cancel": "Abbrechn"
+            }
+        }
+    },
+    "navigation": {
+        "home": "Zuhause",
+        "dashboard": "Iebersischd",
+        "settings": "Eistellungn",
+        "admin": "Administrasjon",
+        "profile": "Brofiel",
+        "appearance": "Aussähn",
+        "password": "Basswort",
+        "security": "Sischerheid",
+        "language": "Sbrache",
+        "notifications": "Benachrischduschn",
+        "events": "Vorangschdaldungn",
+        "programs": "Bruhgramme",
+        "tickets": "Dicgedds",
+        "users": "Bonutzor",
+        "news": "Neuischgeidn",
+        "announcements": "Angindschungn",
+        "sponsors": "Sponsorn",
+        "venues": "Ordd",
+        "games": "Sbiele",
+        "shop": "Lahdn",
+        "orders": "Besdellungn",
+        "vouchers": "Gudschaine",
+        "achievements": "Erfolsche",
+        "competitions": "Weddgämbfe",
+        "integrations": "Indegrasjonn",
+        "organization": "Orgahnisasjon",
+        "seating": "Sitzzoordnung",
+        "ticketDiscovery": "Dicgedds findn"
+    },
+    "dashboard": {
+        "title": "Iebersischd",
+        "welcome": "Scheen, dassde widder dah bisd!",
+        "overview": "Iebersischd"
+    },
+    "validation": {
+        "required": "Das Feld mussde ausfilln",
+        "email": "Giff ne orndlsche Mähl-Adrässe ei",
+        "minLength": "Mussde mindesdns {min} Zeischn lang sei",
+        "maxLength": "Derf nisch mähr als {max} Zeischn lang sei",
+        "passwordMatch": "Bassweerder misstn zusommbassn",
+        "invalid": "Ungildscher Werrd"
+    }
+}

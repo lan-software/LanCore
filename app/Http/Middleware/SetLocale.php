@@ -17,7 +17,7 @@ class SetLocale
      *
      * @var array<int, string>
      */
-    public const AVAILABLE = ['en', 'de', 'fr', 'es'];
+    public const AVAILABLE = ['en', 'de', 'fr', 'es', 'sv', 'uk', 'ko', 'tlh', 'nds', 'sxu'];
 
     public function handle(Request $request, Closure $next): Response
     {

@@ -1,0 +1,240 @@
+{
+    "common": {
+        "appName": "LanCore",
+        "loading": "Laddar...",
+        "saving": "Sparar...",
+        "error": "Fel",
+        "success": "Klart",
+        "save": "Spara",
+        "saved": "Sparat.",
+        "cancel": "Avbryt",
+        "delete": "Radera",
+        "edit": "Redigera",
+        "close": "Stäng",
+        "submit": "Skicka",
+        "search": "Sök",
+        "settings": "Inställningar",
+        "logout": "Logga ut",
+        "profile": "Profil",
+        "dashboard": "Översikt",
+        "admin": "Administration",
+        "users": "Användare",
+        "back": "Tillbaka",
+        "create": "Skapa",
+        "update": "Uppdatera",
+        "confirm": "Bekräfta",
+        "continue": "Fortsätt",
+        "yes": "Ja",
+        "no": "Nej",
+        "add": "Lägg till",
+        "remove": "Ta bort",
+        "actions": "Åtgärder",
+        "view": "Visa",
+        "copy": "Kopiera",
+        "copied": "Kopierat",
+        "optional": "valfritt",
+        "required": "obligatoriskt",
+        "loadingMore": "Laddar mer...",
+        "noResults": "Inga resultat hittades",
+        "showMore": "Visa mer",
+        "showLess": "Visa mindre"
+    },
+    "auth": {
+        "login": {
+            "title": "Logga in på ditt konto",
+            "description": "Ange din e-post och ditt lösenord nedan för att logga in",
+            "email": "E-postadress",
+            "emailPlaceholder": "epost@exempel.se",
+            "password": "Lösenord",
+            "passwordPlaceholder": "Lösenord",
+            "rememberMe": "Kom ihåg mig",
+            "forgotPassword": "Glömt lösenordet?",
+            "button": "Logga in",
+            "noAccount": "Har du inget konto?",
+            "signUp": "Registrera dig"
+        },
+        "register": {
+            "title": "Skapa ett konto",
+            "description": "Ange dina uppgifter för att skapa ett konto",
+            "name": "Namn",
+            "namePlaceholder": "Fullständigt namn",
+            "email": "E-postadress",
+            "emailPlaceholder": "epost@exempel.se",
+            "password": "Lösenord",
+            "passwordPlaceholder": "Lösenord",
+            "confirmPassword": "Bekräfta lösenord",
+            "button": "Skapa konto",
+            "hasAccount": "Har du redan ett konto?",
+            "logIn": "Logga in"
+        },
+        "forgotPassword": {
+            "title": "Glömt ditt lösenord?",
+            "description": "Ange din e-postadress så skickar vi en länk för att återställa lösenordet.",
+            "email": "E-postadress",
+            "emailPlaceholder": "epost@exempel.se",
+            "button": "Skicka återställningslänk",
+            "backToLogin": "Tillbaka till inloggning"
+        },
+        "resetPassword": {
+            "title": "Återställ ditt lösenord",
+            "description": "Ange ditt nya lösenord nedan",
+            "email": "E-postadress",
+            "password": "Lösenord",
+            "passwordPlaceholder": "Lösenord",
+            "confirmPassword": "Bekräfta lösenord",
+            "button": "Återställ lösenord"
+        },
+        "verifyEmail": {
+            "title": "Verifiera din e-postadress",
+            "description": "Tack för att du registrerat dig! Innan du kommer igång, kan du verifiera din e-postadress genom att klicka på länken vi just skickade? Om du inte fick e-postmeddelandet skickar vi gärna ett nytt.",
+            "resendButton": "Skicka verifieringsmejl igen",
+            "linkSent": "En ny verifieringslänk har skickats till din e-postadress.",
+            "logout": "Logga ut"
+        },
+        "confirmPassword": {
+            "title": "Bekräfta ditt lösenord",
+            "description": "Detta är ett säkert område i programmet. Bekräfta ditt lösenord innan du fortsätter.",
+            "password": "Lösenord",
+            "passwordPlaceholder": "Lösenord",
+            "button": "Bekräfta"
+        },
+        "twoFactorChallenge": {
+            "title": "Tvåfaktorsautentisering",
+            "description": "Ange verifieringskoden från din autentiseringsapp.",
+            "code": "Verifieringskod",
+            "recoveryCode": "Återställningskod",
+            "recoveryDescription": "Bekräfta åtkomst till ditt konto genom att ange en av dina nödåterställningskoder.",
+            "useRecovery": "logga in med en återställningskod",
+            "useCode": "logga in med en verifieringskod",
+            "button": "Verifiera"
+        }
+    },
+    "settings": {
+        "title": "Inställningar",
+        "description": "Hantera dina kontoinställningar och preferenser",
+        "profile": {
+            "title": "Profil",
+            "description": "Uppdatera ditt namn och din e-postadress",
+            "name": "Namn",
+            "email": "E-postadress",
+            "phone": "Telefonnummer",
+            "phonePlaceholder": "+46 70 123 45 67",
+            "addressSection": "Adress och kontakt",
+            "addressDescription": "Krävs för köp. Ange din adress och minst en kontaktmetod.",
+            "street": "Gatuadress",
+            "streetPlaceholder": "Gata och husnummer",
+            "zipCode": "Postnummer",
+            "zipCodePlaceholder": "12345",
+            "city": "Stad",
+            "cityPlaceholder": "Stad",
+            "country": "Land",
+            "countryPlaceholder": "Välj ett land",
+            "updateButton": "Spara",
+            "updated": "Sparat.",
+            "emailUnverified": "Din e-postadress är inte verifierad.",
+            "resendLink": "Klicka här för att skicka verifieringsmejlet igen.",
+            "verificationSent": "En ny verifieringslänk har skickats till din e-postadress.",
+            "deleteAccount": "Radera konto",
+            "deleteAccountDescription": "Radera ditt konto och alla tillhörande resurser",
+            "deleteAccountWarning": "När ditt konto har raderats kommer alla resurser och all data att tas bort permanent. Innan du raderar ditt konto, ladda ner all data du vill behålla.",
+            "deleteAccountButton": "Radera konto",
+            "deleteAccountConfirm": "Är du säker på att du vill radera ditt konto?",
+            "deleteAccountConfirmDescription": "När ditt konto har raderats kommer alla resurser och all data att tas bort permanent. Ange ditt lösenord för att bekräfta att du vill radera kontot permanent."
+        },
+        "password": {
+            "title": "Lösenord",
+            "description": "Se till att ditt konto använder ett långt, slumpmässigt lösenord för god säkerhet.",
+            "currentPassword": "Nuvarande lösenord",
+            "newPassword": "Nytt lösenord",
+            "confirmPassword": "Bekräfta lösenord",
+            "updateButton": "Spara lösenord",
+            "updated": "Lösenord uppdaterat."
+        },
+        "appearance": {
+            "title": "Utseende",
+            "description": "Uppdatera kontots utseendeinställningar",
+            "theme": "Tema",
+            "light": "Ljust",
+            "dark": "Mörkt",
+            "system": "System"
+        },
+        "language": {
+            "title": "Språk",
+            "description": "Välj det språk som används i hela LAN-ekosystemet. Ditt val sprids till alla anslutna Lan*-appar.",
+            "label": "Visningsspråk",
+            "saved": "Språkinställningen uppdaterad"
+        },
+        "notifications": {
+            "title": "Aviseringar"
+        },
+        "advancedTicketing": {
+            "title": "Avancerad biljetthantering"
+        },
+        "achievements": {
+            "title": "Prestationer"
+        },
+        "manageDescription": "Hantera din profil och dina kontoinställningar",
+        "security": {
+            "title": "Säkerhet",
+            "description": "Hantera tvåfaktorsautentisering och aktiva sessioner",
+            "twoFactor": {
+                "title": "Tvåfaktorsautentisering",
+                "description": "Lägg till ett extra lager av säkerhet för ditt konto.",
+                "enable": "Aktivera",
+                "disable": "Inaktivera",
+                "enabled": "Tvåfaktorsautentisering är aktiverad.",
+                "disabled": "Tvåfaktorsautentisering är inaktiverad.",
+                "setupDescription": "För att slutföra aktiveringen av tvåfaktorsautentisering, skanna QR-koden med din autentiseringsapp och ange den genererade koden.",
+                "recoveryCodes": "Återställningskoder",
+                "recoveryCodesDescription": "Spara dessa återställningskoder i en säker lösenordshanterare. De kan användas för att återställa åtkomst till ditt konto om du förlorar din tvåfaktorsenhet.",
+                "regenerateCodes": "Generera nya koder",
+                "confirmCode": "Verifieringskod",
+                "confirm": "Bekräfta",
+                "cancel": "Avbryt"
+            }
+        }
+    },
+    "navigation": {
+        "home": "Hem",
+        "dashboard": "Översikt",
+        "settings": "Inställningar",
+        "admin": "Administration",
+        "profile": "Profil",
+        "appearance": "Utseende",
+        "password": "Lösenord",
+        "security": "Säkerhet",
+        "language": "Språk",
+        "notifications": "Aviseringar",
+        "events": "Evenemang",
+        "programs": "Program",
+        "tickets": "Biljetter",
+        "users": "Användare",
+        "news": "Nyheter",
+        "announcements": "Meddelanden",
+        "sponsors": "Sponsorer",
+        "venues": "Platser",
+        "games": "Spel",
+        "shop": "Butik",
+        "orders": "Beställningar",
+        "vouchers": "Presentkort",
+        "achievements": "Prestationer",
+        "competitions": "Tävlingar",
+        "integrations": "Integrationer",
+        "organization": "Organisation",
+        "seating": "Placering",
+        "ticketDiscovery": "Hitta biljetter"
+    },
+    "dashboard": {
+        "title": "Översikt",
+        "welcome": "Välkommen tillbaka!",
+        "overview": "Översikt"
+    },
+    "validation": {
+        "required": "Detta fält är obligatoriskt",
+        "email": "Ange en giltig e-postadress",
+        "minLength": "Måste vara minst {min} tecken",
+        "maxLength": "Får inte vara fler än {max} tecken",
+        "passwordMatch": "Lösenorden måste stämma överens",
+        "invalid": "Ogiltigt värde"
+    }
+}

@@ -25,6 +25,12 @@ const LOCALE_LABELS: Record<string, string> = {
     de: 'Deutsch',
     fr: 'Français',
     es: 'Español',
+    sv: 'Svenska',
+    uk: 'Українська',
+    ko: '한국어',
+    tlh: 'tlhIngan Hol',
+    nds: 'Plattdüütsch',
+    sxu: 'Sächsisch',
 };
 
 const saving = ref(false);

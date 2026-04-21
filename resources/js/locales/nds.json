@@ -1,0 +1,240 @@
+{
+    "common": {
+        "appName": "LanCore",
+        "loading": "Ladt...",
+        "saving": "Sekert...",
+        "error": "Fehler",
+        "success": "Klor",
+        "save": "Sekern",
+        "saved": "Sekert.",
+        "cancel": "Afbreken",
+        "delete": "Wegmaken",
+        "edit": "Bewarken",
+        "close": "Tomaken",
+        "submit": "Afschicken",
+        "search": "Söken",
+        "settings": "Instellungen",
+        "logout": "Utlogg",
+        "profile": "Profil",
+        "dashboard": "Översicht",
+        "admin": "Administration",
+        "users": "Bruker",
+        "back": "Torügg",
+        "create": "Anleggen",
+        "update": "Opfrischen",
+        "confirm": "Beglöven",
+        "continue": "Wiedergahn",
+        "yes": "Jo",
+        "no": "Nee",
+        "add": "Tofögen",
+        "remove": "Wegnehmen",
+        "actions": "Akschonen",
+        "view": "Ankieken",
+        "copy": "Koperen",
+        "copied": "Kopert",
+        "optional": "frietwillig",
+        "required": "nödig",
+        "loadingMore": "Mehr ladt...",
+        "noResults": "Keen Resultaten funnen",
+        "showMore": "Mehr wiesen",
+        "showLess": "Weniger wiesen"
+    },
+    "auth": {
+        "login": {
+            "title": "Meld di op dien Konto an",
+            "description": "Giff dien E-Mail un Passwoort nerrn in, üm di antomelden",
+            "email": "E-Mail-Adress",
+            "emailPlaceholder": "epost@bispeel.de",
+            "password": "Passwoort",
+            "passwordPlaceholder": "Passwoort",
+            "rememberMe": "Behöll mi in'n Kopp",
+            "forgotPassword": "Passwoort vergeten?",
+            "button": "Anmellen",
+            "noAccount": "Hest du noch keen Konto?",
+            "signUp": "Aanmellen"
+        },
+        "register": {
+            "title": "Leg en Konto an",
+            "description": "Giff diene Daten in, üm en Konto antoleggen",
+            "name": "Naam",
+            "namePlaceholder": "Heel Naam",
+            "email": "E-Mail-Adress",
+            "emailPlaceholder": "epost@bispeel.de",
+            "password": "Passwoort",
+            "passwordPlaceholder": "Passwoort",
+            "confirmPassword": "Passwoort bestätigen",
+            "button": "Konto anleggen",
+            "hasAccount": "Hest du al en Konto?",
+            "logIn": "Anmellen"
+        },
+        "forgotPassword": {
+            "title": "Passwoort vergeten?",
+            "description": "Giff diene E-Mail-Adress in un wi schickt di en Link för't Torüggsetten.",
+            "email": "E-Mail-Adress",
+            "emailPlaceholder": "epost@bispeel.de",
+            "button": "Link afschicken",
+            "backToLogin": "Torügg nah de Anmellung"
+        },
+        "resetPassword": {
+            "title": "Passwoort torüggsetten",
+            "description": "Giff dien nieg Passwoort nerrn in",
+            "email": "E-Mail-Adress",
+            "password": "Passwoort",
+            "passwordPlaceholder": "Passwoort",
+            "confirmPassword": "Passwoort bestätigen",
+            "button": "Passwoort torüggsetten"
+        },
+        "verifyEmail": {
+            "title": "Bestätig diene E-Mail-Adress",
+            "description": "Danke, dat du di anmellt hest! Eer du anfangst, mögst du diene E-Mail-Adress bestätigen, indem du op den Link klickst, den wi di jüst schickt hebbt? Wenn du de E-Mail nich kregen hest, schickt wi di gern en nieg.",
+            "resendButton": "Bestätigungs-E-Mail nochmal schicken",
+            "linkSent": "En nieg Bestätigungslink is an diene E-Mail-Adress schickt worrn.",
+            "logout": "Utlogg"
+        },
+        "confirmPassword": {
+            "title": "Bestätig dien Passwoort",
+            "description": "Dit is en sekern Rebeet vun de Anwennung. Bestätig dien Passwoort, eer du wiedergeihst.",
+            "password": "Passwoort",
+            "passwordPlaceholder": "Passwoort",
+            "button": "Bestätigen"
+        },
+        "twoFactorChallenge": {
+            "title": "Twee-Faktor-Anmellung",
+            "description": "Giff den Kood in, den diene Authenticator-App di levert.",
+            "code": "Anmell-Kood",
+            "recoveryCode": "Notfall-Kood",
+            "recoveryDescription": "Bestätig dien Togriep op dien Konto, indem du een vun diene Notfall-Koden ingiffst.",
+            "useRecovery": "mit en Notfall-Kood anmellen",
+            "useCode": "mit en Anmell-Kood anmellen",
+            "button": "Bestätigen"
+        }
+    },
+    "settings": {
+        "title": "Instellungen",
+        "description": "Verwalt diene Konto-Instellungen un Vörlieven",
+        "profile": {
+            "title": "Profil",
+            "description": "Aktualisier dien Naam un E-Mail-Adress",
+            "name": "Naam",
+            "email": "E-Mail-Adress",
+            "phone": "Telefonnummer",
+            "phonePlaceholder": "+49 123 456789",
+            "addressSection": "Adress un Kontakt",
+            "addressDescription": "Nödig för Inköp. Giff diene Adress un tominnst een Kontaktmöglichkeit in.",
+            "street": "Straat",
+            "streetPlaceholder": "Straat un Husnummer",
+            "zipCode": "Postleittall",
+            "zipCodePlaceholder": "12345",
+            "city": "Stadt",
+            "cityPlaceholder": "Stadt",
+            "country": "Land",
+            "countryPlaceholder": "Söök en Land ut",
+            "updateButton": "Sekern",
+            "updated": "Sekert.",
+            "emailUnverified": "Diene E-Mail-Adress is nich bestätigt.",
+            "resendLink": "Klick hier, üm de Bestätigungs-E-Mail nochmal to schicken.",
+            "verificationSent": "En nieg Bestätigungslink is an diene E-Mail-Adress schickt worrn.",
+            "deleteAccount": "Konto wegmaken",
+            "deleteAccountDescription": "Maak dien Konto un all sien Daten weg",
+            "deleteAccountWarning": "Wenn dien Konto wegmaakt is, warrt all sien Daten för ümmer löscht. Eer du dien Konto wegmakst, laad bidde all Daten runner, de du behollen wullst.",
+            "deleteAccountButton": "Konto wegmaken",
+            "deleteAccountConfirm": "Büst du seker, dat du dien Konto wegmaken wullst?",
+            "deleteAccountConfirmDescription": "Wenn dien Konto wegmaakt is, warrt all sien Daten för ümmer löscht. Giff dien Passwoort in, üm to bestätigen, dat du dien Konto för ümmer wegmaken wullst."
+        },
+        "password": {
+            "title": "Passwoort",
+            "description": "Sorg dorför, dat dien Konto en lang, tofällig Passwoort nutzt, üm seker to blieven.",
+            "currentPassword": "Aktuell Passwoort",
+            "newPassword": "Nieg Passwoort",
+            "confirmPassword": "Passwoort bestätigen",
+            "updateButton": "Passwoort sekern",
+            "updated": "Passwoort aktualiseert."
+        },
+        "appearance": {
+            "title": "Utseen",
+            "description": "Aktualisier de Utseen-Instellungen vun dien Konto",
+            "theme": "Thema",
+            "light": "Hell",
+            "dark": "Düster",
+            "system": "System"
+        },
+        "language": {
+            "title": "Spraak",
+            "description": "Söök de Spraak ut, de in't hele LAN-Ökosystem bruukt warrt. Diene Wahl warrt an all verbundenen Lan*-Apps wiedergeven.",
+            "label": "Anzeig-Spraak",
+            "saved": "Spraak-Instellung aktualiseert"
+        },
+        "notifications": {
+            "title": "Mellungen"
+        },
+        "advancedTicketing": {
+            "title": "Verwieterte Tickets"
+        },
+        "achievements": {
+            "title": "Leistungen"
+        },
+        "manageDescription": "Verwalt dien Profil un Konto-Instellungen",
+        "security": {
+            "title": "Sekerheit",
+            "description": "Verwalt diene Twee-Faktor-Anmellung un aktive Sitzungen",
+            "twoFactor": {
+                "title": "Twee-Faktor-Anmellung",
+                "description": "Föög dien Konto en extra Sekerheitsschicht to.",
+                "enable": "Anschalten",
+                "disable": "Utschalten",
+                "enabled": "Twee-Faktor-Anmellung is aan.",
+                "disabled": "Twee-Faktor-Anmellung is ut.",
+                "setupDescription": "Üm de Twee-Faktor-Anmellung fertig intostellen, scann den QR-Kood mit diene Authenticator-App un giff den genereerten Kood in.",
+                "recoveryCodes": "Notfall-Koden",
+                "recoveryCodesDescription": "Spieker düsse Notfall-Koden in en sekern Passwoort-Manager. Se köönt bruukt warrn, üm den Togriep op dien Konto wedder to kriegen, wenn du dien Twee-Faktor-Aperat verloren hest.",
+                "regenerateCodes": "Koden nieg generéren",
+                "confirmCode": "Anmell-Kood",
+                "confirm": "Bestätigen",
+                "cancel": "Afbreken"
+            }
+        }
+    },
+    "navigation": {
+        "home": "Tohuus",
+        "dashboard": "Översicht",
+        "settings": "Instellungen",
+        "admin": "Administration",
+        "profile": "Profil",
+        "appearance": "Utseen",
+        "password": "Passwoort",
+        "security": "Sekerheit",
+        "language": "Spraak",
+        "notifications": "Mellungen",
+        "events": "Evenementen",
+        "programs": "Programm",
+        "tickets": "Tickets",
+        "users": "Bruker",
+        "news": "Niegichkeiten",
+        "announcements": "Bekanntmakungen",
+        "sponsors": "Sponsoren",
+        "venues": "Öörd",
+        "games": "Spele",
+        "shop": "Laden",
+        "orders": "Bestellungen",
+        "vouchers": "Gootscheen",
+        "achievements": "Leistungen",
+        "competitions": "Wettkämpf",
+        "integrations": "Integratschonen",
+        "organization": "Organisatschoon",
+        "seating": "Sitzen",
+        "ticketDiscovery": "Tickets finnen"
+    },
+    "dashboard": {
+        "title": "Översicht",
+        "welcome": "Willkamen torügg!",
+        "overview": "Översicht"
+    },
+    "validation": {
+        "required": "Dit Feld is nödig",
+        "email": "Giff bidde en gellen E-Mail-Adress in",
+        "minLength": "Mutt tominnst {min} Tekens lang ween",
+        "maxLength": "Dröff nich mehr as {max} Tekens lang ween",
+        "passwordMatch": "Passwöör mööt översteen",
+        "invalid": "Ungellen Weert"
+    }
+}

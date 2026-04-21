@@ -1,0 +1,240 @@
+{
+    "common": {
+        "appName": "LanCore",
+        "loading": "ghoStaH...",
+        "saving": "polchoHtaH...",
+        "error": "Qagh",
+        "success": "Qapla'",
+        "save": "pol",
+        "saved": "polpu'.",
+        "cancel": "qIl",
+        "delete": "Qaw'",
+        "edit": "choH",
+        "close": "SoQmoH",
+        "submit": "nob",
+        "search": "nej",
+        "settings": "nabmey",
+        "logout": "mej",
+        "profile": "pong De'",
+        "dashboard": "De' jIH",
+        "admin": "che'wI'",
+        "users": "lo'wI'pu'",
+        "back": "tlhoS",
+        "create": "chen",
+        "update": "chu'choH",
+        "confirm": "lu'",
+        "continue": "taH",
+        "yes": "HIja'",
+        "no": "ghobe'",
+        "add": "chel",
+        "remove": "teq",
+        "actions": "vangmey",
+        "view": "legh",
+        "copy": "velqa'moH",
+        "copied": "velqa'pu'",
+        "optional": "naDev chaq",
+        "required": "poQlu'bogh",
+        "loadingMore": "latlh ghoStaH...",
+        "noResults": "pagh Sampu'",
+        "showMore": "latlh 'aghHa'",
+        "showLess": "puS 'aghHa'"
+    },
+    "auth": {
+        "login": {
+            "title": "De'wI' tIja'ta' 'ej 'el",
+            "description": "De'ghaj 'ej vo'ral tIja'ta' 'elmeH",
+            "email": "De'wI' ngeb",
+            "emailPlaceholder": "email@example.com",
+            "password": "vo'ral",
+            "passwordPlaceholder": "vo'ral",
+            "rememberMe": "jIH qaw",
+            "forgotPassword": "vo'ral DalIjpu''a'?",
+            "button": "'el",
+            "noAccount": "De'wI' Dajatlhbe''a'?",
+            "signUp": "De'wI' chu' chen"
+        },
+        "register": {
+            "title": "De'wI' chu' chen",
+            "description": "De'wI' chenmoHmeH De'lIj yIja'",
+            "name": "pong",
+            "namePlaceholder": "pong naQ",
+            "email": "De'wI' ngeb",
+            "emailPlaceholder": "email@example.com",
+            "password": "vo'ral",
+            "passwordPlaceholder": "vo'ral",
+            "confirmPassword": "vo'ral luH",
+            "button": "De'wI' chenmoH",
+            "hasAccount": "De'wI' Daghaj'a'?",
+            "logIn": "'el"
+        },
+        "forgotPassword": {
+            "title": "vo'ral DalIjpu''a'?",
+            "description": "De'wI' ngeblIj yIja' 'ej vo'ral choHmeH yIn wItlheSmoH.",
+            "email": "De'wI' ngeb",
+            "emailPlaceholder": "email@example.com",
+            "button": "yIn ngeH",
+            "backToLogin": "'elmeH tlhoS"
+        },
+        "resetPassword": {
+            "title": "vo'ral chu' nob",
+            "description": "vo'ral chu'lIj yIja' naDev",
+            "email": "De'wI' ngeb",
+            "password": "vo'ral",
+            "passwordPlaceholder": "vo'ral",
+            "confirmPassword": "vo'ral luH",
+            "button": "vo'ral choHmoH"
+        },
+        "verifyEmail": {
+            "title": "De'wI' ngeblIj yIngu'",
+            "description": "De'wI' Dachu'qa'moH 'e' batlh qatlho'! DachaghtaH mojpa', yIn DaHevpu'bogh DachelmeH De'wI' ngeblIj yIngu'. De'wI' DaHevbe'pu'chugh, latlh wIngeHbej.",
+            "resendButton": "De'wI' ngu'meH De' chu' ngeH",
+            "linkSent": "De'wI' ngu'meH De' chu' De'wI' ngeblIjvaD ngeHta'.",
+            "logout": "mej"
+        },
+        "confirmPassword": {
+            "title": "vo'ralIj yIlu'",
+            "description": "naDev ghu' De'wI' Hup Hol. DataH pa', vo'ralIj yIlu'.",
+            "password": "vo'ral",
+            "passwordPlaceholder": "vo'ral",
+            "button": "lu'"
+        },
+        "twoFactorChallenge": {
+            "title": "cha' DoS ngu'",
+            "description": "ngu' yIn ghItlh' ngu'wI'vam yIja'.",
+            "code": "ngu' yIn",
+            "recoveryCode": "choQ yIn",
+            "recoveryDescription": "De'wI'lIj 'elmeH ghu' choQ yInvetlh wa' yIja'.",
+            "useRecovery": "choQ yIn lo' 'ej 'el",
+            "useCode": "ngu' yIn lo' 'ej 'el",
+            "button": "yIngu'"
+        }
+    },
+    "settings": {
+        "title": "nabmey",
+        "description": "De'wI'lIj nabmey DuH",
+        "profile": {
+            "title": "pong De'",
+            "description": "ponglIj 'ej De'wI' ngeblIj yIchu'",
+            "name": "pong",
+            "email": "De'wI' ngeb",
+            "phone": "ghogh De'",
+            "phonePlaceholder": "+49 123 456789",
+            "addressSection": "juH Daq 'ej rIn",
+            "addressDescription": "je'meH poQlu'. juH DaqlIj 'ej wa' rIn mIw yIja'.",
+            "street": "He pong",
+            "streetPlaceholder": "He 'ej qach mI'",
+            "zipCode": "juH mI'",
+            "zipCodePlaceholder": "12345",
+            "city": "veng",
+            "cityPlaceholder": "veng",
+            "country": "Sep",
+            "countryPlaceholder": "Sep wIv",
+            "updateButton": "pol",
+            "updated": "polpu'.",
+            "emailUnverified": "De'wI' ngeblIj ngu'lu'be'pu'.",
+            "resendLink": "naDev yI'uch: De'wI' ngu'meH De' qenqa' ngeH.",
+            "verificationSent": "De'wI' ngu'meH De' chu' De'wI' ngeblIjvaD ngeHta'.",
+            "deleteAccount": "De'wI' Qaw'",
+            "deleteAccountDescription": "De'wI'lIj 'ej Hochlogh yoS Qaw'",
+            "deleteAccountWarning": "De'wI' Qaw'lu'pu'DI', Hochlogh yoS 'ej De'vetlh reH Qaw'lu'. De'wI'lIj Daqaw'pa', De' DapolmeH yIluH.",
+            "deleteAccountButton": "De'wI' Qaw'",
+            "deleteAccountConfirm": "De'wI'lIj Daqaw' DaneH'a'?",
+            "deleteAccountConfirmDescription": "De'wI' Qaw'lu'pu'DI', Hochlogh yoS reH Qaw'lu'. reH DaQaw' 'e' Dalu'meH vo'ralIj yIja'."
+        },
+        "password": {
+            "title": "vo'ral",
+            "description": "De'wI'lIj Hup 'oHmeH tIq, Sambe'lu'bogh vo'ral lo'qu'.",
+            "currentPassword": "DaH vo'ral",
+            "newPassword": "vo'ral chu'",
+            "confirmPassword": "vo'ral luH",
+            "updateButton": "vo'ral pol",
+            "updated": "vo'ral choHpu'."
+        },
+        "appearance": {
+            "title": "boch",
+            "description": "De'wI'lIj boch nabmey yIchu'",
+            "theme": "Dotlh",
+            "light": "wovbogh",
+            "dark": "Hurghbogh",
+            "system": "patlIj"
+        },
+        "language": {
+            "title": "Hol",
+            "description": "LAN patvaD Hol yIwIv. wIvlIj Hoch LAN-Sermey chel.",
+            "label": "'ang Hol",
+            "saved": "Hol wIv choHpu'"
+        },
+        "notifications": {
+            "title": "rItmey"
+        },
+        "advancedTicketing": {
+            "title": "tlhaq loS naD"
+        },
+        "achievements": {
+            "title": "mIwmey"
+        },
+        "manageDescription": "pong De' 'ej De'wI' nabmey DuH",
+        "security": {
+            "title": "Hup",
+            "description": "cha' DoS ngu' 'ej vum chu'bogh tIQaw'",
+            "twoFactor": {
+                "title": "cha' DoS ngu'",
+                "description": "De'wI'lIjvaD Hup latlh yIchel.",
+                "enable": "jagh",
+                "disable": "jaghHa'",
+                "enabled": "cha' DoS ngu' Qap.",
+                "disabled": "cha' DoS ngu' Qapbe'.",
+                "setupDescription": "cha' DoS ngu' SarghmeH, QR-yIn yIwI' ngu'wI'vam 'ej yIn chenpu' yIja'.",
+                "recoveryCodes": "choQ yInmey",
+                "recoveryCodesDescription": "choQ yInmeyvam vo'ral nur Hup patDaq yItuQ. cha' DoS jan Dalon pa', De'wI'lIjvaD qaS.",
+                "regenerateCodes": "yInmey chu' chenqa'moH",
+                "confirmCode": "ngu' yIn",
+                "confirm": "lu'",
+                "cancel": "qIl"
+            }
+        }
+    },
+    "navigation": {
+        "home": "juH",
+        "dashboard": "De' jIH",
+        "settings": "nabmey",
+        "admin": "che'wI'",
+        "profile": "pong De'",
+        "appearance": "boch",
+        "password": "vo'ral",
+        "security": "Hup",
+        "language": "Hol",
+        "notifications": "rItmey",
+        "events": "wanI'mey",
+        "programs": "De' SIj",
+        "tickets": "lojmItmey",
+        "users": "lo'wI'pu'",
+        "news": "De' chu'",
+        "announcements": "Hu'tegh jatlh",
+        "sponsors": "boQwI'pu'",
+        "venues": "Daqmey",
+        "games": "QujmeH",
+        "shop": "nav",
+        "orders": "poQmey",
+        "vouchers": "vay'meH yIn",
+        "achievements": "mIwmey",
+        "competitions": "'Iw SuD",
+        "integrations": "SergheS",
+        "organization": "rur",
+        "seating": "ba'taH Daq",
+        "ticketDiscovery": "lojmIt Sam"
+    },
+    "dashboard": {
+        "title": "De' jIH",
+        "welcome": "narghmo' nuqneH!",
+        "overview": "Sum legh"
+    },
+    "validation": {
+        "required": "yab vam poQlu'",
+        "email": "De'wI' ngeb lu'lu'bogh yIja'",
+        "minLength": "loQ {min} tetlh law'",
+        "maxLength": "law'be' {max} tetlh law'",
+        "passwordMatch": "vo'ralmey rurnIS",
+        "invalid": "lu'be'lu'bogh"
+    }
+}

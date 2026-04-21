@@ -1,0 +1,240 @@
+{
+    "common": {
+        "appName": "LanCore",
+        "loading": "로드 중...",
+        "saving": "저장 중...",
+        "error": "오류",
+        "success": "성공",
+        "save": "저장",
+        "saved": "저장되었습니다.",
+        "cancel": "취소",
+        "delete": "삭제",
+        "edit": "편집",
+        "close": "닫기",
+        "submit": "제출",
+        "search": "검색",
+        "settings": "설정",
+        "logout": "로그아웃",
+        "profile": "프로필",
+        "dashboard": "대시보드",
+        "admin": "관리자",
+        "users": "사용자",
+        "back": "뒤로",
+        "create": "생성",
+        "update": "업데이트",
+        "confirm": "확인",
+        "continue": "계속",
+        "yes": "예",
+        "no": "아니요",
+        "add": "추가",
+        "remove": "제거",
+        "actions": "작업",
+        "view": "보기",
+        "copy": "복사",
+        "copied": "복사됨",
+        "optional": "선택 사항",
+        "required": "필수",
+        "loadingMore": "더 불러오는 중...",
+        "noResults": "결과를 찾을 수 없습니다",
+        "showMore": "더 보기",
+        "showLess": "간략히 보기"
+    },
+    "auth": {
+        "login": {
+            "title": "계정에 로그인",
+            "description": "이메일과 비밀번호를 입력하여 로그인하세요",
+            "email": "이메일 주소",
+            "emailPlaceholder": "email@example.com",
+            "password": "비밀번호",
+            "passwordPlaceholder": "비밀번호",
+            "rememberMe": "로그인 유지",
+            "forgotPassword": "비밀번호를 잊으셨나요?",
+            "button": "로그인",
+            "noAccount": "계정이 없으신가요?",
+            "signUp": "회원가입"
+        },
+        "register": {
+            "title": "계정 만들기",
+            "description": "계정을 만들려면 정보를 입력하세요",
+            "name": "이름",
+            "namePlaceholder": "전체 이름",
+            "email": "이메일 주소",
+            "emailPlaceholder": "email@example.com",
+            "password": "비밀번호",
+            "passwordPlaceholder": "비밀번호",
+            "confirmPassword": "비밀번호 확인",
+            "button": "계정 만들기",
+            "hasAccount": "이미 계정이 있으신가요?",
+            "logIn": "로그인"
+        },
+        "forgotPassword": {
+            "title": "비밀번호를 잊으셨나요?",
+            "description": "이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드립니다.",
+            "email": "이메일 주소",
+            "emailPlaceholder": "email@example.com",
+            "button": "재설정 링크 보내기",
+            "backToLogin": "로그인으로 돌아가기"
+        },
+        "resetPassword": {
+            "title": "비밀번호 재설정",
+            "description": "새 비밀번호를 입력하세요",
+            "email": "이메일 주소",
+            "password": "비밀번호",
+            "passwordPlaceholder": "비밀번호",
+            "confirmPassword": "비밀번호 확인",
+            "button": "비밀번호 재설정"
+        },
+        "verifyEmail": {
+            "title": "이메일 주소 확인",
+            "description": "가입해 주셔서 감사합니다! 시작하기 전에 방금 보내드린 이메일의 링크를 클릭하여 이메일 주소를 확인해 주시겠어요? 이메일을 받지 못하셨다면 다시 보내드리겠습니다.",
+            "resendButton": "확인 이메일 다시 보내기",
+            "linkSent": "새 확인 링크가 이메일 주소로 전송되었습니다.",
+            "logout": "로그아웃"
+        },
+        "confirmPassword": {
+            "title": "비밀번호 확인",
+            "description": "애플리케이션의 보안 영역입니다. 계속하기 전에 비밀번호를 확인하세요.",
+            "password": "비밀번호",
+            "passwordPlaceholder": "비밀번호",
+            "button": "확인"
+        },
+        "twoFactorChallenge": {
+            "title": "2단계 인증",
+            "description": "인증 앱에서 제공된 인증 코드를 입력하세요.",
+            "code": "인증 코드",
+            "recoveryCode": "복구 코드",
+            "recoveryDescription": "비상 복구 코드 중 하나를 입력하여 계정 액세스를 확인하세요.",
+            "useRecovery": "복구 코드로 로그인",
+            "useCode": "인증 코드로 로그인",
+            "button": "확인"
+        }
+    },
+    "settings": {
+        "title": "설정",
+        "description": "계정 설정 및 환경설정 관리",
+        "profile": {
+            "title": "프로필",
+            "description": "이름 및 이메일 주소 업데이트",
+            "name": "이름",
+            "email": "이메일 주소",
+            "phone": "전화번호",
+            "phonePlaceholder": "+82 10-1234-5678",
+            "addressSection": "주소 및 연락처",
+            "addressDescription": "구매에 필요합니다. 주소와 하나 이상의 연락 방법을 입력하세요.",
+            "street": "도로명 주소",
+            "streetPlaceholder": "도로명 및 건물 번호",
+            "zipCode": "우편번호",
+            "zipCodePlaceholder": "12345",
+            "city": "도시",
+            "cityPlaceholder": "도시",
+            "country": "국가",
+            "countryPlaceholder": "국가를 선택하세요",
+            "updateButton": "저장",
+            "updated": "저장되었습니다.",
+            "emailUnverified": "이메일 주소가 확인되지 않았습니다.",
+            "resendLink": "확인 이메일을 다시 보내려면 여기를 클릭하세요.",
+            "verificationSent": "새 확인 링크가 이메일 주소로 전송되었습니다.",
+            "deleteAccount": "계정 삭제",
+            "deleteAccountDescription": "계정 및 모든 관련 리소스 삭제",
+            "deleteAccountWarning": "계정이 삭제되면 모든 리소스와 데이터가 영구적으로 삭제됩니다. 계정을 삭제하기 전에 보관하고 싶은 데이터나 정보를 다운로드하세요.",
+            "deleteAccountButton": "계정 삭제",
+            "deleteAccountConfirm": "계정을 삭제하시겠습니까?",
+            "deleteAccountConfirmDescription": "계정이 삭제되면 모든 리소스와 데이터가 영구적으로 삭제됩니다. 계정을 영구 삭제하려면 비밀번호를 입력하여 확인하세요."
+        },
+        "password": {
+            "title": "비밀번호",
+            "description": "안전을 위해 길고 무작위인 비밀번호를 사용하세요.",
+            "currentPassword": "현재 비밀번호",
+            "newPassword": "새 비밀번호",
+            "confirmPassword": "비밀번호 확인",
+            "updateButton": "비밀번호 저장",
+            "updated": "비밀번호가 업데이트되었습니다."
+        },
+        "appearance": {
+            "title": "모양",
+            "description": "계정의 모양 설정 업데이트",
+            "theme": "테마",
+            "light": "밝게",
+            "dark": "어둡게",
+            "system": "시스템"
+        },
+        "language": {
+            "title": "언어",
+            "description": "LAN 생태계 전체에서 사용할 언어를 선택하세요. 선택 사항은 연결된 모든 Lan* 앱에 전파됩니다.",
+            "label": "표시 언어",
+            "saved": "언어 환경설정이 업데이트되었습니다"
+        },
+        "notifications": {
+            "title": "알림"
+        },
+        "advancedTicketing": {
+            "title": "고급 티켓팅"
+        },
+        "achievements": {
+            "title": "성과"
+        },
+        "manageDescription": "프로필 및 계정 설정 관리",
+        "security": {
+            "title": "보안",
+            "description": "2단계 인증 및 활성 세션 관리",
+            "twoFactor": {
+                "title": "2단계 인증",
+                "description": "계정에 추가 보안 레이어를 더하세요.",
+                "enable": "활성화",
+                "disable": "비활성화",
+                "enabled": "2단계 인증이 활성화되어 있습니다.",
+                "disabled": "2단계 인증이 비활성화되어 있습니다.",
+                "setupDescription": "2단계 인증 설정을 완료하려면 인증 앱으로 다음 QR 코드를 스캔하고 생성된 코드를 입력하세요.",
+                "recoveryCodes": "복구 코드",
+                "recoveryCodesDescription": "이 복구 코드를 안전한 비밀번호 관리자에 저장하세요. 2단계 인증 기기를 분실한 경우 계정에 다시 액세스하는 데 사용할 수 있습니다.",
+                "regenerateCodes": "코드 재생성",
+                "confirmCode": "인증 코드",
+                "confirm": "확인",
+                "cancel": "취소"
+            }
+        }
+    },
+    "navigation": {
+        "home": "홈",
+        "dashboard": "대시보드",
+        "settings": "설정",
+        "admin": "관리자",
+        "profile": "프로필",
+        "appearance": "모양",
+        "password": "비밀번호",
+        "security": "보안",
+        "language": "언어",
+        "notifications": "알림",
+        "events": "이벤트",
+        "programs": "프로그램",
+        "tickets": "티켓",
+        "users": "사용자",
+        "news": "뉴스",
+        "announcements": "공지사항",
+        "sponsors": "후원사",
+        "venues": "장소",
+        "games": "게임",
+        "shop": "상점",
+        "orders": "주문",
+        "vouchers": "바우처",
+        "achievements": "성과",
+        "competitions": "대회",
+        "integrations": "통합",
+        "organization": "조직",
+        "seating": "좌석",
+        "ticketDiscovery": "티켓 찾기"
+    },
+    "dashboard": {
+        "title": "대시보드",
+        "welcome": "다시 오신 것을 환영합니다!",
+        "overview": "개요"
+    },
+    "validation": {
+        "required": "필수 입력 항목입니다",
+        "email": "올바른 이메일 주소를 입력하세요",
+        "minLength": "{min}자 이상이어야 합니다",
+        "maxLength": "{max}자 이하이어야 합니다",
+        "passwordMatch": "비밀번호가 일치해야 합니다",
+        "invalid": "잘못된 값"
+    }
+}
