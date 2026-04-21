@@ -524,9 +524,7 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="newsIndex()">
                                     <Newspaper />
-                                    <span>{{
-                                        $t('navigation.articles')
-                                    }}</span>
+                                    <span>{{ $t('navigation.articles') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -544,9 +542,7 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="newsCommentsIndex()">
                                     <MessageSquare />
-                                    <span>{{
-                                        $t('navigation.comments')
-                                    }}</span>
+                                    <span>{{ $t('navigation.comments') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -666,9 +662,7 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="programsIndex()">
                                     <ClipboardList />
-                                    <span>{{
-                                        $t('navigation.programs')
-                                    }}</span>
+                                    <span>{{ $t('navigation.programs') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -762,9 +756,7 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="sponsorsIndex()">
                                     <Handshake />
-                                    <span>{{
-                                        $t('navigation.sponsors')
-                                    }}</span>
+                                    <span>{{ $t('navigation.sponsors') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -900,9 +892,7 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="vouchersIndex()">
                                     <Gift />
-                                    <span>{{
-                                        $t('navigation.vouchers')
-                                    }}</span>
+                                    <span>{{ $t('navigation.vouchers') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -1091,9 +1081,7 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="webhooksIndex()">
                                     <Webhook />
-                                    <span>{{
-                                        $t('navigation.webhooks')
-                                    }}</span>
+                                    <span>{{ $t('navigation.webhooks') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -1162,9 +1150,7 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="shopSettingsIndex()">
                                     <Cog />
-                                    <span>{{
-                                        $t('navigation.settings')
-                                    }}</span>
+                                    <span>{{ $t('navigation.settings') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
