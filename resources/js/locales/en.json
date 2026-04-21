@@ -279,5 +279,59 @@
         "maxLength": "Must be no more than {max} characters",
         "passwordMatch": "Passwords must match",
         "invalid": "Invalid value"
+    },
+    "footer": {
+        "version": "Version",
+        "commit": "Commit",
+        "builtAt": "Built",
+        "cookieSettings": "Cookie settings"
+    },
+    "cookies": {
+        "banner": {
+            "title": "We respect your privacy",
+            "description": "We use cookies that are strictly necessary for the site to work. With your consent we also use privacy-friendly analytics (Plausible) to understand how the site is used. You can withdraw your consent at any time via the \"Cookie settings\" link in the footer.",
+            "acceptAll": "Accept all",
+            "acceptNecessary": "Only necessary",
+            "showPreferences": "Manage preferences",
+            "close": "Close"
+        },
+        "preferences": {
+            "title": "Cookie preferences",
+            "acceptAll": "Accept all",
+            "acceptNecessary": "Only necessary",
+            "savePreferences": "Save my choices",
+            "close": "Close",
+            "serviceCounter": "service(s)",
+            "necessary": {
+                "title": "Strictly necessary",
+                "description": "These cookies are required to operate the site. They include the session cookie, CSRF protection, your language choice and the sidebar state. They cannot be switched off."
+            },
+            "analytics": {
+                "title": "Analytics",
+                "description": "Privacy-friendly, cookieless analytics via Plausible to measure aggregate usage (page views, referrers, devices). No personal data, no cross-site tracking."
+            }
+        }
+    },
+    "legal": {
+        "impressum": {
+            "link": "Imprint",
+            "title": "Imprint",
+            "provider": "Provider",
+            "contact": "Contact",
+            "email": "Email",
+            "phone": "Phone",
+            "website": "Website",
+            "registration": "Registration",
+            "taxId": "VAT ID",
+            "responsible": "Responsible for content",
+            "additional": "Additional information",
+            "empty": "Imprint content has not been configured yet."
+        },
+        "privacy": {
+            "link": "Privacy",
+            "title": "Privacy policy",
+            "empty": "The privacy policy has not been published yet.",
+            "contactFallback": "For privacy inquiries, contact:"
+        }
     }
 }

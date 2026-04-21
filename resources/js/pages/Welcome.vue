@@ -15,6 +15,7 @@ import {
 } from 'lucide-vue-next';
 import { computed, defineAsyncComponent, ref } from 'vue';
 import type { Component } from 'vue';
+import AppFooter from '@/components/AppFooter.vue';
 import AppLogo from '@/components/AppLogo.vue';
 import BannerCarousel from '@/components/BannerCarousel.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -896,13 +897,6 @@ function resolveIcon(name: string | null): Component {
             </div>
         </section>
 
-        <!-- Footer -->
-        <footer class="border-t">
-            <div
-                class="mx-auto max-w-5xl px-6 py-6 text-center text-sm text-muted-foreground"
-            >
-                Powered by LanCore 2026
-            </div>
-        </footer>
+        <AppFooter />
     </div>
 </template>

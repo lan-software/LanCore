@@ -37,6 +37,9 @@ const form = reactive({
     tax_id: props.settings.tax_id ?? '',
     registration_id: props.settings.registration_id ?? '',
     legal_notice: props.settings.legal_notice ?? '',
+    impressum_responsible: props.settings.impressum_responsible ?? '',
+    impressum_content: props.settings.impressum_content ?? '',
+    privacy_content: props.settings.privacy_content ?? '',
 });
 
 const saving = ref(false);
@@ -254,6 +257,65 @@ function removeLogo() {
                                 placeholder="Additional legal text printed on invoices and receipts..."
                             />
                         </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="text-sm font-semibold">
+                        Imprint (/impressum, /imprint)
+                    </div>
+                    <p class="text-xs text-muted-foreground">
+                        Content published at <code>/impressum</code> and
+                        <code>/imprint</code>. Leave empty to hide the imprint
+                        link from the footer. The organization details above are
+                        rendered automatically above this content.
+                    </p>
+
+                    <div class="grid gap-4">
+                        <div class="grid gap-2">
+                            <Label for="impressum_responsible"
+                                >Responsible person (§55 RStV)</Label
+                            >
+                            <Textarea
+                                id="impressum_responsible"
+                                v-model="form.impressum_responsible"
+                                rows="3"
+                                placeholder="Name and address of the person responsible for content, if different from the organization."
+                            />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="impressum_content"
+                                >Additional imprint content</Label
+                            >
+                            <Textarea
+                                id="impressum_content"
+                                v-model="form.impressum_content"
+                                rows="8"
+                                placeholder="Liability disclaimers, dispute resolution notices, copyright statements, etc."
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="text-sm font-semibold">
+                        Privacy policy (/datenschutz, /privacy)
+                    </div>
+                    <p class="text-xs text-muted-foreground">
+                        Content published at <code>/datenschutz</code> and
+                        <code>/privacy</code>. Leave empty to hide the privacy
+                        link from the footer.
+                    </p>
+
+                    <div class="grid gap-2">
+                        <Label for="privacy_content">Privacy policy text</Label>
+                        <Textarea
+                            id="privacy_content"
+                            v-model="form.privacy_content"
+                            rows="16"
+                            placeholder="Full privacy policy including GDPR disclosures (Art. 13), data controller, processing purposes, retention, cookies..."
+                        />
                     </div>
                 </div>
 

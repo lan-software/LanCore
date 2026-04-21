@@ -12,6 +12,7 @@ use App\Domain\Seating\Enums\Permission as SeatingPermission;
 use App\Domain\Ticketing\Enums\Permission as TicketingPermission;
 use App\Enums\RoleName;
 use App\Models\OrganizationSetting;
+use App\Support\AppVersion;
 use App\Support\StorageRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -80,8 +81,22 @@ class HandleInertiaRequests extends Middleware
                 return [
                     'logoUrl' => $logoPath ? StorageRole::publicUrl($logoPath) : null,
                     'name' => OrganizationSetting::get('name'),
+                    'hasImpressum' => (bool) OrganizationSetting::get('impressum_content'),
+                    'hasPrivacy' => (bool) OrganizationSetting::get('privacy_content'),
                 ];
             }),
+            'appVersion' => fn () => AppVersion::summary(),
+            'analytics' => fn () => config('services.plausible.enabled') && config('services.plausible.domain')
+                ? [
+                    'plausible' => [
+                        'domain' => config('services.plausible.domain'),
+                        'src' => config('services.plausible.src'),
+                    ],
+                ]
+                : null,
+            'cookiePreferences' => fn () => $user
+                ? ($user->cookie_preferences ?? null)
+                : null,
             'eventContext' => fn () => $this->eventContext($request),
             'myEventContext' => fn () => $this->myEventContext($request),
             'vapidPublicKey' => config('services.vapid.public_key'),

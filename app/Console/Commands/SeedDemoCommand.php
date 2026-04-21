@@ -764,7 +764,7 @@ class SeedDemoCommand extends Command
             [
                 'name' => 'Northbyte Hosting',
                 'description' => 'Northbyte Hosting ist ein fiktiver Infrastruktur- und Hosting-Partner für Community-Events, Turniere und moderne Webplattformen. Das Unternehmen positioniert sich als techniknaher Sponsor für dedizierte Server, Cloud-Ressourcen und zuverlässige Event-Infrastruktur.',
-                'link' => 'https://northbyte-hosting.example',
+                'link' => 'https://lan-software.de',
                 'level' => 'gold',
                 'image_dir' => 'demo-sponsor-1',
                 'logo_prompt' => 'A clean modern tech company logo for "Northbyte Hosting", minimalist geometric symbol, subtle connection to servers, cloud infrastructure and networking, professional B2B style, white background, flat vector design, dark blue and cyan color palette, no mockup, no 3D, no text outside the logo composition',
@@ -772,7 +772,7 @@ class SeedDemoCommand extends Command
             [
                 'name' => 'PixelForge Systems',
                 'description' => 'PixelForge Systems ist ein fiktiver Technologie-Sponsor für Gaming-Hardware, Displays und Event-Arbeitsplätze. Die Marke steht für leistungsfähige Systeme, klare Formsprache und einen modernen, leicht gaming-nahen, aber professionellen Auftritt.',
-                'link' => 'https://pixelforge-systems.example',
+                'link' => 'https://lan-software.de',
                 'level' => 'silver',
                 'image_dir' => 'demo-sponsor-2',
                 'logo_prompt' => 'A sharp modern logo for "PixelForge Systems", combining a subtle pixel motif with a forged angular emblem, professional technology brand identity, flat vector design, white background, bold but clean, orange and graphite color palette, no mockup, no 3D effects, suitable for website header and sponsor wall',
@@ -780,7 +780,7 @@ class SeedDemoCommand extends Command
             [
                 'name' => 'Gournament',
                 'description' => 'Gournament ist eine fiktive Softwarelösung zur Erstellung und Verwaltung von Turnierbäumen, entwickelt in Go. Die Plattform richtet sich an Veranstalter, E-Sport-Teams und Community-Projekte, die schnell und zuverlässig Brackets, Turnierstrukturen und Match-Abläufe organisieren möchten. Als Sponsor passt Gournament besonders gut in das LanCore-Ökosystem rund um Competitions und LanBrackets.',
-                'link' => 'https://gournament.example',
+                'link' => 'https://lan-software.de',
                 'level' => 'bronze',
                 'image_dir' => 'demo-sponsor-3',
                 'logo_prompt' => 'A clean modern software logo for "Gournament", inspired by tournament brackets and the Go programming language ecosystem, minimalist geometric emblem, professional SaaS style, flat vector design, white background, teal and dark slate color palette, no mockup, no 3D, scalable for web and sponsor walls',

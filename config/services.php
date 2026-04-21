@@ -41,4 +41,10 @@ return [
         'subject' => env('APP_URL'),
     ],
 
+    'plausible' => [
+        'enabled' => env('PLAUSIBLE_ENABLED', false),
+        'domain' => env('PLAUSIBLE_DOMAIN'),
+        'src' => env('PLAUSIBLE_SRC', 'https://plausible.io/js/script.js'),
+    ],
+
 ];

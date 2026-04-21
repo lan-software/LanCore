@@ -1,8 +1,10 @@
 <?php
 
 use App\Domain\Event\Http\Controllers\PublicEventController;
+use App\Http\Controllers\CookiePreferenceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventContextController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\StorageFileController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -12,6 +14,15 @@ Route::get('/', WelcomeController::class)->name('home');
 Route::get('upcoming-events', [PublicEventController::class, 'index'])->name('events.public');
 Route::get('past-events', [PublicEventController::class, 'past'])->name('events.public.past');
 Route::get('events/{event}/public', [PublicEventController::class, 'show'])->name('events.public.show');
+
+Route::get('impressum', [LegalController::class, 'impressum'])->name('legal.impressum');
+Route::get('imprint', [LegalController::class, 'impressum'])->name('legal.imprint');
+Route::get('datenschutz', [LegalController::class, 'privacy'])->name('legal.datenschutz');
+Route::get('privacy', [LegalController::class, 'privacy'])->name('legal.privacy');
+
+Route::post('cookie-preferences', [CookiePreferenceController::class, 'update'])
+    ->middleware('auth')
+    ->name('cookie-preferences.update');
 
 Route::get('files/{path}', StorageFileController::class)
     ->where('path', '.*')

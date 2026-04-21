@@ -17,6 +17,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | Surfaced in the footer and admin dashboard via App\Support\AppVersion.
+    | When unset, AppVersion falls back to composer.json and the local .git
+    | directory. Set these at deploy time for deterministic reporting.
+    |
+    */
+
+    'version' => env('APP_VERSION'),
+
+    'commit' => env('APP_GIT_SHA'),
+
+    'built_at' => env('APP_BUILT_AT'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

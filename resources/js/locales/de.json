@@ -279,5 +279,59 @@
         "maxLength": "Darf höchstens {max} Zeichen lang sein",
         "passwordMatch": "Passwörter müssen übereinstimmen",
         "invalid": "Ungültiger Wert"
+    },
+    "footer": {
+        "version": "Version",
+        "commit": "Commit",
+        "builtAt": "Build",
+        "cookieSettings": "Cookie-Einstellungen"
+    },
+    "cookies": {
+        "banner": {
+            "title": "Wir respektieren Ihre Privatsphäre",
+            "description": "Wir verwenden Cookies, die für den Betrieb der Seite zwingend notwendig sind. Mit Ihrer Einwilligung setzen wir zusätzlich datenschutzfreundliche Analyse (Plausible) ein, um die Nutzung der Seite nachvollziehen zu können. Sie können Ihre Einwilligung jederzeit über den Link \"Cookie-Einstellungen\" im Footer widerrufen.",
+            "acceptAll": "Alle akzeptieren",
+            "acceptNecessary": "Nur notwendige",
+            "showPreferences": "Einstellungen verwalten",
+            "close": "Schließen"
+        },
+        "preferences": {
+            "title": "Cookie-Einstellungen",
+            "acceptAll": "Alle akzeptieren",
+            "acceptNecessary": "Nur notwendige",
+            "savePreferences": "Auswahl speichern",
+            "close": "Schließen",
+            "serviceCounter": "Dienst(e)",
+            "necessary": {
+                "title": "Unbedingt erforderlich",
+                "description": "Diese Cookies sind für den Betrieb der Seite notwendig. Sie umfassen das Sitzungscookie, den CSRF-Schutz, die gewählte Sprache sowie den Zustand der Seitenleiste. Sie lassen sich nicht deaktivieren."
+            },
+            "analytics": {
+                "title": "Analyse",
+                "description": "Datenschutzfreundliche, cookielose Analyse mit Plausible zur Messung aggregierter Nutzung (Seitenaufrufe, Verweiser, Endgeräte). Keine personenbezogenen Daten, kein Cross-Site-Tracking."
+            }
+        }
+    },
+    "legal": {
+        "impressum": {
+            "link": "Impressum",
+            "title": "Impressum",
+            "provider": "Anbieter",
+            "contact": "Kontakt",
+            "email": "E-Mail",
+            "phone": "Telefon",
+            "website": "Webseite",
+            "registration": "Registereintrag",
+            "taxId": "Umsatzsteuer-ID",
+            "responsible": "Verantwortlich für den Inhalt",
+            "additional": "Weitere Angaben",
+            "empty": "Das Impressum wurde noch nicht konfiguriert."
+        },
+        "privacy": {
+            "link": "Datenschutz",
+            "title": "Datenschutzerklärung",
+            "empty": "Die Datenschutzerklärung wurde noch nicht veröffentlicht.",
+            "contactFallback": "Bei Datenschutzanfragen wenden Sie sich an:"
+        }
     }
 }
