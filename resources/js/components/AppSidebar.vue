@@ -129,25 +129,25 @@ const allPinnableItems = computed<NavItem[]>(() => {
     const items: NavItem[] = [
         {
             id: 'dashboard',
-            title: 'Dashboard',
+            title: t('navigation.dashboard'),
             href: dashboard(),
             icon: LayoutGrid,
         },
         {
             id: 'my-tickets',
-            title: 'My Tickets',
+            title: t('navigation.myTickets'),
             href: ticketsIndex(),
             icon: Ticket,
         },
         {
             id: 'my-orders',
-            title: 'My Orders',
+            title: t('navigation.myOrders'),
             href: myOrdersIndex(),
             icon: ShoppingCart,
         },
         {
             id: 'my-competitions',
-            title: 'My Competitions',
+            title: t('navigation.myCompetitions'),
             href: myCompetitionsIndex(),
             icon: Swords,
         },
@@ -156,7 +156,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     if (can(Permission.ManageUsers)) {
         items.push({
             id: 'users',
-            title: 'Users',
+            title: t('navigation.users'),
             href: usersIndex(),
             icon: Users,
         });
@@ -168,13 +168,13 @@ const allPinnableItems = computed<NavItem[]>(() => {
         items.push(
             {
                 id: 'news-articles',
-                title: 'Articles',
+                title: t('navigation.articles'),
                 href: newsIndex(),
                 icon: Newspaper,
             },
             {
                 id: 'news-comments',
-                title: 'Comments',
+                title: t('navigation.comments'),
                 href: newsCommentsIndex(),
                 icon: MessageSquare,
             },
@@ -184,7 +184,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     if (can(Permission.ManageAchievements)) {
         items.push({
             id: 'achievements',
-            title: 'Achievements',
+            title: t('navigation.achievements'),
             href: achievementsIndex(),
             icon: Trophy,
         });
@@ -193,7 +193,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     if (can(Permission.ManageAnnouncements)) {
         items.push({
             id: 'announcements',
-            title: 'Announcements',
+            title: t('navigation.announcements'),
             href: announcementsIndex(),
             icon: Megaphone,
         });
@@ -202,7 +202,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     if (can(Permission.ManageEvents)) {
         items.push({
             id: 'events',
-            title: 'Events',
+            title: t('navigation.events'),
             href: eventsIndex(),
             icon: Calendar,
         });
@@ -211,7 +211,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     if (can(Permission.ManagePrograms)) {
         items.push({
             id: 'programs',
-            title: 'Programs',
+            title: t('navigation.programs'),
             href: programsIndex(),
             icon: ClipboardList,
         });
@@ -220,7 +220,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     if (can(Permission.ManageVenues)) {
         items.push({
             id: 'venues',
-            title: 'Venues',
+            title: t('navigation.venues'),
             href: venuesIndex(),
             icon: MapPin,
         });
@@ -230,13 +230,13 @@ const allPinnableItems = computed<NavItem[]>(() => {
         items.push(
             {
                 id: 'competitions',
-                title: 'Competitions',
+                title: t('navigation.competitions'),
                 href: competitionsIndex(),
                 icon: Swords,
             },
             {
                 id: 'admin-teams',
-                title: 'Teams',
+                title: t('navigation.teams'),
                 href: adminTeamsIndex(),
                 icon: Users,
             },
@@ -246,7 +246,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     if (can(Permission.ManageGames)) {
         items.push({
             id: 'games',
-            title: 'Games',
+            title: t('navigation.games'),
             href: gamesIndex(),
             icon: Gamepad2,
         });
@@ -256,13 +256,13 @@ const allPinnableItems = computed<NavItem[]>(() => {
         items.push(
             {
                 id: 'sponsors',
-                title: 'Sponsors',
+                title: t('navigation.sponsors'),
                 href: sponsorsIndex(),
                 icon: Handshake,
             },
             {
                 id: 'sponsor-levels',
-                title: 'Sponsor Levels',
+                title: t('navigation.sponsorLevels'),
                 href: sponsorLevelsIndex(),
                 icon: Palette,
             },
@@ -275,7 +275,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     ) {
         items.push({
             id: 'my-sponsors',
-            title: 'My Sponsors',
+            title: t('navigation.mySponsors'),
             href: sponsorsIndex(),
             icon: Handshake,
         });
@@ -287,7 +287,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     ) {
         items.push({
             id: 'sponsor-levels',
-            title: 'Sponsor Levels',
+            title: t('navigation.sponsorLevels'),
             href: sponsorLevelsIndex(),
             icon: Palette,
         });
@@ -297,25 +297,25 @@ const allPinnableItems = computed<NavItem[]>(() => {
         items.push(
             {
                 id: 'ticket-types',
-                title: 'Ticket Types',
+                title: t('navigation.ticketTypes'),
                 href: ticketTypesIndex(),
                 icon: Rows3,
             },
             {
                 id: 'ticket-categories',
-                title: 'Ticket Categories',
+                title: t('navigation.ticketCategories'),
                 href: ticketCategoriesIndex(),
                 icon: Tag,
             },
             {
                 id: 'ticket-addons',
-                title: 'Ticket Addons',
+                title: t('navigation.ticketAddons'),
                 href: ticketAddonsIndex(),
                 icon: Puzzle,
             },
             {
                 id: 'vouchers',
-                title: 'Vouchers',
+                title: t('navigation.vouchers'),
                 href: vouchersIndex(),
                 icon: Gift,
             },
@@ -325,7 +325,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     if (can(Permission.ManageSeatPlans)) {
         items.push({
             id: 'seat-plans',
-            title: 'Seat Plans',
+            title: t('navigation.seatPlans'),
             href: seatPlansIndex(),
             icon: Grid2x2,
         });
@@ -334,7 +334,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     if (can(Permission.ManageWebhooks)) {
         items.push({
             id: 'webhooks',
-            title: 'Webhooks',
+            title: t('navigation.webhooks'),
             href: webhooksIndex(),
             icon: Webhook,
         });
@@ -343,7 +343,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     if (can(Permission.ManageIntegrations)) {
         items.push({
             id: 'integrations',
-            title: 'Integrations',
+            title: t('navigation.integrations'),
             href: integrationsIndex(),
             icon: Cog,
         });
@@ -353,13 +353,13 @@ const allPinnableItems = computed<NavItem[]>(() => {
         items.push(
             {
                 id: 'orders',
-                title: 'Orders',
+                title: t('navigation.orders'),
                 href: ordersIndex(),
                 icon: ShoppingCart,
             },
             {
                 id: 'admin-tickets',
-                title: 'Tickets (Admin)',
+                title: t('navigation.ticketsAdmin'),
                 href: adminTicketsIndex(),
                 icon: TicketCheck,
             },
@@ -370,19 +370,19 @@ const allPinnableItems = computed<NavItem[]>(() => {
         items.push(
             {
                 id: 'purchase-requirements',
-                title: 'Purchase Requirements',
+                title: t('navigation.purchaseRequirements'),
                 href: purchaseRequirementsIndex(),
                 icon: ShieldCheck,
             },
             {
                 id: 'purchase-conditions',
-                title: 'Purchase Conditions',
+                title: t('navigation.purchaseConditions'),
                 href: globalPurchaseConditionsIndex(),
                 icon: FileCheck,
             },
             {
                 id: 'payment-conditions',
-                title: 'Payment Conditions',
+                title: t('navigation.paymentConditions'),
                 href: paymentProviderConditionsIndex(),
                 icon: CreditCard,
             },
@@ -392,7 +392,7 @@ const allPinnableItems = computed<NavItem[]>(() => {
     if (can(Permission.ManageGameServers)) {
         items.push({
             id: 'game-servers',
-            title: 'Game Servers',
+            title: t('navigation.gameServers'),
             href: gameServersIndex(),
             icon: Server,
         });
@@ -402,13 +402,13 @@ const allPinnableItems = computed<NavItem[]>(() => {
         items.push(
             {
                 id: 'orchestration-jobs',
-                title: 'Orchestration',
+                title: t('navigation.orchestration'),
                 href: orchestrationJobsIndex(),
                 icon: Radio,
             },
             {
                 id: 'external-apis',
-                title: 'External APIs',
+                title: t('navigation.externalApis'),
                 href: externalApisIndex(),
                 icon: PlugZap,
             },
@@ -458,14 +458,18 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Platform Settings -->
             <SidebarGroup v-if="canAny(Permission.ManageUsers)">
-                <SidebarGroupLabel>Platform</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.platform')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="organizationSettingsIndex()">
                                     <Cog />
-                                    <span>Organization</span>
+                                    <span>{{
+                                        $t('navigation.organization')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -475,14 +479,16 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Administration -->
             <SidebarGroup v-if="can(Permission.ManageUsers)">
-                <SidebarGroupLabel>Administration</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.administration')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="usersIndex()">
                                     <Users />
-                                    <span>Users</span>
+                                    <span>{{ $t('navigation.users') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -509,14 +515,18 @@ function toggleFavorite(itemId: string): void {
                     )
                 "
             >
-                <SidebarGroupLabel>News</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.news')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="newsIndex()">
                                     <Newspaper />
-                                    <span>Articles</span>
+                                    <span>{{
+                                        $t('navigation.articles')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -534,7 +544,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="newsCommentsIndex()">
                                     <MessageSquare />
-                                    <span>Comments</span>
+                                    <span>{{
+                                        $t('navigation.comments')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -554,14 +566,18 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Achievements Domain -->
             <SidebarGroup v-if="can(Permission.ManageAchievements)">
-                <SidebarGroupLabel>Achievements</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.achievements')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="achievementsIndex()">
                                     <Trophy />
-                                    <span>Achievements</span>
+                                    <span>{{
+                                        $t('navigation.achievements')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -581,14 +597,18 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Announcement Domain -->
             <SidebarGroup v-if="can(Permission.ManageAnnouncements)">
-                <SidebarGroupLabel>Announcement</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.announcement')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="announcementsIndex()">
                                     <Megaphone />
-                                    <span>Announcements</span>
+                                    <span>{{
+                                        $t('navigation.announcements')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -608,14 +628,16 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Event Domain -->
             <SidebarGroup v-if="can(Permission.ManageEvents)">
-                <SidebarGroupLabel>Event</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.event')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="eventsIndex()">
                                     <Calendar />
-                                    <span>Events</span>
+                                    <span>{{ $t('navigation.events') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -635,14 +657,18 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Program Domain -->
             <SidebarGroup v-if="can(Permission.ManagePrograms)">
-                <SidebarGroupLabel>Program</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.program')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="programsIndex()">
                                     <ClipboardList />
-                                    <span>Programs</span>
+                                    <span>{{
+                                        $t('navigation.programs')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -662,14 +688,16 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Venue Domain -->
             <SidebarGroup v-if="can(Permission.ManageVenues)">
-                <SidebarGroupLabel>Venue</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.venue')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="venuesIndex()">
                                     <MapPin />
-                                    <span>Venues</span>
+                                    <span>{{ $t('navigation.venues') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -689,14 +717,16 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Games Domain -->
             <SidebarGroup v-if="can(Permission.ManageGames)">
-                <SidebarGroupLabel>Games</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.games')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="gamesIndex()">
                                     <Gamepad2 />
-                                    <span>Games</span>
+                                    <span>{{ $t('navigation.games') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -723,14 +753,18 @@ function toggleFavorite(itemId: string): void {
                     )
                 "
             >
-                <SidebarGroupLabel>Sponsoring</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.sponsoring')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem v-if="can(Permission.ManageSponsors)">
                             <SidebarMenuButton as-child>
                                 <Link :href="sponsorsIndex()">
                                     <Handshake />
-                                    <span>Sponsors</span>
+                                    <span>{{
+                                        $t('navigation.sponsors')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -753,7 +787,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="sponsorsIndex()">
                                     <Handshake />
-                                    <span>My Sponsors</span>
+                                    <span>{{
+                                        $t('navigation.mySponsors')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -773,7 +809,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="sponsorLevelsIndex()">
                                     <Palette />
-                                    <span>Sponsor Levels</span>
+                                    <span>{{
+                                        $t('navigation.sponsorLevels')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -793,14 +831,18 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Ticketing Domain -->
             <SidebarGroup v-if="can(Permission.ManageTicketing)">
-                <SidebarGroupLabel>Ticketing</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.ticketing')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="ticketTypesIndex()">
                                     <Rows3 />
-                                    <span>Ticket Types</span>
+                                    <span>{{
+                                        $t('navigation.ticketTypes')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -818,7 +860,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="ticketCategoriesIndex()">
                                     <Tag />
-                                    <span>Ticket Categories</span>
+                                    <span>{{
+                                        $t('navigation.ticketCategories')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -836,7 +880,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="ticketAddonsIndex()">
                                     <Puzzle />
-                                    <span>Ticket Addons</span>
+                                    <span>{{
+                                        $t('navigation.ticketAddons')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -854,7 +900,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="vouchersIndex()">
                                     <Gift />
-                                    <span>Vouchers</span>
+                                    <span>{{
+                                        $t('navigation.vouchers')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -874,14 +922,18 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Competition Domain -->
             <SidebarGroup v-if="can(Permission.ManageCompetitions)">
-                <SidebarGroupLabel>Competition</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.competition')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="competitionsIndex()">
                                     <Swords />
-                                    <span>Competitions</span>
+                                    <span>{{
+                                        $t('navigation.competitions')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -899,7 +951,7 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="adminTeamsIndex()">
                                     <Users />
-                                    <span>Teams</span>
+                                    <span>{{ $t('navigation.teams') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -926,7 +978,9 @@ function toggleFavorite(itemId: string): void {
                     )
                 "
             >
-                <SidebarGroupLabel>Orchestration</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.orchestration')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem
@@ -935,7 +989,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="gameServersIndex()">
                                     <Server />
-                                    <span>Game Servers</span>
+                                    <span>{{
+                                        $t('navigation.gameServers')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -953,7 +1009,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="orchestrationJobsIndex()">
                                     <Radio />
-                                    <span>Orchestration</span>
+                                    <span>{{
+                                        $t('navigation.orchestration')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -971,7 +1029,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="externalApisIndex()">
                                     <PlugZap />
-                                    <span>External APIs</span>
+                                    <span>{{
+                                        $t('navigation.externalApis')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -991,14 +1051,18 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Seating Domain -->
             <SidebarGroup v-if="can(Permission.ManageSeatPlans)">
-                <SidebarGroupLabel>Seating</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.seating')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="seatPlansIndex()">
                                     <Grid2x2 />
-                                    <span>Seat Plans</span>
+                                    <span>{{
+                                        $t('navigation.seatPlans')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -1018,14 +1082,18 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Webhook Domain -->
             <SidebarGroup v-if="can(Permission.ManageWebhooks)">
-                <SidebarGroupLabel>Webhooks</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.webhooks')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="webhooksIndex()">
                                     <Webhook />
-                                    <span>Webhooks</span>
+                                    <span>{{
+                                        $t('navigation.webhooks')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -1045,14 +1113,18 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Integration Domain -->
             <SidebarGroup v-if="can(Permission.ManageIntegrations)">
-                <SidebarGroupLabel>Integrations</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.integrations')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="integrationsIndex()">
                                     <Cog />
-                                    <span>Integrations</span>
+                                    <span>{{
+                                        $t('navigation.integrations')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -1081,14 +1153,18 @@ function toggleFavorite(itemId: string): void {
                     )
                 "
             >
-                <SidebarGroupLabel>Shop</SidebarGroupLabel>
+                <SidebarGroupLabel>{{
+                    $t('navigation.groups.shop')
+                }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child>
                                 <Link :href="shopSettingsIndex()">
                                     <Cog />
-                                    <span>Settings</span>
+                                    <span>{{
+                                        $t('navigation.settings')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -1096,7 +1172,7 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="ordersIndex()">
                                     <ShoppingCart />
-                                    <span>Orders</span>
+                                    <span>{{ $t('navigation.orders') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -1114,7 +1190,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="adminTicketsIndex()">
                                     <TicketCheck />
-                                    <span>Tickets</span>
+                                    <span>{{
+                                        $t('navigation.ticketsAdmin')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -1132,7 +1210,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="purchaseRequirementsIndex()">
                                     <ShieldCheck />
-                                    <span>Purchase Requirements</span>
+                                    <span>{{
+                                        $t('navigation.purchaseRequirements')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -1150,7 +1230,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="globalPurchaseConditionsIndex()">
                                     <FileCheck />
-                                    <span>Purchase Conditions</span>
+                                    <span>{{
+                                        $t('navigation.purchaseConditions')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
@@ -1168,7 +1250,9 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link :href="paymentProviderConditionsIndex()">
                                     <CreditCard />
-                                    <span>Payment Conditions</span>
+                                    <span>{{
+                                        $t('navigation.paymentConditions')
+                                    }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction

@@ -2,6 +2,9 @@
 import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { update } from '@/actions/App/Http/Controllers/Settings/ProfileController';
+import ndsFlag from '@/assets/flags/nds.svg?url';
+import sxuFlag from '@/assets/flags/sxu.svg?url';
+import tlhFlag from '@/assets/flags/tlh.svg?url';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -31,6 +34,22 @@ const LOCALE_LABELS: Record<string, string> = {
     tlh: 'tlhIngan Hol',
     nds: 'Plattdüütsch',
     sxu: 'Sächsisch',
+};
+
+const LOCALE_TO_COUNTRY: Record<string, string> = {
+    en: 'gb',
+    de: 'de',
+    fr: 'fr',
+    es: 'es',
+    sv: 'se',
+    uk: 'ua',
+    ko: 'kr',
+};
+
+const LOCALE_CUSTOM_FLAG: Record<string, string> = {
+    tlh: tlhFlag,
+    nds: ndsFlag,
+    sxu: sxuFlag,
 };
 
 const saving = ref(false);
@@ -82,7 +101,26 @@ function onSelect(value: string) {
                         :key="code"
                         :value="code"
                     >
-                        {{ LOCALE_LABELS[code] ?? code.toUpperCase() }}
+                        <span class="inline-flex items-center gap-2">
+                            <span
+                                v-if="LOCALE_CUSTOM_FLAG[code]"
+                                class="inline-block h-4 w-6 rounded-sm bg-cover bg-center"
+                                :style="{
+                                    backgroundImage: `url(${LOCALE_CUSTOM_FLAG[code]})`,
+                                }"
+                                aria-hidden="true"
+                            />
+                            <span
+                                v-else-if="LOCALE_TO_COUNTRY[code]"
+                                :class="[
+                                    'fi',
+                                    `fi-${LOCALE_TO_COUNTRY[code]}`,
+                                    'rounded-sm',
+                                ]"
+                                aria-hidden="true"
+                            />
+                            {{ LOCALE_LABELS[code] ?? code.toUpperCase() }}
+                        </span>
                     </SelectItem>
                 </SelectContent>
             </Select>

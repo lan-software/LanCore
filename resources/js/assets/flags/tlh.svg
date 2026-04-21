@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+    <title>tlhIngan Hol</title>
+    <rect width="640" height="480" fill="#1a0000"/>
+    <path d="M160 160 L320 100 L480 160 L420 320 L320 380 L220 320 Z" fill="none" stroke="#d4161a" stroke-width="28" stroke-linejoin="round"/>
+    <circle cx="320" cy="240" r="42" fill="#d4161a"/>
+</svg>

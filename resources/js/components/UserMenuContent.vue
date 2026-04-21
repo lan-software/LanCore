@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { BookOpen, FolderGit2, LogOut, Settings } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -15,6 +16,8 @@ import type { User } from '@/types';
 type Props = {
     user: User;
 };
+
+const { t } = useI18n();
 
 const handleLogout = () => {
     router.flushAll();
@@ -34,7 +37,7 @@ defineProps<Props>();
         <DropdownMenuItem :as-child="true">
             <Link class="block w-full cursor-pointer" :href="edit()" prefetch>
                 <Settings class="mr-2 h-4 w-4" />
-                Settings
+                {{ t('navigation.settings') }}
             </Link>
         </DropdownMenuItem>
     </DropdownMenuGroup>
@@ -48,7 +51,7 @@ defineProps<Props>();
                 rel="noopener noreferrer"
             >
                 <FolderGit2 class="mr-2 h-4 w-4" />
-                Repository
+                {{ t('navigation.repository') }}
             </a>
         </DropdownMenuItem>
         <DropdownMenuItem :as-child="true">
@@ -59,7 +62,7 @@ defineProps<Props>();
                 rel="noopener noreferrer"
             >
                 <BookOpen class="mr-2 h-4 w-4" />
-                Documentation
+                {{ t('navigation.documentation') }}
             </a>
         </DropdownMenuItem>
     </DropdownMenuGroup>
@@ -73,7 +76,7 @@ defineProps<Props>();
             data-test="logout-button"
         >
             <LogOut class="mr-2 h-4 w-4" />
-            Log out
+            {{ t('navigation.logout') }}
         </Link>
     </DropdownMenuItem>
 </template>
