@@ -100,7 +100,6 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Cashier\Events\WebhookReceived;
@@ -142,7 +141,6 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configurePolicies();
         $this->configureEvents();
-        $this->configureStorageMacros();
     }
 
     /**
@@ -249,22 +247,5 @@ class AppServiceProvider extends ServiceProvider
         EventFacade::listen(TicketDiscoverySettingsUpdated::class, ProcessAchievements::class);
         EventFacade::listen(TicketPurchased::class, ProcessAchievements::class);
         EventFacade::listen(UserRolesChanged::class, ProcessAchievements::class);
-    }
-
-    /**
-     * Register a Storage macro for generating public file URLs.
-     *
-     * When anonymous bucket access is disabled, returns a proxy URL
-     * through this application. Otherwise, returns the direct S3 URL.
-     */
-    protected function configureStorageMacros(): void
-    {
-        Storage::macro('fileUrl', function (string $path): string {
-            if (config('filesystems.disks.s3.anonymous_bucket_access')) {
-                return Storage::url($path);
-            }
-
-            return route('storage.file', ['path' => $path]);
-        });
     }
 }

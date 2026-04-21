@@ -101,7 +101,7 @@ class TicketController extends Controller
             if ($ticket->event) {
                 $bannerImages = array_values(array_filter($ticket->event->banner_images ?? [], fn ($p) => is_string($p) && $p !== ''));
                 $data['event']['banner_image_urls'] = array_map(
-                    fn (string $path) => Storage::fileUrl($path),
+                    fn (string $path) => StorageRole::publicUrl($path),
                     $bannerImages,
                 );
             }

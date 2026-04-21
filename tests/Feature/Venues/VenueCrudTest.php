@@ -106,7 +106,7 @@ it('forbids users from creating venues', function () {
 });
 
 it('stores venue images when creating a venue', function () {
-    Storage::fake();
+    Storage::fake('public');
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
@@ -128,16 +128,16 @@ it('stores venue images when creating a venue', function () {
     expect($venue->images[0]->alt_text)->toBe('Main hall');
 
     foreach ($venue->images as $image) {
-        Storage::assertExists($image->path);
+        Storage::disk('public')->assertExists($image->path);
     }
 });
 
 it('keeps existing images and adds new ones when updating a venue', function () {
-    Storage::fake();
+    Storage::fake('public');
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $oldFile = UploadedFile::fake()->image('old.jpg');
-    $oldPath = $oldFile->store('venues/images');
+    $oldPath = $oldFile->store('venues/images', 'public');
 
     $venue = Venue::factory()->create();
     $existingImage = VenueImage::create([
@@ -166,16 +166,16 @@ it('keeps existing images and adds new ones when updating a venue', function () 
     $venue->refresh();
     expect($venue->images)->toHaveCount(2);
     expect($venue->images[0]->alt_text)->toBe('Updated alt');
-    Storage::assertExists($oldPath);
-    Storage::assertExists($venue->images[1]->path);
+    Storage::disk('public')->assertExists($oldPath);
+    Storage::disk('public')->assertExists($venue->images[1]->path);
 });
 
 it('deletes removed images from storage when updating a venue', function () {
-    Storage::fake();
+    Storage::fake('public');
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $file = UploadedFile::fake()->image('delete-me.jpg');
-    $path = $file->store('venues/images');
+    $path = $file->store('venues/images', 'public');
 
     $venue = Venue::factory()->create();
     VenueImage::create([
@@ -196,15 +196,15 @@ it('deletes removed images from storage when updating a venue', function () {
         ->assertRedirect();
 
     expect($venue->fresh()->images)->toHaveCount(0);
-    Storage::assertMissing($path);
+    Storage::disk('public')->assertMissing($path);
 });
 
 it('deletes venue images from storage when deleting a venue', function () {
-    Storage::fake();
+    Storage::fake('public');
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $file = UploadedFile::fake()->image('photo.jpg');
-    $path = $file->store('venues/images');
+    $path = $file->store('venues/images', 'public');
 
     $venue = Venue::factory()->create();
     VenueImage::create([
@@ -218,7 +218,7 @@ it('deletes venue images from storage when deleting a venue', function () {
         ->delete("/venues/{$venue->id}")
         ->assertRedirect('/venues');
 
-    Storage::assertMissing($path);
+    Storage::disk('public')->assertMissing($path);
 });
 
 it('rejects non-image files for venue images', function () {

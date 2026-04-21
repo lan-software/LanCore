@@ -10,8 +10,8 @@ use App\Domain\News\Http\Requests\StoreNewsArticleRequest;
 use App\Domain\News\Http\Requests\UpdateNewsArticleRequest;
 use App\Domain\News\Models\NewsArticle;
 use App\Http\Controllers\Controller;
+use App\Support\StorageRole;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -93,8 +93,8 @@ class NewsArticleController extends Controller
         $newsArticle->load(['author:id,name', 'comments.user:id,name']);
 
         $articleData = $newsArticle->toArray();
-        $articleData['image_url'] = $newsArticle->image ? Storage::url($newsArticle->image) : null;
-        $articleData['og_image_url'] = $newsArticle->og_image ? Storage::url($newsArticle->og_image) : null;
+        $articleData['image_url'] = $newsArticle->image ? StorageRole::publicUrl($newsArticle->image) : null;
+        $articleData['og_image_url'] = $newsArticle->og_image ? StorageRole::publicUrl($newsArticle->og_image) : null;
 
         return Inertia::render('news/Edit', [
             'article' => $articleData,

@@ -41,10 +41,10 @@ use App\Domain\Webhook\Models\Webhook;
 use App\Enums\RoleName;
 use App\Models\OrganizationSetting;
 use App\Models\User;
+use App\Support\StorageRole;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 #[Signature('db:seed-demo')]
@@ -289,7 +289,7 @@ class SeedDemoCommand extends Command
         $contents = (string) file_get_contents($sourcePath);
         $targetPath = $directory.'/'.basename($sourcePath);
 
-        Storage::put($targetPath, $contents);
+        StorageRole::public()->put($targetPath, $contents);
 
         return $targetPath;
     }

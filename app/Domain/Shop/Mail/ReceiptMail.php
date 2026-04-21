@@ -3,6 +3,7 @@
 namespace App\Domain\Shop\Mail;
 
 use App\Domain\Shop\Models\Order;
+use App\Support\StorageRole;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
@@ -41,7 +42,7 @@ class ReceiptMail extends Mailable
     public function attachments(): array
     {
         return [
-            Attachment::fromStorageDisk('local', $this->pdfPath)
+            Attachment::fromStorageDisk(StorageRole::privateDiskName(), $this->pdfPath)
                 ->as("receipt-{$this->order->invoice_number}.pdf")
                 ->withMime('application/pdf'),
         ];

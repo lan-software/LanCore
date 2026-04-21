@@ -3,8 +3,8 @@
 namespace App\Domain\Sponsoring\Actions;
 
 use App\Domain\Sponsoring\Models\Sponsor;
+use App\Support\StorageRole;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @see docs/mil-std-498/SRS.md SPO-F-001
@@ -15,7 +15,7 @@ class DeleteSponsor
     {
         DB::transaction(function () use ($sponsor): void {
             if ($sponsor->logo) {
-                Storage::delete($sponsor->logo);
+                StorageRole::public()->delete($sponsor->logo);
             }
 
             $sponsor->delete();

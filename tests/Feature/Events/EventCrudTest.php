@@ -121,7 +121,7 @@ it('forbids users from creating events', function () {
 });
 
 it('stores banner image files when creating an event', function () {
-    Storage::fake();
+    Storage::fake('public');
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
@@ -139,16 +139,16 @@ it('stores banner image files when creating an event', function () {
     $event = Event::where('name', 'Event With Banner')->first();
     expect($event->banner_images)->toHaveCount(2);
     foreach ($event->banner_images as $path) {
-        Storage::assertExists($path);
+        Storage::disk('public')->assertExists($path);
     }
 });
 
 it('adds banner images when updating an event', function () {
-    Storage::fake();
+    Storage::fake('public');
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $oldFile = UploadedFile::fake()->image('old.jpg');
-    $oldPath = $oldFile->store('events/banners');
+    $oldPath = $oldFile->store('events/banners', 'public');
     $event = Event::factory()->create(['banner_images' => [$oldPath]]);
 
     $this->actingAs($admin)
@@ -162,18 +162,18 @@ it('adds banner images when updating an event', function () {
 
     $event->refresh();
     expect($event->banner_images)->toHaveCount(2);
-    Storage::assertExists($oldPath);
-    Storage::assertExists($event->banner_images[1]);
+    Storage::disk('public')->assertExists($oldPath);
+    Storage::disk('public')->assertExists($event->banner_images[1]);
 });
 
 it('removes a specific banner image when remove flag is set', function () {
-    Storage::fake();
+    Storage::fake('public');
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $file1 = UploadedFile::fake()->image('banner1.jpg');
     $file2 = UploadedFile::fake()->image('banner2.jpg');
-    $path1 = $file1->store('events/banners');
-    $path2 = $file2->store('events/banners');
+    $path1 = $file1->store('events/banners', 'public');
+    $path2 = $file2->store('events/banners', 'public');
     $event = Event::factory()->create(['banner_images' => [$path1, $path2]]);
 
     $this->actingAs($admin)
@@ -187,26 +187,26 @@ it('removes a specific banner image when remove flag is set', function () {
 
     $event->refresh();
     expect($event->banner_images)->toHaveCount(1)->toBe([$path2]);
-    Storage::assertMissing($path1);
-    Storage::assertExists($path2);
+    Storage::disk('public')->assertMissing($path1);
+    Storage::disk('public')->assertExists($path2);
 });
 
 it('deletes all banner images from storage when deleting an event', function () {
-    Storage::fake();
+    Storage::fake('public');
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $file1 = UploadedFile::fake()->image('banner1.jpg');
     $file2 = UploadedFile::fake()->image('banner2.jpg');
-    $path1 = $file1->store('events/banners');
-    $path2 = $file2->store('events/banners');
+    $path1 = $file1->store('events/banners', 'public');
+    $path2 = $file2->store('events/banners', 'public');
     $event = Event::factory()->create(['banner_images' => [$path1, $path2]]);
 
     $this->actingAs($admin)
         ->delete("/events/{$event->id}")
         ->assertRedirect('/events');
 
-    Storage::assertMissing($path1);
-    Storage::assertMissing($path2);
+    Storage::disk('public')->assertMissing($path1);
+    Storage::disk('public')->assertMissing($path2);
 });
 
 it('rejects non-image files for banner images', function () {

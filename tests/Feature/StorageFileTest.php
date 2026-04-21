@@ -1,35 +1,48 @@
 <?php
 
+use App\Support\StorageRole;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 
-it('serves a file from storage through the proxy route', function () {
-    Storage::fake();
-    Storage::put('images/test.jpg', 'fake-image-content');
+it('serves a file from the public disk through the proxy route', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('images/test.jpg', 'fake-image-content');
 
     $this->get(route('storage.file', ['path' => 'images/test.jpg']))
         ->assertSuccessful()
         ->assertHeader('Content-Type', 'image/jpeg');
 });
 
-it('returns 404 for a file that does not exist', function () {
-    Storage::fake();
+it('returns 404 when the requested file is not on the public disk', function () {
+    Storage::fake('public');
 
     $this->get(route('storage.file', ['path' => 'images/missing.jpg']))
         ->assertNotFound();
 });
 
-it('generates a proxy url when anonymous bucket access is disabled', function () {
-    config(['filesystems.disks.s3.anonymous_bucket_access' => false]);
+it('publicUrl returns a direct url for local public disks', function () {
+    Config::set('filesystems.public_disk', 'public');
 
-    $url = Storage::fileUrl('events/banners/test.jpg');
+    $url = StorageRole::publicUrl('events/banners/test.jpg');
 
-    expect($url)->toBe(route('storage.file', ['path' => 'events/banners/test.jpg']));
+    expect($url)->toBe(Storage::disk('public')->url('events/banners/test.jpg'));
 });
 
-it('generates a direct s3 url when anonymous bucket access is enabled', function () {
-    config(['filesystems.disks.s3.anonymous_bucket_access' => true]);
+it('publicUrl returns a direct url for s3 public buckets with anonymous access', function () {
+    Config::set('filesystems.public_disk', 's3_public');
+    Config::set('filesystems.disks.s3_public.anonymous_bucket_access', true);
+    Storage::fake('s3_public');
 
-    $url = Storage::fileUrl('events/banners/test.jpg');
+    $url = StorageRole::publicUrl('events/banners/test.jpg');
 
-    expect($url)->toBe(Storage::url('events/banners/test.jpg'));
+    expect($url)->toBe(Storage::disk('s3_public')->url('events/banners/test.jpg'));
+});
+
+it('publicUrl proxies through the app for s3 public buckets without anonymous access', function () {
+    Config::set('filesystems.public_disk', 's3_public');
+    Config::set('filesystems.disks.s3_public.anonymous_bucket_access', false);
+
+    $url = StorageRole::publicUrl('events/banners/test.jpg');
+
+    expect($url)->toBe(route('storage.file', ['path' => 'events/banners/test.jpg']));
 });

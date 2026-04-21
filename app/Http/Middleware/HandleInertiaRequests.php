@@ -12,10 +12,10 @@ use App\Domain\Seating\Enums\Permission as SeatingPermission;
 use App\Domain\Ticketing\Enums\Permission as TicketingPermission;
 use App\Enums\RoleName;
 use App\Models\OrganizationSetting;
+use App\Support\StorageRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -78,7 +78,7 @@ class HandleInertiaRequests extends Middleware
                 $logoPath = OrganizationSetting::get('logo');
 
                 return [
-                    'logoUrl' => $logoPath ? Storage::url($logoPath) : null,
+                    'logoUrl' => $logoPath ? StorageRole::publicUrl($logoPath) : null,
                     'name' => OrganizationSetting::get('name'),
                 ];
             }),

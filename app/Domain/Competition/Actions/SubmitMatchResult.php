@@ -7,6 +7,7 @@ use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\CompetitionTeam;
 use App\Domain\Competition\Models\MatchResultProof;
 use App\Models\User;
+use App\Support\StorageRole;
 use Illuminate\Http\UploadedFile;
 
 /**
@@ -27,7 +28,7 @@ class SubmitMatchResult
         User $user,
         ?CompetitionTeam $team = null,
     ): MatchResultProof {
-        $path = $screenshot->store('proofs', 'public');
+        $path = $screenshot->store('proofs', StorageRole::publicDiskName());
 
         $proof = MatchResultProof::create([
             'competition_id' => $competition->id,

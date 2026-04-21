@@ -40,7 +40,7 @@ it('allows admins to store a new article', function () {
 });
 
 it('allows admins to store an article with an image', function () {
-    Storage::fake();
+    Storage::fake('public');
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
@@ -55,7 +55,7 @@ it('allows admins to store an article with an image', function () {
     $article = NewsArticle::where('title', 'Article With Image')->first();
     expect($article)->not->toBeNull();
     expect($article->image)->not->toBeNull();
-    Storage::assertExists($article->image);
+    Storage::disk('public')->assertExists($article->image);
 });
 
 it('generates unique slugs for articles with the same title', function () {
@@ -145,17 +145,17 @@ it('allows admins to delete an article', function () {
 });
 
 it('deletes the image when deleting an article', function () {
-    Storage::fake();
+    Storage::fake('public');
     $admin = User::factory()->withRole(RoleName::Admin)->create();
-    $imagePath = UploadedFile::fake()->image('news.jpg')->store('news/images');
+    $imagePath = UploadedFile::fake()->image('news.jpg')->store('news/images', 'public');
     $article = NewsArticle::factory()->create(['image' => $imagePath]);
 
-    Storage::assertExists($imagePath);
+    Storage::disk('public')->assertExists($imagePath);
 
     $this->actingAs($admin)
         ->delete("/news-admin/{$article->id}");
 
-    Storage::assertMissing($imagePath);
+    Storage::disk('public')->assertMissing($imagePath);
 });
 
 it('forbids users from creating articles', function () {

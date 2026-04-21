@@ -10,8 +10,8 @@ use App\Domain\Venue\Http\Requests\UpdateVenueRequest;
 use App\Domain\Venue\Http\Requests\VenueIndexRequest;
 use App\Domain\Venue\Models\Venue;
 use App\Http\Controllers\Controller;
+use App\Support\StorageRole;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -62,7 +62,7 @@ class VenueController extends Controller
 
         $images = [];
         foreach ($request->validated('images', []) as $imageData) {
-            $path = $imageData['file']->store('venues/images');
+            $path = $imageData['file']->store('venues/images', StorageRole::publicDiskName());
             $images[] = [
                 'path' => $path,
                 'alt_text' => $imageData['alt_text'] ?? null,
@@ -83,7 +83,7 @@ class VenueController extends Controller
 
         $venueData = $venue->load(['address', 'images'])->toArray();
         $venueData['images'] = collect($venueData['images'])->map(function (array $image) {
-            $image['url'] = Storage::url($image['path']);
+            $image['url'] = StorageRole::publicUrl($image['path']);
 
             return $image;
         })->all();
@@ -101,7 +101,7 @@ class VenueController extends Controller
         $newImages = [];
 
         foreach ($request->validated('new_images', []) as $imageData) {
-            $path = $imageData['file']->store('venues/images');
+            $path = $imageData['file']->store('venues/images', StorageRole::publicDiskName());
             $newImages[] = [
                 'path' => $path,
                 'alt_text' => $imageData['alt_text'] ?? null,

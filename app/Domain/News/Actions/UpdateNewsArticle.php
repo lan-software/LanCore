@@ -4,8 +4,8 @@ namespace App\Domain\News\Actions;
 
 use App\Domain\News\Events\NewsArticlePublished;
 use App\Domain\News\Models\NewsArticle;
+use App\Support\StorageRole;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -30,24 +30,27 @@ class UpdateNewsArticle
             $attributes['slug'] = $slug;
         }
 
+        $publicDisk = StorageRole::public();
+        $publicDiskName = StorageRole::publicDiskName();
+
         if ($removeImage && $article->image) {
-            Storage::delete($article->image);
+            $publicDisk->delete($article->image);
             $attributes['image'] = null;
         } elseif ($image) {
             if ($article->image) {
-                Storage::delete($article->image);
+                $publicDisk->delete($article->image);
             }
-            $attributes['image'] = $image->store('news/images');
+            $attributes['image'] = $image->store('news/images', $publicDiskName);
         }
 
         if ($removeOgImage && $article->og_image) {
-            Storage::delete($article->og_image);
+            $publicDisk->delete($article->og_image);
             $attributes['og_image'] = null;
         } elseif ($ogImage) {
             if ($article->og_image) {
-                Storage::delete($article->og_image);
+                $publicDisk->delete($article->og_image);
             }
-            $attributes['og_image'] = $ogImage->store('news/og-images');
+            $attributes['og_image'] = $ogImage->store('news/og-images', $publicDiskName);
         }
 
         $article->fill($attributes)->save();

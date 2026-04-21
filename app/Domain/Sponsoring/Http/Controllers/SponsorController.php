@@ -14,8 +14,8 @@ use App\Domain\Sponsoring\Models\Sponsor;
 use App\Domain\Sponsoring\Models\SponsorLevel;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\StorageRole;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -81,7 +81,7 @@ class SponsorController extends Controller
         $data = $request->safe()->except(['logo', 'event_ids']);
 
         if ($request->hasFile('logo')) {
-            $data['logo'] = $request->file('logo')->store('sponsors/logos');
+            $data['logo'] = $request->file('logo')->store('sponsors/logos', StorageRole::publicDiskName());
         }
 
         $this->createSponsor->execute($data, $request->validated('event_ids', []));
@@ -96,7 +96,7 @@ class SponsorController extends Controller
         $sponsor->load(['sponsorLevel', 'events', 'managers']);
 
         $sponsorData = $sponsor->toArray();
-        $sponsorData['logo_url'] = $sponsor->logo ? Storage::url($sponsor->logo) : null;
+        $sponsorData['logo_url'] = $sponsor->logo ? StorageRole::publicUrl($sponsor->logo) : null;
 
         return Inertia::render('sponsors/Edit', [
             'sponsor' => $sponsorData,
@@ -114,12 +114,12 @@ class SponsorController extends Controller
 
         if ($request->hasFile('logo')) {
             if ($sponsor->logo) {
-                Storage::delete($sponsor->logo);
+                StorageRole::public()->delete($sponsor->logo);
             }
-            $data['logo'] = $request->file('logo')->store('sponsors/logos');
+            $data['logo'] = $request->file('logo')->store('sponsors/logos', StorageRole::publicDiskName());
         } elseif ($request->boolean('remove_logo')) {
             if ($sponsor->logo) {
-                Storage::delete($sponsor->logo);
+                StorageRole::public()->delete($sponsor->logo);
             }
             $data['logo'] = null;
         }

@@ -32,4 +32,24 @@ class StorageRole
     {
         return (string) config('filesystems.private_disk', 'local');
     }
+
+    /**
+     * Return a URL for a file on the public disk.
+     *
+     * Local disks and S3 buckets with anonymous access return a direct URL.
+     * Private S3 buckets (no anonymous access) are proxied through the
+     * `storage.file` route so callers never have to think about disk driver.
+     */
+    public static function publicUrl(string $path): string
+    {
+        $disk = self::publicDiskName();
+        $driver = (string) config("filesystems.disks.{$disk}.driver", '');
+        $anonymousAccess = (bool) config("filesystems.disks.{$disk}.anonymous_bucket_access", false);
+
+        if ($driver === 'local' || ($driver === 's3' && $anonymousAccess)) {
+            return self::public()->url($path);
+        }
+
+        return route('storage.file', ['path' => $path]);
+    }
 }

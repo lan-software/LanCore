@@ -6,7 +6,7 @@ use App\Domain\Event\Enums\EventStatus;
 use App\Domain\Event\Models\Event;
 use App\Domain\Program\Enums\ProgramVisibility;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
+use App\Support\StorageRole;
 use Inertia\Inertia;
 use Inertia\Response;
 use Laravel\Fortify\Features;
@@ -46,7 +46,7 @@ class PublicEventController extends Controller
             $bannerImages = array_values(array_filter($event->banner_images ?? [], fn ($p) => is_string($p) && $p !== ''));
             $eventData['banner_images'] = $bannerImages;
             $eventData['banner_image_urls'] = array_map(
-                fn (string $path) => Storage::fileUrl($path),
+                fn (string $path) => StorageRole::publicUrl($path),
                 $bannerImages,
             );
 
@@ -80,13 +80,13 @@ class PublicEventController extends Controller
         $bannerImages = array_values(array_filter($event->banner_images ?? [], fn ($p) => is_string($p) && $p !== ''));
         $eventData['banner_images'] = $bannerImages;
         $eventData['banner_image_urls'] = array_map(
-            fn (string $path) => Storage::fileUrl($path),
+            fn (string $path) => StorageRole::publicUrl($path),
             $bannerImages,
         );
 
         if (isset($eventData['venue']['images'])) {
             $eventData['venue']['images'] = collect($eventData['venue']['images'])->map(function (array $image) {
-                $image['url'] = Storage::url($image['path']);
+                $image['url'] = StorageRole::publicUrl($image['path']);
 
                 return $image;
             })->all();
@@ -94,7 +94,7 @@ class PublicEventController extends Controller
 
         if (isset($eventData['sponsors'])) {
             $eventData['sponsors'] = collect($eventData['sponsors'])->map(function (array $sponsor) {
-                $sponsor['logo_url'] = $sponsor['logo'] ? Storage::url($sponsor['logo']) : null;
+                $sponsor['logo_url'] = $sponsor['logo'] ? StorageRole::publicUrl($sponsor['logo']) : null;
 
                 return $sponsor;
             })->all();

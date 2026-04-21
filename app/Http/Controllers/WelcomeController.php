@@ -8,8 +8,8 @@ use App\Domain\Competition\Models\Competition;
 use App\Domain\Event\Models\Event;
 use App\Domain\News\Models\NewsArticle;
 use App\Domain\Program\Enums\ProgramVisibility;
+use App\Support\StorageRole;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Laravel\Fortify\Features;
@@ -40,13 +40,13 @@ class WelcomeController extends Controller
             $bannerImages = array_values(array_filter($nextEvent->banner_images ?? [], fn ($p) => is_string($p) && $p !== ''));
             $nextEventData['banner_images'] = $bannerImages;
             $nextEventData['banner_image_urls'] = array_map(
-                fn (string $path) => Storage::fileUrl($path),
+                fn (string $path) => StorageRole::publicUrl($path),
                 $bannerImages,
             );
 
             if (isset($nextEventData['venue']['images'])) {
                 $nextEventData['venue']['images'] = collect($nextEventData['venue']['images'])->map(function (array $image) {
-                    $image['url'] = Storage::url($image['path']);
+                    $image['url'] = StorageRole::publicUrl($image['path']);
 
                     return $image;
                 })->all();
@@ -54,7 +54,7 @@ class WelcomeController extends Controller
 
             if (isset($nextEventData['sponsors'])) {
                 $nextEventData['sponsors'] = collect($nextEventData['sponsors'])->map(function (array $sponsor) {
-                    $sponsor['logo_url'] = $sponsor['logo'] ? Storage::url($sponsor['logo']) : null;
+                    $sponsor['logo_url'] = $sponsor['logo'] ? StorageRole::publicUrl($sponsor['logo']) : null;
 
                     return $sponsor;
                 })->all();
@@ -104,7 +104,7 @@ class WelcomeController extends Controller
 
         return $articles->map(function (NewsArticle $article) {
             $data = $article->toArray();
-            $data['image_url'] = $article->image ? Storage::url($article->image) : null;
+            $data['image_url'] = $article->image ? StorageRole::publicUrl($article->image) : null;
 
             return $data;
         })->all();

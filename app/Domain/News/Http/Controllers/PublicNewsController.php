@@ -6,8 +6,8 @@ use App\Domain\News\Enums\ArticleVisibility;
 use App\Domain\News\Events\NewsArticleRead;
 use App\Domain\News\Models\NewsArticle;
 use App\Http\Controllers\Controller;
+use App\Support\StorageRole;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -49,8 +49,8 @@ class PublicNewsController extends Controller
         }
 
         $articleData = $article->toArray();
-        $articleData['image_url'] = $article->image ? Storage::url($article->image) : null;
-        $articleData['og_image_url'] = $article->og_image ? Storage::url($article->og_image) : null;
+        $articleData['image_url'] = $article->image ? StorageRole::publicUrl($article->image) : null;
+        $articleData['og_image_url'] = $article->og_image ? StorageRole::publicUrl($article->og_image) : null;
 
         return Inertia::render('news/Show', [
             'article' => $articleData,

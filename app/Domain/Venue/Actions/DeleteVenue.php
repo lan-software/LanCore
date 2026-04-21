@@ -3,8 +3,8 @@
 namespace App\Domain\Venue\Actions;
 
 use App\Domain\Venue\Models\Venue;
+use App\Support\StorageRole;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @see docs/mil-std-498/SRS.md EVT-F-006
@@ -15,7 +15,7 @@ class DeleteVenue
     {
         DB::transaction(function () use ($venue): void {
             $venue->images->each(function ($image): void {
-                Storage::delete($image->path);
+                StorageRole::public()->delete($image->path);
             });
 
             $address = $venue->address;

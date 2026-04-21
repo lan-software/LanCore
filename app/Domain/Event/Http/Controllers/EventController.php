@@ -13,8 +13,8 @@ use App\Domain\Event\Http\Requests\UpdateEventRequest;
 use App\Domain\Event\Models\Event;
 use App\Domain\Venue\Models\Venue;
 use App\Http\Controllers\Controller;
+use App\Support\StorageRole;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -75,7 +75,7 @@ class EventController extends Controller
         $bannerImages = [];
         if ($request->hasFile('banner_images')) {
             foreach ($request->file('banner_images') as $file) {
-                $stored = $file->store('events/banners');
+                $stored = $file->store('events/banners', StorageRole::publicDiskName());
                 if ($stored !== false && $stored !== '') {
                     $bannerImages[] = $stored;
                 }
@@ -96,7 +96,7 @@ class EventController extends Controller
         $bannerImages = array_values(array_filter($event->banner_images ?? [], fn ($p) => is_string($p) && $p !== ''));
         $eventData['banner_images'] = $bannerImages;
         $eventData['banner_image_urls'] = array_map(
-            fn (string $path) => Storage::fileUrl($path),
+            fn (string $path) => StorageRole::publicUrl($path),
             $bannerImages,
         );
 
@@ -120,14 +120,14 @@ class EventController extends Controller
             fn (string $path) => in_array($path, $currentImages, true),
         );
         if (! empty($imagesToRemove)) {
-            Storage::delete(array_values($imagesToRemove));
+            StorageRole::public()->delete(array_values($imagesToRemove));
             $currentImages = array_values(array_diff($currentImages, $imagesToRemove));
         }
 
         // Append newly uploaded images.
         if ($request->hasFile('banner_images')) {
             foreach ($request->file('banner_images') as $file) {
-                $stored = $file->store('events/banners');
+                $stored = $file->store('events/banners', StorageRole::publicDiskName());
                 if ($stored !== false && $stored !== '') {
                     $currentImages[] = $stored;
                 }

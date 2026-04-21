@@ -4,8 +4,8 @@ namespace App\Domain\Venue\Actions;
 
 use App\Domain\Venue\Models\Venue;
 use App\Domain\Venue\Models\VenueImage;
+use App\Support\StorageRole;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @see docs/mil-std-498/SRS.md EVT-F-006, EVT-F-007
@@ -36,7 +36,7 @@ class UpdateVenue
             $keepIds = collect($existingImages)->pluck('id')->all();
 
             $venue->images()->whereNotIn('id', $keepIds)->each(function (VenueImage $image): void {
-                Storage::delete($image->path);
+                StorageRole::public()->delete($image->path);
                 $image->delete();
             });
 

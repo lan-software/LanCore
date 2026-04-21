@@ -4,6 +4,7 @@ namespace App\Domain\News\Actions;
 
 use App\Domain\News\Events\NewsArticlePublished;
 use App\Domain\News\Models\NewsArticle;
+use App\Support\StorageRole;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
@@ -26,11 +27,11 @@ class CreateNewsArticle
         }
 
         if ($image) {
-            $attributes['image'] = $image->store('news/images');
+            $attributes['image'] = $image->store('news/images', StorageRole::publicDiskName());
         }
 
         if ($ogImage) {
-            $attributes['og_image'] = $ogImage->store('news/og-images');
+            $attributes['og_image'] = $ogImage->store('news/og-images', StorageRole::publicDiskName());
         }
 
         $article = NewsArticle::create($attributes);
