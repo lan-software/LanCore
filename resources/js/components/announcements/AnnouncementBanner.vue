@@ -17,7 +17,7 @@ type SharedAnnouncement = {
 const page = usePage<{ announcements: SharedAnnouncement[] | null }>();
 
 const initial = computed<SharedAnnouncement[]>(
-    () => page.props.announcements ?? [],
+    () => page.props?.announcements ?? [],
 );
 const local = ref<SharedAnnouncement[]>([...initial.value]);
 
