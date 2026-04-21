@@ -2,9 +2,11 @@
     "common": {
         "appName": "LanCore",
         "loading": "Loading...",
+        "saving": "Saving...",
         "error": "Error",
         "success": "Success",
         "save": "Save",
+        "saved": "Saved.",
         "cancel": "Cancel",
         "delete": "Delete",
         "edit": "Edit",
@@ -17,45 +19,222 @@
         "dashboard": "Dashboard",
         "admin": "Admin",
         "users": "Users",
-        "back": "Back"
+        "back": "Back",
+        "create": "Create",
+        "update": "Update",
+        "confirm": "Confirm",
+        "continue": "Continue",
+        "yes": "Yes",
+        "no": "No",
+        "add": "Add",
+        "remove": "Remove",
+        "actions": "Actions",
+        "view": "View",
+        "copy": "Copy",
+        "copied": "Copied",
+        "optional": "optional",
+        "required": "required",
+        "loadingMore": "Loading more...",
+        "noResults": "No results found",
+        "showMore": "Show more",
+        "showLess": "Show less"
     },
     "auth": {
         "login": {
             "title": "Log in to your account",
+            "description": "Enter your email and password below to log in",
             "email": "Email address",
+            "emailPlaceholder": "email@example.com",
             "password": "Password",
+            "passwordPlaceholder": "Password",
             "rememberMe": "Remember me",
             "forgotPassword": "Forgot password?",
-            "button": "Log in"
+            "button": "Log in",
+            "noAccount": "Don't have an account?",
+            "signUp": "Sign up"
         },
         "register": {
             "title": "Create an account",
+            "description": "Enter your information to create an account",
             "name": "Name",
+            "namePlaceholder": "Full name",
+            "email": "Email address",
+            "emailPlaceholder": "email@example.com",
+            "password": "Password",
+            "passwordPlaceholder": "Password",
+            "confirmPassword": "Confirm Password",
+            "button": "Create account",
+            "hasAccount": "Already have an account?",
+            "logIn": "Log in"
+        },
+        "forgotPassword": {
+            "title": "Forgot your password?",
+            "description": "Enter your email address and we'll send you a password reset link.",
+            "email": "Email address",
+            "emailPlaceholder": "email@example.com",
+            "button": "Send reset link",
+            "backToLogin": "Back to log in"
+        },
+        "resetPassword": {
+            "title": "Reset your password",
+            "description": "Enter your new password below",
             "email": "Email address",
             "password": "Password",
+            "passwordPlaceholder": "Password",
             "confirmPassword": "Confirm Password",
-            "button": "Register"
+            "button": "Reset password"
+        },
+        "verifyEmail": {
+            "title": "Verify your email address",
+            "description": "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.",
+            "resendButton": "Resend verification email",
+            "linkSent": "A new verification link has been sent to your email address.",
+            "logout": "Log out"
+        },
+        "confirmPassword": {
+            "title": "Confirm your password",
+            "description": "This is a secure area of the application. Please confirm your password before continuing.",
+            "password": "Password",
+            "passwordPlaceholder": "Password",
+            "button": "Confirm"
+        },
+        "twoFactorChallenge": {
+            "title": "Two-factor authentication",
+            "description": "Enter the authentication code provided by your authenticator application.",
+            "code": "Authentication code",
+            "recoveryCode": "Recovery code",
+            "recoveryDescription": "Please confirm access to your account by entering one of your emergency recovery codes.",
+            "useRecovery": "login using a recovery code",
+            "useCode": "login using an authentication code",
+            "button": "Verify"
         }
     },
     "settings": {
         "title": "Settings",
+        "description": "Manage your account settings and preferences",
         "profile": {
             "title": "Profile",
             "description": "Update your name and email address",
             "name": "Name",
             "email": "Email address",
+            "phone": "Phone number",
+            "phonePlaceholder": "+49 123 456789",
+            "addressSection": "Address & contact",
+            "addressDescription": "Required for purchases. Provide your address and at least one contact method.",
+            "street": "Street address",
+            "streetPlaceholder": "Street and house number",
+            "zipCode": "ZIP / Postal code",
+            "zipCodePlaceholder": "12345",
+            "city": "City",
+            "cityPlaceholder": "City",
+            "country": "Country",
+            "countryPlaceholder": "Select a country",
             "updateButton": "Save",
-            "updated": "Saved."
+            "updated": "Saved.",
+            "emailUnverified": "Your email address is unverified.",
+            "resendLink": "Click here to resend the verification email.",
+            "verificationSent": "A new verification link has been sent to your email address.",
+            "deleteAccount": "Delete account",
+            "deleteAccountDescription": "Delete your account and all of its resources",
+            "deleteAccountWarning": "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.",
+            "deleteAccountButton": "Delete account",
+            "deleteAccountConfirm": "Are you sure you want to delete your account?",
+            "deleteAccountConfirmDescription": "Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account."
+        },
+        "password": {
+            "title": "Password",
+            "description": "Ensure your account is using a long, random password to stay secure.",
+            "currentPassword": "Current password",
+            "newPassword": "New password",
+            "confirmPassword": "Confirm password",
+            "updateButton": "Save password",
+            "updated": "Password updated."
+        },
+        "appearance": {
+            "title": "Appearance",
+            "description": "Update your account's appearance settings",
+            "theme": "Theme",
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
         },
         "language": {
             "title": "Language",
             "description": "Choose the language used across the LAN ecosystem. Your selection is propagated to all connected Lan* apps.",
             "label": "Display language",
             "saved": "Language preference updated"
+        },
+        "notifications": {
+            "title": "Notifications"
+        },
+        "advancedTicketing": {
+            "title": "Advanced ticketing"
+        },
+        "achievements": {
+            "title": "Achievements"
+        },
+        "manageDescription": "Manage your profile and account settings",
+        "security": {
+            "title": "Security",
+            "description": "Manage your two-factor authentication and active sessions",
+            "twoFactor": {
+                "title": "Two-factor authentication",
+                "description": "Add an extra layer of security to your account.",
+                "enable": "Enable",
+                "disable": "Disable",
+                "enabled": "Two-factor authentication is enabled.",
+                "disabled": "Two-factor authentication is disabled.",
+                "setupDescription": "To finish enabling two-factor authentication, scan the following QR code with your authenticator app and enter the generated code.",
+                "recoveryCodes": "Recovery codes",
+                "recoveryCodesDescription": "Store these recovery codes in a secure password manager. They can be used to recover access to your account if you lose your two-factor device.",
+                "regenerateCodes": "Regenerate codes",
+                "confirmCode": "Authentication code",
+                "confirm": "Confirm",
+                "cancel": "Cancel"
+            }
         }
+    },
+    "navigation": {
+        "home": "Home",
+        "dashboard": "Dashboard",
+        "settings": "Settings",
+        "admin": "Admin",
+        "profile": "Profile",
+        "appearance": "Appearance",
+        "password": "Password",
+        "security": "Security",
+        "language": "Language",
+        "notifications": "Notifications",
+        "events": "Events",
+        "programs": "Programs",
+        "tickets": "Tickets",
+        "users": "Users",
+        "news": "News",
+        "announcements": "Announcements",
+        "sponsors": "Sponsors",
+        "venues": "Venues",
+        "games": "Games",
+        "shop": "Shop",
+        "orders": "Orders",
+        "vouchers": "Vouchers",
+        "achievements": "Achievements",
+        "competitions": "Competitions",
+        "integrations": "Integrations",
+        "organization": "Organization",
+        "seating": "Seating",
+        "ticketDiscovery": "Ticket discovery"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "welcome": "Welcome back!",
+        "overview": "Overview"
     },
     "validation": {
         "required": "This field is required",
-        "email": "Please enter a valid email address"
+        "email": "Please enter a valid email address",
+        "minLength": "Must be at least {min} characters",
+        "maxLength": "Must be no more than {max} characters",
+        "passwordMatch": "Passwords must match",
+        "invalid": "Invalid value"
     }
 }

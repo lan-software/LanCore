@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import UserAchievementsController from '@/actions/App/Http/Controllers/Settings/UserAchievementsController';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
@@ -13,32 +15,34 @@ import { edit as editSecurity } from '@/routes/security';
 import { edit as editTicketDiscovery } from '@/routes/ticket-discovery';
 import type { NavItem } from '@/types';
 
-const sidebarNavItems: NavItem[] = [
+const { t } = useI18n();
+
+const sidebarNavItems = computed<NavItem[]>(() => [
     {
-        title: 'Profile',
+        title: t('settings.profile.title'),
         href: editProfile(),
     },
     {
-        title: 'Security',
+        title: t('settings.security.title'),
         href: editSecurity(),
     },
     {
-        title: 'Appearance',
+        title: t('settings.appearance.title'),
         href: editAppearance(),
     },
     {
-        title: 'Notifications',
+        title: t('settings.notifications.title'),
         href: editNotifications(),
     },
     {
-        title: 'Advanced Ticketing',
+        title: t('settings.advancedTicketing.title'),
         href: editTicketDiscovery(),
     },
     {
-        title: 'Achievements',
+        title: t('settings.achievements.title'),
         href: UserAchievementsController.url(),
     },
-];
+]);
 
 const { isCurrentOrParentUrl } = useCurrentUrl();
 </script>
@@ -46,15 +50,15 @@ const { isCurrentOrParentUrl } = useCurrentUrl();
 <template>
     <div class="px-4 py-6">
         <Heading
-            title="Settings"
-            description="Manage your profile and account settings"
+            :title="$t('settings.title')"
+            :description="$t('settings.manageDescription')"
         />
 
         <div class="flex flex-col lg:flex-row lg:space-x-12">
             <aside class="w-full max-w-xl lg:w-48">
                 <nav
                     class="flex flex-col space-y-1 space-x-0"
-                    aria-label="Settings"
+                    :aria-label="$t('settings.title')"
                 >
                     <Button
                         v-for="item in sidebarNavItems"

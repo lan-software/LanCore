@@ -93,7 +93,7 @@ function resolveIcon(name: string | null): Component {
             <Link
                 :href="home()"
                 class="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                title="Go to homepage"
+                :title="$t('navigation.home')"
             >
                 <House class="size-4" />
             </Link>

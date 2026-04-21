@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
     Calendar,
     CalendarCheck,
@@ -80,12 +82,14 @@ defineProps<{
     showAdminStats: boolean;
 }>();
 
-const breadcrumbs: BreadcrumbItem[] = [
+const { t } = useI18n();
+
+const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     {
-        title: 'Dashboard',
+        title: t('dashboard.title'),
         href: dashboard(),
     },
-];
+]);
 
 function formatRelativeTime(isoString: string): string {
     const date = new Date(isoString);
@@ -128,14 +132,16 @@ function formatCents(cents: number): string {
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head :title="$t('dashboard.title')" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4">
             <template v-if="showAdminStats">
                 <!-- Entity Counts -->
                 <div>
-                    <h2 class="mb-3 text-lg font-semibold">Overview</h2>
+                    <h2 class="mb-3 text-lg font-semibold">
+                        {{ $t('dashboard.overview') }}
+                    </h2>
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <Card>
                             <CardHeader
@@ -271,7 +277,9 @@ function formatCents(cents: number): string {
 
                 <!-- Events Breakdown -->
                 <div>
-                    <h2 class="mb-3 text-lg font-semibold">Events</h2>
+                    <h2 class="mb-3 text-lg font-semibold">
+                        {{ $t('navigation.events') }}
+                    </h2>
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <Card>
                             <CardHeader
@@ -344,7 +352,9 @@ function formatCents(cents: number): string {
                 <div class="grid gap-6 lg:grid-cols-2">
                     <!-- Tickets Breakdown -->
                     <div>
-                        <h2 class="mb-3 text-lg font-semibold">Tickets</h2>
+                        <h2 class="mb-3 text-lg font-semibold">
+                            {{ $t('navigation.tickets') }}
+                        </h2>
                         <Card>
                             <CardContent class="pt-6">
                                 <div class="space-y-4">
@@ -400,7 +410,9 @@ function formatCents(cents: number): string {
 
                     <!-- Orders Breakdown -->
                     <div>
-                        <h2 class="mb-3 text-lg font-semibold">Orders</h2>
+                        <h2 class="mb-3 text-lg font-semibold">
+                            {{ $t('navigation.orders') }}
+                        </h2>
                         <Card>
                             <CardContent class="pt-6">
                                 <div class="space-y-4">

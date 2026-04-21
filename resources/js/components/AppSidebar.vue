@@ -34,6 +34,7 @@ import {
     Webhook,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { toggle as toggleFavoriteAction } from '@/actions/App/Http/Controllers/Settings/SidebarFavoriteController';
 import AppLogo from '@/components/AppLogo.vue';
 import EventSelector from '@/components/EventSelector.vue';
@@ -94,34 +95,35 @@ import type { NavItem } from '@/types';
 
 const page = usePage();
 const { can, canAny } = usePermissions();
+const { t } = useI18n();
 
-const mainNavItems: NavItem[] = [
+const mainNavItems = computed<NavItem[]>(() => [
     {
-        title: 'Dashboard',
+        title: t('navigation.dashboard'),
         href: dashboard(),
         icon: LayoutGrid,
     },
     {
-        title: 'My Tickets',
+        title: t('navigation.myTickets'),
         href: ticketsIndex(),
         icon: Ticket,
     },
     {
-        title: 'My Orders',
+        title: t('navigation.myOrders'),
         href: myOrdersIndex(),
         icon: ShoppingCart,
     },
     {
-        title: 'My Competitions',
+        title: t('navigation.myCompetitions'),
         href: myCompetitionsIndex(),
         icon: Swords,
     },
     {
-        title: 'My Teams',
+        title: t('navigation.myTeams'),
         href: myTeamsIndex(),
         icon: Users,
     },
-];
+]);
 
 const allPinnableItems = computed<NavItem[]>(() => {
     const items: NavItem[] = [

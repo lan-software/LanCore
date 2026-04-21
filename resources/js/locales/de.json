@@ -2,9 +2,11 @@
     "common": {
         "appName": "LanCore",
         "loading": "Lädt...",
+        "saving": "Speichern...",
         "error": "Fehler",
         "success": "Erfolg",
         "save": "Speichern",
+        "saved": "Gespeichert.",
         "cancel": "Abbrechen",
         "delete": "Löschen",
         "edit": "Bearbeiten",
@@ -17,45 +19,227 @@
         "dashboard": "Dashboard",
         "admin": "Admin",
         "users": "Benutzer",
-        "back": "Zurück"
+        "back": "Zurück",
+        "create": "Erstellen",
+        "update": "Aktualisieren",
+        "confirm": "Bestätigen",
+        "continue": "Weiter",
+        "yes": "Ja",
+        "no": "Nein",
+        "add": "Hinzufügen",
+        "remove": "Entfernen",
+        "actions": "Aktionen",
+        "view": "Ansehen",
+        "copy": "Kopieren",
+        "copied": "Kopiert",
+        "optional": "optional",
+        "required": "erforderlich",
+        "loadingMore": "Mehr wird geladen...",
+        "noResults": "Keine Ergebnisse gefunden",
+        "showMore": "Mehr anzeigen",
+        "showLess": "Weniger anzeigen"
     },
     "auth": {
         "login": {
             "title": "Bei deinem Konto anmelden",
+            "description": "Gib unten deine E-Mail-Adresse und dein Passwort ein, um dich anzumelden",
             "email": "E-Mail-Adresse",
+            "emailPlaceholder": "email@beispiel.de",
             "password": "Passwort",
+            "passwordPlaceholder": "Passwort",
             "rememberMe": "Angemeldet bleiben",
             "forgotPassword": "Passwort vergessen?",
-            "button": "Anmelden"
+            "button": "Anmelden",
+            "noAccount": "Noch kein Konto?",
+            "signUp": "Registrieren"
         },
         "register": {
             "title": "Konto erstellen",
+            "description": "Gib deine Informationen ein, um ein Konto zu erstellen",
             "name": "Name",
+            "namePlaceholder": "Vollständiger Name",
+            "email": "E-Mail-Adresse",
+            "emailPlaceholder": "email@beispiel.de",
+            "password": "Passwort",
+            "passwordPlaceholder": "Passwort",
+            "confirmPassword": "Passwort bestätigen",
+            "button": "Konto erstellen",
+            "hasAccount": "Bereits ein Konto?",
+            "logIn": "Anmelden"
+        },
+        "forgotPassword": {
+            "title": "Passwort vergessen?",
+            "description": "Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen des Passworts.",
+            "email": "E-Mail-Adresse",
+            "emailPlaceholder": "email@beispiel.de",
+            "button": "Link senden",
+            "backToLogin": "Zurück zur Anmeldung"
+        },
+        "resetPassword": {
+            "title": "Passwort zurücksetzen",
+            "description": "Gib unten dein neues Passwort ein",
             "email": "E-Mail-Adresse",
             "password": "Passwort",
+            "passwordPlaceholder": "Passwort",
             "confirmPassword": "Passwort bestätigen",
-            "button": "Registrieren"
+            "button": "Passwort zurücksetzen"
+        },
+        "verifyEmail": {
+            "title": "E-Mail-Adresse verifizieren",
+            "description": "Danke für deine Registrierung! Bevor du beginnst, kannst du bitte deine E-Mail-Adresse verifizieren, indem du auf den Link klickst, den wir dir gerade geschickt haben? Falls du die E-Mail nicht erhalten hast, senden wir dir gerne eine neue.",
+            "resendButton": "Bestätigungs-E-Mail erneut senden",
+            "linkSent": "Ein neuer Bestätigungslink wurde an deine E-Mail-Adresse gesendet.",
+            "logout": "Abmelden"
+        },
+        "confirmPassword": {
+            "title": "Passwort bestätigen",
+            "description": "Dies ist ein geschützter Bereich der Anwendung. Bitte bestätige dein Passwort, bevor du fortfährst.",
+            "password": "Passwort",
+            "passwordPlaceholder": "Passwort",
+            "button": "Bestätigen"
+        },
+        "twoFactorChallenge": {
+            "title": "Zwei-Faktor-Authentifizierung",
+            "description": "Gib den Authentifizierungscode aus deiner Authenticator-App ein.",
+            "code": "Authentifizierungscode",
+            "recoveryCode": "Wiederherstellungscode",
+            "recoveryDescription": "Bitte bestätige den Zugriff auf dein Konto, indem du einen deiner Notfall-Wiederherstellungscodes eingibst.",
+            "useRecovery": "mit Wiederherstellungscode anmelden",
+            "useCode": "mit Authentifizierungscode anmelden",
+            "button": "Verifizieren"
         }
     },
     "settings": {
         "title": "Einstellungen",
+        "description": "Verwalte deine Kontoeinstellungen und Präferenzen",
         "profile": {
             "title": "Profil",
             "description": "Aktualisiere deinen Namen und deine E-Mail-Adresse",
             "name": "Name",
             "email": "E-Mail-Adresse",
+            "phone": "Telefonnummer",
+            "phonePlaceholder": "+49 123 456789",
+            "addressSection": "Adresse & Kontakt",
+            "addressDescription": "Erforderlich für Käufe. Gib deine Adresse und mindestens eine Kontaktmöglichkeit an.",
+            "street": "Straße",
+            "streetPlaceholder": "Straße und Hausnummer",
+            "zipCode": "PLZ",
+            "zipCodePlaceholder": "12345",
+            "city": "Stadt",
+            "cityPlaceholder": "Stadt",
+            "country": "Land",
+            "countryPlaceholder": "Land auswählen",
             "updateButton": "Speichern",
-            "updated": "Gespeichert."
+            "updated": "Gespeichert.",
+            "emailUnverified": "Deine E-Mail-Adresse ist nicht verifiziert.",
+            "resendLink": "Klicke hier, um die Bestätigungs-E-Mail erneut zu senden.",
+            "verificationSent": "Ein neuer Bestätigungslink wurde an deine E-Mail-Adresse gesendet.",
+            "deleteAccount": "Konto löschen",
+            "deleteAccountDescription": "Lösche dein Konto und alle zugehörigen Daten",
+            "deleteAccountWarning": "Sobald dein Konto gelöscht ist, werden alle zugehörigen Ressourcen und Daten dauerhaft entfernt. Bevor du dein Konto löschst, lade bitte alle Daten oder Informationen herunter, die du behalten möchtest.",
+            "deleteAccountButton": "Konto löschen",
+            "deleteAccountConfirm": "Bist du sicher, dass du dein Konto löschen möchtest?",
+            "deleteAccountConfirmDescription": "Sobald dein Konto gelöscht ist, werden alle zugehörigen Ressourcen und Daten dauerhaft entfernt. Bitte gib dein Passwort ein, um die dauerhafte Löschung deines Kontos zu bestätigen."
+        },
+        "password": {
+            "title": "Passwort",
+            "description": "Stelle sicher, dass dein Konto ein langes, zufälliges Passwort verwendet, um sicher zu bleiben.",
+            "currentPassword": "Aktuelles Passwort",
+            "newPassword": "Neues Passwort",
+            "confirmPassword": "Passwort bestätigen",
+            "updateButton": "Passwort speichern",
+            "updated": "Passwort aktualisiert."
+        },
+        "appearance": {
+            "title": "Erscheinungsbild",
+            "description": "Passe das Erscheinungsbild deines Kontos an",
+            "theme": "Thema",
+            "light": "Hell",
+            "dark": "Dunkel",
+            "system": "System"
         },
         "language": {
             "title": "Sprache",
             "description": "Wähle die Sprache, die im gesamten LAN-Ökosystem verwendet wird. Deine Auswahl wird an alle verbundenen Lan*-Apps weitergegeben.",
             "label": "Anzeigesprache",
             "saved": "Spracheinstellung aktualisiert"
+        },
+        "notifications": {
+            "title": "Benachrichtigungen"
+        },
+        "advancedTicketing": {
+            "title": "Erweiterte Ticketverwaltung"
+        },
+        "achievements": {
+            "title": "Erfolge"
+        },
+        "manageDescription": "Verwalte dein Profil und deine Kontoeinstellungen",
+        "security": {
+            "title": "Sicherheit",
+            "description": "Verwalte deine Zwei-Faktor-Authentifizierung und aktiven Sitzungen",
+            "twoFactor": {
+                "title": "Zwei-Faktor-Authentifizierung",
+                "description": "Füge eine zusätzliche Sicherheitsebene zu deinem Konto hinzu.",
+                "enable": "Aktivieren",
+                "disable": "Deaktivieren",
+                "enabled": "Zwei-Faktor-Authentifizierung ist aktiviert.",
+                "disabled": "Zwei-Faktor-Authentifizierung ist deaktiviert.",
+                "setupDescription": "Um die Zwei-Faktor-Authentifizierung zu aktivieren, scanne den folgenden QR-Code mit deiner Authenticator-App und gib den generierten Code ein.",
+                "recoveryCodes": "Wiederherstellungscodes",
+                "recoveryCodesDescription": "Speichere diese Wiederherstellungscodes in einem sicheren Passwort-Manager. Damit kannst du den Zugriff auf dein Konto wiederherstellen, falls du dein Zwei-Faktor-Gerät verlierst.",
+                "regenerateCodes": "Codes neu generieren",
+                "confirmCode": "Authentifizierungscode",
+                "confirm": "Bestätigen",
+                "cancel": "Abbrechen"
+            }
         }
+    },
+    "navigation": {
+        "home": "Startseite",
+        "dashboard": "Dashboard",
+        "settings": "Einstellungen",
+        "admin": "Admin",
+        "profile": "Profil",
+        "appearance": "Erscheinungsbild",
+        "password": "Passwort",
+        "security": "Sicherheit",
+        "language": "Sprache",
+        "notifications": "Benachrichtigungen",
+        "events": "Veranstaltungen",
+        "programs": "Programme",
+        "tickets": "Tickets",
+        "myTickets": "Meine Tickets",
+        "myOrders": "Meine Bestellungen",
+        "myCompetitions": "Meine Turniere",
+        "myTeams": "Meine Teams",
+        "mySponsors": "Meine Sponsoren",
+        "users": "Benutzer",
+        "news": "Neuigkeiten",
+        "announcements": "Ankündigungen",
+        "sponsors": "Sponsoren",
+        "venues": "Locations",
+        "games": "Spiele",
+        "shop": "Shop",
+        "orders": "Bestellungen",
+        "vouchers": "Gutscheine",
+        "achievements": "Erfolge",
+        "competitions": "Turniere",
+        "integrations": "Integrationen",
+        "organization": "Organisation",
+        "seating": "Sitzplätze",
+        "ticketDiscovery": "Ticket-Suche"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "welcome": "Willkommen zurück!",
+        "overview": "Überblick"
     },
     "validation": {
         "required": "Dieses Feld ist erforderlich",
-        "email": "Bitte gib eine gültige E-Mail-Adresse ein"
+        "email": "Bitte gib eine gültige E-Mail-Adresse ein",
+        "minLength": "Muss mindestens {min} Zeichen lang sein",
+        "maxLength": "Darf höchstens {max} Zeichen lang sein",
+        "passwordMatch": "Passwörter müssen übereinstimmen",
+        "invalid": "Ungültiger Wert"
     }
 }

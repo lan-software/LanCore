@@ -2,9 +2,11 @@
     "common": {
         "appName": "LanCore",
         "loading": "Cargando...",
+        "saving": "Guardando...",
         "error": "Error",
         "success": "Éxito",
         "save": "Guardar",
+        "saved": "Guardado.",
         "cancel": "Cancelar",
         "delete": "Eliminar",
         "edit": "Editar",
@@ -17,45 +19,227 @@
         "dashboard": "Panel",
         "admin": "Admin",
         "users": "Usuarios",
-        "back": "Atrás"
+        "back": "Atrás",
+        "create": "Crear",
+        "update": "Actualizar",
+        "confirm": "Confirmar",
+        "continue": "Continuar",
+        "yes": "Sí",
+        "no": "No",
+        "add": "Añadir",
+        "remove": "Quitar",
+        "actions": "Acciones",
+        "view": "Ver",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "optional": "opcional",
+        "required": "obligatorio",
+        "loadingMore": "Cargando más...",
+        "noResults": "No se encontraron resultados",
+        "showMore": "Mostrar más",
+        "showLess": "Mostrar menos"
     },
     "auth": {
         "login": {
             "title": "Inicia sesión en tu cuenta",
+            "description": "Introduce tu correo electrónico y contraseña a continuación para iniciar sesión",
             "email": "Correo electrónico",
+            "emailPlaceholder": "email@ejemplo.es",
             "password": "Contraseña",
+            "passwordPlaceholder": "Contraseña",
             "rememberMe": "Recuérdame",
             "forgotPassword": "¿Olvidaste tu contraseña?",
-            "button": "Iniciar sesión"
+            "button": "Iniciar sesión",
+            "noAccount": "¿No tienes cuenta?",
+            "signUp": "Regístrate"
         },
         "register": {
             "title": "Crear una cuenta",
+            "description": "Introduce tus datos para crear una cuenta",
             "name": "Nombre",
+            "namePlaceholder": "Nombre completo",
+            "email": "Correo electrónico",
+            "emailPlaceholder": "email@ejemplo.es",
+            "password": "Contraseña",
+            "passwordPlaceholder": "Contraseña",
+            "confirmPassword": "Confirmar contraseña",
+            "button": "Crear cuenta",
+            "hasAccount": "¿Ya tienes cuenta?",
+            "logIn": "Iniciar sesión"
+        },
+        "forgotPassword": {
+            "title": "¿Olvidaste tu contraseña?",
+            "description": "Introduce tu correo electrónico y te enviaremos un enlace para restablecer la contraseña.",
+            "email": "Correo electrónico",
+            "emailPlaceholder": "email@ejemplo.es",
+            "button": "Enviar enlace",
+            "backToLogin": "Volver al inicio de sesión"
+        },
+        "resetPassword": {
+            "title": "Restablecer tu contraseña",
+            "description": "Introduce tu nueva contraseña a continuación",
             "email": "Correo electrónico",
             "password": "Contraseña",
+            "passwordPlaceholder": "Contraseña",
             "confirmPassword": "Confirmar contraseña",
-            "button": "Registrarse"
+            "button": "Restablecer contraseña"
+        },
+        "verifyEmail": {
+            "title": "Verificar tu correo electrónico",
+            "description": "¡Gracias por registrarte! Antes de empezar, ¿podrías verificar tu correo electrónico haciendo clic en el enlace que te acabamos de enviar? Si no recibiste el correo, te enviaremos otro con gusto.",
+            "resendButton": "Reenviar correo de verificación",
+            "linkSent": "Se ha enviado un nuevo enlace de verificación a tu correo electrónico.",
+            "logout": "Cerrar sesión"
+        },
+        "confirmPassword": {
+            "title": "Confirmar tu contraseña",
+            "description": "Esta es un área segura de la aplicación. Confirma tu contraseña antes de continuar.",
+            "password": "Contraseña",
+            "passwordPlaceholder": "Contraseña",
+            "button": "Confirmar"
+        },
+        "twoFactorChallenge": {
+            "title": "Autenticación de dos factores",
+            "description": "Introduce el código de autenticación de tu aplicación de autenticación.",
+            "code": "Código de autenticación",
+            "recoveryCode": "Código de recuperación",
+            "recoveryDescription": "Confirma el acceso a tu cuenta introduciendo uno de tus códigos de recuperación de emergencia.",
+            "useRecovery": "iniciar sesión con un código de recuperación",
+            "useCode": "iniciar sesión con un código de autenticación",
+            "button": "Verificar"
         }
     },
     "settings": {
         "title": "Ajustes",
+        "description": "Gestiona los ajustes y preferencias de tu cuenta",
         "profile": {
             "title": "Perfil",
             "description": "Actualiza tu nombre y tu correo electrónico",
             "name": "Nombre",
             "email": "Correo electrónico",
+            "phone": "Número de teléfono",
+            "phonePlaceholder": "+34 123 45 67 89",
+            "addressSection": "Dirección y contacto",
+            "addressDescription": "Obligatorio para compras. Proporciona tu dirección y al menos un método de contacto.",
+            "street": "Dirección",
+            "streetPlaceholder": "Calle y número",
+            "zipCode": "Código postal",
+            "zipCodePlaceholder": "28001",
+            "city": "Ciudad",
+            "cityPlaceholder": "Ciudad",
+            "country": "País",
+            "countryPlaceholder": "Selecciona un país",
             "updateButton": "Guardar",
-            "updated": "Guardado."
+            "updated": "Guardado.",
+            "emailUnverified": "Tu correo electrónico no está verificado.",
+            "resendLink": "Haz clic aquí para reenviar el correo de verificación.",
+            "verificationSent": "Se ha enviado un nuevo enlace de verificación a tu correo electrónico.",
+            "deleteAccount": "Eliminar cuenta",
+            "deleteAccountDescription": "Elimina tu cuenta y todos sus recursos",
+            "deleteAccountWarning": "Una vez eliminada tu cuenta, todos sus recursos y datos serán eliminados permanentemente. Antes de eliminar tu cuenta, descarga los datos o información que quieras conservar.",
+            "deleteAccountButton": "Eliminar cuenta",
+            "deleteAccountConfirm": "¿Estás seguro de que quieres eliminar tu cuenta?",
+            "deleteAccountConfirmDescription": "Una vez eliminada tu cuenta, todos sus recursos y datos serán eliminados permanentemente. Introduce tu contraseña para confirmar la eliminación permanente de tu cuenta."
+        },
+        "password": {
+            "title": "Contraseña",
+            "description": "Asegúrate de que tu cuenta use una contraseña larga y aleatoria para mantenerse segura.",
+            "currentPassword": "Contraseña actual",
+            "newPassword": "Nueva contraseña",
+            "confirmPassword": "Confirmar contraseña",
+            "updateButton": "Guardar contraseña",
+            "updated": "Contraseña actualizada."
+        },
+        "appearance": {
+            "title": "Apariencia",
+            "description": "Actualiza los ajustes de apariencia de tu cuenta",
+            "theme": "Tema",
+            "light": "Claro",
+            "dark": "Oscuro",
+            "system": "Sistema"
         },
         "language": {
             "title": "Idioma",
             "description": "Elige el idioma que se usará en todo el ecosistema LAN. Tu selección se propagará a todas las aplicaciones Lan* conectadas.",
             "label": "Idioma de visualización",
             "saved": "Preferencia de idioma actualizada"
+        },
+        "notifications": {
+            "title": "Notificaciones"
+        },
+        "advancedTicketing": {
+            "title": "Entradas avanzadas"
+        },
+        "achievements": {
+            "title": "Logros"
+        },
+        "manageDescription": "Gestiona tu perfil y los ajustes de tu cuenta",
+        "security": {
+            "title": "Seguridad",
+            "description": "Gestiona tu autenticación de dos factores y sesiones activas",
+            "twoFactor": {
+                "title": "Autenticación de dos factores",
+                "description": "Añade una capa extra de seguridad a tu cuenta.",
+                "enable": "Activar",
+                "disable": "Desactivar",
+                "enabled": "La autenticación de dos factores está activada.",
+                "disabled": "La autenticación de dos factores está desactivada.",
+                "setupDescription": "Para terminar de activar la autenticación de dos factores, escanea el siguiente código QR con tu aplicación de autenticación e introduce el código generado.",
+                "recoveryCodes": "Códigos de recuperación",
+                "recoveryCodesDescription": "Guarda estos códigos de recuperación en un gestor de contraseñas seguro. Pueden usarse para recuperar el acceso a tu cuenta si pierdes tu dispositivo de autenticación.",
+                "regenerateCodes": "Regenerar códigos",
+                "confirmCode": "Código de autenticación",
+                "confirm": "Confirmar",
+                "cancel": "Cancelar"
+            }
         }
+    },
+    "navigation": {
+        "home": "Inicio",
+        "dashboard": "Panel",
+        "settings": "Ajustes",
+        "admin": "Admin",
+        "profile": "Perfil",
+        "appearance": "Apariencia",
+        "password": "Contraseña",
+        "security": "Seguridad",
+        "language": "Idioma",
+        "notifications": "Notificaciones",
+        "events": "Eventos",
+        "programs": "Programas",
+        "tickets": "Entradas",
+        "myTickets": "Mis entradas",
+        "myOrders": "Mis pedidos",
+        "myCompetitions": "Mis torneos",
+        "myTeams": "Mis equipos",
+        "mySponsors": "Mis patrocinadores",
+        "users": "Usuarios",
+        "news": "Noticias",
+        "announcements": "Anuncios",
+        "sponsors": "Patrocinadores",
+        "venues": "Locales",
+        "games": "Juegos",
+        "shop": "Tienda",
+        "orders": "Pedidos",
+        "vouchers": "Vales",
+        "achievements": "Logros",
+        "competitions": "Torneos",
+        "integrations": "Integraciones",
+        "organization": "Organización",
+        "seating": "Asientos",
+        "ticketDiscovery": "Búsqueda de entradas"
+    },
+    "dashboard": {
+        "title": "Panel",
+        "welcome": "¡Bienvenido de nuevo!",
+        "overview": "Resumen"
     },
     "validation": {
         "required": "Este campo es obligatorio",
-        "email": "Introduce una dirección de correo electrónico válida"
+        "email": "Introduce una dirección de correo electrónico válida",
+        "minLength": "Debe tener al menos {min} caracteres",
+        "maxLength": "No debe superar los {max} caracteres",
+        "passwordMatch": "Las contraseñas deben coincidir",
+        "invalid": "Valor no válido"
     }
 }
