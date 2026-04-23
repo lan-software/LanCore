@@ -79,7 +79,7 @@ class AdminTicketController extends Controller
 
         $action->rotateToken($ticket);
 
-        return back()->with('success', 'Ticket token rotated.');
+        return back()->with('success', __('ticketing.admin.token_rotated'));
     }
 
     private function tokenStatus(Ticket $ticket): string

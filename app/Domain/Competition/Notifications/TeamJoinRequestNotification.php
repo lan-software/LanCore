@@ -26,13 +26,22 @@ class TeamJoinRequestNotification extends Notification implements ShouldQueue
         $team = $this->request->team;
         $competition = $team->competition;
 
+        $bodyKey = $competition
+            ? 'competition.notifications.join_request.body_with_competition'
+            : 'competition.notifications.join_request.body';
+
+        $bodyParams = $competition
+            ? ['user' => $user->name, 'team' => "**{$team->name}**", 'competition' => "**{$competition->name}**"]
+            : ['user' => $user->name, 'team' => "**{$team->name}**"];
+
         return (new MailMessage)
-            ->subject("Join request for {$team->name}")
-            ->greeting("New join request")
-            ->line("{$user->name} wants to join your team **{$team->name}**"
-                .($competition ? " in **{$competition->name}**" : '').'.')
-            ->when($this->request->message, fn (MailMessage $mail) => $mail->line("Message: \"{$this->request->message}\""))
-            ->action('Review Request', url("/my-teams/{$team->id}"));
+            ->subject(__('competition.notifications.join_request.subject', ['name' => $team->name]))
+            ->greeting(__('competition.notifications.join_request.greeting'))
+            ->line(__($bodyKey, $bodyParams))
+            ->when($this->request->message, fn (MailMessage $mail) => $mail->line(
+                __('competition.notifications.join_request.message_line', ['message' => $this->request->message])
+            ))
+            ->action(__('competition.notifications.join_request.action'), url("/my-teams/{$team->id}"));
     }
 
     /** @return array<string, mixed> */

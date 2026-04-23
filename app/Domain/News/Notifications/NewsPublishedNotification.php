@@ -43,11 +43,11 @@ class NewsPublishedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New article: '.$this->newsArticle->title)
-            ->line('A new article has been published: '.$this->newsArticle->title)
+            ->subject(__('news.notifications.published.subject', ['title' => $this->newsArticle->title]))
+            ->line(__('news.notifications.published.body', ['title' => $this->newsArticle->title]))
             ->when($this->newsArticle->summary, fn (MailMessage $message) => $message->line($this->newsArticle->summary))
-            ->action('Read article', url('/news/'.$this->newsArticle->slug))
-            ->line('You can manage your notification preferences in your account settings.');
+            ->action(__('news.notifications.published.action'), url('/news/'.$this->newsArticle->slug))
+            ->line(__('news.notifications.published.preferences_hint'));
     }
 
     /**

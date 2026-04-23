@@ -39,20 +39,19 @@ class TicketTokenRotatedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $eventName = $this->ticket->event?->name ?? 'your event';
-        $subject = 'Your ticket QR code has been updated';
 
         $message = (new MailMessage)
-            ->subject($subject)
-            ->line("The QR code for your ticket #{$this->ticket->id} ({$eventName}) has been regenerated.")
+            ->subject(__('ticketing.notifications.token_rotated.subject'))
+            ->line(__('ticketing.notifications.token_rotated.body', ['id' => $this->ticket->id, 'event' => $eventName]))
             ->line($this->reasonLine())
-            ->line('Any previously printed or saved copies are no longer valid.');
+            ->line(__('ticketing.notifications.token_rotated.copies_invalid'));
 
         if ($this->ticket->id) {
-            $message->action('View my ticket', route('tickets.show', $this->ticket));
+            $message->action(__('ticketing.notifications.token_rotated.action'), route('tickets.show', $this->ticket));
         }
 
         return $message
-            ->line('You can either re-download the PDF or show the live QR from "My Tickets" at the entrance.');
+            ->line(__('ticketing.notifications.token_rotated.instructions'));
     }
 
     /**
@@ -70,11 +69,11 @@ class TicketTokenRotatedNotification extends Notification implements ShouldQueue
     private function reasonLine(): string
     {
         return match ($this->reason) {
-            'user-added' => 'A user was added to this ticket, so the QR code has been refreshed.',
-            'user-removed' => 'A user was removed from this ticket, so the QR code has been refreshed.',
-            'manager-changed' => 'The ticket manager was changed, so the QR code has been refreshed.',
-            'user-requested' => 'You (or the ticket manager) requested a QR refresh.',
-            default => 'The QR code has been refreshed.',
+            'user-added' => __('ticketing.notifications.token_rotated.reason_user_added'),
+            'user-removed' => __('ticketing.notifications.token_rotated.reason_user_removed'),
+            'manager-changed' => __('ticketing.notifications.token_rotated.reason_manager_changed'),
+            'user-requested' => __('ticketing.notifications.token_rotated.reason_user_requested'),
+            default => __('ticketing.notifications.token_rotated.reason_default'),
         };
     }
 }

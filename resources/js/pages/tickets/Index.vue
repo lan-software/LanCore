@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { ShoppingCart } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import EventSelector from '@/components/EventSelector.vue';
 import TicketCard from '@/components/TicketCard.vue';
 import { Button } from '@/components/ui/button';
@@ -16,27 +17,29 @@ defineProps<{
     assignedTickets: Ticket[];
 }>();
 
+const { t } = useI18n();
+
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'My Tickets', href: ticketsIndex().url },
+    { title: t('tickets.title'), href: ticketsIndex().url },
 ];
 </script>
 
 <template>
-    <Head title="My Tickets" />
+    <Head :title="t('tickets.title')" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold">My Tickets</h1>
+                    <h1 class="text-2xl font-bold">{{ t('tickets.title') }}</h1>
                     <p class="text-sm text-muted-foreground">
-                        Manage your owned, managed, and assigned tickets
+                        {{ t('tickets.description') }}
                     </p>
                 </div>
                 <Button as-child>
                     <Link :href="shopIndex().url">
                         <ShoppingCart class="size-4" />
-                        Buy Tickets
+                        {{ t('tickets.buyTickets') }}
                     </Link>
                 </Button>
             </div>
@@ -45,7 +48,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
             <!-- Owned Tickets -->
             <div class="space-y-3">
-                <h2 class="text-lg font-semibold">Owned Tickets</h2>
+                <h2 class="text-lg font-semibold">{{ t('tickets.owned') }}</h2>
                 <div
                     v-if="ownedTickets.length > 0"
                     class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -59,13 +62,13 @@ const breadcrumbs: BreadcrumbItem[] = [
                     />
                 </div>
                 <p v-else class="text-sm text-muted-foreground">
-                    You don't own any tickets yet.
+                    {{ t('tickets.noOwned') }}
                 </p>
             </div>
 
             <!-- Managed Tickets -->
             <div class="space-y-3">
-                <h2 class="text-lg font-semibold">Managed Tickets</h2>
+                <h2 class="text-lg font-semibold">{{ t('tickets.managed') }}</h2>
                 <div
                     v-if="managedTickets.length > 0"
                     class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -78,13 +81,13 @@ const breadcrumbs: BreadcrumbItem[] = [
                     />
                 </div>
                 <p v-else class="text-sm text-muted-foreground">
-                    You don't manage any tickets.
+                    {{ t('tickets.noManaged') }}
                 </p>
             </div>
 
             <!-- Usable Tickets -->
             <div class="space-y-3">
-                <h2 class="text-lg font-semibold">Assigned Tickets</h2>
+                <h2 class="text-lg font-semibold">{{ t('tickets.assigned') }}</h2>
                 <div
                     v-if="assignedTickets.length > 0"
                     class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -96,7 +99,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                     />
                 </div>
                 <p v-else class="text-sm text-muted-foreground">
-                    No tickets assigned to you.
+                    {{ t('tickets.noAssigned') }}
                 </p>
             </div>
         </div>

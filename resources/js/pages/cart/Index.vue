@@ -2,6 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Minus, Plus, ShoppingCart, Tag, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CartController from '@/actions/App/Domain/Shop/Http/Controllers/CartController';
 import AskForHelpButton from '@/components/AskForHelpButton.vue';
 import InputError from '@/components/InputError.vue';
@@ -60,6 +61,7 @@ function formatPrice(cents: number): string {
     return (cents / 100).toFixed(2) + ' €';
 }
 
+const { t } = useI18n();
 const voucherInput = ref('');
 const isCheckingOut = ref(false);
 const selectedPaymentMethod = ref(props.paymentMethods[0]?.value ?? '');
@@ -125,7 +127,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
 </script>
 
 <template>
-    <Head title="Your Cart" />
+    <Head :title="t('shop.cartTitle')" />
 
     <div class="flex min-h-screen flex-col bg-background text-foreground">
         <!-- Header -->
@@ -139,7 +141,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                         :href="shopIndex().url"
                         class="text-sm text-muted-foreground hover:text-foreground"
                     >
-                        &larr; Continue Shopping
+                        {{ t('shop.continueShopping') }}
                     </Link>
                     <AskForHelpButton
                         :subject="$t('help.askForHelp')"
@@ -153,7 +155,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
             <div class="mx-auto max-w-5xl px-6 py-12">
                 <div class="mb-8 flex items-center gap-3">
                     <ShoppingCart class="size-8" />
-                    <h1 class="text-3xl font-bold tracking-tight">Your Cart</h1>
+                    <h1 class="text-3xl font-bold tracking-tight">{{ t('shop.cartTitle') }}</h1>
                 </div>
 
                 <template v-if="cartItems.length > 0">
@@ -178,7 +180,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                 v-if="event"
                                 class="mb-2 text-sm text-muted-foreground"
                             >
-                                Event:
+                                {{ t('shop.event') }}:
                                 <span class="font-medium text-foreground">{{
                                     event.name
                                 }}</span>
@@ -189,7 +191,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                 v-if="ticketItems.length > 0"
                                 class="space-y-3"
                             >
-                                <h2 class="text-lg font-semibold">Tickets</h2>
+                                <h2 class="text-lg font-semibold">{{ t('shop.ticketsSection') }}</h2>
                                 <div
                                     v-for="item in ticketItems"
                                     :key="item.id"
@@ -208,8 +210,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         <p
                                             class="text-sm text-muted-foreground"
                                         >
-                                            {{ formatPrice(item.unit_price) }}
-                                            each
+                                            {{ t('shop.eachPrice', { price: formatPrice(item.unit_price) }) }}
                                         </p>
                                     </div>
 
@@ -273,7 +274,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
 
                             <!-- Addon Items -->
                             <div v-if="addonItems.length > 0" class="space-y-3">
-                                <h2 class="text-lg font-semibold">Addons</h2>
+                                <h2 class="text-lg font-semibold">{{ t('shop.addonsSection') }}</h2>
                                 <div
                                     v-for="item in addonItems"
                                     :key="item.id"
@@ -287,7 +288,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                             <Badge
                                                 variant="secondary"
                                                 class="text-xs"
-                                                >Addon</Badge
+                                                >{{ t('shop.addonBadge') }}</Badge
                                             >
                                         </div>
                                         <p
@@ -299,8 +300,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         <p
                                             class="text-sm text-muted-foreground"
                                         >
-                                            {{ formatPrice(item.unit_price) }}
-                                            each
+                                            {{ t('shop.eachPrice', { price: formatPrice(item.unit_price) }) }}
                                         </p>
                                     </div>
 
@@ -367,13 +367,13 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                         <div>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Order Summary</CardTitle>
+                                    <CardTitle>{{ t('shop.orderSummary') }}</CardTitle>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
                                     <div class="space-y-2 text-sm">
                                         <div class="flex justify-between">
                                             <span class="text-muted-foreground"
-                                                >Subtotal</span
+                                                >{{ t('shop.subtotal') }}</span
                                             >
                                             <span>{{
                                                 formatPrice(subtotal)
@@ -383,7 +383,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                             v-if="discount > 0"
                                             class="flex justify-between text-green-600"
                                         >
-                                            <span>Discount</span>
+                                            <span>{{ t('shop.discount') }}</span>
                                             <span
                                                 >-{{
                                                     formatPrice(discount)
@@ -393,7 +393,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         <div
                                             class="flex justify-between border-t pt-2 text-base font-bold"
                                         >
-                                            <span>Total</span>
+                                            <span>{{ t('shop.total') }}</span>
                                             <span>{{
                                                 formatPrice(total)
                                             }}</span>
@@ -431,13 +431,13 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         </template>
                                         <template v-else>
                                             <Label for="voucher_code"
-                                                >Voucher Code</Label
+                                                >{{ t('shop.voucherCode') }}</Label
                                             >
                                             <div class="flex flex-wrap gap-2">
                                                 <Input
                                                     v-model="voucherInput"
                                                     id="voucher_code"
-                                                    placeholder="Enter code"
+                                                    :placeholder="t('shop.enterCode')"
                                                     class="min-w-0 flex-1 font-mono"
                                                     @keyup.enter="applyVoucher"
                                                 />
@@ -445,7 +445,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                                     variant="outline"
                                                     size="sm"
                                                     @click="applyVoucher"
-                                                    >Apply</Button
+                                                    >{{ t('shop.apply') }}</Button
                                                 >
                                             </div>
                                             <InputError
@@ -463,11 +463,11 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
 
                                     <!-- Payment Method -->
                                     <div class="space-y-2">
-                                        <Label>Payment Method</Label>
+                                        <Label>{{ t('shop.paymentMethod') }}</Label>
                                         <Select v-model="selectedPaymentMethod">
                                             <SelectTrigger>
                                                 <SelectValue
-                                                    placeholder="Select payment method"
+                                                    :placeholder="t('shop.selectPaymentMethod')"
                                                 />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -500,8 +500,8 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                     >
                                         {{
                                             isCheckingOut
-                                                ? 'Processing…'
-                                                : 'Proceed to Payment'
+                                                ? t('shop.processing')
+                                                : t('shop.proceedToPayment')
                                         }}
                                     </Button>
 
@@ -515,8 +515,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         "
                                         class="text-center text-xs text-muted-foreground"
                                     >
-                                        You will be redirected to complete
-                                        payment.
+                                        {{ t('shop.redirectNotice') }}
                                     </p>
                                 </CardContent>
                             </Card>
@@ -530,12 +529,12 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                         class="flex flex-col items-center justify-center space-y-4 py-24"
                     >
                         <ShoppingCart class="size-16 text-muted-foreground" />
-                        <h2 class="text-2xl font-bold">Your cart is empty</h2>
+                        <h2 class="text-2xl font-bold">{{ t('shop.emptyCart') }}</h2>
                         <p class="text-muted-foreground">
-                            Browse our ticket shop and add items to your cart.
+                            {{ t('shop.emptyCartDescription') }}
                         </p>
                         <Button as-child>
-                            <Link :href="shopIndex().url">Browse Shop</Link>
+                            <Link :href="shopIndex().url">{{ t('shop.browseShop') }}</Link>
                         </Button>
                     </div>
                 </template>
@@ -546,7 +545,7 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
             <div
                 class="mx-auto max-w-5xl px-6 py-6 text-center text-sm text-muted-foreground"
             >
-                Powered by LanCore
+                {{ t('shop.poweredBy') }}
             </div>
         </footer>
     </div>

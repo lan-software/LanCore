@@ -29,14 +29,17 @@ class JoinRequestResolvedNotification extends Notification implements ShouldQueu
         $status = $this->approved ? 'approved' : 'denied';
 
         $mail = (new MailMessage)
-            ->subject("Join request {$status} — {$team->name}")
-            ->greeting($this->approved ? 'Welcome to the team!' : 'Request denied');
+            ->subject(__('competition.notifications.join_request_resolved.subject', ['status' => $status, 'name' => $team->name]))
+            ->greeting($this->approved
+                ? __('competition.notifications.join_request_resolved.greeting_approved')
+                : __('competition.notifications.join_request_resolved.greeting_denied')
+            );
 
         if ($this->approved) {
-            $mail->line("Your request to join **{$team->name}** has been approved.")
-                ->action('View Team', url("/my-teams/{$team->id}"));
+            $mail->line(__('competition.notifications.join_request_resolved.approved_line', ['team' => "**{$team->name}**"]))
+                ->action(__('competition.notifications.join_request_resolved.action_view_team'), url("/my-teams/{$team->id}"));
         } else {
-            $mail->line("Your request to join **{$team->name}** has been denied.");
+            $mail->line(__('competition.notifications.join_request_resolved.denied_line', ['team' => "**{$team->name}**"]));
         }
 
         return $mail;

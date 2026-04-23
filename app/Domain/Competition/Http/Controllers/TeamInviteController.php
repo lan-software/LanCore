@@ -53,7 +53,7 @@ class TeamInviteController extends Controller
         $acceptInvite->execute($invite, $request->user());
 
         return redirect()->route('my-teams.show', $invite->team_id)
-            ->with('success', "You've joined {$invite->team->name}!");
+            ->with('success', __('competition.team.joined', ['name' => $invite->team->name]));
     }
 
     public function decline(string $token): RedirectResponse
@@ -62,6 +62,6 @@ class TeamInviteController extends Controller
 
         $invite->update(['declined_at' => now()]);
 
-        return redirect()->route('home')->with('success', 'Invite declined.');
+        return redirect()->route('home')->with('success', __('competition.team.invite_declined'));
     }
 }

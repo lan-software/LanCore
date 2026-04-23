@@ -101,7 +101,7 @@ class CartController extends Controller
 
         if (! $user->hasCompleteProfile()) {
             return redirect()->route('profile.edit')
-                ->withErrors(['profile' => 'Please complete your address and contact information before adding items to your cart.']);
+                ->withErrors(['profile' => __('shop.cart.profile_incomplete')]);
         }
 
         $request->validate([
@@ -129,7 +129,7 @@ class CartController extends Controller
         $purchasable = $purchasableClass::findOrFail($request->input('purchasable_id'));
 
         if (! $purchasable instanceof Purchasable || ! $purchasable->isAvailableForPurchase()) {
-            return back()->withErrors(['cart' => "'{$purchasable->name}' is not available for purchase."]);
+            return back()->withErrors(['cart' => __('shop.cart.not_available', ['name' => $purchasable->name])]);
         }
 
         $quantity = min($request->input('quantity', 1), $purchasable->getMaxQuantity());
@@ -203,17 +203,17 @@ class CartController extends Controller
         $cart = Cart::forUser($request->user());
 
         if ($cart->isEmpty()) {
-            return back()->withErrors(['voucher_code' => 'Your cart is empty.']);
+            return back()->withErrors(['voucher_code' => __('shop.cart.empty')]);
         }
 
         $voucher = Voucher::where('code', $request->input('voucher_code'))->first();
 
         if (! $voucher || ! $voucher->isValid()) {
-            return back()->withErrors(['voucher_code' => 'Invalid or expired voucher code.']);
+            return back()->withErrors(['voucher_code' => __('shop.cart.voucher_invalid')]);
         }
 
         if ($voucher->event_id && $voucher->event_id !== $cart->event_id) {
-            return back()->withErrors(['voucher_code' => 'This voucher is not valid for this event.']);
+            return back()->withErrors(['voucher_code' => __('shop.cart.voucher_wrong_event')]);
         }
 
         $cart->update(['voucher_code' => $voucher->code]);
@@ -239,7 +239,7 @@ class CartController extends Controller
         $cart->load(['items.purchasable', 'event']);
 
         if ($cart->isEmpty() || ! $cart->event_id) {
-            return redirect()->route('cart.show')->withErrors(['cart' => 'Your cart is empty.']);
+            return redirect()->route('cart.show')->withErrors(['cart' => __('shop.cart.empty')]);
         }
 
         $dependencyErrors = $cart->validateDependencies();
@@ -317,7 +317,7 @@ class CartController extends Controller
         $cart->load(['items.purchasable', 'event']);
 
         if ($cart->isEmpty() || ! $cart->event_id) {
-            return redirect()->route('cart.show')->withErrors(['cart' => 'Your cart is empty.']);
+            return redirect()->route('cart.show')->withErrors(['cart' => __('shop.cart.empty')]);
         }
 
         $dependencyErrors = $cart->validateDependencies();

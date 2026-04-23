@@ -27,12 +27,12 @@ class OrderConfirmationNotification extends Notification implements ShouldQueue
         $order = $this->order->load(['orderLines', 'event', 'voucher']);
 
         $message = (new MailMessage)
-            ->subject('Order Confirmation #'.$order->id)
-            ->greeting("Hello {$notifiable->name},")
-            ->line('Thank you for your purchase! Here is your order summary:');
+            ->subject(__('shop.notifications.order_confirmation.subject', ['id' => $order->id]))
+            ->greeting(__('shop.notifications.order_confirmation.greeting', ['name' => $notifiable->name]))
+            ->line(__('shop.notifications.order_confirmation.intro'));
 
         if ($order->event) {
-            $message->line("**Event:** {$order->event->name}");
+            $message->line(__('shop.notifications.order_confirmation.event_line', ['name' => $order->event->name]));
         }
 
         $message->line('---');
@@ -45,19 +45,26 @@ class OrderConfirmationNotification extends Notification implements ShouldQueue
         $message->line('---');
 
         $subtotal = number_format($order->subtotal / 100, 2, '.', ',');
-        $message->line("**Subtotal:** {$subtotal} €");
+        $message->line(__('shop.notifications.order_confirmation.subtotal_line', ['amount' => "{$subtotal} €"]));
 
         if ($order->discount > 0) {
             $discount = number_format($order->discount / 100, 2, '.', ',');
-            $voucherLabel = $order->voucher?->code ? " ({$order->voucher->code})" : '';
-            $message->line("**Discount{$voucherLabel}:** -{$discount} €");
+
+            if ($order->voucher?->code) {
+                $message->line(__('shop.notifications.order_confirmation.discount_voucher_line', [
+                    'code' => $order->voucher->code,
+                    'amount' => "{$discount} €",
+                ]));
+            } else {
+                $message->line(__('shop.notifications.order_confirmation.discount_line', ['amount' => "{$discount} €"]));
+            }
         }
 
         $total = number_format($order->total / 100, 2, '.', ',');
-        $message->line("**Total:** {$total} €");
-        $message->line("**Payment:** {$order->payment_method->label()}");
+        $message->line(__('shop.notifications.order_confirmation.total_line', ['amount' => "{$total} €"]));
+        $message->line(__('shop.notifications.order_confirmation.payment_line', ['method' => $order->payment_method->label()]));
 
-        $message->action('View My Tickets', url('/tickets'));
+        $message->action(__('shop.notifications.order_confirmation.action'), url('/tickets'));
 
         return $message;
     }

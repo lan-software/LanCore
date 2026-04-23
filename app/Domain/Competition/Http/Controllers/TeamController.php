@@ -51,7 +51,7 @@ class TeamController extends Controller
 
         $this->requestToJoin->execute($team, $request->user(), $request->input('message'));
 
-        return back()->with('success', 'Join request sent. The team captain will be notified.');
+        return back()->with('success', __('competition.team.join_request_sent'));
     }
 
     public function resolveRequest(Request $request, TeamJoinRequest $joinRequest): RedirectResponse
@@ -79,7 +79,7 @@ class TeamController extends Controller
 
         $this->inviteToTeam->execute($team, $request->user(), $request->input('email'));
 
-        return back()->with('success', 'Invite sent.');
+        return back()->with('success', __('competition.team.invite_sent'));
     }
 
     public function leave(Request $request, Competition $competition, CompetitionTeam $team): RedirectResponse
@@ -89,8 +89,8 @@ class TeamController extends Controller
         $teamDeleted = $this->leaveTeam->execute($team, $request->user());
 
         $message = $teamDeleted
-            ? 'You left the team. As the last member, the team has been disbanded.'
-            : 'You have left the team.';
+            ? __('competition.team.left_disbanded')
+            : __('competition.team.left');
 
         return redirect()->route('my-competitions.show', $competition)->with('success', $message);
     }
@@ -101,6 +101,6 @@ class TeamController extends Controller
 
         $team->delete();
 
-        return redirect()->route('my-competitions.show', $competition)->with('success', 'Team deleted.');
+        return redirect()->route('my-competitions.show', $competition)->with('success', __('competition.team.deleted'));
     }
 }

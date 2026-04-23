@@ -9,6 +9,7 @@ import {
     ShoppingCart,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CartController from '@/actions/App/Domain/Shop/Http/Controllers/CartController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -66,6 +67,7 @@ function formatDate(dateString: string): string {
     });
 }
 
+const { t } = useI18n();
 const addingItem = ref<number | null>(null);
 
 const ticketTypeClass = 'App\\Domain\\Ticketing\\Models\\TicketType';
@@ -181,7 +183,7 @@ function updateCartQuantity(
 </script>
 
 <template>
-    <Head title="Shop" />
+    <Head :title="t('shop.title')" />
 
     <div class="flex min-h-screen flex-col bg-background text-foreground">
         <!-- Header -->
@@ -197,7 +199,7 @@ function updateCartQuantity(
                             class="relative text-muted-foreground hover:text-foreground"
                         >
                             <ShoppingCart class="size-5" />
-                            <span class="hidden sm:inline">Cart</span>
+                            <span class="hidden sm:inline">{{ t('shop.cart') }}</span>
                             <Badge
                                 v-if="cartItemCount > 0"
                                 class="absolute -top-2 -right-2 flex size-5 items-center justify-center rounded-full p-0 text-xs"
@@ -209,14 +211,14 @@ function updateCartQuantity(
                             :href="dashboard()"
                             class="text-sm text-muted-foreground hover:text-foreground"
                         >
-                            Dashboard
+                            {{ t('common.dashboard') }}
                         </Link>
                     </template>
                     <template v-else>
                         <Link
                             :href="login()"
                             class="text-sm text-muted-foreground hover:text-foreground"
-                            >Log in</Link
+                            >{{ t('auth.login.button') }}</Link
                         >
                     </template>
                 </nav>
@@ -232,7 +234,7 @@ function updateCartQuantity(
                             <p
                                 class="text-sm font-medium tracking-wider text-muted-foreground uppercase"
                             >
-                                Ticket Shop
+                                {{ t('shop.ticketShop') }}
                             </p>
                             <h1 class="mt-2 text-4xl font-bold tracking-tight">
                                 {{ event.name }}
@@ -257,7 +259,7 @@ function updateCartQuantity(
 
                         <!-- Ticket Types -->
                         <div class="space-y-4">
-                            <h2 class="text-2xl font-semibold">Tickets</h2>
+                            <h2 class="text-2xl font-semibold">{{ t('shop.tickets') }}</h2>
                             <div
                                 v-if="ticketTypes.length > 0"
                                 class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -304,12 +306,10 @@ function updateCartQuantity(
                                             class="space-y-1 text-sm text-muted-foreground"
                                         >
                                             <p v-if="tt.ticket_category">
-                                                Category:
-                                                {{ tt.ticket_category.name }}
+                                                {{ t('shop.category', { name: tt.ticket_category.name }) }}
                                             </p>
                                             <p>
-                                                {{ tt.seats_per_user }}
-                                                seat(s) per user
+                                                {{ t('shop.seatsPerUser', { count: tt.seats_per_user }) }}
                                             </p>
                                             <p
                                                 v-if="
@@ -317,8 +317,7 @@ function updateCartQuantity(
                                                     undefined
                                                 "
                                             >
-                                                {{ tt.remaining_quota }}
-                                                remaining
+                                                {{ t('shop.remaining', { count: tt.remaining_quota }) }}
                                             </p>
                                         </div>
                                     </CardContent>
@@ -390,8 +389,8 @@ function updateCartQuantity(
                                                 <Plus class="size-4" />
                                                 {{
                                                     addingItem === tt.id
-                                                        ? 'Adding…'
-                                                        : 'Add to Cart'
+                                                        ? t('shop.adding')
+                                                        : t('shop.addToCart')
                                                 }}
                                             </Button>
                                         </template>
@@ -399,13 +398,13 @@ function updateCartQuantity(
                                 </Card>
                             </div>
                             <p v-else class="text-muted-foreground">
-                                No tickets available at this time.
+                                {{ t('shop.noTicketsAvailable') }}
                             </p>
                         </div>
 
                         <!-- Addons -->
                         <div v-if="addons.length > 0" class="space-y-4">
-                            <h2 class="text-2xl font-semibold">Addons</h2>
+                            <h2 class="text-2xl font-semibold">{{ t('shop.addons') }}</h2>
                             <div
                                 class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
                             >
@@ -432,12 +431,7 @@ function updateCartQuantity(
                                                             />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p>
-                                                                Can only be
-                                                                purchased in
-                                                                combination with
-                                                                a ticket.
-                                                            </p>
+                                                            <p>{{ t('shop.addonRequiresTicket') }}</p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>
@@ -518,8 +512,8 @@ function updateCartQuantity(
                                                 <Plus class="size-4" />
                                                 {{
                                                     addingItem === addon.id
-                                                        ? 'Adding…'
-                                                        : 'Add to Cart'
+                                                        ? t('shop.adding')
+                                                        : t('shop.addToCart')
                                                 }}
                                             </Button>
                                         </template>
@@ -534,10 +528,10 @@ function updateCartQuantity(
                             class="space-y-3 rounded-lg border p-6 text-center"
                         >
                             <p class="text-muted-foreground">
-                                Please log in to purchase tickets.
+                                {{ t('shop.loginToPurchase') }}
                             </p>
                             <Button as-child>
-                                <Link :href="login()">Log in</Link>
+                                <Link :href="login()">{{ t('auth.login.button') }}</Link>
                             </Button>
                         </div>
                     </div>
@@ -551,11 +545,10 @@ function updateCartQuantity(
                             class="mx-auto size-12 text-muted-foreground"
                         />
                         <h1 class="text-3xl font-bold tracking-tight">
-                            No Tickets Available
+                            {{ t('shop.noEventsAvailable') }}
                         </h1>
                         <p class="mx-auto max-w-md text-muted-foreground">
-                            There are currently no events with tickets available
-                            for purchase.
+                            {{ t('shop.noEventsDescription') }}
                         </p>
                     </div>
                 </div>
@@ -569,7 +562,7 @@ function updateCartQuantity(
             <Button as-child class="w-full" size="lg">
                 <Link :href="CartController.show().url" class="gap-2">
                     <ShoppingCart class="size-4" />
-                    View Cart ({{ cartItemCount }}) · Proceed to Checkout
+                    {{ t('shop.viewCart', { count: cartItemCount }) }}
                 </Link>
             </Button>
         </div>
@@ -578,7 +571,7 @@ function updateCartQuantity(
             <div
                 class="mx-auto max-w-5xl px-6 py-6 text-center text-sm text-muted-foreground"
             >
-                Powered by LanCore
+                {{ t('shop.poweredBy') }}
             </div>
         </footer>
     </div>

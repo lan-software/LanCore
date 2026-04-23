@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { CheckCircle } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { index as shopIndex } from '@/routes/shop';
@@ -11,13 +12,15 @@ defineProps<{
     order: Order;
 }>();
 
+const { t } = useI18n();
+
 function formatPrice(cents: number): string {
     return (cents / 100).toFixed(2) + ' €';
 }
 </script>
 
 <template>
-    <Head title="Order Confirmed" />
+    <Head :title="t('shop.checkoutSuccess.title')" />
 
     <div class="flex min-h-screen flex-col bg-background text-foreground">
         <header class="border-b">
@@ -31,37 +34,36 @@ function formatPrice(cents: number): string {
         <main class="flex flex-1 items-center justify-center px-6 py-12">
             <div class="max-w-lg space-y-6 text-center">
                 <CheckCircle class="mx-auto size-16 text-green-500" />
-                <h1 class="text-3xl font-bold">Order Confirmed!</h1>
+                <h1 class="text-3xl font-bold">{{ t('shop.checkoutSuccess.heading') }}</h1>
                 <p class="text-muted-foreground">
-                    Your tickets have been purchased successfully. You can
-                    manage them from your tickets page.
+                    {{ t('shop.checkoutSuccess.description') }}
                 </p>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle class="text-lg">Order Summary</CardTitle>
+                        <CardTitle class="text-lg">{{ t('shop.orderSummary') }}</CardTitle>
                     </CardHeader>
                     <CardContent class="space-y-2 text-sm">
                         <div class="flex justify-between">
-                            <span class="text-muted-foreground">Subtotal</span>
+                            <span class="text-muted-foreground">{{ t('shop.subtotal') }}</span>
                             <span>{{ formatPrice(order.subtotal) }}</span>
                         </div>
                         <div
                             v-if="order.discount > 0"
                             class="flex justify-between text-green-600"
                         >
-                            <span>Discount</span>
+                            <span>{{ t('shop.discount') }}</span>
                             <span>-{{ formatPrice(order.discount) }}</span>
                         </div>
                         <div
                             class="flex justify-between border-t pt-2 font-bold"
                         >
-                            <span>Total</span>
+                            <span>{{ t('shop.total') }}</span>
                             <span>{{ formatPrice(order.total) }}</span>
                         </div>
                         <div v-if="order.tickets" class="pt-2">
                             <p class="text-muted-foreground">
-                                {{ order.tickets.length }} ticket(s) purchased
+                                {{ t('shop.checkoutSuccess.ticketsPurchased', { count: order.tickets.length }) }}
                             </p>
                         </div>
                     </CardContent>
@@ -69,10 +71,10 @@ function formatPrice(cents: number): string {
 
                 <div class="flex items-center justify-center gap-4">
                     <Button as-child>
-                        <Link :href="ticketsIndex().url">View My Tickets</Link>
+                        <Link :href="ticketsIndex().url">{{ t('shop.checkoutSuccess.viewMyTickets') }}</Link>
                     </Button>
                     <Button variant="outline" as-child>
-                        <Link :href="shopIndex().url">Back to Shop</Link>
+                        <Link :href="shopIndex().url">{{ t('shop.checkoutSuccess.backToShop') }}</Link>
                     </Button>
                 </div>
             </div>
@@ -82,7 +84,7 @@ function formatPrice(cents: number): string {
             <div
                 class="mx-auto max-w-5xl px-6 py-6 text-center text-sm text-muted-foreground"
             >
-                Powered by LanCore
+                {{ t('shop.poweredBy') }}
             </div>
         </footer>
     </div>

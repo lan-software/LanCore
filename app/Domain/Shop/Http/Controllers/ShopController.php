@@ -85,15 +85,15 @@ class ShopController extends Controller
         $now = now();
 
         if ($type->purchase_from && $now->isBefore($type->purchase_from)) {
-            return 'Upcoming';
+            return __('shop.ticket_type.unavailable_upcoming');
         }
 
         if ($type->purchase_until && $now->isAfter($type->purchase_until)) {
-            return 'No longer available';
+            return __('shop.ticket_type.unavailable_expired');
         }
 
         if ($type->tickets_count >= $type->quota) {
-            return 'Out of Stock';
+            return __('shop.ticket_type.unavailable_out_of_stock');
         }
 
         return null;
@@ -109,11 +109,11 @@ class ShopController extends Controller
         $voucher = Voucher::where('code', $request->input('code'))->first();
 
         if (! $voucher || ! $voucher->isValid()) {
-            return response()->json(['valid' => false, 'message' => 'Invalid or expired voucher code.']);
+            return response()->json(['valid' => false, 'message' => __('shop.cart.voucher_invalid')]);
         }
 
         if ($voucher->event_id && $voucher->event_id !== (int) $request->input('event_id')) {
-            return response()->json(['valid' => false, 'message' => 'This voucher is not valid for this event.']);
+            return response()->json(['valid' => false, 'message' => __('shop.cart.voucher_wrong_event')]);
         }
 
         return response()->json([

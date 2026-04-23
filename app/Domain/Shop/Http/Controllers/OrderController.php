@@ -76,11 +76,11 @@ class OrderController extends Controller
         $this->authorize('confirmPayment', $order);
 
         if ($order->payment_method !== PaymentMethod::OnSite) {
-            return back()->withErrors(['order' => 'Only on-site orders can be manually confirmed.']);
+            return back()->withErrors(['order' => __('shop.order.only_on_site')]);
         }
 
         if ($order->paid_at !== null) {
-            return back()->withErrors(['order' => 'This order has already been marked as paid.']);
+            return back()->withErrors(['order' => __('shop.order.already_paid')]);
         }
 
         $order->update([
