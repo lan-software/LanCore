@@ -236,5 +236,9 @@
         "maxLength": "law'be' {max} tetlh law'",
         "passwordMatch": "vo'ralmey rurnIS",
         "invalid": "lu'be'lu'bogh"
+    },
+    "help": {
+        "askForHelp": "Ask for help",
+        "askForHelpTooltip": "Open a support ticket in LanHelp"
     }
 }

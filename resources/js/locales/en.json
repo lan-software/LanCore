@@ -333,5 +333,9 @@
             "empty": "The privacy policy has not been published yet.",
             "contactFallback": "For privacy inquiries, contact:"
         }
+    },
+    "help": {
+        "askForHelp": "Ask for help",
+        "askForHelpTooltip": "Open a support ticket in LanHelp"
     }
 }

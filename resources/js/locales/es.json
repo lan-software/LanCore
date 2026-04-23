@@ -241,5 +241,9 @@
         "maxLength": "No debe superar los {max} caracteres",
         "passwordMatch": "Las contraseñas deben coincidir",
         "invalid": "Valor no válido"
+    },
+    "help": {
+        "askForHelp": "Ask for help",
+        "askForHelpTooltip": "Open a support ticket in LanHelp"
     }
 }

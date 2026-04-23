@@ -129,9 +129,12 @@ This project maintains formal software documentation following the **MIL-STD-498
 
 ## Local Development
 
+> **Running LanCore alongside the other Lan\* apps?** Start with [`platform/README.md`](../platform/README.md) — it boots the shared PostgreSQL / Redis / Mailpit infrastructure on the external `lanparty` Docker network that every satellite (LanShout, LanBrackets, LanHelp, LanEntrance) joins. The steps below cover LanCore on its own; if you skip the `platform/dev/setup.sh` bootstrap, Sail will fail to start because the `lanparty` network will not exist.
+
 ### Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) & Docker Compose
+- The shared infrastructure running: `cd ../platform/dev && ./setup.sh`
 
 ### Getting Started
 
@@ -164,6 +167,16 @@ vendor/bin/sail npm run dev
 ```
 
 The application will be available at **http://localhost**.
+
+### Registering satellite apps
+
+LanCore integrations (LanBrackets, LanEntrance, LanShout, LanHelp) are declared in `config/integrations.php` and driven by environment variables. After the first `migrate`, reconcile them into the database so each satellite gets a token and webhook subscriptions:
+
+```bash
+vendor/bin/sail artisan integrations:sync
+```
+
+Copy the minted tokens into each satellite's `.env` as `LANCORE_TOKEN`. See [`platform/README.md`](../platform/README.md#lancore--satellite-app-integration) for the full wiring, including the `http://lancore.test` in-network hostname used for server-to-server calls.
 
 ### Web Push Notifications
 

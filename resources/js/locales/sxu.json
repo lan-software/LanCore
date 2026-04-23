@@ -236,5 +236,9 @@
         "maxLength": "Derf nisch mähr als {max} Zeischn lang sei",
         "passwordMatch": "Bassweerder misstn zusommbassn",
         "invalid": "Ungildscher Werrd"
+    },
+    "help": {
+        "askForHelp": "Ask for help",
+        "askForHelpTooltip": "Open a support ticket in LanHelp"
     }
 }

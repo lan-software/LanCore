@@ -2,8 +2,10 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import {
     Calendar,
+    ChevronDown,
     Clock,
     ExternalLink,
+    LayoutGrid,
     Menu,
     ShoppingCart,
     X,
@@ -18,6 +20,14 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { dashboard, login, register } from '@/routes';
 import { index as shopIndex } from '@/routes/shop';
 
@@ -187,17 +197,45 @@ function resolveIcon(name: string | null): Component {
                     <ShoppingCart class="size-4" />
                     Shop
                 </Link>
-                <a
-                    v-for="link in integrationLinks"
-                    :key="link.url"
-                    :href="link.url"
-                    target="_blank"
-                    rel="noopener"
-                    class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-                >
-                    <component :is="resolveIcon(link.icon)" class="size-4" />
-                    {{ link.label }}
-                </a>
+                <DropdownMenu v-if="integrationLinks.length > 0">
+                    <DropdownMenuTrigger as-child>
+                        <button
+                            type="button"
+                            class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                            data-test="topbar-apps-button"
+                        >
+                            <LayoutGrid class="size-4" />
+                            Apps
+                            <ChevronDown class="size-3.5 opacity-70" />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        class="min-w-56 rounded-lg"
+                        align="end"
+                        :side-offset="8"
+                    >
+                        <DropdownMenuLabel>Other apps</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            v-for="link in integrationLinks"
+                            :key="link.url"
+                            as-child
+                        >
+                            <a
+                                :href="link.url"
+                                target="_blank"
+                                rel="noopener"
+                                class="flex items-center gap-2"
+                            >
+                                <component
+                                    :is="resolveIcon(link.icon)"
+                                    class="size-4"
+                                />
+                                {{ link.label }}
+                            </a>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
                 <NotificationBell v-if="$page.props.auth.user" />
                 <Link
                     v-if="$page.props.auth.user"

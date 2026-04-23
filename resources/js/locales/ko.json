@@ -236,5 +236,9 @@
         "maxLength": "{max}자 이하이어야 합니다",
         "passwordMatch": "비밀번호가 일치해야 합니다",
         "invalid": "잘못된 값"
+    },
+    "help": {
+        "askForHelp": "Ask for help",
+        "askForHelpTooltip": "Open a support ticket in LanHelp"
     }
 }

@@ -3,6 +3,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { Minus, Plus, ShoppingCart, Tag, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import CartController from '@/actions/App/Domain/Shop/Http/Controllers/CartController';
+import AskForHelpButton from '@/components/AskForHelpButton.vue';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -140,6 +141,10 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                     >
                         &larr; Continue Shopping
                     </Link>
+                    <AskForHelpButton
+                        :subject="$t('help.askForHelp')"
+                        category="shop"
+                    />
                 </nav>
             </div>
         </header>

@@ -333,5 +333,9 @@
             "empty": "Die Datenschutzerklärung wurde noch nicht veröffentlicht.",
             "contactFallback": "Bei Datenschutzanfragen wenden Sie sich an:"
         }
+    },
+    "help": {
+        "askForHelp": "Hilfe anfordern",
+        "askForHelpTooltip": "Support-Ticket in LanHelp öffnen"
     }
 }

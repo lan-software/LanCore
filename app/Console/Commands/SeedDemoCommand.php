@@ -1300,6 +1300,12 @@ class SeedDemoCommand extends Command
     {
         $marker = 'Welcome to the Lan-Software public demo!';
 
+        if (! config('app.demo')) {
+            Announcement::query()->where('title', $marker)->delete();
+
+            return false;
+        }
+
         if (Announcement::query()->where('title', $marker)->exists()) {
             return false;
         }

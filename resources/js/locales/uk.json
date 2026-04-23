@@ -236,5 +236,9 @@
         "maxLength": "Не повинно перевищувати {max} символів",
         "passwordMatch": "Паролі повинні збігатися",
         "invalid": "Недійсне значення"
+    },
+    "help": {
+        "askForHelp": "Ask for help",
+        "askForHelpTooltip": "Open a support ticket in LanHelp"
     }
 }

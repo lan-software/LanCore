@@ -236,5 +236,9 @@
         "maxLength": "Dröff nich mehr as {max} Tekens lang ween",
         "passwordMatch": "Passwöör mööt översteen",
         "invalid": "Ungellen Weert"
+    },
+    "help": {
+        "askForHelp": "Ask for help",
+        "askForHelpTooltip": "Open a support ticket in LanHelp"
     }
 }

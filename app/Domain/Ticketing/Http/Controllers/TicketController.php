@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -163,7 +164,15 @@ class TicketController extends Controller
             $job->handle();
         }
 
-        return StorageRole::private()->download($path, "ticket-{$ticket->id}.pdf");
+        $ticket->loadMissing(['owner', 'event']);
+
+        $ownerSlug = Str::slug($ticket->owner?->name ?? 'unassigned');
+        $eventSlug = Str::slug($ticket->event?->name ?? 'event');
+
+        return StorageRole::private()->download(
+            $path,
+            "ticket-{$ticket->id}-{$ownerSlug}-{$eventSlug}.pdf",
+        );
     }
 
     public function qrCode(Ticket $ticket): HttpResponse

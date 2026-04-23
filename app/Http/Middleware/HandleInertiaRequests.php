@@ -12,6 +12,7 @@ use App\Domain\Seating\Enums\Permission as SeatingPermission;
 use App\Domain\Ticketing\Enums\Permission as TicketingPermission;
 use App\Enums\RoleName;
 use App\Models\OrganizationSetting;
+use App\Models\User;
 use App\Support\AppVersion;
 use App\Support\StorageRole;
 use Illuminate\Http\Request;
@@ -104,7 +105,8 @@ class HandleInertiaRequests extends Middleware
                 ->where('is_active', true)
                 ->whereNotNull('nav_url')
                 ->whereNotNull('nav_label')
-                ->get(['nav_url', 'nav_icon', 'nav_label'])
+                ->get(['slug', 'nav_url', 'nav_icon', 'nav_label'])
+                ->filter(fn (IntegrationApp $app): bool => $this->canSeeIntegrationLink($app, $user))
                 ->map(fn (IntegrationApp $app) => [
                     'url' => $app->nav_url,
                     'icon' => $app->nav_icon,
@@ -130,6 +132,26 @@ class HandleInertiaRequests extends Middleware
                 ])->values()->all()
                 : [],
         ];
+    }
+
+    /**
+     * Per-integration visibility gate for the nav links shared with the frontend.
+     *
+     * LanEntrance controls physical event check-in/door flow and is only
+     * meaningful for on-site staff, so its nav icon is hidden from guests and
+     * regular attendees.
+     */
+    private function canSeeIntegrationLink(IntegrationApp $app, ?User $user): bool
+    {
+        if ($app->slug === 'lanentrance') {
+            return $user !== null && (
+                $user->hasRole(RoleName::Moderator)
+                || $user->hasRole(RoleName::Admin)
+                || $user->hasRole(RoleName::Superadmin)
+            );
+        }
+
+        return true;
     }
 
     /**

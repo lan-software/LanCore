@@ -4,6 +4,7 @@ import axios from 'axios';
 import { ArrowLeft, FileText, ShieldCheck } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref } from 'vue';
 import CartController from '@/actions/App/Domain/Shop/Http/Controllers/CartController';
+import AskForHelpButton from '@/components/AskForHelpButton.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -231,6 +232,10 @@ function submitCheckout() {
                     >
                         <ArrowLeft class="inline size-4" /> Back to Cart
                     </Link>
+                    <AskForHelpButton
+                        :subject="$t('help.askForHelp')"
+                        category="shop"
+                    />
                 </nav>
             </div>
         </header>
