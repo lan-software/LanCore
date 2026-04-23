@@ -71,6 +71,7 @@ class EntranceController extends Controller
     {
         $request->validate([
             'token' => ['required', 'string', 'max:512'],
+            'validation_id' => ['sometimes', 'string', 'max:64'],
             'operator_id' => ['required', 'integer'],
             'event_id' => ['sometimes', 'integer'],
         ]);
@@ -94,6 +95,7 @@ class EntranceController extends Controller
     {
         $request->validate([
             'token' => ['required', 'string', 'max:512'],
+            'validation_id' => ['sometimes', 'string', 'max:64'],
             'operator_id' => ['required', 'integer'],
             'event_id' => ['sometimes', 'integer'],
         ]);
@@ -117,7 +119,7 @@ class EntranceController extends Controller
     {
         $request->validate([
             'token' => ['required', 'string', 'max:512'],
-            'validation_id' => ['required', 'string'],
+            'validation_id' => ['sometimes', 'string', 'max:64'],
             'payment_method' => ['required', 'string'],
             'amount' => ['required', 'string'],
             'operator_id' => ['required', 'integer'],
@@ -180,7 +182,7 @@ class EntranceController extends Controller
     {
         $request->validate([
             'token' => ['required', 'string', 'max:512'],
-            'validation_id' => ['required', 'string'],
+            'validation_id' => ['sometimes', 'string', 'max:64'],
             'reason' => ['required', 'string', 'min:10', 'max:500'],
             'operator_id' => ['required', 'integer'],
             'event_id' => ['sometimes', 'integer'],
@@ -402,6 +404,7 @@ class EntranceController extends Controller
             'payment' => $payment,
             'override_allowed' => $decision === 'override_possible',
             'audit_id' => $auditId,
+            'validation_id' => $auditId,
             'group_policy' => null,
             'degraded' => false,
             ...$extra,

@@ -80,8 +80,10 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-TKT-010 | The system shall support ticket locking mechanisms |
 | CAP-TKT-011 | The system shall support group tickets with configurable max users per ticket, where seat capacity is calculated as seats_per_user × max_users_per_ticket |
 | CAP-TKT-012 | The system shall support configurable check-in modes per ticket type: individual (per-user) or group (all users at once) |
-| CAP-TKT-013 | The system shall issue cryptographically signed ticket tokens in the LCT1 format (`LCT1.<kid>.<body>.<sig>`) for every ticket assigned to a user, and regenerate the token on every assignment change, ticket cancellation, or explicit admin rotation |
+| CAP-TKT-013 | The system shall issue cryptographically signed ticket tokens in the LCT1 format (`LCT1.<kid>.<body>.<sig>`) for every ticket assigned to a user. The token's nonce is derived deterministically from a pepper held outside the database, so rendering the QR never rotates the nonce. The nonce is rotated only on intentional events: initial issuance, assignment change, manager change, ticket cancellation, and explicit rotate actions (admin or user-initiated) |
 | CAP-TKT-014 | The system shall publish its active and retired verification public keys to LanEntrance via an authenticated JWKS endpoint (`GET /api/entrance/signing-keys`), and support key rotation without invalidating unexpired tokens issued under prior keys |
+| CAP-TKT-015 | The system shall allow ticket holders (owner or manager) to self-invalidate previously printed copies via an explicit "Rotate QR" action, and shall notify every affected user (owner, currently-assigned users, the user just removed, and any previously-assigned manager) through in-app and mail channels whenever the nonce rotates |
+| CAP-TKT-016 | The ticket PDF shall be rendered as an A4 portrait tri-fold with an event-banner hero, a scan face containing the QR and attendee data, a legal face reproducing every active `GlobalPurchaseCondition` as small print, and a low-opacity personalised watermark overlay (attendee name, event, venue, organisation, ticket type, ticket ID) that varies in angle and offset per ticket and leaves a safe zone around the QR code |
 
 #### 3.2.3 Shop and Payments (CAP-SHP)
 

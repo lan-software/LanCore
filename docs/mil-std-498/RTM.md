@@ -65,12 +65,18 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 | TKT-F-015 | Individual vs group check-in modes | `Domain/Ticketing/Enums/CheckInMode.php`, `Domain/Ticketing/Actions/UpdateTicketAssignments.php` | `Ticketing/GroupTicketTest.php` (3 tests) | Covered |
 | TKT-F-016 | Seat capacity = seats_per_user × max_users_per_ticket | `Domain/Event/Models/Event.php`, `Domain/Shop/Actions/` | `Ticketing/GroupTicketTest.php` (2 tests) | Covered |
 | TKT-F-017 | LCT1 signed token issuance (Ed25519, body, sig) | `Domain/Ticketing/Security/TicketTokenService.php`, `Domain/Ticketing/Security/TicketKeyRing.php` | `Ticketing/TicketTokenTest.php`, `Unit/Ticketing/TicketTokenServiceTest.php` | **Pending** |
-| TKT-F-018 | DB columns: validation_nonce_hash, validation_kid, validation_issued_at, validation_expires_at; no plaintext nonce stored | `Domain/Ticketing/Security/TicketTokenService.php` | `Ticketing/TicketTokenTest.php` (§4.20.1) | **Pending** |
-| TKT-F-019 | Token regeneration on UpdateTicketAssignments + rotateToken admin action | `Domain/Ticketing/Actions/UpdateTicketAssignments.php` | `Ticketing/TicketTokenTest.php` (§4.20.5) | **Pending** |
+| TKT-F-018 | DB columns: validation_nonce_hash, validation_kid, validation_issued_at, validation_expires_at, validation_rotation_epoch; no plaintext nonce stored | `Domain/Ticketing/Security/TicketTokenService.php` | `Unit/Ticketing/Security/TicketTokenServiceTest.php`, `Unit/Ticketing/Models/TicketEnsureSignedTokenTest.php` | Covered |
+| TKT-F-019 | Token rotation on FulfillOrder + UpdateTicketAssignments (addUser/removeUser/updateManager/rotateToken) | `Domain/Ticketing/Actions/UpdateTicketAssignments.php`, `Domain/Shop/Actions/FulfillOrder.php` | `Ticketing/Actions/UpdateTicketAssignmentsRegenerationTest.php` | Covered |
 | TKT-F-020 | Cancel clears nonce hash fields | `Domain/Ticketing/Actions/` (cancel path) | `Ticketing/TicketTokenTest.php` (§4.20.5) | **Pending** |
 | TKT-F-021 | JWKS endpoint GET /api/entrance/signing-keys | `Domain/Ticketing/Http/Controllers/SigningKeysController.php` | `Ticketing/TicketTokenTest.php` (§4.20.4) | **Pending** |
-| TKT-F-022 | `tickets:keys:rotate` Artisan command | `Console/Commands/RotateTicketKeysCommand.php` | `Ticketing/TicketTokenTest.php` (§4.20.4) | **Pending** |
-| TKT-F-023 | New validate error codes: invalid_signature, unknown_kid, expired, revoked | `Domain/Ticketing/Security/TicketTokenService.php` | `Ticketing/TicketTokenTest.php` (§4.20.2..4.20.3) | **Pending** |
+| TKT-F-022 | `tickets:keys:rotate` Artisan command | `Console/Commands/RotateTicketSigningKeyCommand.php` | `Ticketing/TicketTokenTest.php` (§4.20.4) | **Pending** |
+| TKT-F-023 | New validate error codes: invalid_signature, unknown_kid, expired, revoked | `Domain/Ticketing/Security/TicketTokenService.php` | `Ticketing/Api/EntranceControllerValidateTest.php` | Covered |
+| TKT-F-024 | User-initiated rotate endpoint (POST /tickets/{ticket}/rotate-token, throttle 10/min, owner or manager) | `Domain/Ticketing/Http/Controllers/TicketController.php` (rotateTokenUser), `routes/ticketing.php` | `Ticketing/RotateTokenEndpointTest.php` | Covered |
+| TKT-F-025 | Rotation notification to owner + assigned users + removed user + previous manager (mail + database, no opt-out) | `Domain/Ticketing/Notifications/TicketTokenRotatedNotification.php`, `Domain/Ticketing/Actions/UpdateTicketAssignments.php` (notifyRotation) | `Ticketing/Actions/UpdateTicketAssignmentsRegenerationTest.php`, `Ticketing/RotateTokenEndpointTest.php` | Covered |
+| TKT-F-026 | Non-rotating QR render + download (deterministic nonce derivation) | `Domain/Ticketing/Security/TicketTokenService.php` (render), `Domain/Ticketing/Http/Controllers/TicketController.php` (qrCode/download) | `Ticketing/TicketQrDoesNotRotateTest.php`, `Ticketing/TicketDownloadDoesNotRotateTest.php`, `Unit/Ticketing/Models/TicketEnsureSignedTokenTest.php` | Covered |
+| TKT-F-027 | Tri-fold A4 PDF with banner hero, QR middle panel, purchase conditions bottom panel | `resources/views/pdf/ticket.blade.php`, `Domain/Ticketing/Jobs/GenerateTicketPdf.php` | `Ticketing/TicketPdfRenderTest.php` | Covered |
+| TKT-F-028 | `php artisan tickets:rotate-all` one-shot mass rotation (with `--only-legacy` option) | `Console/Commands/RotateLegacyTicketTokensCommand.php` | Manual (release step) | **Pending (manual)** |
+| TKT-F-029 | Personalised forensic watermark overlay on ticket PDF | `Domain/Ticketing/Jobs/GenerateTicketPdf.php` (generateWatermarkBase64), `resources/views/pdf/ticket.blade.php` | `Ticketing/TicketPdfWatermarkTest.php` | Covered |
 | TKT-F-010 | Admin ticket management views | `Domain/Ticketing/Http/Controllers/AdminTicketController.php` | `Ticketing/AdminTicketControllerTest.php` (6 tests) | Covered |
 | TKT-F-011 | Ticket locking | `Domain/Ticketing/Actions/UpdateTicketType.php` (locked field handling) | `Ticketing/TicketTypeCrudTest.php` (locked fields test) | Covered |
 | TKT-F-012 | Audit trails for types, categories, add-ons | Audit controllers | `Domain/Ticketing/TicketTypeAuditTest.php` (3), `TicketCategoryAuditTest.php` (3), `AddonAuditTest.php` (3) | Covered |
@@ -495,8 +501,10 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | CAP-ORG-002 | ORG-F-002 | Covered |
 | CAP-ORG-003 | ORG-F-003 | Covered |
 | CAP-ORG-004 | ORG-F-004 | Covered |
-| CAP-TKT-013 | TKT-F-017..020, TKT-F-022, TKT-F-023 | **Pending** |
+| CAP-TKT-013 | TKT-F-017..020, TKT-F-022, TKT-F-023, TKT-F-026, TKT-F-028 | Partial (TKT-F-020/021/022 still pending) |
 | CAP-TKT-014 | TKT-F-021 | **Pending** |
+| CAP-TKT-015 | TKT-F-024, TKT-F-025 | Covered |
+| CAP-TKT-016 | TKT-F-027, TKT-F-029 | Covered |
 | SEC-014 | TKT-F-017 (Ed25519, private key not in DB) | **Pending** |
 | SEC-015 | TKT-F-018 (no plaintext nonce/token in DB) | **Pending** |
 | SEC-016 | TKT-F-018 (HMAC-SHA256 nonce hash + pepper env var) | **Pending** |

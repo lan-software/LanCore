@@ -33,7 +33,7 @@ function postValidate(array $headers, string $token): TestResponse
 
 it('accepts a valid signed token', function (): void {
     $ticket = Ticket::factory()->create(['status' => TicketStatus::Active]);
-    $payload = $ticket->issueSignedToken($this->service);
+    $payload = $ticket->rotateSignedToken($this->service);
 
     postValidate($this->authHeader, $payload)
         ->assertOk()
@@ -42,7 +42,7 @@ it('accepts a valid signed token', function (): void {
 
 it('rejects invalid signature', function (): void {
     $ticket = Ticket::factory()->create();
-    $payload = $ticket->issueSignedToken($this->service);
+    $payload = $ticket->rotateSignedToken($this->service);
 
     postValidate($this->authHeader, $payload.'AA')
         ->assertOk()
@@ -51,7 +51,7 @@ it('rejects invalid signature', function (): void {
 
 it('rejects unknown kid', function (): void {
     $ticket = Ticket::factory()->create();
-    $payload = $ticket->issueSignedToken($this->service);
+    $payload = $ticket->rotateSignedToken($this->service);
     [$ver, , $body, $sig] = explode('.', $payload);
 
     postValidate($this->authHeader, "{$ver}.nope.{$body}.{$sig}")
@@ -61,7 +61,7 @@ it('rejects unknown kid', function (): void {
 
 it('rejects expired tokens', function (): void {
     $ticket = Ticket::factory()->create();
-    $payload = $ticket->issueSignedToken($this->service);
+    $payload = $ticket->rotateSignedToken($this->service);
 
     [$ver, $kid, $bodyB64] = explode('.', $payload);
     $body = json_decode(TicketKeyRing::base64UrlDecode($bodyB64), true);
@@ -77,8 +77,8 @@ it('rejects expired tokens', function (): void {
 
 it('treats rotated tickets as revoked', function (): void {
     $ticket = Ticket::factory()->create();
-    $oldPayload = $ticket->issueSignedToken($this->service);
-    $ticket->issueSignedToken($this->service); // rotate
+    $oldPayload = $ticket->rotateSignedToken($this->service);
+    $ticket->rotateSignedToken($this->service); // rotate
 
     postValidate($this->authHeader, $oldPayload)
         ->assertOk()
@@ -87,7 +87,7 @@ it('treats rotated tickets as revoked', function (): void {
 
 it('reports already checked in', function (): void {
     $ticket = Ticket::factory()->create();
-    $payload = $ticket->issueSignedToken($this->service);
+    $payload = $ticket->rotateSignedToken($this->service);
     $ticket->update(['status' => TicketStatus::CheckedIn, 'checked_in_at' => now()]);
 
     postValidate($this->authHeader, $payload)
@@ -97,7 +97,7 @@ it('reports already checked in', function (): void {
 
 it('reports cancelled tickets', function (): void {
     $ticket = Ticket::factory()->create();
-    $payload = $ticket->issueSignedToken($this->service);
+    $payload = $ticket->rotateSignedToken($this->service);
     $ticket->update(['status' => TicketStatus::Cancelled]);
 
     postValidate($this->authHeader, $payload)
@@ -117,7 +117,7 @@ it('rejects a DB-inserted forged nonce_hash (signature mismatch)', function (): 
 
 it('does not find tickets by raw QR payload in DB', function (): void {
     $ticket = Ticket::factory()->create();
-    $payload = $ticket->issueSignedToken($this->service);
+    $payload = $ticket->rotateSignedToken($this->service);
 
     // The raw payload must not match any DB column — confirms QR leak is safe.
     expect(Ticket::query()->where('validation_nonce_hash', $payload)->exists())->toBeFalse();

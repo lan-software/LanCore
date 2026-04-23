@@ -57,6 +57,12 @@ function notificationLabel(notification: AppNotification): string {
         return `Achievement unlocked: ${data.name}`;
     }
 
+    if (type === 'TicketTokenRotatedNotification') {
+        return data.event_name
+            ? `Ticket QR updated: ${data.event_name}`
+            : 'Ticket QR updated';
+    }
+
     return 'New notification';
 }
 
@@ -73,6 +79,21 @@ function notificationDescription(notification: AppNotification): string | null {
 
     if (type === 'AchievementEarnedNotification' && data.description) {
         return data.description as string;
+    }
+
+    if (type === 'TicketTokenRotatedNotification') {
+        const reason = data.reason as string | undefined;
+        const reasonText =
+            reason === 'user-added'
+                ? 'A user was added to the ticket.'
+                : reason === 'user-removed'
+                  ? 'A user was removed from the ticket.'
+                  : reason === 'manager-changed'
+                    ? 'The ticket manager changed.'
+                    : reason === 'user-requested'
+                      ? 'You (or the ticket manager) requested a refresh.'
+                      : 'The ticket QR was refreshed.';
+        return `${reasonText} Previously printed copies are no longer valid.`;
     }
 
     return null;

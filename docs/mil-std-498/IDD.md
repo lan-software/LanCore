@@ -534,12 +534,12 @@ The signing input is the raw ASCII string: `"LCT1." + kid + "." + body` (no newl
 | Field | Type | Description |
 |-------|------|-------------|
 | `tid` | integer | LanCore ticket primary key |
-| `nonce` | string | base64url-encoded 128-bit random value; rotated on every regeneration |
+| `nonce` | string | base64url-encoded 128-bit value derived deterministically from `HMAC_SHA256(pepper, ticket_id_le64 \|\| epoch_le64)` truncated to 16 bytes; identical for repeat renders, distinct across rotation epochs |
 | `iat` | integer | Issued-at Unix timestamp (UTC) |
 | `exp` | integer | Expiry Unix timestamp (UTC); typically event end + grace period |
 | `evt` | integer | LanCore event primary key |
 
-The nonce is generated fresh (CSPRNG) on each token issuance or regeneration. The stored database value is `HMAC-SHA256(nonce_raw_bytes, pepper_bytes)`, hex-encoded, in column `validation_nonce_hash`. The plaintext nonce never leaves the application process after the QR PDF is generated.
+The nonce is derived deterministically at render time as `substr(HMAC_SHA256(pepper, pack('J', ticket_id).pack('J', rotation_epoch), raw_output=true), 0, 16)` where `rotation_epoch` is the ticket's `validation_rotation_epoch` column. It is never persisted; only its HMAC-SHA256 with the pepper is stored, hex-encoded, in `validation_nonce_hash`. Rotation means incrementing the epoch counter and recomputing: the stored hash changes, the previously-printed QR embeds the old nonce, and `locate()` at scan time returns `null` → `revoked`. The plaintext nonce never leaves the application process because it is recomputed on-demand from the in-memory pepper.
 
 #### 3.11.3 Signature Algorithm
 

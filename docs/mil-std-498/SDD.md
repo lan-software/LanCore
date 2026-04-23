@@ -133,10 +133,12 @@ RoleName Enum (5 cases)
 
 The ticket signing subsystem is implemented as two service classes in `app/Domain/Ticketing/Security/`:
 
-**`TicketTokenService`** — Orchestrates token lifecycle:
-- `issue(Ticket $ticket): string` — Generates nonce (CSPRNG), builds LCT1 body, calls `TicketKeyRing::sign()`, persists nonce hash + metadata to ticket row, returns the full token string for PDF generation
-- `verify(string $token): array` — Parses the token, delegates to `TicketKeyRing::verify()`, derives nonce hash from body nonce, queries ticket by nonce hash; returns structured result including the `Ticket` model on success
-- `locateByNonceHash(string $nonceHash): ?Ticket` — Direct lookup used by the validate endpoint
+**`TicketTokenService`** — Orchestrates token lifecycle with a clear rotate/render split:
+- `rotate(Ticket $ticket): IssuedToken` — Acquires a `lockForUpdate` row lock, increments `validation_rotation_epoch` by 1, derives the deterministic nonce as `HMAC_SHA256(pepper, ticket_id_le64 || epoch_le64)` truncated to 16 bytes, builds the LCT1 body, signs with the active kid, and persists the new `validation_nonce_hash / validation_kid / validation_issued_at / validation_expires_at / validation_rotation_epoch`. Returns the envelope so callers can dispatch PDF regeneration.
+- `render(Ticket $ticket): string` — Pure read: recomputes the deterministic nonce from the stored epoch, rebuilds the identical LCT1 body using the stored `validation_issued_at / validation_expires_at / validation_kid`, re-signs, and returns the QR payload. **No DB writes.** Throws if the ticket has never been rotated.
+- `verify(string $token): TokenVerification` — Parses the token, verifies the Ed25519 signature via `TicketKeyRing`, checks `exp`, returns the decoded claims.
+- `locate(TokenVerification $verification): ?Ticket` — Looks up a ticket by `tid + validation_nonce_hash`; returns `null` if the nonce hash no longer matches (i.e. the ticket has been rotated since the token was printed).
+- `isVerifiable(string $kid): bool` — Thin accessor that wraps `TicketKeyRing::allVerifyKids()`.
 
 **`TicketKeyRing`** — Key management:
 - `sign(string $message, string $kid = null): string` — Signs `message` with the active (or specified) private key; returns base64url-encoded 64-byte signature
@@ -147,7 +149,11 @@ The ticket signing subsystem is implemented as two service classes in `app/Domai
 
 Private key files reside at `storage/keys/ticket_signing/{kid}.key` with mode 0600. `TicketKeyRing` reads them on boot and caches in memory for the Octane process lifetime. On `tickets:keys:rotate`, a new key pair is written to disk and `TicketKeyRing` is re-initialized.
 
-**`GenerateTicketPdf` job:** The job takes a required `string $qrPayload` constructor argument carrying the signed LCT1 token payload to render into the QR code. The `qrPayload` is never persisted beyond the job execution.
+**`GenerateTicketPdf` job:** The job takes a required `string $qrPayload` constructor argument carrying the signed LCT1 token payload to render into the QR code. The `qrPayload` is supplied by the caller (either freshly from `rotate()` during an intentional rotation, or from `render()` on a cache-miss regeneration); the job itself never mutates the stored nonce. The job also pulls the event banner (via `StorageRole::public()` → base64), the currently-active `GlobalPurchaseCondition` rows, and a personalised forensic watermark PNG for the tri-fold PDF template.
+
+**Forensic watermark:** `GenerateTicketPdf::generateWatermarkBase64()` produces an A4-sized transparent PNG (1240 × 1754 px at 150 DPI) with the single line `"{owner} · {event} · {venue}, {city} · {orgName} · {ticketType} · #{ticketId}"` drawn repeatedly using DejaVu Sans TTF at ~12% opacity. The repeated text is rotated by an angle seeded deterministically from the ticket ID (45° ± 5°) and offset by `(ticket_id * 7) mod 180` px horizontally / `(ticket_id * 13) mod 180` px vertically. For each instance the rotated bounding box is computed via `imagettfbbox`; if it overlaps the QR safe rectangle (5 mm..80 mm horizontal, 105 mm..190 mm vertical on the page), the draw is skipped so the scan area stays clean. The result is embedded as a `data:image/png;base64,…` overlay as the first element of the PDF body, under the three tri-fold panels in DomPDF paint order. Purpose: any leaked photo, screenshot, or photocopy of a ticket carries the owner's identity and ticket ID dispersed across the page, making source attribution possible without DB access. Gracefully skipped when GD TTF support or the DejaVu font file is unavailable.
+
+**Deterministic nonce derivation:** The plaintext nonce is never stored. It is recomputed on every render as `substr(hash_hmac('sha256', pack('J', $ticketId).pack('J', $epoch), $pepper, true), 0, 16)`. The pepper lives in config (`tickets.pepper`), not in the database, so a DB-only attacker cannot reconstruct the nonce even though the epoch counter is stored alongside the ticket row.
 
 #### 3.3.4 Role-Permission Matrix
 
@@ -357,17 +363,20 @@ Group Mode:
 
 **Enum:** `App\Domain\Ticketing\Enums\CheckInMode` (Individual, Group)
 
-**Token Regeneration Triggers (within UpdateTicketAssignments):**
+**Token Rotation Triggers:**
 
-| Method | Trigger Condition | Token Action |
-|--------|------------------|--------------|
-| `updateManager` | Manager user changes | Rotate nonce, re-sign, dispatch PDF regen |
-| `addUser` | User added to pivot | Rotate nonce, re-sign, dispatch PDF regen |
-| `removeUser` | User removed from pivot | Rotate nonce, re-sign, dispatch PDF regen |
-| `rotateToken` (admin action) | Manual admin request | Rotate nonce, re-sign, dispatch PDF regen |
-| Ticket cancel | Status set to cancelled | Clear nonce hash, kid, issued_at, expires_at |
+| Trigger | Source | Token Action | Notification |
+|---------|--------|--------------|--------------|
+| Initial issuance | `FulfillOrder::execute` | Bump epoch 0 → 1, derive nonce, re-sign, dispatch PDF | No (purchase confirmation mail covers this) |
+| `updateManager` | `UpdateTicketAssignments` | Bump epoch, derive nonce, re-sign, dispatch PDF | Owner + assigned users + previous manager |
+| `addUser` | `UpdateTicketAssignments` | Bump epoch, derive nonce, re-sign, dispatch PDF | Owner + assigned users (incl. new) |
+| `removeUser` | `UpdateTicketAssignments` | Bump epoch, derive nonce, re-sign, dispatch PDF | Owner + assigned users + removed user |
+| `rotateToken` (admin) | `AdminTicketController::rotateToken` → `UpdateTicketAssignments` | Bump epoch, derive nonce, re-sign, dispatch PDF | Owner + assigned users |
+| `rotateTokenUser` | `TicketController::rotateTokenUser` → `UpdateTicketAssignments::rotateToken` | Bump epoch, derive nonce, re-sign, dispatch PDF | Owner + assigned users |
+| Ticket cancel | Cancellation action | Clear nonce hash, kid, issued_at, expires_at | (existing flow) |
+| QR render / PDF regen | `TicketController::qrCode`, `download` | **No rotation.** `render()` pure-function, reads stored epoch, re-derives nonce, re-signs | — |
 
-The regeneration sequence calls `TicketTokenService::issue($ticket)`, stores the new nonce hash and metadata, and passes the new `qrPayload` to a freshly dispatched `GenerateTicketPdf` job. The old QR codes become unresolvable immediately (nonce hash changes).
+Every rotation call sequence is `TicketTokenService::rotate($ticket)` → persists new nonce hash, kid, and timestamps → `dispatchPdf()` with the freshly signed envelope → `notifyRotation()` fans the `TicketTokenRotatedNotification` out to owner + assigned users + any removed/previous-manager context. Old QRs become unresolvable immediately because the stored nonce hash no longer matches their embedded nonce.
 
 #### 4.3.4 SSO Authorization Flow
 
@@ -885,7 +894,13 @@ Each app has its own Weblate component under the `lan-software` project (`lancor
 |----------------|-----------------|
 | EVT-F-* | app/Domain/Event/ |
 | TKT-F-001..016 | app/Domain/Ticketing/ |
-| TKT-F-017..023 | app/Domain/Ticketing/Security/TicketTokenService.php, app/Domain/Ticketing/Security/TicketKeyRing.php, app/Console/Commands/RotateTicketKeysCommand.php, app/Domain/Ticketing/Http/Controllers/AdminTicketController.php (rotateToken action) |
+| TKT-F-017..023 | app/Domain/Ticketing/Security/TicketTokenService.php, app/Domain/Ticketing/Security/TicketKeyRing.php, app/Console/Commands/RotateTicketSigningKeyCommand.php, app/Domain/Ticketing/Http/Controllers/AdminTicketController.php (rotateToken action), app/Domain/Ticketing/Actions/UpdateTicketAssignments.php |
+| TKT-F-024 | app/Domain/Ticketing/Http/Controllers/TicketController.php (rotateTokenUser action), routes/ticketing.php (`tickets.rotate-token` with `throttle:10,1`) |
+| TKT-F-025 | app/Domain/Ticketing/Notifications/TicketTokenRotatedNotification.php, app/Domain/Ticketing/Actions/UpdateTicketAssignments.php (`notifyRotation`) |
+| TKT-F-026 | app/Domain/Ticketing/Security/TicketTokenService.php (`render`), app/Domain/Ticketing/Models/Ticket.php (`renderSignedToken`), app/Domain/Ticketing/Http/Controllers/TicketController.php (qrCode, download) |
+| TKT-F-027 | resources/views/pdf/ticket.blade.php, app/Domain/Ticketing/Jobs/GenerateTicketPdf.php |
+| TKT-F-029 | app/Domain/Ticketing/Jobs/GenerateTicketPdf.php (generateWatermarkBase64), resources/views/pdf/ticket.blade.php (`.watermark`), tests/Feature/Ticketing/TicketPdfWatermarkTest.php |
+| TKT-F-028 | app/Console/Commands/RotateLegacyTicketTokensCommand.php |
 | SHP-F-* | app/Domain/Shop/ |
 | PRG-F-* | app/Domain/Program/ |
 | SET-F-* | app/Domain/Seating/ |

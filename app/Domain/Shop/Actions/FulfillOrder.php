@@ -75,7 +75,7 @@ class FulfillOrder
                         ]);
                     }
 
-                    $payload = $ticket->issueSignedToken($this->tokenService);
+                    $payload = $ticket->rotateSignedToken($this->tokenService);
                     GenerateTicketPdf::dispatch($ticket->id, $payload);
                 }
             }

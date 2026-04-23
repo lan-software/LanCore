@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { Armchair, Download, QrCode, X } from 'lucide-vue-next';
-import { ref } from 'vue';
+import {
+    Armchair,
+    Download,
+    QrCode,
+    RefreshCw,
+    X,
+} from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import TicketController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketController';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +19,24 @@ const props = defineProps<{
     ticket: Ticket;
     canUpdateManager?: boolean;
     canUpdateUser?: boolean;
+    canRotateToken?: boolean;
 }>();
+
+const showRotateButton = computed<boolean>(
+    () =>
+        props.canRotateToken === true ||
+        (props.ticket as { can_rotate_token?: boolean }).can_rotate_token ===
+            true,
+);
+
+function confirmRotate(e: Event): void {
+    const ok = window.confirm(
+        'Rotating the QR invalidates any previously printed or shared copy. Continue?',
+    );
+    if (!ok) {
+        e.preventDefault();
+    }
+}
 
 const showQrCode = ref(false);
 
@@ -141,7 +164,7 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
             </div>
 
             <!-- QR Code & Download -->
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 <Button
                     variant="outline"
                     size="sm"
@@ -157,6 +180,21 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                         PDF
                     </Button>
                 </a>
+                <Form
+                    v-if="showRotateButton"
+                    v-bind="TicketController.rotateTokenUser.form(ticket.id)"
+                    @submit="confirmRotate"
+                >
+                    <Button
+                        type="submit"
+                        variant="outline"
+                        size="sm"
+                        class="gap-1.5"
+                    >
+                        <RefreshCw class="size-4" />
+                        Rotate QR
+                    </Button>
+                </Form>
             </div>
 
             <!-- QR Code Display -->

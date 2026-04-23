@@ -216,6 +216,14 @@ kubectl -n lan-software logs job/lan-software-lancore-integrations-sync
 
 **Docker Compose deployments** can opt into the same reconciler at container boot by setting `LANCORE_INTEGRATIONS_RECONCILE_ON_BOOT=true` on the LanCore service — see §3.4.
 
+**Ticket token deterministic-nonce migration (one-shot):** After the migration that adds `validation_rotation_epoch` to the `tickets` table, every ticket with a non-null `validation_nonce_hash` must be rotated once so the stored hash aligns with the new deterministic derivation. Run:
+
+```
+vendor/bin/sail artisan tickets:rotate-all --only-legacy
+```
+
+(Or `kubectl exec deploy/lancore-web -- php artisan tickets:rotate-all --only-legacy` on Kubernetes.) The command is idempotent; the `--only-legacy` flag limits it to tickets with `validation_rotation_epoch = 0`. Every previously-issued printed QR becomes invalid after this run; a `TicketTokenRotatedNotification` is *not* dispatched by the command itself, so announce the change through operator channels. Affected users can re-download the PDF or use the live QR at "My Tickets". See TKT-F-026..028.
+
 Verification:
 
 ```bash

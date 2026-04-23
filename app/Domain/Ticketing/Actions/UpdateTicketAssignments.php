@@ -6,15 +6,18 @@ use App\Domain\Ticketing\Enums\CheckInMode;
 use App\Domain\Ticketing\Enums\TicketStatus;
 use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
 use App\Domain\Ticketing\Models\Ticket;
+use App\Domain\Ticketing\Notifications\TicketTokenRotatedNotification;
 use App\Domain\Ticketing\Security\TicketTokenService;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 /**
- * @see docs/mil-std-498/SSS.md CAP-TKT-005, CAP-TKT-011, CAP-TKT-012
- * @see docs/mil-std-498/SRS.md TKT-F-004, TKT-F-006, TKT-F-014, TKT-F-015
+ * @see docs/mil-std-498/SSS.md CAP-TKT-005, CAP-TKT-011, CAP-TKT-012, CAP-TKT-015
+ * @see docs/mil-std-498/SRS.md TKT-F-004, TKT-F-006, TKT-F-014, TKT-F-015, TKT-F-019, TKT-F-024, TKT-F-025
  */
 class UpdateTicketAssignments
 {
@@ -26,6 +29,9 @@ class UpdateTicketAssignments
     {
         $this->ensureNotCheckedIn($ticket);
 
+        $ticket->loadMissing('manager');
+        $previousManager = $ticket->manager;
+
         [$result, $payload] = DB::transaction(function () use ($ticket, $manager): array {
             $ticket->update(['manager_id' => $manager?->id]);
             $payload = $this->rotateTokenInternal($ticket);
@@ -34,6 +40,7 @@ class UpdateTicketAssignments
         });
 
         $this->dispatchPdf($result, $payload);
+        $this->notifyRotation($result, 'manager-changed', array_filter([$previousManager]));
 
         return $result;
     }
@@ -57,6 +64,7 @@ class UpdateTicketAssignments
         });
 
         $this->dispatchPdf($result, $payload);
+        $this->notifyRotation($result, 'user-added');
 
         return $result;
     }
@@ -73,6 +81,7 @@ class UpdateTicketAssignments
         });
 
         $this->dispatchPdf($result, $payload);
+        $this->notifyRotation($result, 'user-removed', [$user]);
 
         return $result;
     }
@@ -82,13 +91,15 @@ class UpdateTicketAssignments
         $this->ensureNotCheckedIn($ticket);
 
         $payload = $this->rotateTokenInternal($ticket);
+        $fresh = $ticket->fresh() ?? $ticket;
 
-        $this->dispatchPdf($ticket->fresh() ?? $ticket, $payload);
+        $this->dispatchPdf($fresh, $payload);
+        $this->notifyRotation($fresh, 'user-requested');
     }
 
     private function rotateTokenInternal(Ticket $ticket): string
     {
-        return $ticket->issueSignedToken($this->tokenService);
+        return $ticket->rotateSignedToken($this->tokenService);
     }
 
     public function checkIn(Ticket $ticket, int $performedBy, ?int $userId = null): Ticket
@@ -149,6 +160,27 @@ class UpdateTicketAssignments
     private function dispatchPdf(Ticket $ticket, string $qrPayload): void
     {
         GenerateTicketPdf::dispatch($ticket->id, $qrPayload);
+    }
+
+    /**
+     * @param  array<int, ?User>|Collection<int, User>  $extraUsers
+     */
+    private function notifyRotation(Ticket $ticket, string $reason, iterable $extraUsers = []): void
+    {
+        $ticket->loadMissing(['owner', 'users', 'event']);
+
+        $recipients = collect([$ticket->owner])
+            ->merge($ticket->users)
+            ->merge($extraUsers)
+            ->filter(fn ($user) => $user instanceof User)
+            ->unique('id')
+            ->values();
+
+        if ($recipients->isEmpty()) {
+            return;
+        }
+
+        Notification::send($recipients, new TicketTokenRotatedNotification($ticket, $reason));
     }
 
     private function invalidateToken(Ticket $ticket): void

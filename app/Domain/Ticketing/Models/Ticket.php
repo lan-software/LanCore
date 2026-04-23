@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
     'status', 'checked_in_at',
     'validation_nonce_hash', 'validation_kid',
     'validation_issued_at', 'validation_expires_at',
+    'validation_rotation_epoch',
     'ticket_type_id', 'event_id', 'order_id',
     'owner_id', 'manager_id',
 ])]
@@ -31,24 +32,37 @@ class Ticket extends Model
     use HasFactory;
 
     /**
-     * Issue a signed LCT1 token for this ticket and persist its nonce hash + metadata.
+     * Rotate this ticket's signed LCT1 token.
      *
-     * Returns the QR payload to hand to PDF generation. The raw token is never stored.
+     * Increments the stored `validation_rotation_epoch`, recomputes the
+     * deterministic nonce, persists the new nonce hash + kid + timestamps,
+     * and returns the fresh QR payload for any caller that needs to dispatch
+     * a PDF regeneration.
+     *
+     * Call sites: initial issuance (FulfillOrder), assignment/manager changes
+     * and explicit rotate actions (UpdateTicketAssignments). Read-only paths
+     * such as QR/PDF rendering MUST NOT call this.
      *
      * @see docs/mil-std-498/SDD.md §3.3.2
+     * @see docs/mil-std-498/SRS.md TKT-F-019
      */
-    public function issueSignedToken(TicketTokenService $service): string
+    public function rotateSignedToken(TicketTokenService $service): string
     {
-        $issued = $service->issue($this);
+        return $service->rotate($this)->qrPayload;
+    }
 
-        $this->forceFill([
-            'validation_nonce_hash' => $issued->nonceHash,
-            'validation_kid' => $issued->kid,
-            'validation_issued_at' => $issued->issuedAt,
-            'validation_expires_at' => $issued->expiresAt,
-        ])->save();
-
-        return $issued->qrPayload;
+    /**
+     * Render the currently-valid QR payload without mutating any state.
+     *
+     * Deterministically rebuilds the same LCT1 token using the stored
+     * rotation epoch, kid and issued/expires timestamps. Safe to call on
+     * every request.
+     *
+     * @see docs/mil-std-498/SRS.md TKT-F-026
+     */
+    public function renderSignedToken(TicketTokenService $service): string
+    {
+        return $service->render($this);
     }
 
     protected static function newFactory(): TicketFactory
@@ -66,6 +80,7 @@ class Ticket extends Model
             'checked_in_at' => 'datetime',
             'validation_issued_at' => 'datetime',
             'validation_expires_at' => 'datetime',
+            'validation_rotation_epoch' => 'integer',
         ];
     }
 

@@ -15,7 +15,7 @@ beforeEach(function (): void {
 it('round-trips issue and verify', function (): void {
     $ticket = Ticket::factory()->create();
 
-    $issued = $this->service->issue($ticket);
+    $issued = $this->service->rotate($ticket);
     $verification = $this->service->verify($issued->qrPayload);
 
     expect($verification->tid)->toBe($ticket->id);
@@ -24,7 +24,7 @@ it('round-trips issue and verify', function (): void {
 
 it('rejects tampered body', function (): void {
     $ticket = Ticket::factory()->create();
-    $issued = $this->service->issue($ticket);
+    $issued = $this->service->rotate($ticket);
 
     [$ver, $kid, $body, $sig] = explode('.', $issued->qrPayload);
     $tampered = "{$ver}.{$kid}.".TicketKeyRing::base64UrlEncode('{"tid":99999,"nonce":"x","iat":0,"exp":99999999999}').".{$sig}";
@@ -34,7 +34,7 @@ it('rejects tampered body', function (): void {
 
 it('rejects tampered signature', function (): void {
     $ticket = Ticket::factory()->create();
-    $issued = $this->service->issue($ticket);
+    $issued = $this->service->rotate($ticket);
     $tampered = $issued->qrPayload.'AA';
 
     expect(fn () => $this->service->verify($tampered))->toThrow(InvalidSignatureException::class);
@@ -42,7 +42,7 @@ it('rejects tampered signature', function (): void {
 
 it('rejects unknown kid', function (): void {
     $ticket = Ticket::factory()->create();
-    $issued = $this->service->issue($ticket);
+    $issued = $this->service->rotate($ticket);
 
     [$ver, , $body, $sig] = explode('.', $issued->qrPayload);
     $forged = "{$ver}.unknownkid.{$body}.{$sig}";
@@ -52,7 +52,7 @@ it('rejects unknown kid', function (): void {
 
 it('rejects expired tokens', function (): void {
     $ticket = Ticket::factory()->create();
-    $issued = $this->service->issue($ticket);
+    $issued = $this->service->rotate($ticket);
 
     [$ver, $kid, $bodyB64] = explode('.', $issued->qrPayload);
     $body = json_decode(TicketKeyRing::base64UrlDecode($bodyB64), true);
@@ -66,7 +66,7 @@ it('rejects expired tokens', function (): void {
 
 it('locates ticket by nonce hash', function (): void {
     $ticket = Ticket::factory()->create();
-    $payload = $ticket->issueSignedToken($this->service);
+    $payload = $ticket->rotateSignedToken($this->service);
     $verification = $this->service->verify($payload);
 
     $located = $this->service->locate($verification);
@@ -76,11 +76,11 @@ it('locates ticket by nonce hash', function (): void {
 
 it('returns null when nonce hash no longer matches', function (): void {
     $ticket = Ticket::factory()->create();
-    $payload = $ticket->issueSignedToken($this->service);
+    $payload = $ticket->rotateSignedToken($this->service);
     $verification = $this->service->verify($payload);
 
     // rotate token; nonce_hash now differs
-    $ticket->issueSignedToken($this->service);
+    $ticket->rotateSignedToken($this->service);
 
     expect($this->service->locate($verification))->toBeNull();
 });

@@ -83,10 +83,14 @@ class TicketController extends Controller
 
         $ticketData = $this->enrichTickets(collect([$ticket]))[0];
 
+        $userId = request()->user()?->id;
+
         return Inertia::render('tickets/Show', [
             'ticket' => $ticketData,
             'canUpdateManager' => Gate::allows('updateManager', $ticket),
             'canUpdateUser' => Gate::allows('updateUser', $ticket),
+            'canRotateToken' => $userId !== null
+                && ($ticket->owner_id === $userId || $ticket->manager_id === $userId),
         ]);
     }
 
@@ -96,7 +100,9 @@ class TicketController extends Controller
      */
     private function enrichTickets(Collection $tickets): array
     {
-        return $tickets->map(function (Ticket $ticket): array {
+        $currentUserId = request()->user()?->id;
+
+        return $tickets->map(function (Ticket $ticket) use ($currentUserId): array {
             $data = $ticket->toArray();
 
             if ($ticket->event) {
@@ -106,6 +112,9 @@ class TicketController extends Controller
                     $bannerImages,
                 );
             }
+
+            $data['can_rotate_token'] = $currentUserId !== null
+                && ($ticket->owner_id === $currentUserId || $ticket->manager_id === $currentUserId);
 
             return $data;
         })->values()->all();
@@ -159,7 +168,7 @@ class TicketController extends Controller
         $path = "tickets/{$ticket->id}.pdf";
 
         if (! StorageRole::private()->exists($path)) {
-            $payload = $ticket->issueSignedToken($this->tokenService);
+            $payload = $ticket->renderSignedToken($this->tokenService);
             $job = new GenerateTicketPdf($ticket->id, $payload);
             $job->handle();
         }
@@ -184,7 +193,7 @@ class TicketController extends Controller
             new SvgImageBackEnd,
         );
 
-        $payload = $ticket->issueSignedToken($this->tokenService);
+        $payload = $ticket->renderSignedToken($this->tokenService);
         $writer = new Writer($renderer);
         $svg = $writer->writeString($payload);
 
@@ -192,5 +201,20 @@ class TicketController extends Controller
             'Content-Type' => 'image/svg+xml',
             'Cache-Control' => 'public, max-age=3600',
         ]);
+    }
+
+    public function rotateTokenUser(Request $request, Ticket $ticket): RedirectResponse
+    {
+        $this->authorize('view', $ticket);
+
+        $userId = $request->user()->id;
+        abort_unless(
+            $ticket->owner_id === $userId || $ticket->manager_id === $userId,
+            403,
+        );
+
+        $this->updateTicketAssignments->rotateToken($ticket);
+
+        return back()->with('status', 'ticket-rotated');
     }
 }

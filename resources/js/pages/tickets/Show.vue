@@ -11,6 +11,7 @@ const props = defineProps<{
     ticket: Ticket;
     canUpdateManager: boolean;
     canUpdateUser: boolean;
+    canRotateToken: boolean;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -40,6 +41,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 :ticket="ticket"
                 :can-update-manager="canUpdateManager"
                 :can-update-user="canUpdateUser"
+                :can-rotate-token="canRotateToken"
             />
         </div>
     </AppLayout>

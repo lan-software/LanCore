@@ -41,6 +41,39 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Notifications', href: notificationsIndex().url },
 ];
 
+function notificationUrl(notification: AppNotification): string | null {
+    const type = notification.type.split('\\').pop() ?? '';
+    const data = notification.data;
+
+    if (
+        type === 'TicketTokenRotatedNotification' &&
+        typeof data.ticket_id === 'number'
+    ) {
+        return `/tickets/${data.ticket_id}`;
+    }
+
+    return null;
+}
+
+function handleNotificationClick(notification: AppNotification): void {
+    const target = notificationUrl(notification);
+    if (!target) {
+        return;
+    }
+    if (!notification.read_at) {
+        router.patch(
+            markAsRead(notification.id).url,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => router.visit(target),
+            },
+        );
+        return;
+    }
+    router.visit(target);
+}
+
 function notificationLabel(notification: AppNotification): string {
     const type = notification.type.split('\\').pop() ?? '';
     const data = notification.data;
@@ -69,6 +102,12 @@ function notificationLabel(notification: AppNotification): string {
         return `Achievement unlocked: ${data.name}`;
     }
 
+    if (type === 'TicketTokenRotatedNotification') {
+        return data.event_name
+            ? `Ticket QR updated: ${data.event_name}`
+            : 'Ticket QR updated';
+    }
+
     return 'New notification';
 }
 
@@ -85,6 +124,21 @@ function notificationDescription(notification: AppNotification): string | null {
 
     if (type === 'AchievementEarnedNotification' && data.description) {
         return data.description as string;
+    }
+
+    if (type === 'TicketTokenRotatedNotification') {
+        const reason = data.reason as string | undefined;
+        const reasonText =
+            reason === 'user-added'
+                ? 'A user was added to the ticket.'
+                : reason === 'user-removed'
+                  ? 'A user was removed from the ticket.'
+                  : reason === 'manager-changed'
+                    ? 'The ticket manager changed.'
+                    : reason === 'user-requested'
+                      ? 'You (or the ticket manager) requested a refresh.'
+                      : 'The ticket QR was refreshed.';
+        return `${reasonText} Previously printed copies are no longer valid.`;
     }
 
     return null;
@@ -176,7 +230,10 @@ function goToPage(page: number) {
                     class="group flex items-start gap-4 rounded-lg border bg-card p-4 shadow-sm transition-colors"
                     :class="{
                         'border-primary/20 bg-primary/5': !notification.read_at,
+                        'cursor-pointer hover:bg-accent/40':
+                            notificationUrl(notification) !== null,
                     }"
+                    @click="handleNotificationClick(notification)"
                 >
                     <div
                         class="mt-0.5 rounded-full p-2 text-muted-foreground"
@@ -217,7 +274,7 @@ function goToPage(page: number) {
                             size="icon"
                             class="size-8"
                             title="Mark as read"
-                            @click="handleMarkAsRead(notification)"
+                            @click.stop="handleMarkAsRead(notification)"
                         >
                             <Check class="size-4" />
                         </Button>
@@ -226,7 +283,7 @@ function goToPage(page: number) {
                             size="icon"
                             class="size-8 hover:text-destructive"
                             title="Archive"
-                            @click="handleArchive(notification)"
+                            @click.stop="handleArchive(notification)"
                         >
                             <Archive class="size-4" />
                         </Button>

@@ -19,6 +19,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('tickets/{ticket}/manager', [TicketController::class, 'updateManager'])->name('tickets.update-manager');
     Route::post('tickets/{ticket}/users', [TicketController::class, 'addUser'])->name('tickets.add-user');
     Route::delete('tickets/{ticket}/users/{user}', [TicketController::class, 'removeUser'])->name('tickets.remove-user');
+    Route::post('tickets/{ticket}/rotate-token', [TicketController::class, 'rotateTokenUser'])
+        ->middleware('throttle:10,1')
+        ->name('tickets.rotate-token');
 
     // Admin: Ticket Types
     Route::get('ticket-types', [TicketTypeController::class, 'index'])->name('ticket-types.index');

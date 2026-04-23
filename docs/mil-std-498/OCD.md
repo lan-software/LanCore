@@ -224,6 +224,17 @@ Key management is performed by operators via the `php artisan tickets:keys:rotat
 5. Previously issued tokens remain valid; retired keys are retained in the JWKS verify list until all tokens signed with them have expired
 6. Admins can also trigger per-ticket token rotation (`rotateToken` action) or cancel invalidation (clearing the nonce hash) through the admin ticket management interface
 
+#### 5.2.5c Operator Flow — Per-ticket Nonce Rotation
+
+Rendering a QR (web UI or PDF regen) never rotates the stored nonce: the system recomputes the same deterministic nonce on every render using the stored `validation_rotation_epoch`. A nonce rotation is a deliberate, infrequent event triggered by:
+
+1. Initial ticket issuance inside `FulfillOrder`.
+2. `UpdateTicketAssignments::{addUser, removeUser, updateManager, rotateToken}` (user-pivot or manager changes, plus any explicit rotate).
+3. A ticket holder clicking "Rotate QR" in "My Tickets" (`POST /tickets/{ticket}/rotate-token`, rate-limited to 10/min/user, owner or manager only).
+4. An admin triggering `rotateToken` from the admin ticket management interface.
+
+Whenever rotation (2)–(4) fires, every affected user receives a `TicketTokenRotatedNotification` through the in-app notification bell and by email. Affected users = ticket owner + every user currently attached to the ticket + the just-removed user (on `removeUser`) + the previously-assigned manager (on `updateManager`). The notification explicitly warns that previously-printed PDFs are now invalid and links to "My Tickets" for a fresh download or a live on-screen QR at the entrance.
+
 #### 5.2.6 Third-Party Integration
 
 1. Admin registers an integration app with name, callback URL, and webhook subscriptions
@@ -332,7 +343,7 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 | kid | Key identifier — a short string (up to 16 characters) that identifies which Ed25519 signing key was used for a given token |
 | JWKS | JSON Web Key Set — a JSON document listing public keys, served by LanCore to LanEntrance for token verification |
 | Ed25519 | An elliptic-curve digital signature algorithm used for ticket token signing; asymmetric (private key on LanCore, public key shared to LanEntrance) |
-| Nonce | A 128-bit random value embedded in each ticket token, rotated on every token regeneration; never stored in plaintext |
+| Nonce | A 128-bit value embedded in each ticket token, derived deterministically from HMAC(pepper, ticket_id \|\| rotation_epoch); never stored in plaintext. Rotation = incrementing the epoch counter |
 | Nonce Hash | HMAC-SHA256 of the nonce using a server-side pepper; stored in the database for token-to-ticket lookup without exposing the nonce |
 | Pepper | A secret value (not stored in the database) used as the HMAC key when deriving the nonce hash |
 | Locale | A BCP 47 language tag (e.g., `en`, `de`, `fr`, `es`) that identifies the user's preferred display language; stored as the `locale` column on the LanCore `users` table and propagated to satellite apps via the `LanCoreUser` DTO |

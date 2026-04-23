@@ -616,12 +616,22 @@ This ensures complete isolation between test cases.
 | JWKS requires authentication | Unauthenticated request | GET /api/entrance/signing-keys (no Bearer) | 401 Unauthorized |
 | JWKS returns 200 with active key | Active key present | GET /api/entrance/signing-keys (valid Bearer) | 200, `keys` array has at least one entry with `kty: "OKP"`, `crv: "Ed25519"` |
 
-#### 4.20.5 Admin Token Rotation and Cancel Tests
+#### 4.20.5 Token Rotation Tests
 
 | Test | Preconditions | Input | Expected Result |
 |------|--------------|-------|-----------------|
-| admin rotateToken issues new LCT1 token | Admin, ticket with existing token | POST /admin/tickets/{id}/rotate-token | `validation_nonce_hash` changed, `validation_kid` updated, `GenerateTicketPdf` dispatched |
+| admin rotateToken issues new LCT1 token | Admin, ticket with existing token | POST /admin/tickets/{id}/rotate-token | `validation_nonce_hash` changed, `validation_rotation_epoch` bumped by 1, `validation_kid` updated, `GenerateTicketPdf` dispatched, `TicketTokenRotatedNotification` sent to owner + assigned users |
 | admin cancel clears token fields | Admin, ticket with active token | Ticket cancellation action | `validation_nonce_hash` NULL, `validation_kid` NULL, `validation_issued_at` NULL, `validation_expires_at` NULL |
+| user rotateTokenUser requires owner or manager | Non-owner, non-manager user, ticket | POST /tickets/{id}/rotate-token | 403 Forbidden; no rotation |
+| user rotateTokenUser rotates for owner | Ticket owner, ticket | POST /tickets/{id}/rotate-token | Nonce hash changes, epoch bumps, notification dispatched |
+| QR render does NOT rotate the nonce | Active ticket | GET /tickets/{id}/qr twice | `validation_nonce_hash` and `validation_rotation_epoch` unchanged across both calls |
+| PDF download does NOT rotate the nonce | Active ticket with cached PDF | GET /tickets/{id}/download twice | `validation_nonce_hash` and `validation_rotation_epoch` unchanged |
+| addUser rotates + notifies added user | Ticket with an owner | POST /tickets/{id}/users | Epoch bumps, new user AND owner receive `TicketTokenRotatedNotification` |
+| removeUser notifies removed user | Ticket with 2 assigned users | DELETE /tickets/{id}/users/{u} | Epoch bumps, the REMOVED user receives notification, owner receives notification |
+| updateManager notifies previous manager | Ticket with manager A | PATCH /tickets/{id}/manager to set manager B | Epoch bumps, manager A + manager B + owner + assigned users all receive notification |
+| tickets:rotate-all --only-legacy | Legacy tickets with epoch = 0 | `php artisan tickets:rotate-all --only-legacy` | Every eligible ticket bumped to epoch 1, nonce hash changes, no command-issued notifications |
+| PDF render includes event banner + conditions | Ticket with event banner + active GlobalPurchaseConditions | Render `pdf.ticket` Blade | Output contains condition names, condition content, "fold here" labels, ticket id |
+| PDF render includes personalised watermark | Ticket with owner/event/venue/org populated; GD + DejaVu Sans available | Run `GenerateTicketPdf::handle()` | PDF file > 10 KB written; rendered Blade contains `<img class="watermark"` when `watermarkBase64` non-null, absent when null |
 
 #### 4.20.6 Threat Model Simulation Tests
 

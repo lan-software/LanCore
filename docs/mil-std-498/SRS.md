@@ -101,12 +101,18 @@ The LanCore CSCI shall support the following operational states:
 | TKT-F-015 | The software shall support configurable check-in modes per ticket type (`individual` or `group`) via a `check_in_mode` field and CheckInMode enum |
 | TKT-F-016 | The software shall calculate seat capacity consumption as `seats_per_user × max_users_per_ticket`, reserved at purchase time |
 | TKT-F-017 | The software shall issue an LCT1 signed ticket token (`LCT1.<kid>.<body>.<sig>`) for each ticket upon order fulfillment, where `body = base64url(json({tid, nonce, iat, exp, evt}))` and `sig = base64url(Ed25519_sign(sk[kid], "LCT1." + kid + "." + body))`; the token shall be embedded in the ticket QR code payload |
-| TKT-F-018 | The software shall store per-ticket signing metadata in new `tickets` columns: `validation_nonce_hash` CHAR(64) UNIQUE (HMAC-SHA256 of nonce with pepper), `validation_kid` VARCHAR(16), `validation_issued_at` TIMESTAMP, `validation_expires_at` TIMESTAMP; the plaintext nonce and the full LCT1 token string shall never be stored |
-| TKT-F-019 | The software shall regenerate the LCT1 token (rotate nonce, re-sign, dispatch PDF regeneration job) whenever `UpdateTicketAssignments` executes `updateManager`, `addUser`, or `removeUser`; regeneration shall also be triggered by the `rotateToken` admin action |
+| TKT-F-018 | The software shall store per-ticket signing metadata in `tickets` columns: `validation_nonce_hash` CHAR(64) UNIQUE (HMAC-SHA256 of the deterministic nonce with the pepper), `validation_kid` VARCHAR(16), `validation_issued_at` TIMESTAMP, `validation_expires_at` TIMESTAMP, and `validation_rotation_epoch` BIGINT UNSIGNED DEFAULT 0 (rotation counter used in nonce derivation). The plaintext nonce and the full LCT1 token string shall never be stored; the nonce is derived deterministically at render time from `HMAC_SHA256(pepper, ticket_id_le64 \|\| epoch_le64)` truncated to 16 bytes |
+| TKT-F-019 | The software shall rotate the LCT1 token (increment `validation_rotation_epoch`, recompute nonce hash, persist new kid/issued/expires, dispatch PDF regeneration) on exactly four events: initial issuance during `FulfillOrder`, and `UpdateTicketAssignments::{updateManager, addUser, removeUser, rotateToken}`. Rotation shall not fire on any read path (QR render, PDF regeneration from cache miss) |
 | TKT-F-020 | The software shall clear `validation_nonce_hash`, `validation_kid`, `validation_issued_at`, and `validation_expires_at` when a ticket is cancelled, rendering any previously issued token unresolvable |
 | TKT-F-021 | The software shall provide a `GET /api/entrance/signing-keys` endpoint (Bearer-authenticated via existing integration middleware) that returns all active and retired-but-unexpired Ed25519 public keys in JWKS format; response shall be cacheable by consumers for a configurable TTL |
 | TKT-F-022 | The software shall provide a `php artisan tickets:keys:rotate` command that generates a new Ed25519 key pair, assigns a `kid`, writes the private key to `storage/keys/ticket_signing/{kid}.key`, and designates the new key as the active signing key |
 | TKT-F-023 | The software shall return structured error codes in the validate endpoint response for token-related failure modes: `invalid_signature` (signature verification failed), `unknown_kid` (no public key for the given kid), `expired` (token past `validation_expires_at`), `revoked` (nonce hash not found or cleared); these supplement the existing `valid`, `already_checked_in`, and `invalid` decision values |
+| TKT-F-024 | The software shall provide a `POST /tickets/{ticket}/rotate-token` endpoint (authorization: ticket owner or manager; rate limit 10 requests/minute/user) that delegates to `UpdateTicketAssignments::rotateToken`, enabling ticket holders to self-invalidate previously printed copies |
+| TKT-F-025 | On any rotation triggered after initial issuance (addUser, removeUser, updateManager, rotateToken, rotateTokenUser), the software shall dispatch a `TicketTokenRotatedNotification` to: the ticket owner, every user currently attached to the ticket, the user just removed (on `removeUser`), and the previously-assigned manager (on `updateManager`). Delivery channels are `database` and `mail`; this notification is security-relevant and not suppressible via `NotificationPreference` |
+| TKT-F-026 | The software shall serve the QR code (`GET /tickets/{ticket}/qr`) and the cached PDF (`GET /tickets/{ticket}/download`) without rotating the stored nonce. The QR endpoint recomputes the deterministic nonce from the stored epoch and re-signs against the stored kid/issued/expires. The PDF endpoint reuses the cached `tickets/{id}.pdf` on the private disk; when absent, it generates a fresh PDF using the same non-rotating render |
+| TKT-F-027 | The ticket PDF shall be rendered as A4 portrait tri-fold with three 99 mm panels divided by two dashed horizontal fold guides. Panel 1 (top): event banner hero with organization identity. Panel 2 (middle): QR code + ticket-holder data (scan-visible face when folded). Panel 3 (bottom): all currently active `GlobalPurchaseCondition` rows rendered as small legal text, followed by the organization legal footer |
+| TKT-F-028 | The software shall provide a `php artisan tickets:rotate-all` command that rotates the token on every ticket with a non-null `validation_nonce_hash`. A `--only-legacy` flag restricts the pass to tickets whose `validation_rotation_epoch` is still 0. The command is required once during the deterministic-nonce deploy and invalidates every previously printed QR |
+| TKT-F-029 | The ticket PDF shall render a personalised forensic watermark across the A4 background, composed of the ticket owner's name, event name, venue + city, organisation name, ticket type, and ticket ID, at approximately 12% opacity, repeated diagonally. Angle and start-offset shall vary per ticket, seeded deterministically by ticket ID. A safe rectangle around the middle-panel QR code shall be left blank so scanners see an unobstructed code. When GD TTF support or the font file is unavailable the watermark shall be omitted without failing PDF generation |
 
 #### 3.2.3 Shop Domain (CSCI-SHP)
 
@@ -558,9 +564,11 @@ Additional CSCI-level requirements:
 |--------------------------|---------------------------|
 | CAP-EVT-* | EVT-F-* |
 | CAP-TKT-001..012 | TKT-F-001..016 |
-| CAP-TKT-013 | TKT-F-017..020, TKT-F-022, TKT-F-023 |
+| CAP-TKT-013 | TKT-F-017..020, TKT-F-022, TKT-F-023, TKT-F-026, TKT-F-028 |
 | CAP-TKT-014 | TKT-F-021 |
-| SEC-014..020 | TKT-F-017..023 |
+| CAP-TKT-015 | TKT-F-024, TKT-F-025 |
+| CAP-TKT-016 | TKT-F-027, TKT-F-029 |
+| SEC-014..020 | TKT-F-017..029 |
 | CAP-SHP-* | SHP-F-* |
 | CAP-PRG-* | PRG-F-* |
 | CAP-SET-* | SET-F-* |

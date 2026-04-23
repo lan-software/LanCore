@@ -244,10 +244,11 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | manager_id | bigint FK (nullable) | References users.id (manager) |
 | order_id | bigint FK (nullable) | References orders.id |
 | status | varchar | TicketStatus enum |
-| validation_nonce_hash | CHAR(64) (unique, nullable) | HMAC-SHA256(nonce, pepper) in lowercase hex; used for token-to-ticket lookup without storing the nonce; NULL when ticket is cancelled or no token has been issued |
+| validation_nonce_hash | CHAR(64) (unique, nullable) | HMAC-SHA256 of the deterministic nonce with the pepper, lowercase hex; used for token-to-ticket lookup without storing the nonce. NULL when ticket is cancelled or no token has been issued |
 | validation_kid | VARCHAR(16) (nullable) | Key identifier of the Ed25519 signing key used for the current token; NULL when no token is active |
 | validation_issued_at | timestamp (nullable) | When the current LCT1 token was issued |
 | validation_expires_at | timestamp (nullable) | When the current LCT1 token expires (event end + grace period) |
+| validation_rotation_epoch | BIGINT UNSIGNED (default 0) | Monotonically increasing counter used to derive the deterministic nonce via `HMAC_SHA256(pepper, ticket_id_le64 \|\| epoch_le64)`. Incremented on every rotation (initial issuance, assignment change, manager change, explicit rotate). The plaintext nonce is never stored; it is recomputed in-process from the pepper + this counter when a QR is rendered |
 | checked_in_at | datetime (nullable) | Ticket-level check-in timestamp |
 | created_at | timestamp | |
 | updated_at | timestamp | |
@@ -967,3 +968,5 @@ The following values are **never stored in the database**:
 | HMAC pepper | Supplied via `TICKET_TOKEN_PEPPER` environment variable only |
 
 The `validation_nonce_hash` column stores a 64-character lowercase hex HMAC-SHA256 digest. An attacker with read access to the database cannot reverse this to obtain the nonce, because the pepper is not in the database. The nonce itself is not in the database either, so an attacker with the pepper still cannot reconstruct a valid token without the Ed25519 private key.
+
+With the deterministic-nonce scheme introduced alongside the `validation_rotation_epoch` column, the nonce is still never persisted — it is recomputed in-process at render time as `HMAC_SHA256(pepper, ticket_id_le64 || epoch_le64)` truncated to 16 bytes. Because the pepper lives outside the database (in the `TICKET_TOKEN_PEPPER` environment variable), a DB-only attacker still cannot produce the nonce even though the epoch counter is visible alongside the ticket row. The security invariant from the prior random-nonce scheme is preserved.

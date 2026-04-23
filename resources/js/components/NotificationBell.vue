@@ -34,6 +34,36 @@ const recentNotifications = computed<AppNotification[]>(
     () => page.props.recentNotifications ?? [],
 );
 
+function notificationUrl(notification: AppNotification): string {
+    const type = notification.type.split('\\').pop() ?? '';
+    const data = notification.data;
+
+    if (
+        type === 'TicketTokenRotatedNotification' &&
+        typeof data.ticket_id === 'number'
+    ) {
+        return `/tickets/${data.ticket_id}`;
+    }
+
+    return notificationsIndex().url;
+}
+
+function handleNotificationClick(notification: AppNotification): void {
+    const target = notificationUrl(notification);
+    if (!notification.read_at) {
+        router.patch(
+            markAsRead(notification.id).url,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => router.visit(target),
+            },
+        );
+        return;
+    }
+    router.visit(target);
+}
+
 function notificationLabel(notification: AppNotification): string {
     const type = notification.type.split('\\').pop() ?? '';
     const data = notification.data;
@@ -60,6 +90,12 @@ function notificationLabel(notification: AppNotification): string {
 
     if (type === 'AchievementEarnedNotification' && data.name) {
         return `Achievement unlocked: ${data.name}`;
+    }
+
+    if (type === 'TicketTokenRotatedNotification') {
+        return data.event_name
+            ? `Ticket QR updated: ${data.event_name}`
+            : 'Ticket QR updated';
     }
 
     return 'New notification';
@@ -125,8 +161,8 @@ function handleArchive(notification: AppNotification) {
                 <DropdownMenuItem
                     v-for="notification in recentNotifications"
                     :key="notification.id"
-                    class="group flex cursor-default flex-col items-start gap-1 px-3 py-2.5"
-                    @select.prevent
+                    class="group flex cursor-pointer flex-col items-start gap-1 px-3 py-2.5"
+                    @select="handleNotificationClick(notification)"
                 >
                     <div class="flex w-full items-start justify-between gap-2">
                         <div class="flex items-start gap-2">
