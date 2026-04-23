@@ -171,7 +171,7 @@
             "title": "Erweiterte Ticketverwaltung"
         },
         "achievements": {
-            "title": "Erfolge"
+            "title": "Trophäen"
         },
         "manageDescription": "Verwalte dein Profil und deine Kontoeinstellungen",
         "security": {
@@ -222,7 +222,7 @@
         "shop": "Shop",
         "orders": "Bestellungen",
         "vouchers": "Gutscheine",
-        "achievements": "Erfolge",
+        "achievements": "Trophäen",
         "competitions": "Turniere",
         "integrations": "Integrationen",
         "organization": "Organisation",
@@ -251,7 +251,7 @@
             "platform": "Plattform",
             "administration": "Administration",
             "news": "Neuigkeiten",
-            "achievements": "Erfolge",
+            "achievements": "Trophäen",
             "announcement": "Ankündigung",
             "event": "Veranstaltung",
             "program": "Programm",
