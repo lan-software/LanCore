@@ -196,7 +196,7 @@ function updateCartQuantity(
                     <template v-if="$page.props.auth.user">
                         <Link
                             :href="CartController.show().url"
-                            class="relative text-muted-foreground hover:text-foreground"
+                            class="relative inline-flex items-center gap-1.5 pr-3 text-muted-foreground hover:text-foreground"
                         >
                             <ShoppingCart class="size-5" />
                             <span class="hidden sm:inline">{{ t('shop.cart') }}</span>
