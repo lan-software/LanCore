@@ -68,7 +68,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
             <!-- Managed Tickets -->
             <div class="space-y-3">
-                <h2 class="text-lg font-semibold">{{ t('tickets.managed') }}</h2>
+                <h2 class="text-lg font-semibold">
+                    {{ t('tickets.managed') }}
+                </h2>
                 <div
                     v-if="managedTickets.length > 0"
                     class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -87,7 +89,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
             <!-- Usable Tickets -->
             <div class="space-y-3">
-                <h2 class="text-lg font-semibold">{{ t('tickets.assigned') }}</h2>
+                <h2 class="text-lg font-semibold">
+                    {{ t('tickets.assigned') }}
+                </h2>
                 <div
                     v-if="assignedTickets.length > 0"
                     class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"

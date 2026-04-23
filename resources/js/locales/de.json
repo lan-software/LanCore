@@ -109,6 +109,35 @@
             "button": "Verifizieren"
         }
     },
+    "seating": {
+        "picker": {
+            "breadcrumb": "Sitzplatz wählen",
+            "headTitle": "Sitzplatz wählen",
+            "description": "Wähle einen Sitzplatz für einen Teilnehmer auf einem deiner Tickets.",
+            "seatFor": "Sitzplatz für:",
+            "selectPersonHint": "Wähle rechts eine Person aus, um mit der Auswahl zu beginnen.",
+            "noSeatPlan": "Diese Veranstaltung hat noch keinen Sitzplan.",
+            "selectedSeat": "Ausgewählter Sitzplatz:",
+            "currentSeat": "Aktueller Sitzplatz:",
+            "releaseSeat": "Sitzplatz freigeben",
+            "confirmSeat": "Sitzplatz bestätigen",
+            "yourTickets": "Deine Tickets",
+            "noTickets": "Du hast keine Tickets, für die du bei dieser Veranstaltung Sitzplätze verwalten kannst.",
+            "noAttendees": "Noch keine Teilnehmer hinzugefügt.",
+            "group": "Gruppe",
+            "backToTickets": "Zurück zu Meine Tickets",
+            "hint": {
+                "chooseAssigneeFirst": "Wähle rechts eine Person aus, bevor du einen Sitzplatz wählst.",
+                "cannotPickForPerson": "Du hast keine Berechtigung, einen Sitzplatz für diese Person zu wählen.",
+                "seatTaken": "Dieser Sitzplatz ist bereits belegt."
+            },
+            "nav": {
+                "resetView": "Ansicht zurücksetzen",
+                "zoomToMySeat": "Zu meinem Sitzplatz",
+                "pickASeat": "Klicke auf einen Sitzplatz, um ihn auszuwählen."
+            }
+        }
+    },
     "settings": {
         "title": "Einstellungen",
         "description": "Verwalte deine Kontoeinstellungen und Präferenzen",
@@ -169,6 +198,13 @@
         },
         "advancedTicketing": {
             "title": "Erweiterte Ticketverwaltung"
+        },
+        "privacy": {
+            "title": "Privatsphäre",
+            "srHeading": "Datenschutzeinstellungen",
+            "description": "Steuere, wie dein Name auf öffentlichen Sitzplänen erscheint.",
+            "seatVisibleLabel": "Meinen Namen auf öffentlichen Sitzplänen anzeigen",
+            "seatVisibleHelp": "Wenn deaktiviert, erscheint dein Sitzplatz weiterhin auf öffentlichen Sitzplänen, jedoch ohne deinen Namen. Andere Teilnehmer mit einem Ticket für dieselbe Veranstaltung sehen deinen Namen auf dem Sitzplan immer, unabhängig von dieser Einstellung."
         },
         "achievements": {
             "title": "Trophäen"
@@ -396,6 +432,13 @@
         "assigned": "Tickets die mir zugewiesen sind",
         "noOwned": "Sie besitzen noch keine Tickets.",
         "noManaged": "Sie verwalten noch keine Tickets.",
-        "noAssigned": "Ihnen wurden bisher noch keine Tickets zugewiesen."
+        "noAssigned": "Ihnen wurden bisher noch keine Tickets zugewiesen.",
+        "seat": {
+            "seat": "Sitzplatz",
+            "seats": "Sitzplätze",
+            "pickSeat": "Sitzplatz wählen",
+            "changeSeat": "Sitzplatz ändern",
+            "addAttendeeHint": "Füge einen Teilnehmer hinzu, um einen Sitzplatz auszuwählen."
+        }
     }
 }

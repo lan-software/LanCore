@@ -196,10 +196,12 @@ function updateCartQuantity(
                     <template v-if="$page.props.auth.user">
                         <Link
                             :href="CartController.show().url"
-                            class="relative inline-flex items-center gap-1.5 pr-3 text-muted-foreground hover:text-foreground"
+                            class="relative inline-flex items-center gap-1.5 pr-6 text-muted-foreground hover:text-foreground"
                         >
                             <ShoppingCart class="size-5" />
-                            <span class="hidden sm:inline">{{ t('shop.cart') }}</span>
+                            <span class="hidden sm:inline">{{
+                                t('shop.cart')
+                            }}</span>
                             <Badge
                                 v-if="cartItemCount > 0"
                                 class="absolute -top-2 -right-2 flex size-5 items-center justify-center rounded-full p-0 text-xs"
@@ -259,7 +261,9 @@ function updateCartQuantity(
 
                         <!-- Ticket Types -->
                         <div class="space-y-4">
-                            <h2 class="text-2xl font-semibold">{{ t('shop.tickets') }}</h2>
+                            <h2 class="text-2xl font-semibold">
+                                {{ t('shop.tickets') }}
+                            </h2>
                             <div
                                 v-if="ticketTypes.length > 0"
                                 class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -306,10 +310,19 @@ function updateCartQuantity(
                                             class="space-y-1 text-sm text-muted-foreground"
                                         >
                                             <p v-if="tt.ticket_category">
-                                                {{ t('shop.category', { name: tt.ticket_category.name }) }}
+                                                {{
+                                                    t('shop.category', {
+                                                        name: tt.ticket_category
+                                                            .name,
+                                                    })
+                                                }}
                                             </p>
                                             <p>
-                                                {{ t('shop.seatsPerUser', { count: tt.seats_per_user }) }}
+                                                {{
+                                                    t('shop.seatsPerUser', {
+                                                        count: tt.seats_per_user,
+                                                    })
+                                                }}
                                             </p>
                                             <p
                                                 v-if="
@@ -317,7 +330,11 @@ function updateCartQuantity(
                                                     undefined
                                                 "
                                             >
-                                                {{ t('shop.remaining', { count: tt.remaining_quota }) }}
+                                                {{
+                                                    t('shop.remaining', {
+                                                        count: tt.remaining_quota,
+                                                    })
+                                                }}
                                             </p>
                                         </div>
                                     </CardContent>
@@ -404,7 +421,9 @@ function updateCartQuantity(
 
                         <!-- Addons -->
                         <div v-if="addons.length > 0" class="space-y-4">
-                            <h2 class="text-2xl font-semibold">{{ t('shop.addons') }}</h2>
+                            <h2 class="text-2xl font-semibold">
+                                {{ t('shop.addons') }}
+                            </h2>
                             <div
                                 class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
                             >
@@ -431,7 +450,13 @@ function updateCartQuantity(
                                                             />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p>{{ t('shop.addonRequiresTicket') }}</p>
+                                                            <p>
+                                                                {{
+                                                                    t(
+                                                                        'shop.addonRequiresTicket',
+                                                                    )
+                                                                }}
+                                                            </p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>
@@ -531,7 +556,9 @@ function updateCartQuantity(
                                 {{ t('shop.loginToPurchase') }}
                             </p>
                             <Button as-child>
-                                <Link :href="login()">{{ t('auth.login.button') }}</Link>
+                                <Link :href="login()">{{
+                                    t('auth.login.button')
+                                }}</Link>
                             </Button>
                         </div>
                     </div>

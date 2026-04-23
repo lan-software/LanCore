@@ -230,6 +230,11 @@ File: tests/Feature/Programs/ProgramTimeSlotNotificationTest.php
 | SET-F-003 | Event association | `Domain/Seating/Models/SeatPlan.php` | `Seating/SeatPlanTest.php` | Covered |
 | SET-F-004 | SeatPlanPolicy authorization | `Domain/Seating/Policies/SeatPlanPolicy.php` | `Seating/SeatPlanCrudTest.php` | Covered |
 | SET-F-005 | Audit trails | `Domain/Seating/Http/Controllers/SeatPlanAuditController.php` | `Domain/Seating/SeatPlanAuditTest.php` (3 tests) | Covered |
+| SET-F-006 | (ticket, user, seat_plan, seat) assignment with unique constraints | `Domain/Seating/Models/SeatAssignment.php`, `Domain/Seating/Actions/AssignSeat.php`, migration `2026_04_23_140751_create_seat_assignments_table.php` | `Unit/Domain/Seating/AssignSeatTest.php` (7 tests) | Covered |
+| SET-F-007 | Owner/manager/assignee/permission may pick or change a seat | `Domain/Ticketing/Policies/TicketPolicy.php::pickSeat`, `Domain/Seating/Http/Controllers/SeatPickerController.php` | `Feature/Seating/SeatPickerTest.php` (4 tests) | Covered |
+| SET-F-008 | Auto-release on cancellation, removal, deletion | `Domain/Ticketing/Models/Ticket.php::booted`, `Domain/Ticketing/Actions/UpdateTicketAssignments.php::removeUser`, FK `cascadeOnDelete` | `Feature/Seating/SeatPickerTest.php` (cancel + remove tests) | Covered |
+| SET-F-009 | Public seat plan privacy override | `Models/User.php::isSeatNameVisibleTo`, `Http/Controllers/WelcomeController.php::getTakenSeats`, `Domain/Seating/Http/Controllers/SeatPickerController.php` | `Feature/Settings/PrivacyTest.php` (override test) | Covered |
+| SET-F-010 | Settings → Privacy toggle | `Http/Controllers/Settings/PrivacyController.php`, `resources/js/pages/settings/Privacy.vue`, migration `2026_04_23_140750_add_is_seat_visible_publicly_to_users_table.php` | `Feature/Settings/PrivacyTest.php` (render + update tests) | Covered |
 
 No gaps identified.
 

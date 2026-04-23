@@ -165,6 +165,7 @@ vendor/bin/sail npm run types:check
 | SET-004 | Ticket discovery settings | Feature |
 | SET-005 | Sidebar favorites management | Feature |
 | SET-006 | Account deletion | Feature |
+| SET-007 | Privacy toggle (`is_seat_visible_publicly`) — render & update | Feature |
 
 #### 4.3.3 Integration Tests (TGRP-INT)
 
@@ -211,6 +212,24 @@ vendor/bin/sail npm run types:check
 |---------|-------------|------|
 | CCH-001 | ModelCacheService tag operations | Feature |
 | CCH-002 | Cache invalidation | Feature |
+
+#### 4.3.7a Seating Picker Tests (TGRP-SEAT)
+
+Covers SET-F-006..010.
+
+| Test ID | Description | Type |
+|---------|-------------|------|
+| SEAT-001 | AssignSeat: owner picks own seat (no users added) | Unit |
+| SEAT-002 | AssignSeat: re-assignment moves the seat instead of duplicating | Unit |
+| SEAT-003 | AssignSeat: double-booking same seat across tickets is rejected | Unit |
+| SEAT-004 | AssignSeat: non-salable / non-existent seat / cross-event seat plan rejected | Unit |
+| SEAT-005 | Picker: owner picks for self via HTTP | Feature |
+| SEAT-006 | Picker: manager picks for assigned user on group ticket | Feature |
+| SEAT-007 | Picker: ticket-user picks own seat but cannot pick for others on the ticket | Feature |
+| SEAT-008 | Picker: third-party stranger is forbidden | Feature |
+| SEAT-009 | Lifecycle: cancelling a ticket releases all its seat assignments | Feature |
+| SEAT-010 | Lifecycle: removing a user from a group ticket releases that user's seat | Feature |
+| SEAT-011 | Welcome / picker: privacy override reveals name to same-event ticket holder | Feature |
 
 #### 4.3.8 Architecture Tests (TGRP-ARC)
 

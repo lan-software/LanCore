@@ -57,9 +57,11 @@ function notificationUrl(notification: AppNotification): string | null {
 
 function handleNotificationClick(notification: AppNotification): void {
     const target = notificationUrl(notification);
+
     if (!target) {
         return;
     }
+
     if (!notification.read_at) {
         router.patch(
             markAsRead(notification.id).url,
@@ -69,8 +71,10 @@ function handleNotificationClick(notification: AppNotification): void {
                 onFinish: () => router.visit(target),
             },
         );
+
         return;
     }
+
     router.visit(target);
 }
 
@@ -138,6 +142,7 @@ function notificationDescription(notification: AppNotification): string | null {
                     : reason === 'user-requested'
                       ? 'You (or the ticket manager) requested a refresh.'
                       : 'The ticket QR was refreshed.';
+
         return `${reasonText} Previously printed copies are no longer valid.`;
     }
 

@@ -8,6 +8,7 @@ use App\Domain\Competition\Models\Competition;
 use App\Domain\Event\Models\Event;
 use App\Domain\News\Models\NewsArticle;
 use App\Domain\Program\Enums\ProgramVisibility;
+use App\Domain\Seating\Models\SeatAssignment;
 use App\Support\StorageRole;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -59,6 +60,8 @@ class WelcomeController extends Controller
                     return $sponsor;
                 })->all();
             }
+
+            $nextEventData['taken_seats'] = $this->getTakenSeats($nextEvent, $request);
         }
 
         return Inertia::render('Welcome', [
@@ -126,6 +129,37 @@ class WelcomeController extends Controller
         }
 
         return $query->get()->toArray();
+    }
+
+    /**
+     * Build the per-seat occupancy overlay shown on the public seat plan.
+     *
+     * Each entry maps a seat back to its assigned attendee, with the name redacted
+     * unless the viewer is allowed to see it (per User::isSeatNameVisibleTo).
+     *
+     * @see docs/mil-std-498/SRS.md SET-F-009, SET-F-010
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function getTakenSeats(Event $event, Request $request): array
+    {
+        $viewer = $request->user();
+
+        return SeatAssignment::query()
+            ->forEvent($event->id)
+            ->with('user')
+            ->get()
+            ->map(function (SeatAssignment $assignment) use ($viewer, $event): array {
+                $isVisible = $assignment->user->isSeatNameVisibleTo($viewer, $event);
+
+                return [
+                    'seat_plan_id' => $assignment->seat_plan_id,
+                    'seat_id' => $assignment->seat_id,
+                    'name' => $isVisible ? $assignment->user->name : null,
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     /**

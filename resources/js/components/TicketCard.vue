@@ -1,19 +1,14 @@
 <script setup lang="ts">
-import { Form, router } from '@inertiajs/vue3';
-import {
-    Armchair,
-    Download,
-    QrCode,
-    RefreshCw,
-    X,
-} from 'lucide-vue-next';
+import { Form, Link, router } from '@inertiajs/vue3';
+import { Armchair, Download, QrCode, RefreshCw, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import TicketController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketController';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import type { Ticket } from '@/types/domain';
+import { picker as seatPickerRoute } from '@/routes/events/seats';
+import type { SeatAssignment, Ticket } from '@/types/domain';
 
 const props = defineProps<{
     ticket: Ticket;
@@ -33,6 +28,7 @@ function confirmRotate(e: Event): void {
     const ok = window.confirm(
         'Rotating the QR invalidates any previously printed or shared copy. Continue?',
     );
+
     if (!ok) {
         e.preventDefault();
     }
@@ -68,6 +64,40 @@ function statusVariant(
 }
 
 const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
+
+const isSeatable = computed<boolean>(
+    () =>
+        (props.ticket.ticket_type as { is_seatable?: boolean } | undefined)
+            ?.is_seatable ?? true,
+);
+
+const seatableAssignees = computed<{ id: number; name: string }[]>(() => {
+    const users = props.ticket.users ?? [];
+
+    if (users.length > 0) {
+        return users.map((u) => ({ id: u.id, name: u.name }));
+    }
+
+    if (props.ticket.owner) {
+        return [{ id: props.ticket.owner.id, name: props.ticket.owner.name }];
+    }
+
+    return [];
+});
+
+function seatAssignmentFor(userId: number): SeatAssignment | undefined {
+    return props.ticket.seat_assignments?.find((a) => a.user_id === userId);
+}
+
+function pickerUrl(userId: number): string {
+    if (!props.ticket.event_id) {
+        return '#';
+    }
+
+    return seatPickerRoute(props.ticket.event_id, {
+        query: { ticket: props.ticket.id, user: userId },
+    }).url;
+}
 </script>
 
 <template>
@@ -364,17 +394,56 @@ const bannerUrl = props.ticket.event?.banner_image_urls?.[0] ?? null;
                 </div>
             </div>
 
-            <!-- Seat (placeholder for future implementation) -->
-            <div class="space-y-1">
+            <!-- Seat -->
+            <div v-if="isSeatable" class="space-y-1">
                 <p
                     class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
                 >
-                    Seat
+                    {{
+                        seatableAssignees.length > 1
+                            ? $t('tickets.seat.seats')
+                            : $t('tickets.seat.seat')
+                    }}
                 </p>
-                <Button variant="outline" size="sm" disabled class="gap-1.5">
-                    <Armchair class="size-4" />
-                    Pick your Seat
-                </Button>
+                <div
+                    v-if="seatableAssignees.length === 0"
+                    class="text-sm text-muted-foreground"
+                >
+                    {{ $t('tickets.seat.addAttendeeHint') }}
+                </div>
+                <ul v-else class="space-y-1.5">
+                    <li
+                        v-for="assignee in seatableAssignees"
+                        :key="assignee.id"
+                        class="flex flex-wrap items-center justify-between gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-sm"
+                    >
+                        <span class="truncate">{{ assignee.name }}</span>
+                        <span class="flex items-center gap-2">
+                            <Badge
+                                v-if="seatAssignmentFor(assignee.id)"
+                                variant="secondary"
+                                class="gap-1 font-mono text-xs"
+                            >
+                                <Armchair class="size-3" />
+                                {{ seatAssignmentFor(assignee.id)?.seat_id }}
+                            </Badge>
+                            <Link :href="pickerUrl(assignee.id)">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    class="gap-1.5"
+                                >
+                                    <Armchair class="size-4" />
+                                    {{
+                                        seatAssignmentFor(assignee.id)
+                                            ? $t('tickets.seat.changeSeat')
+                                            : $t('tickets.seat.pickSeat')
+                                    }}
+                                </Button>
+                            </Link>
+                        </span>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

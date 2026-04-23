@@ -154,6 +154,11 @@ export type Event = {
     programs: Program[];
     sponsors: Sponsor[];
     seat_plans?: SeatPlan[];
+    taken_seats?: {
+        seat_plan_id: number;
+        seat_id: string;
+        name: string | null;
+    }[];
     created_at: string;
     updated_at: string;
 };
@@ -417,8 +422,19 @@ export type Ticket = {
         pivot?: { checked_in_at: string | null };
     }[];
     addons?: TicketAddon[];
+    seat_assignments?: SeatAssignment[];
     created_at: string;
     updated_at: string;
+};
+
+export type SeatAssignment = {
+    id: number;
+    ticket_id: number;
+    user_id: number;
+    seat_plan_id: number;
+    seat_id: string;
+    created_at?: string;
+    updated_at?: string;
 };
 
 export type SeatPlanBlock = {

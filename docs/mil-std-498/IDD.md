@@ -629,6 +629,52 @@ All four new codes follow the same 200-OK response envelope as existing decision
 
 ---
 
+### 3.14 Seat Picker — End-User HTTP Endpoints
+
+Implements SET-F-006/007/008. All endpoints require `auth` + `verified` middleware.
+
+#### 3.14.1 `GET /events/{event}/seats` (`events.seats.picker`)
+
+Renders the Inertia page `seating/Picker.vue` with the props described in SDD §5.3c. Optional query params `?ticket={id}&user={id}` preselect the active assignment context.
+
+#### 3.14.2 `POST /events/{event}/seats` (`events.seats.assign`)
+
+Body (JSON / form):
+
+```json
+{
+  "ticket_id": 45,
+  "user_id": 7,
+  "seat_plan_id": 2,
+  "seat_id": "B-12"
+}
+```
+
+Authorization: `Gate::authorize('pickSeat', [$ticket, $assignee])` — see SDD §5.3c.
+
+Responses:
+- `302` (Inertia redirect back) on success — flashes `status=seat-assigned`.
+- `422` `ValidationException` on: seat plan not part of event, seat doesn't exist or not salable, seat already taken (unique-violation), assignee not on ticket.
+- `403` Forbidden on policy denial (e.g., third-party user, ticket already checked-in).
+
+#### 3.14.3 `DELETE /events/{event}/seats/{assignment}` (`events.seats.release`)
+
+Releases the named assignment. Same authorization as `assign`. Returns `302` redirect with `status=seat-released`.
+
+### 3.15 Privacy Settings Endpoints
+
+Implements SET-F-010.
+
+#### 3.15.1 `GET /settings/privacy` (`privacy.edit`)
+
+Renders `settings/Privacy.vue` with `isSeatVisiblePublicly: boolean`.
+
+#### 3.15.2 `PATCH /settings/privacy` (`privacy.update`)
+
+Body: `{ "is_seat_visible_publicly": true|false }`. Returns `302` redirect back.
+
+---
+
 ## 4. Requirements Traceability
 
 | Interface Requirement (IRS) | Interface Design (IDD) |
@@ -643,6 +689,8 @@ All four new codes follow the same 200-OK response envelope as existing decision
 | IF-TMT2-* | Section 3.9 |
 | IF-JWKS-* | Section 3.12 |
 | IF-VALIDATE-* | Section 3.13 |
+| SET-F-006..008 (Seat Picker) | Section 3.14 |
+| SET-F-010 (Privacy) | Section 3.15 |
 
 ---
 

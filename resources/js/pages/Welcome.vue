@@ -28,6 +28,7 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { getInitials } from '@/composables/useInitials';
 import { dashboard, login, register } from '@/routes';
 import { show as myCompetitionShow } from '@/routes/my-competitions';
 import { index as shopIndex } from '@/routes/shop';
@@ -68,7 +69,43 @@ const props = withDefaults(
 );
 
 const seatPlanData = computed(() => {
-    return props.nextEvent?.seat_plans?.[0]?.data ?? null;
+    const plan = props.nextEvent?.seat_plans?.[0];
+
+    if (!plan) {
+        return null;
+    }
+
+    const taken = (props.nextEvent?.taken_seats ?? []).filter(
+        (t) => t.seat_plan_id === plan.id,
+    );
+
+    if (taken.length === 0) {
+        return plan.data;
+    }
+
+    const takenById = new Map(taken.map((t) => [t.seat_id, t]));
+
+    return {
+        ...plan.data,
+        blocks: (plan.data.blocks ?? []).map((block) => ({
+            ...block,
+            seats: block.seats.map((seat) => {
+                const occupant = takenById.get(String(seat.id));
+
+                if (!occupant) {
+                    return seat;
+                }
+
+                return {
+                    ...seat,
+                    salable: false,
+                    title: occupant.name
+                        ? getInitials(occupant.name)
+                        : (seat.title ?? ''),
+                };
+            }),
+        })),
+    };
 });
 
 function formatDate(dateString: string): string {

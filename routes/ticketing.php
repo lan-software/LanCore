@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Seating\Http\Controllers\SeatPickerController;
 use App\Domain\Ticketing\Http\Controllers\AddonAuditController;
 use App\Domain\Ticketing\Http\Controllers\AddonController;
 use App\Domain\Ticketing\Http\Controllers\AdminTicketController;
@@ -22,6 +23,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('tickets/{ticket}/rotate-token', [TicketController::class, 'rotateTokenUser'])
         ->middleware('throttle:10,1')
         ->name('tickets.rotate-token');
+
+    // Seat picker (end-user) — pick/change seats for ticket users
+    Route::get('events/{event}/seats', [SeatPickerController::class, 'show'])->name('events.seats.picker');
+    Route::post('events/{event}/seats', [SeatPickerController::class, 'store'])->name('events.seats.assign');
+    Route::delete('events/{event}/seats/{assignment}', [SeatPickerController::class, 'destroy'])->name('events.seats.release');
 
     // Admin: Ticket Types
     Route::get('ticket-types', [TicketTypeController::class, 'index'])->name('ticket-types.index');

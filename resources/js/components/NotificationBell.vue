@@ -50,6 +50,7 @@ function notificationUrl(notification: AppNotification): string {
 
 function handleNotificationClick(notification: AppNotification): void {
     const target = notificationUrl(notification);
+
     if (!notification.read_at) {
         router.patch(
             markAsRead(notification.id).url,
@@ -59,8 +60,10 @@ function handleNotificationClick(notification: AppNotification): void {
                 onFinish: () => router.visit(target),
             },
         );
+
         return;
     }
+
     router.visit(target);
 }
 

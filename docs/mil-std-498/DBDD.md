@@ -92,6 +92,7 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | trial_ends_at | timestamp (nullable) | Trial period end |
 | ticket_discoverable | boolean | Ticket discovery visibility |
 | ticket_discovery_name | varchar (nullable) | Custom discovery name |
+| is_seat_visible_publicly | boolean (default true) | SET-F-009/010 — opt-out for showing the user's name on public seat plans |
 | sidebar_favorites | jsonb (nullable) | Navigation favorites |
 | created_at | timestamp | |
 | updated_at | timestamp | |
@@ -582,6 +583,27 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | data | jsonb | Canvas seat plan data |
 | created_at | timestamp | |
 | updated_at | timestamp | |
+
+#### 4.8.2 seat_assignments
+
+Implements SET-F-006/007/008.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| ticket_id | bigint FK | References tickets.id (ON DELETE CASCADE) |
+| user_id | bigint FK | References users.id (ON DELETE CASCADE) — the assignee |
+| seat_plan_id | bigint FK | References seat_plans.id (ON DELETE CASCADE) |
+| seat_id | varchar(64) | Matches the `id` of a seat inside `seat_plans.data.blocks[].seats[]` |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+**Constraints:**
+- `UNIQUE (seat_plan_id, seat_id)` — prevents double-booking a seat.
+- `UNIQUE (ticket_id, user_id)` — at most one seat per user per ticket.
+- Indexes on `ticket_id` and `user_id`.
+
+**Auditing:** Auditable via `OwenIt\Auditing\Auditable`.
 
 ### 4.9 News & Content
 

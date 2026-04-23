@@ -3,6 +3,7 @@
 namespace App\Domain\Ticketing\Models;
 
 use App\Domain\Event\Models\Event;
+use App\Domain\Seating\Models\SeatAssignment;
 use App\Domain\Shop\Models\Order;
 use App\Domain\Ticketing\Enums\TicketStatus;
 use App\Domain\Ticketing\Security\TicketTokenService;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @see docs/mil-std-498/SSS.md CAP-TKT-005, CAP-TKT-006, CAP-TKT-011
@@ -71,6 +73,24 @@ class Ticket extends Model
     }
 
     /**
+     * Release all seat assignments when a ticket transitions to Cancelled status.
+     *
+     * @see docs/mil-std-498/SRS.md SET-F-008
+     */
+    protected static function booted(): void
+    {
+        static::updated(function (Ticket $ticket): void {
+            if (! $ticket->wasChanged('status')) {
+                return;
+            }
+
+            if ($ticket->status === TicketStatus::Cancelled) {
+                $ticket->seatAssignments()->delete();
+            }
+        });
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -121,5 +141,13 @@ class Ticket extends Model
         return $this->belongsToMany(Addon::class, 'ticket_ticket_addon', 'ticket_id', 'ticket_addon_id')
             ->withPivot('price_paid', 'order_id')
             ->withTimestamps();
+    }
+
+    /**
+     * @see docs/mil-std-498/SRS.md SET-F-006
+     */
+    public function seatAssignments(): HasMany
+    {
+        return $this->hasMany(SeatAssignment::class);
     }
 }

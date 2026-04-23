@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Seating\Actions\ReleaseSeat;
 use App\Domain\Ticketing\Actions\UpdateTicketAssignments;
 use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
 use App\Domain\Ticketing\Models\Ticket;
@@ -15,7 +16,7 @@ beforeEach(function (): void {
     Queue::fake();
     Notification::fake();
 
-    $this->action = new UpdateTicketAssignments(new TicketTokenService(new TicketKeyRing));
+    $this->action = new UpdateTicketAssignments(new TicketTokenService(new TicketKeyRing), new ReleaseSeat);
     $this->ticket = Ticket::factory()->create();
     $this->ticket->rotateSignedToken(new TicketTokenService(new TicketKeyRing));
     $this->ticket->refresh();

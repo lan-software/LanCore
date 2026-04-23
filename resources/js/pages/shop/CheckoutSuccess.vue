@@ -34,18 +34,24 @@ function formatPrice(cents: number): string {
         <main class="flex flex-1 items-center justify-center px-6 py-12">
             <div class="max-w-lg space-y-6 text-center">
                 <CheckCircle class="mx-auto size-16 text-green-500" />
-                <h1 class="text-3xl font-bold">{{ t('shop.checkoutSuccess.heading') }}</h1>
+                <h1 class="text-3xl font-bold">
+                    {{ t('shop.checkoutSuccess.heading') }}
+                </h1>
                 <p class="text-muted-foreground">
                     {{ t('shop.checkoutSuccess.description') }}
                 </p>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle class="text-lg">{{ t('shop.orderSummary') }}</CardTitle>
+                        <CardTitle class="text-lg">{{
+                            t('shop.orderSummary')
+                        }}</CardTitle>
                     </CardHeader>
                     <CardContent class="space-y-2 text-sm">
                         <div class="flex justify-between">
-                            <span class="text-muted-foreground">{{ t('shop.subtotal') }}</span>
+                            <span class="text-muted-foreground">{{
+                                t('shop.subtotal')
+                            }}</span>
                             <span>{{ formatPrice(order.subtotal) }}</span>
                         </div>
                         <div
@@ -63,7 +69,11 @@ function formatPrice(cents: number): string {
                         </div>
                         <div v-if="order.tickets" class="pt-2">
                             <p class="text-muted-foreground">
-                                {{ t('shop.checkoutSuccess.ticketsPurchased', { count: order.tickets.length }) }}
+                                {{
+                                    t('shop.checkoutSuccess.ticketsPurchased', {
+                                        count: order.tickets.length,
+                                    })
+                                }}
                             </p>
                         </div>
                     </CardContent>
@@ -71,10 +81,14 @@ function formatPrice(cents: number): string {
 
                 <div class="flex items-center justify-center gap-4">
                     <Button as-child>
-                        <Link :href="ticketsIndex().url">{{ t('shop.checkoutSuccess.viewMyTickets') }}</Link>
+                        <Link :href="ticketsIndex().url">{{
+                            t('shop.checkoutSuccess.viewMyTickets')
+                        }}</Link>
                     </Button>
                     <Button variant="outline" as-child>
-                        <Link :href="shopIndex().url">{{ t('shop.checkoutSuccess.backToShop') }}</Link>
+                        <Link :href="shopIndex().url">{{
+                            t('shop.checkoutSuccess.backToShop')
+                        }}</Link>
                     </Button>
                 </div>
             </div>

@@ -161,9 +161,9 @@ The LanCore CSCI shall support the following operational states:
 
 #### 3.2.5 Seating Domain (CSCI-SET)
 
-**Models:** SeatPlan
-**Controllers:** SeatPlanController, SeatPlanAuditController
-**Actions:** CreateSeatPlan, UpdateSeatPlan, DeleteSeatPlan
+**Models:** SeatPlan, SeatAssignment
+**Controllers:** SeatPlanController, SeatPlanAuditController, SeatPickerController
+**Actions:** CreateSeatPlan, UpdateSeatPlan, DeleteSeatPlan, AssignSeat, ReleaseSeat
 
 | Req ID | Requirement |
 |--------|------------|
@@ -172,6 +172,11 @@ The LanCore CSCI shall support the following operational states:
 | SET-F-003 | The software shall associate seat plans with events |
 | SET-F-004 | The software shall enforce SeatPlanPolicy authorization |
 | SET-F-005 | The software shall maintain audit trails for seat plan modifications |
+| SET-F-006 | The software shall persist a seat assignment as the tuple (ticket, user, seat_plan, seat) with database-enforced uniqueness on (seat_plan, seat) and on (ticket, user) |
+| SET-F-007 | The software shall allow ticket owners, ticket managers, the assignee themselves, and ManageTicketing permission holders to pick or change a seat assignment, provided the ticket has not been checked in (TicketPolicy::pickSeat). Roles are non-exclusive — being a ticket user never blocks owner or manager rights |
+| SET-F-008 | The software shall auto-release seat assignments when a ticket transitions to Cancelled status, when a ticket is deleted, or when a user is removed from a group ticket's user pivot |
+| SET-F-009 | The software shall render occupied seats on public seat plans showing the assignee's initials, gated by the assignee's `is_seat_visible_publicly` flag with an override that always reveals the name to viewers who themselves hold an active ticket (owner, manager, or pivot user) for the same event |
+| SET-F-010 | The software shall provide a Settings → Privacy page through which a user may toggle `is_seat_visible_publicly` |
 
 #### 3.2.6 Sponsoring Domain (CSCI-SPO)
 

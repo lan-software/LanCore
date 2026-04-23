@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SeatMapCanvas as SeatMapCanvasClass } from '@alisaitteke/seatmap-canvas';
-import { onMounted, onBeforeUnmount, ref, watch } from 'vue';
-import type { SeatPlanBlock, SeatPlanData } from '@/types/domain';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import type { SeatPlanBlock, SeatPlanData, SeatPlanSeat } from '@/types/domain';
 
 interface ZoneSeat {
     seat_number?: string;
@@ -43,8 +43,15 @@ const props = withDefaults(
     },
 );
 
-defineEmits<{
+const emit = defineEmits<{
     'seat-click': [seat: unknown];
+    /**
+     * Fires after each successful init of the underlying canvas. The parent
+     * can use this as the cue to re-apply any visual selection it tracks,
+     * because our `watch(() => props.data)` re-builds the SVG from scratch on
+     * every data change, which wipes whatever selection existed beforehand.
+     */
+    ready: [];
 }>();
 
 const containerRef = ref<HTMLDivElement | null>(null);
@@ -116,11 +123,24 @@ function convertZonesToBlocks(data: ZoneFormat): SeatPlanBlock[] {
 }
 
 function getBlocks(): SeatPlanBlock[] {
-    if (isZoneFormat(props.data)) {
-        return convertZonesToBlocks(props.data);
-    }
+    const raw = isZoneFormat(props.data)
+        ? convertZonesToBlocks(props.data)
+        : (props.data.blocks ?? []);
 
-    return props.data.blocks ?? [];
+    // CRITICAL: the library mutates seat objects to track selection state
+    // (`this.item.selected = true` inside Seat.prototype.select). If we pass
+    // Vue-reactive objects, those mutations trigger the parent's computed to
+    // re-run, which fires this component's `watch(() => props.data, …)`,
+    // which re-inits the canvas — wiping the very selection we just applied.
+    // Deep-clone so the library's internal mutations stay out of Vue's graph.
+    return deepCloneBlocks(raw);
+}
+
+function deepCloneBlocks(blocks: SeatPlanBlock[]): SeatPlanBlock[] {
+    // JSON round-trip — safer than structuredClone on Vue reactive proxies
+    // (some Proxy configurations throw DataCloneError). Our seat plan data
+    // is JSON-serializable by design (stored as JSONB server-side).
+    return JSON.parse(JSON.stringify(blocks));
 }
 
 async function initSeatmap(): Promise<void> {
@@ -128,7 +148,15 @@ async function initSeatmap(): Promise<void> {
         return;
     }
 
-    const blocks = getBlocks();
+    let blocks: SeatPlanBlock[];
+
+    try {
+        blocks = getBlocks();
+    } catch (error) {
+        console.error('[SeatMapCanvas] Failed to prepare seat blocks:', error);
+
+        return;
+    }
 
     if (blocks.length === 0) {
         return;
@@ -174,7 +202,216 @@ async function initSeatmap(): Promise<void> {
     seatmapInstance.data.replaceData(
         blocks as unknown as Record<string, unknown>[],
     );
+
+    // Library v2.7.1 has NO click binding on seat elements — the README
+    // documents a `seat_click` event but the published bundle never dispatches
+    // one. We implement click detection ourselves via DOM event delegation on
+    // the container and synthesize a payload that matches the library's public
+    // SeatClickEvent shape (id, salable, isSelected/select/unSelect methods).
+    wireSeatClicks(blocks);
+
+    emit('ready');
 }
+
+const seatColors = computed(() => {
+    const style = (props.options?.style as Record<string, unknown> | undefined)
+        ?.seat as Record<string, string> | undefined;
+
+    return {
+        default: style?.color ?? '#6796ff',
+        selected: style?.selected ?? '#56aa45',
+        notSalable: style?.not_salable ?? '#424747',
+    };
+});
+
+function findSeatData(
+    blocks: SeatPlanBlock[],
+    blockId: string,
+    seatId: string,
+): SeatPlanSeat | null {
+    for (const block of blocks) {
+        if (String(block.id) !== blockId) {
+            continue;
+        }
+
+        for (const seat of block.seats) {
+            if (String(seat.id) === seatId) {
+                return seat;
+            }
+        }
+    }
+
+    return null;
+}
+
+function wireSeatClicks(blocks: SeatPlanBlock[]): void {
+    if (!containerRef.value) {
+        return;
+    }
+
+    console.info(
+        '[SeatMapCanvas] Wiring DOM click delegation. Blocks:',
+        blocks.length,
+        'Total seats:',
+        blocks.reduce((n, b) => n + b.seats.length, 0),
+    );
+
+    containerRef.value.addEventListener('click', (event: MouseEvent): void => {
+        // Library v2.7.1 puts an SVG mask layer on top of seats which
+        // swallows clicks at the venue zoom level. Use elementFromPoint to
+        // walk past any overlapping masks at the click coordinates and
+        // find the actual seat underneath.
+        let seatNode: SVGGElement | null = null;
+        const root = containerRef.value!;
+
+        const hitStack = (
+            typeof document.elementsFromPoint === 'function'
+                ? document.elementsFromPoint(event.clientX, event.clientY)
+                : [event.target as Element | null].filter(Boolean)
+        ) as Element[];
+
+        for (const el of hitStack) {
+            if (!root.contains(el)) {
+                continue;
+            }
+
+            const candidate = el.closest<SVGGElement>('g.seat');
+
+            if (candidate && root.contains(candidate)) {
+                seatNode = candidate;
+                break;
+            }
+        }
+
+        if (!seatNode) {
+            console.debug(
+                '[SeatMapCanvas] click ignored — no seat under pointer',
+                {
+                    x: event.clientX,
+                    y: event.clientY,
+                    hitStack: hitStack.map(
+                        (e) =>
+                            e.tagName + '.' + (e.getAttribute('class') ?? ''),
+                    ),
+                },
+            );
+
+            return;
+        }
+
+        const seatId = seatNode.getAttribute('id');
+        const circle = seatNode.querySelector<SVGElement>(
+            '.seat-circle,.seat-rect,.seat-path',
+        );
+        const blockId = circle?.getAttribute('block-id') ?? null;
+
+        if (!seatId || !blockId) {
+            console.warn('[SeatMapCanvas] seat element missing id/block-id', {
+                seatId,
+                blockId,
+                seatNode,
+            });
+
+            return;
+        }
+
+        const data = findSeatData(blocks, blockId, seatId);
+
+        if (!data) {
+            console.warn('[SeatMapCanvas] click target not in block data', {
+                seatId,
+                blockId,
+            });
+
+            return;
+        }
+
+        console.info('[SeatMapCanvas] seat clicked', {
+            blockId,
+            seatId,
+            title: data.title,
+            salable: data.salable,
+        });
+
+        const fillTarget = circle;
+        const synthetic = {
+            id: seatId,
+            title: data.title,
+            salable: data.salable !== false,
+            x: data.x,
+            y: data.y,
+            isSelected: (): boolean => seatNode.classList.contains('selected'),
+            select: (): void => {
+                seatNode.classList.add('selected');
+                fillTarget?.setAttribute('fill', seatColors.value.selected);
+                console.info('[SeatMapCanvas] seat.select() applied', seatId);
+            },
+            unSelect: (): void => {
+                seatNode.classList.remove('selected');
+                fillTarget?.setAttribute(
+                    'fill',
+                    data.salable === false
+                        ? seatColors.value.notSalable
+                        : seatColors.value.default,
+                );
+                console.info('[SeatMapCanvas] seat.unSelect() applied', seatId);
+            },
+        };
+
+        emit('seat-click', synthetic);
+    });
+}
+
+defineExpose({
+    /**
+     * Access the underlying library instance for programmatic control
+     * (getSelectedSeats, getSeat, zoomToBlock, …). Returns null if the
+     * canvas hasn't finished its async init yet.
+     */
+    getInstance(): SeatMapCanvasClass | null {
+        return seatmapInstance;
+    },
+
+    /**
+     * Reset viewport to the full venue — useful as a toolbar "Reset view"
+     * button.
+     */
+    resetView(): void {
+        const zm = (
+            seatmapInstance as unknown as {
+                zoomManager?: { zoomToVenue: (animated?: boolean) => void };
+            } | null
+        )?.zoomManager;
+        zm?.zoomToVenue?.(true);
+    },
+
+    /**
+     * Zoom the viewport to whatever seats are currently marked selected
+     * on the canvas.
+     */
+    zoomToSelection(): void {
+        const zm = (
+            seatmapInstance as unknown as {
+                zoomManager?: { zoomToSelection: (animated?: boolean) => void };
+            } | null
+        )?.zoomManager;
+        zm?.zoomToSelection?.(true);
+    },
+
+    /**
+     * Zoom the viewport to a specific block by id (e.g. a ticket's row).
+     */
+    zoomToBlock(blockId: string): void {
+        const zm = (
+            seatmapInstance as unknown as {
+                zoomManager?: {
+                    zoomToBlock: (id: string, animated?: boolean) => void;
+                };
+            } | null
+        )?.zoomManager;
+        zm?.zoomToBlock?.(blockId, true);
+    },
+});
 
 function destroySeatmap(): void {
     if (seatmapInstance && containerRef.value) {
@@ -214,5 +451,24 @@ watch(
 .seatmap-container svg {
     width: 100%;
     height: 100%;
+}
+
+/*
+ * Library v2.7.1 overlays several SVG layers on top of the seats to drive
+ * its zoom-in flow: a block-level-mask + seat-level-mask inside .masks, and
+ * an invisible block-hull hit path inside .bounds. All intercept pointer
+ * events at the venue zoom level, which blocks direct seat clicks. For our
+ * direct-pick UX we want seats clickable at any zoom level, so we render
+ * these overlays visible but non-interactive.
+ */
+.seatmap-container .seatmap-svg .stage .blocks .block .masks,
+.seatmap-container .seatmap-svg .stage .blocks .block .masks *,
+.seatmap-container .seatmap-svg .stage .blocks .block .bounds,
+.seatmap-container .seatmap-svg .stage .blocks .block .bounds * {
+    pointer-events: none;
+}
+
+.seatmap-container .seatmap-svg .stage .blocks .block .seats .seat {
+    cursor: pointer;
 }
 </style>

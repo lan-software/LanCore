@@ -109,6 +109,35 @@
             "button": "Verify"
         }
     },
+    "seating": {
+        "picker": {
+            "breadcrumb": "Pick a Seat",
+            "headTitle": "Pick a seat",
+            "description": "Pick a seat for an attendee on one of your tickets.",
+            "seatFor": "Seat for:",
+            "selectPersonHint": "Select a person on the right to start picking.",
+            "noSeatPlan": "This event does not have a seat plan yet.",
+            "selectedSeat": "Selected seat:",
+            "currentSeat": "Current seat:",
+            "releaseSeat": "Release seat",
+            "confirmSeat": "Confirm seat",
+            "yourTickets": "Your tickets",
+            "noTickets": "You have no tickets that you can manage seats for at this event.",
+            "noAttendees": "No attendees added yet.",
+            "group": "Group",
+            "backToTickets": "Back to My Tickets",
+            "hint": {
+                "chooseAssigneeFirst": "Select a person on the right before picking a seat.",
+                "cannotPickForPerson": "You do not have permission to pick a seat for this person.",
+                "seatTaken": "This seat is already taken."
+            },
+            "nav": {
+                "resetView": "Reset view",
+                "zoomToMySeat": "Zoom to my seat",
+                "pickASeat": "Click a seat on the map to pick one."
+            }
+        }
+    },
     "settings": {
         "title": "Settings",
         "description": "Manage your account settings and preferences",
@@ -169,6 +198,13 @@
         },
         "advancedTicketing": {
             "title": "Advanced ticketing"
+        },
+        "privacy": {
+            "title": "Privacy",
+            "srHeading": "Privacy settings",
+            "description": "Control how your name appears on public seat plans.",
+            "seatVisibleLabel": "Show my name on public seat plans",
+            "seatVisibleHelp": "When turned off, your seat still appears on public seat plans but without your name. Other attendees with a ticket for the same event will always see your name on the seat plan, regardless of this setting."
         },
         "achievements": {
             "title": "Achievements"
@@ -396,6 +432,13 @@
         "assigned": "Assigned Tickets",
         "noOwned": "You don't own any tickets yet.",
         "noManaged": "You don't manage any tickets yet.",
-        "noAssigned": "You haven't been assigned any tickets yet."
+        "noAssigned": "You haven't been assigned any tickets yet.",
+        "seat": {
+            "seat": "Seat",
+            "seats": "Seats",
+            "pickSeat": "Pick seat",
+            "changeSeat": "Change seat",
+            "addAttendeeHint": "Add an attendee to pick a seat."
+        }
     }
 }

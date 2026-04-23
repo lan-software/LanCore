@@ -155,7 +155,9 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
             <div class="mx-auto max-w-5xl px-6 py-12">
                 <div class="mb-8 flex items-center gap-3">
                     <ShoppingCart class="size-8" />
-                    <h1 class="text-3xl font-bold tracking-tight">{{ t('shop.cartTitle') }}</h1>
+                    <h1 class="text-3xl font-bold tracking-tight">
+                        {{ t('shop.cartTitle') }}
+                    </h1>
                 </div>
 
                 <template v-if="cartItems.length > 0">
@@ -191,7 +193,9 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                 v-if="ticketItems.length > 0"
                                 class="space-y-3"
                             >
-                                <h2 class="text-lg font-semibold">{{ t('shop.ticketsSection') }}</h2>
+                                <h2 class="text-lg font-semibold">
+                                    {{ t('shop.ticketsSection') }}
+                                </h2>
                                 <div
                                     v-for="item in ticketItems"
                                     :key="item.id"
@@ -210,7 +214,13 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         <p
                                             class="text-sm text-muted-foreground"
                                         >
-                                            {{ t('shop.eachPrice', { price: formatPrice(item.unit_price) }) }}
+                                            {{
+                                                t('shop.eachPrice', {
+                                                    price: formatPrice(
+                                                        item.unit_price,
+                                                    ),
+                                                })
+                                            }}
                                         </p>
                                     </div>
 
@@ -274,7 +284,9 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
 
                             <!-- Addon Items -->
                             <div v-if="addonItems.length > 0" class="space-y-3">
-                                <h2 class="text-lg font-semibold">{{ t('shop.addonsSection') }}</h2>
+                                <h2 class="text-lg font-semibold">
+                                    {{ t('shop.addonsSection') }}
+                                </h2>
                                 <div
                                     v-for="item in addonItems"
                                     :key="item.id"
@@ -288,7 +300,9 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                             <Badge
                                                 variant="secondary"
                                                 class="text-xs"
-                                                >{{ t('shop.addonBadge') }}</Badge
+                                                >{{
+                                                    t('shop.addonBadge')
+                                                }}</Badge
                                             >
                                         </div>
                                         <p
@@ -300,7 +314,13 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                         <p
                                             class="text-sm text-muted-foreground"
                                         >
-                                            {{ t('shop.eachPrice', { price: formatPrice(item.unit_price) }) }}
+                                            {{
+                                                t('shop.eachPrice', {
+                                                    price: formatPrice(
+                                                        item.unit_price,
+                                                    ),
+                                                })
+                                            }}
                                         </p>
                                     </div>
 
@@ -367,12 +387,15 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                         <div>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>{{ t('shop.orderSummary') }}</CardTitle>
+                                    <CardTitle>{{
+                                        t('shop.orderSummary')
+                                    }}</CardTitle>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
                                     <div class="space-y-2 text-sm">
                                         <div class="flex justify-between">
-                                            <span class="text-muted-foreground"
+                                            <span
+                                                class="text-muted-foreground"
                                                 >{{ t('shop.subtotal') }}</span
                                             >
                                             <span>{{
@@ -383,7 +406,9 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                             v-if="discount > 0"
                                             class="flex justify-between text-green-600"
                                         >
-                                            <span>{{ t('shop.discount') }}</span>
+                                            <span>{{
+                                                t('shop.discount')
+                                            }}</span>
                                             <span
                                                 >-{{
                                                     formatPrice(discount)
@@ -430,14 +455,16 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                             </div>
                                         </template>
                                         <template v-else>
-                                            <Label for="voucher_code"
-                                                >{{ t('shop.voucherCode') }}</Label
-                                            >
+                                            <Label for="voucher_code">{{
+                                                t('shop.voucherCode')
+                                            }}</Label>
                                             <div class="flex flex-wrap gap-2">
                                                 <Input
                                                     v-model="voucherInput"
                                                     id="voucher_code"
-                                                    :placeholder="t('shop.enterCode')"
+                                                    :placeholder="
+                                                        t('shop.enterCode')
+                                                    "
                                                     class="min-w-0 flex-1 font-mono"
                                                     @keyup.enter="applyVoucher"
                                                 />
@@ -445,7 +472,9 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                                                     variant="outline"
                                                     size="sm"
                                                     @click="applyVoucher"
-                                                    >{{ t('shop.apply') }}</Button
+                                                    >{{
+                                                        t('shop.apply')
+                                                    }}</Button
                                                 >
                                             </div>
                                             <InputError
@@ -463,11 +492,17 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
 
                                     <!-- Payment Method -->
                                     <div class="space-y-2">
-                                        <Label>{{ t('shop.paymentMethod') }}</Label>
+                                        <Label>{{
+                                            t('shop.paymentMethod')
+                                        }}</Label>
                                         <Select v-model="selectedPaymentMethod">
                                             <SelectTrigger>
                                                 <SelectValue
-                                                    :placeholder="t('shop.selectPaymentMethod')"
+                                                    :placeholder="
+                                                        t(
+                                                            'shop.selectPaymentMethod',
+                                                        )
+                                                    "
                                                 />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -529,12 +564,16 @@ const addonItems = computed(() => props.cartItems.filter((i) => i.is_addon));
                         class="flex flex-col items-center justify-center space-y-4 py-24"
                     >
                         <ShoppingCart class="size-16 text-muted-foreground" />
-                        <h2 class="text-2xl font-bold">{{ t('shop.emptyCart') }}</h2>
+                        <h2 class="text-2xl font-bold">
+                            {{ t('shop.emptyCart') }}
+                        </h2>
                         <p class="text-muted-foreground">
                             {{ t('shop.emptyCartDescription') }}
                         </p>
                         <Button as-child>
-                            <Link :href="shopIndex().url">{{ t('shop.browseShop') }}</Link>
+                            <Link :href="shopIndex().url">{{
+                                t('shop.browseShop')
+                            }}</Link>
                         </Button>
                     </div>
                 </template>

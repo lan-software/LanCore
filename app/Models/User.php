@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Concerns\HasPermissions;
 use App\Domain\Achievements\Models\Achievement;
 use App\Domain\Announcement\Models\Announcement;
+use App\Domain\Event\Models\Event;
 use App\Domain\Notification\Models\NotificationPreference;
 use App\Domain\Notification\Models\ProgramNotificationSubscription;
 use App\Domain\Notification\Models\PushSubscription;
@@ -29,7 +30,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @see docs/mil-std-498/SSS.md CAP-USR-001, CAP-USR-002, CAP-USR-003
  * @see docs/mil-std-498/SRS.md USR-F-001, USR-F-002, USR-F-003, USR-F-006
  */
-#[Fillable(['name', 'email', 'password', 'phone', 'street', 'city', 'zip_code', 'country', 'locale', 'is_ticket_discoverable', 'ticket_discovery_allowlist', 'sidebar_favorites', 'cookie_preferences'])]
+#[Fillable(['name', 'email', 'password', 'phone', 'street', 'city', 'zip_code', 'country', 'locale', 'is_ticket_discoverable', 'ticket_discovery_allowlist', 'is_seat_visible_publicly', 'sidebar_favorites', 'cookie_preferences'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -61,6 +62,7 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
             'is_ticket_discoverable' => 'boolean',
             'ticket_discovery_allowlist' => 'array',
+            'is_seat_visible_publicly' => 'boolean',
             'sidebar_favorites' => 'array',
             'cookie_preferences' => 'array',
         ];
@@ -158,5 +160,38 @@ class User extends Authenticatable
         $allowlist = $this->ticket_discovery_allowlist ?? [];
 
         return in_array($searcher->name, $allowlist, true);
+    }
+
+    /**
+     * Whether this user's name may be shown next to their seat on the public seat plan
+     * for the given event when viewed by the given (possibly anonymous) viewer.
+     *
+     * Public visibility honours the user's `is_seat_visible_publicly` toggle, BUT a viewer
+     * who themselves owns/manages/uses any ticket for the same event always sees the name —
+     * so attendees can find each other regardless of the privacy setting.
+     *
+     * @see docs/mil-std-498/SRS.md SET-F-009, SET-F-010
+     */
+    public function isSeatNameVisibleTo(?User $viewer, Event $event): bool
+    {
+        if ($this->is_seat_visible_publicly) {
+            return true;
+        }
+
+        if ($viewer === null) {
+            return false;
+        }
+
+        if ($viewer->id === $this->id) {
+            return true;
+        }
+
+        return $event->tickets()
+            ->where(function ($query) use ($viewer): void {
+                $query->where('owner_id', $viewer->id)
+                    ->orWhere('manager_id', $viewer->id)
+                    ->orWhereHas('users', fn ($users) => $users->whereKey($viewer->id));
+            })
+            ->exists();
     }
 }

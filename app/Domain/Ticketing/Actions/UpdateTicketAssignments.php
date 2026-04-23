@@ -2,6 +2,7 @@
 
 namespace App\Domain\Ticketing\Actions;
 
+use App\Domain\Seating\Actions\ReleaseSeat;
 use App\Domain\Ticketing\Enums\CheckInMode;
 use App\Domain\Ticketing\Enums\TicketStatus;
 use App\Domain\Ticketing\Jobs\GenerateTicketPdf;
@@ -23,6 +24,7 @@ class UpdateTicketAssignments
 {
     public function __construct(
         private readonly TicketTokenService $tokenService,
+        private readonly ReleaseSeat $releaseSeat,
     ) {}
 
     public function updateManager(Ticket $ticket, ?User $manager, int $performedBy): Ticket
@@ -74,6 +76,7 @@ class UpdateTicketAssignments
         $this->ensureNotCheckedIn($ticket);
 
         [$result, $payload] = DB::transaction(function () use ($ticket, $user): array {
+            $this->releaseSeat->execute($ticket, $user);
             $ticket->users()->detach($user->id);
             $payload = $this->rotateTokenInternal($ticket);
 
