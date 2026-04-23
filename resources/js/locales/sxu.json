@@ -34,7 +34,7 @@
         "copied": "Gopiert",
         "optional": "gannste, mussde aber nich",
         "required": "mussde",
-        "loadingMore": "Lädd mähr...",
+        "loadingMore": "Lädd mähr…",
         "noResults": "Nischt gefunn",
         "showMore": "Mähr zeeschn",
         "showLess": "Weniger zeeschn"
@@ -222,7 +222,8 @@
         "integrations": "Indegrasjonn",
         "organization": "Orgahnisasjon",
         "seating": "Sitzzoordnung",
-        "ticketDiscovery": "Dicgedds findn"
+        "ticketDiscovery": "Dicgedds findn",
+        "myTickets": "Meine Dicgedds"
     },
     "dashboard": {
         "title": "Iebersischd",
