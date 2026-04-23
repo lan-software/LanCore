@@ -58,11 +58,26 @@ const LOCALE_CUSTOM_FLAG: Record<string, string> = {
     sxu: sxuFlag,
 };
 
+const LOCALE_CONFETTI_COLORS: Record<string, string[]> = {
+    en: ['#cf142b', '#ffffff', '#00247d'],
+    de: ['#000000', '#dd0000', '#ffce00'],
+    fr: ['#002395', '#ffffff', '#ed2939'],
+    es: ['#aa151b', '#f1bf00'],
+    sv: ['#006aa7', '#fecc00'],
+    uk: ['#005bbb', '#ffd500'],
+    ko: ['#cd2e3a', '#0047a0', '#000000', '#ffffff'],
+    tlh: ['#1a0000', '#d4161a'],
+    nds: ['#cc0000', '#ffffff'],
+    sxu: ['#009933', '#ffffff'],
+};
+
+const FALLBACK_CONFETTI_COLORS = ['#22c55e', '#10b981', '#34d399', '#a7f3d0'];
+
 const saving = ref(false);
 const saved = ref(false);
 let savedResetTimer: ReturnType<typeof setTimeout> | null = null;
 
-function fireSuccessConfetti() {
+function fireSuccessConfetti(locale: string) {
     if (typeof window === 'undefined') {
         return;
     }
@@ -77,7 +92,7 @@ function fireSuccessConfetti() {
         startVelocity: 35,
         ticks: 140,
         origin: { y: 0.35 },
-        colors: ['#22c55e', '#10b981', '#34d399', '#a7f3d0'],
+        colors: LOCALE_CONFETTI_COLORS[locale] ?? FALLBACK_CONFETTI_COLORS,
         disableForReducedMotion: true,
     });
 }
@@ -118,7 +133,7 @@ function onSelect(value: string) {
             onSuccess: () => {
                 applyLocaleClientSide(value);
                 saved.value = true;
-                fireSuccessConfetti();
+                fireSuccessConfetti(value);
                 savedResetTimer = setTimeout(() => {
                     saved.value = false;
                 }, 3500);

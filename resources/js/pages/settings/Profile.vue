@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
+import { AlertCircle } from 'lucide-vue-next';
 import { computed } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import {
+    Alert,
+    AlertDescription,
+    AlertTitle,
+} from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,6 +31,7 @@ import type { BreadcrumbItem } from '@/types';
 type Props = {
     mustVerifyEmail: boolean;
     status?: string;
+    profileAlert?: string | null;
 };
 
 defineProps<Props>();
@@ -79,6 +86,12 @@ const countries = [
 
         <SettingsLayout>
             <div class="flex flex-col space-y-6">
+                <Alert v-if="profileAlert" data-test="profile-alert">
+                    <AlertCircle class="size-4" />
+                    <AlertTitle>Complete your profile to continue</AlertTitle>
+                    <AlertDescription>{{ profileAlert }}</AlertDescription>
+                </Alert>
+
                 <Heading
                     variant="small"
                     title="Profile information"

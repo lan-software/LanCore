@@ -101,7 +101,7 @@ class CartController extends Controller
 
         if (! $user->hasCompleteProfile()) {
             return redirect()->route('profile.edit')
-                ->withErrors(['profile' => __('shop.cart.profile_incomplete')]);
+                ->with('profileAlert', __('shop.cart.profile_incomplete'));
         }
 
         $request->validate([
