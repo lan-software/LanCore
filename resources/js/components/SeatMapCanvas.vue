@@ -156,6 +156,55 @@ function getBlocks(): SeatPlanBlock[] {
     // on the read-side wrapper the Picker / Welcome consume.
     const visible = cloned.filter((block) => (block.seats?.length ?? 0) > 0);
 
+    // Shift every seat and label into non-negative coordinates. The library's
+    // `calculateZoomLevels` grows its stage only from (0, 0) outward — it never
+    // extends to negative x/y. Row labels at `x = -30` / seats at the
+    // upper-left of a block would otherwise fall outside the computed venue
+    // bbox, and the canvas would refuse to zoom out far enough to show them.
+    // We translate the whole plan into (0, 0)+margin space so the library's
+    // venue fit includes every element.
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+
+    for (const block of visible) {
+        for (const seat of block.seats) {
+            if (seat.x < minX) {
+minX = seat.x;
+}
+
+            if (seat.y < minY) {
+minY = seat.y;
+}
+        }
+
+        for (const label of block.labels) {
+            if (label.x < minX) {
+minX = label.x;
+}
+
+            if (label.y < minY) {
+minY = label.y;
+}
+        }
+    }
+
+    if (Number.isFinite(minX) && Number.isFinite(minY) && (minX < 0 || minY < 0)) {
+        const dx = minX < 0 ? -minX + 20 : 0;
+        const dy = minY < 0 ? -minY + 20 : 0;
+
+        for (const block of visible) {
+            for (const seat of block.seats) {
+                seat.x += dx;
+                seat.y += dy;
+            }
+
+            for (const label of block.labels) {
+                label.x += dx;
+                label.y += dy;
+            }
+        }
+    }
+
     // The library's BlockModel reads `background_image`/`background_opacity`/
     // `background_fit`/etc. — our wire shape carries it as `background_image_url`.
     // Rename so the library actually picks up per-block backgrounds.

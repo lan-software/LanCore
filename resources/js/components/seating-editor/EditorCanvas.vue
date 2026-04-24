@@ -48,37 +48,12 @@ const cursor = computed(() => {
     return undefined;
 });
 
-const gridLines = computed(() => {
-    if (!props.store.view.showGrid) {
-        return { vertical: [] as number[], horizontal: [] as number[] };
-    }
-
-    const v = props.store.view;
-    const step = v.gridSize;
-    const width = 1600 / v.zoom;
-    const height = 1000 / v.zoom;
-    const minX = v.panX - width / 2;
-    const minY = v.panY - height / 2;
-    const maxX = minX + width;
-    const maxY = minY + height;
-
-    const startX = Math.floor(minX / step) * step;
-    const startY = Math.floor(minY / step) * step;
-
-    const vertical: number[] = [];
-
-    for (let x = startX; x <= maxX; x += step) {
-        vertical.push(x);
-    }
-
-    const horizontal: number[] = [];
-
-    for (let y = startY; y <= maxY; y += step) {
-        horizontal.push(y);
-    }
-
-    return { vertical, horizontal };
-});
+/* Grid is rendered as a single SVG <pattern> in the template (see
+ * `<defs><pattern id="editor-grid">`) — a one-time DOM element rather than
+ * hundreds of <line> nodes rebuilt per frame. `gridSize` feeds the pattern's
+ * tile size; pan/zoom just shift the SVG viewBox and the browser re-composites
+ * the pattern fill without any Vue re-render. */
+const gridSize = computed(() => props.store.view.gridSize);
 
 function svgPoint(event: PointerEvent | WheelEvent): { x: number; y: number } {
     if (!svgRef.value) {
@@ -424,10 +399,29 @@ function startPan(event: PointerEvent): void {
     const startPan = { x: store.view.panX, y: store.view.panY };
     (event.target as Element).setPointerCapture(event.pointerId);
 
+    /* Every pointermove re-evaluates the viewBox computed, which re-renders
+     * every seat/label under a new coordinate space. On large plans this
+     * blew past the event budget and caused visible pan stutter. rAF-throttle
+     * so we write panX/panY at most once per frame, matching the browser's
+     * own render tick. */
+    let pendingX = startPan.x;
+    let pendingY = startPan.y;
+    let rafId: number | null = null;
+
+    function flush(): void {
+        rafId = null;
+        store.view.panX = pendingX;
+        store.view.panY = pendingY;
+    }
+
     function onMove(ev: PointerEvent): void {
         const cur = svgPoint(ev);
-        store.view.panX = startPan.x - (cur.x - start.x);
-        store.view.panY = startPan.y - (cur.y - start.y);
+        pendingX = startPan.x - (cur.x - start.x);
+        pendingY = startPan.y - (cur.y - start.y);
+
+        if (rafId === null) {
+            rafId = requestAnimationFrame(flush);
+        }
     }
 
     function onUp(): void {
@@ -439,6 +433,12 @@ function startPan(event: PointerEvent): void {
 
         document.removeEventListener('pointermove', onMove);
         document.removeEventListener('pointerup', onUp);
+
+        if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            flush();
+        }
+
         panning.value = false;
     }
 
@@ -501,30 +501,38 @@ function seatFill(
             opacity="0.6"
         />
 
-        <g v-if="store.view.showGrid" class="grid" pointer-events="none">
-            <line
-                v-for="x in gridLines.vertical"
-                :key="'v' + x"
-                :x1="x"
-                :y1="-10000"
-                :x2="x"
-                :y2="10000"
-                stroke="currentColor"
-                stroke-width="0.3"
-                opacity="0.08"
-            />
-            <line
-                v-for="y in gridLines.horizontal"
-                :key="'h' + y"
-                :x1="-10000"
-                :y1="y"
-                :x2="10000"
-                :y2="y"
-                stroke="currentColor"
-                stroke-width="0.3"
-                opacity="0.08"
-            />
-        </g>
+        <!--
+          The grid is a single tiled <pattern> + <rect>, not N-hundred
+          <line> nodes: the browser composites the pattern at native speed
+          and pan/zoom only need to update the SVG viewBox. Previously we
+          rebuilt hundreds of line positions on every pointermove — the main
+          source of pan lag on large plans.
+         -->
+        <defs>
+            <pattern
+                id="editor-grid"
+                :width="gridSize"
+                :height="gridSize"
+                patternUnits="userSpaceOnUse"
+            >
+                <path
+                    :d="`M ${gridSize} 0 L 0 0 0 ${gridSize}`"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="0.3"
+                    opacity="0.08"
+                />
+            </pattern>
+        </defs>
+        <rect
+            v-if="store.view.showGrid"
+            x="-10000"
+            y="-10000"
+            width="20000"
+            height="20000"
+            fill="url(#editor-grid)"
+            pointer-events="none"
+        />
 
         <g class="plan-labels">
             <g

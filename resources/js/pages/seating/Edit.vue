@@ -419,7 +419,23 @@ const jsonValue = computed<string>({
                 v-show="activeTab === 'preview'"
                 class="flex-1 overflow-hidden rounded-md border"
             >
-                <SeatMapCanvas :data="previewData" />
+                <!-- Matches the public Welcome canvas verbatim (same style
+                     overrides and same SeatMapCanvas wrapper). The
+                     server-side transformations that Welcome benefits from
+                     are replicated on `previewData` below. -->
+                <SeatMapCanvas
+                    :data="previewData"
+                    :options="{
+                        legend: true,
+                        style: {
+                            seat: {
+                                hover: '#8fe100',
+                                color: '#6796ff',
+                                not_salable: '#424747',
+                            },
+                        },
+                    }"
+                />
             </div>
 
             <div v-show="activeTab === 'categories'" class="flex-1 space-y-3">
