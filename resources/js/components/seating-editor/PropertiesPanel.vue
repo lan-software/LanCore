@@ -319,14 +319,68 @@ const blockList = computed(() =>
     })),
 );
 
+/**
+ * Selecting a block from the sidebar puts the block ref AND every seat in
+ * that block into the selection. The block ref keeps the block-edit section
+ * (name, color, prefix, background image) visible in this panel, and the
+ * seat refs make `EditorCanvas` render each seat with its selection outline
+ * so the admin sees which seats belong to the block they're editing.
+ */
 function selectBlock(blockId: number | string): void {
-    props.store.setSelection([{ kind: 'block', id: blockId }]);
+    const block = props.store.findBlock(blockId);
+
+    if (!block) {
+        return;
+    }
+
+    const refs: EntityRef[] = [
+        { kind: 'block', id: blockId },
+        ...block.seats.map((seat) => ({
+            kind: 'seat' as const,
+            id: seat.id,
+            blockId,
+        })),
+    ];
+    props.store.setSelection(refs);
 }
+
+/**
+ * Matches the "block + optionally its own seats" shape produced by
+ * `selectBlock`. Used both to keep the sidebar row highlighted and to drive
+ * the `singleBlock` section below.
+ */
+const activeBlockId = computed<number | string | null>(() => {
+    const refs = selection.value;
+
+    if (refs.length === 0) {
+        return null;
+    }
+
+    const blockRefs = refs.filter((r) => r.kind === 'block');
+
+    if (blockRefs.length !== 1) {
+        return null;
+    }
+
+    const blockId = blockRefs[0].id;
+    /* Allow companion seat refs as long as they all belong to this block. */
+    const nonBlock = refs.filter((r) => r.kind !== 'block');
+
+    if (
+        nonBlock.some(
+            (r) => r.kind !== 'seat' || String(r.blockId) !== String(blockId),
+        )
+    ) {
+        return null;
+    }
+
+    return blockId;
+});
 
 function isBlockSelected(blockId: number | string): boolean {
     return (
-        single.value?.kind === 'block' &&
-        String(single.value.id) === String(blockId)
+        activeBlockId.value !== null &&
+        String(activeBlockId.value) === String(blockId)
     );
 }
 
@@ -340,11 +394,11 @@ function deleteBlock(blockId: number | string): void {
 }
 
 const singleBlock = computed(() => {
-    if (!single.value || single.value.kind !== 'block') {
+    if (activeBlockId.value === null) {
         return null;
     }
 
-    return props.store.findBlock(single.value.id);
+    return props.store.findBlock(activeBlockId.value);
 });
 
 const singleSeat = computed(() => {
@@ -452,7 +506,17 @@ const singleLabelIsPlanLevel = computed(() => {
             </ul>
         </section>
 
-        <section v-if="multiSelectionCount > 1" class="space-y-3">
+        <!--
+          The "block + its-own-seats" pattern from `selectBlock` short-circuits
+          the mass-edit path so the admin stays in the block-edit section
+          (name, color, prefix, background image) while the canvas still
+          highlights every seat in that block. Pure shift-click multi-seat
+          selections still fall into mass-edit as expected.
+         -->
+        <section
+            v-if="multiSelectionCount > 1 && activeBlockId === null"
+            class="space-y-3"
+        >
             <h3 class="font-semibold">
                 {{ $t('seating.admin.editor.mass.title') }} ({{
                     multiSelectionCount

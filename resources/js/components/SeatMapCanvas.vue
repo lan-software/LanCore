@@ -226,6 +226,9 @@ async function initSeatmap(): Promise<void> {
         document.documentElement.classList.contains('dark');
     const legendFontColor = isDark ? '#f3f4f6' : '#111827';
     const labelFontColor = isDark ? '#e5e7eb' : '#1f2937';
+    /* Block titles are rendered huge behind the seats — pick a contrast that
+     * reads on the app's card background in either theme. */
+    const blockTitleColor = isDark ? '#e5e7eb' : '#1f2937';
 
     const defaultOptions = {
         legend: true,
@@ -240,6 +243,7 @@ async function initSeatmap(): Promise<void> {
             block: {
                 fill: '#e2e2e2',
                 stroke: '#e2e2e2',
+                title_color: blockTitleColor,
             },
             /* Library reads `style.label.bg` and `style.label.font_size`
              * (not `background` / `fontSize` — different from the seat style
@@ -452,16 +456,16 @@ defineExpose({
     },
 
     /**
-     * Reset viewport to the full venue — useful as a toolbar "Reset view"
-     * button.
+     * Reset viewport to fit the full seat plan. The library's own
+     * `zoomToVenue` reads precomputed `zoomLevels.VENUE.{x,y,k}` values that
+     * don't always reflect the current data (empty branch for single-block
+     * plans, stale values after `replaceData`, etc.), so we just re-run the
+     * whole init path — `initSeatmap` rebuilds the SVG and the library's
+     * default post-init zoom fits the new data cleanly, matching what the
+     * admin canvas's Reset-view button does.
      */
     resetView(): void {
-        const zm = (
-            seatmapInstance as unknown as {
-                zoomManager?: { zoomToVenue: (animated?: boolean) => void };
-            } | null
-        )?.zoomManager;
-        zm?.zoomToVenue?.(true);
+        initSeatmap();
     },
 
     /**
@@ -595,6 +599,25 @@ function wireThemeObserver(): void {
     width: 100%;
     height: 100%;
     z-index: 1;
+}
+
+/*
+ * The library renders each block's title as a huge watermark SVG <text>
+ * behind the seats. Its fill comes from `style.block.title_color` at init
+ * time — if anything in the option-merge path drops that value the text
+ * falls back to the library's default, and with per-block color pickers in
+ * play the result is a title that collides visually with its own block fill.
+ * Force a theme-aware gray via CSS so the title is always readable and
+ * always distinct from whatever color the admin picked for the block.
+ * (The <style> block is intentionally unscoped — it imports the library's
+ * global stylesheet — so plain selectors apply directly.)
+ */
+.seatmap-container .seatmap-svg .stage .blocks .block .info .title {
+    fill: rgb(55, 65, 81) !important; /* gray-700 */
+    opacity: 0.55;
+}
+html.dark .seatmap-container .seatmap-svg .stage .blocks .block .info .title {
+    fill: rgb(229, 231, 235) !important; /* gray-200 */
 }
 
 .seatmap-container svg {

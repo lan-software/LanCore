@@ -208,7 +208,13 @@ function resetView(): void {
             <Button type="button" size="sm" variant="outline" @click="zoomIn">
                 <ZoomIn class="size-4" />
             </Button>
-            <Button type="button" size="sm" variant="ghost" @click="resetView">
+            <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                :title="$t('seating.admin.editor.toolbar.zoomReset')"
+                @click="resetView"
+            >
                 {{ Math.round(store.view.zoom * 100) }}%
             </Button>
         </div>

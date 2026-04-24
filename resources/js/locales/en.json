@@ -180,7 +180,7 @@
                     "gridSize": "Grid size",
                     "zoomIn": "Zoom in",
                     "zoomOut": "Zoom out",
-                    "zoomReset": "Reset view",
+                    "zoomReset": "Fit plan in viewport",
                     "undo": "Undo (Ctrl+Z)",
                     "redo": "Redo (Ctrl+Shift+Z)",
                     "unsavedChanges": "Unsaved changes",
