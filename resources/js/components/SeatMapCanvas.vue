@@ -456,16 +456,49 @@ defineExpose({
     },
 
     /**
-     * Reset viewport to fit the full seat plan. The library's own
-     * `zoomToVenue` reads precomputed `zoomLevels.VENUE.{x,y,k}` values that
-     * don't always reflect the current data (empty branch for single-block
-     * plans, stale values after `replaceData`, etc.), so we just re-run the
-     * whole init path — `initSeatmap` rebuilds the SVG and the library's
-     * default post-init zoom fits the new data cleanly, matching what the
-     * admin canvas's Reset-view button does.
+     * Reset viewport to fit the full seat plan.
+     *
+     * `zoomToVenue` alone uses precomputed `zoomLevels.VENUE.{x,y,k}` that
+     * go stale after `replaceData` or when only one block exists, so we
+     * first re-run the library's own recompute path — same sequence it
+     * invokes internally on its ADD_BLOCK event — then jump to the refreshed
+     * venue zoom:
+     *
+     *   1. `svg.stage.blocks.update()`        — rebuild DOM bboxes
+     *   2. `windowManager.resizeHandler()`    — sync container rect
+     *   3. `zoomManager.calculateZoomLevels()`— recompute VENUE/BLOCK/SEAT
+     *   4. `zoomManager.zoomToVenue(true)`    — apply the refreshed VENUE
+     *
+     * Falls back to `initSeatmap()` (full rebuild) if any internal API
+     * changes shape and `.` access fails.
      */
     resetView(): void {
-        initSeatmap();
+        const instance = seatmapInstance as unknown as {
+            data?: { getBlocks?: () => unknown[] };
+            svg?: { stage?: { blocks?: { update?: () => void } } };
+            windowManager?: { resizeHandler?: () => void };
+            zoomManager?: {
+                calculateZoomLevels?: (blocks: unknown[]) => void;
+                calculateActiveBlocks?: (blocks: unknown[]) => void;
+                zoomToVenue?: (animated?: boolean) => void;
+            };
+        } | null;
+
+        try {
+            const blocks = instance?.data?.getBlocks?.() ?? [];
+            instance?.svg?.stage?.blocks?.update?.();
+            instance?.windowManager?.resizeHandler?.();
+            instance?.zoomManager?.calculateZoomLevels?.(blocks);
+            instance?.zoomManager?.calculateActiveBlocks?.(blocks);
+            instance?.windowManager?.resizeHandler?.();
+            instance?.zoomManager?.zoomToVenue?.(true);
+        } catch (error) {
+            console.warn(
+                '[SeatMapCanvas] resetView fast path failed, rebuilding canvas:',
+                error,
+            );
+            initSeatmap();
+        }
     },
 
     /**
@@ -561,8 +594,14 @@ function wireThemeObserver(): void {
       the library's BlockModel only supports per-block backgrounds. The
       wrapper is `position: relative` so the <img> and the SVG stack.
       `pointer-events: none` on the image keeps seat clicks working.
+
+      `@wheel.prevent` stops wheel events from scrolling the host page
+      while the cursor is inside the canvas. The library's d3-zoom only
+      calls preventDefault when the wheel actually changes zoom, so at the
+      min/max clamp the event would otherwise bubble out and scroll the
+      document. This blanket prevent keeps the page still regardless.
      -->
-    <div class="seatmap-wrapper">
+    <div class="seatmap-wrapper" @wheel.prevent>
         <img
             v-if="planBackgroundImage"
             class="seatmap-plan-bg"
