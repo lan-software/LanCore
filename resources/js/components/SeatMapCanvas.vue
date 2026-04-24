@@ -55,6 +55,17 @@ const emit = defineEmits<{
 }>();
 
 const containerRef = ref<HTMLDivElement | null>(null);
+
+/* Plan-level background URL if the `data` shape carries one. Rendered as a
+ * sibling <img> behind the library's SVG because the library only supports
+ * per-block backgrounds. */
+const planBackgroundImage = computed<string | null>(() => {
+    const maybeUrl = (
+        props.data as SeatPlanData & { background_image_url?: string | null }
+    ).background_image_url;
+
+    return typeof maybeUrl === 'string' && maybeUrl !== '' ? maybeUrl : null;
+});
 let seatmapInstance: SeatMapCanvasClass | null = null;
 
 function isZoneFormat(data: SeatPlanData): data is SeatPlanData & ZoneFormat {
@@ -143,7 +154,35 @@ function getBlocks(): SeatPlanBlock[] {
     // as an empty viewport even when sibling blocks have seats. Admin "empty"
     // blocks are still editable in the admin editor — this filter only runs
     // on the read-side wrapper the Picker / Welcome consume.
-    return cloned.filter((block) => (block.seats?.length ?? 0) > 0);
+    const visible = cloned.filter((block) => (block.seats?.length ?? 0) > 0);
+
+    // The library's BlockModel reads `background_image`/`background_opacity`/
+    // `background_fit`/etc. — our wire shape carries it as `background_image_url`.
+    // Rename so the library actually picks up per-block backgrounds.
+    return visible.map((block) => {
+        const withBg = block as SeatPlanBlock & {
+            background_image_url?: string | null;
+            background_image?: string | null;
+            background_opacity?: number;
+            background_fit?: 'cover' | 'contain' | 'fill' | 'none';
+        };
+
+        if (withBg.background_image_url) {
+            withBg.background_image = withBg.background_image_url;
+
+            if (withBg.background_opacity === undefined) {
+                withBg.background_opacity = 1;
+            }
+
+            if (withBg.background_fit === undefined) {
+                withBg.background_fit = 'cover';
+            }
+        }
+
+        delete withBg.background_image_url;
+
+        return withBg;
+    });
 }
 
 function deepCloneBlocks(blocks: SeatPlanBlock[]): SeatPlanBlock[] {
@@ -513,15 +552,49 @@ function wireThemeObserver(): void {
 </script>
 
 <template>
-    <div ref="containerRef" class="seatmap-container" />
+    <!--
+      Plan-level background image lives outside the library's SVG because
+      the library's BlockModel only supports per-block backgrounds. The
+      wrapper is `position: relative` so the <img> and the SVG stack.
+      `pointer-events: none` on the image keeps seat clicks working.
+     -->
+    <div class="seatmap-wrapper">
+        <img
+            v-if="planBackgroundImage"
+            class="seatmap-plan-bg"
+            :src="planBackgroundImage"
+            alt=""
+            draggable="false"
+        />
+        <div ref="containerRef" class="seatmap-container" />
+    </div>
 </template>
 
 <style>
 @import '@alisaitteke/seatmap-canvas/dist/esm/seatmap.canvas.css';
 
-.seatmap-container {
+.seatmap-wrapper {
+    position: relative;
     width: 100%;
     height: 100%;
+}
+
+.seatmap-plan-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    opacity: 0.6;
+    z-index: 0;
+}
+
+.seatmap-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
 }
 
 .seatmap-container svg {

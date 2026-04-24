@@ -80,12 +80,16 @@ const seatPlanData = computed(() => {
     );
 
     if (taken.length === 0) {
-        return { blocks: plan.blocks ?? [] };
+        return {
+            background_image_url: plan.background_image_url ?? null,
+            blocks: plan.blocks ?? [],
+        };
     }
 
     const takenById = new Map(taken.map((t) => [String(t.seat_id), t]));
 
     return {
+        background_image_url: plan.background_image_url ?? null,
         blocks: (plan.blocks ?? []).map((block) => ({
             ...block,
             seats: block.seats.map((seat) => {

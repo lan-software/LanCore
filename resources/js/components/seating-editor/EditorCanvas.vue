@@ -38,12 +38,12 @@ const viewBox = computed(() => {
 
 const cursor = computed(() => {
     if (props.store.tool.value === 'delete') {
-return 'crosshair';
-}
+        return 'crosshair';
+    }
 
     if (panning.value || props.store.tool.value === 'pan') {
-return 'grab';
-}
+        return 'grab';
+    }
 
     return undefined;
 });
@@ -122,8 +122,8 @@ function deleteSeat(blockId: number | string, seatId: number | string): void {
         );
 
         if (!block) {
-return;
-}
+            return;
+        }
 
         block.seats = block.seats.filter(
             (s) => String(s.id) !== String(seatId),
@@ -139,8 +139,8 @@ function deleteLabel(blockId: number | string, labelId: number | string): void {
         );
 
         if (!block) {
-return;
-}
+            return;
+        }
 
         block.labels = block.labels.filter(
             (l) => l.id === undefined || String(l.id) !== String(labelId),
@@ -175,8 +175,8 @@ function onLabelPointerDown(
     labelId: number | string | undefined,
 ): void {
     if (labelId === undefined) {
-return;
-}
+        return;
+    }
 
     if (props.store.tool.value === 'delete') {
         event.stopPropagation();
@@ -396,8 +396,8 @@ function commitMarquee(rect: Rect): void {
 
         for (const label of block.labels) {
             if (label.id === undefined) {
-continue;
-}
+                continue;
+            }
 
             if (rectContainsPoint(rect, { x: label.x, y: label.y })) {
                 refs.push({ kind: 'label', id: label.id, blockId: block.id });
@@ -407,8 +407,8 @@ continue;
 
     for (const label of props.store.plan.value.labels ?? []) {
         if (label.id === undefined) {
-continue;
-}
+            continue;
+        }
 
         if (rectContainsPoint(rect, { x: label.x, y: label.y })) {
             refs.push({ kind: 'label', id: label.id });

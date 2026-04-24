@@ -254,7 +254,10 @@ const decoratedPlanData = computed<SeatPlanData | null>(() => {
         };
     });
 
-    return { blocks } as SeatPlanData;
+    return {
+        background_image_url: activePlan.value.background_image_url ?? null,
+        blocks,
+    } as SeatPlanData;
 });
 
 const submitError = computed<string | null>(() => {

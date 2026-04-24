@@ -128,9 +128,39 @@ function dismissError(): void {
     errorMessage.value = null;
 }
 
-const previewData = computed<SeatPlanData>(() => ({
-    blocks: workingPlan.value.blocks,
-}));
+/**
+ * Shape the editor's working copy the same way `SeatPlanResource` does on
+ * the server for the public Picker/Welcome canvases:
+ *
+ *   1. Drop blocks with no seats — an empty block has degenerate bbox, which
+ *      breaks the library's venue-fit zoom.
+ *   2. Flatten plan-level labels into the first non-empty block — the
+ *      @alisaitteke/seatmap-canvas library requires labels to live under a
+ *      block (BlockModel.labels: LabelModel[]).
+ *   3. Bake `block.seat_title_prefix` into each seat's title so the library
+ *      renders "VIP-A1" rather than "A1".
+ *
+ * Mirrors `app/Domain/Seating/Http/Resources/SeatPlanResource.php`.
+ */
+const previewData = computed<SeatPlanData>(() => {
+    const visibleBlocks = workingPlan.value.blocks.filter(
+        (b) => (b.seats?.length ?? 0) > 0,
+    );
+    const planLabels = workingPlan.value.labels ?? [];
+
+    return {
+        background_image_url: workingPlan.value.background_image_url ?? null,
+        blocks: visibleBlocks.map((block, index) => ({
+            ...block,
+            seats: block.seats.map((seat) => ({
+                ...seat,
+                title: (block.seat_title_prefix ?? '') + seat.title,
+            })),
+            labels:
+                index === 0 ? [...block.labels, ...planLabels] : block.labels,
+        })),
+    };
+});
 
 const page = usePage<{
     flash: { invalidations?: InvalidationRow[]; id_map?: IdMap };
@@ -168,8 +198,8 @@ function flattenErrors(
         if (Array.isArray(value)) {
             for (const v of value) {
                 if (typeof v === 'string' && v.length > 0) {
-parts.push(v);
-}
+                    parts.push(v);
+                }
             }
         } else if (typeof value === 'string' && value.length > 0) {
             parts.push(value);
@@ -269,39 +299,10 @@ function onCategoryEditorUpdate(next: SeatPlanData): void {
     };
 }
 
-/**
- * The seatmap-canvas library auto-fits to the bounding box of all content on
- * each render. When a plan has multiple blocks (offset by `computeNextBlockOffset`
- * in the editor), the bbox stretches and the library zooms way out. Zoom to
- * the first block after init so the preview starts at a sensible scale.
- */
-const previewCanvasRef = ref<InstanceType<typeof SeatMapCanvas> | null>(null);
-
-function onPreviewReady(): void {
-    const firstBlock = workingPlan.value.blocks[0];
-
-    if (!firstBlock) {
-return;
-}
-
-    /* Library's getInstance may lag behind `ready`; poll briefly. */
-    const tryZoom = (attempt = 0) => {
-        const canvas = previewCanvasRef.value;
-
-        if (!canvas) {
-return;
-}
-
-        if (canvas.getInstance() === null && attempt < 10) {
-            window.setTimeout(() => tryZoom(attempt + 1), 50);
-
-            return;
-        }
-
-        canvas.zoomToBlock(String(firstBlock.id));
-    };
-    tryZoom();
-}
+/* Preview tab consumes `previewData` through `SeatMapCanvas.vue` the same
+ * way the Welcome/Picker canvases do. Let the library auto-fit on init —
+ * with empty blocks filtered out of `previewData` the venue bbox is clean
+ * and zoom works identically to the public-facing pages. */
 
 const jsonValue = computed<string>({
     get() {
@@ -418,11 +419,7 @@ const jsonValue = computed<string>({
                 v-show="activeTab === 'preview'"
                 class="flex-1 overflow-hidden rounded-md border"
             >
-                <SeatMapCanvas
-                    ref="previewCanvasRef"
-                    :data="previewData"
-                    @ready="onPreviewReady"
-                />
+                <SeatMapCanvas :data="previewData" />
             </div>
 
             <div v-show="activeTab === 'categories'" class="flex-1 space-y-3">

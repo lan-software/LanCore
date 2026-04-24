@@ -131,8 +131,8 @@ function updateLabelField(
         );
 
         if (!label) {
-return;
-}
+            return;
+        }
 
         if (field === 'title') {
             label.title = String(value);
@@ -148,8 +148,8 @@ function moveLabelToBlock(targetId: string): void {
     const labelRefs = selection.value.filter((r) => r.kind === 'label');
 
     if (labelRefs.length === 0) {
-return;
-}
+        return;
+    }
 
     const labelIds = new Set(labelRefs.map((r) => String(r.id)));
 
@@ -157,13 +157,13 @@ return;
         const target = draft.blocks.find((b) => String(b.id) === targetId);
 
         if (!target) {
-return;
-}
+            return;
+        }
 
         for (const block of draft.blocks) {
             if (String(block.id) === targetId) {
-continue;
-}
+                continue;
+            }
 
             const keep: typeof block.labels = [];
 
@@ -221,20 +221,20 @@ function moveSelectionToBlock(targetId: string): void {
     );
 
     if (seatIds.size === 0) {
-return;
-}
+        return;
+    }
 
     props.store.applyMutation('move-to-block', (draft) => {
         const target = draft.blocks.find((b) => String(b.id) === targetId);
 
         if (!target) {
-return;
-}
+            return;
+        }
 
         for (const block of draft.blocks) {
             if (String(block.id) === targetId) {
-continue;
-}
+                continue;
+            }
 
             const keep: typeof block.seats = [];
 
@@ -303,6 +303,42 @@ function deleteSelected(): void {
     props.store.clearSelection();
 }
 
+/**
+ * Flat list of blocks for the always-visible "Blocks" list at the top of
+ * the panel. Clicking a row selects the block (opening the block edit
+ * section below); the trash icon deletes it directly. Necessary because
+ * the canvas itself has no hit area for a block — previously the only way
+ * to select a block was to create a new empty one.
+ */
+const blockList = computed(() =>
+    props.store.plan.value.blocks.map((b) => ({
+        id: b.id,
+        title: b.title || `#${b.id}`,
+        color: b.color,
+        seatCount: b.seats.length,
+    })),
+);
+
+function selectBlock(blockId: number | string): void {
+    props.store.setSelection([{ kind: 'block', id: blockId }]);
+}
+
+function isBlockSelected(blockId: number | string): boolean {
+    return (
+        single.value?.kind === 'block' &&
+        String(single.value.id) === String(blockId)
+    );
+}
+
+function deleteBlock(blockId: number | string): void {
+    props.store.applyMutation('delete-block', (draft) => {
+        draft.blocks = draft.blocks.filter(
+            (b) => String(b.id) !== String(blockId),
+        );
+    });
+    props.store.clearSelection();
+}
+
 const singleBlock = computed(() => {
     if (!single.value || single.value.kind !== 'block') {
         return null;
@@ -333,8 +369,8 @@ const singleLabel = computed(() => {
  */
 const labelMoveTargetOptions = computed(() => {
     if (!singleLabel.value) {
-return [];
-}
+        return [];
+    }
 
     const currentBlockId = single.value?.blockId;
 
@@ -349,8 +385,8 @@ return [];
 
 const singleLabelIsPlanLevel = computed(() => {
     if (!singleLabel.value) {
-return false;
-}
+        return false;
+    }
 
     return (
         single.value?.blockId === undefined || single.value?.blockId === null
@@ -360,6 +396,62 @@ return false;
 
 <template>
     <aside class="flex flex-col gap-4 border-l bg-card p-3 text-sm">
+        <!--
+          Always-visible block list. Gives the admin a way to select a block
+          (the canvas has no block-level hit area) and to delete blocks
+          without first putting a seat through the selection flow. Empty
+          blocks appear here too, so an "Empty" block created via
+          AddBlockDialog is discoverable afterwards.
+         -->
+        <section class="space-y-2">
+            <h3 class="font-semibold">
+                {{ $t('seating.admin.editor.blocks.title') }}
+            </h3>
+            <div
+                v-if="blockList.length === 0"
+                class="rounded-md border border-dashed p-3 text-xs text-muted-foreground"
+            >
+                {{ $t('seating.admin.editor.blocks.empty') }}
+            </div>
+            <ul v-else class="space-y-1">
+                <li
+                    v-for="block in blockList"
+                    :key="String(block.id)"
+                    class="flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs"
+                    :class="
+                        isBlockSelected(block.id)
+                            ? 'border-primary bg-primary/10'
+                            : 'bg-background hover:bg-muted'
+                    "
+                >
+                    <button
+                        type="button"
+                        class="flex flex-1 items-center gap-2 truncate text-left"
+                        @click="selectBlock(block.id)"
+                    >
+                        <span
+                            class="inline-block h-3 w-3 shrink-0 rounded-sm"
+                            :style="{ backgroundColor: block.color }"
+                        />
+                        <span class="truncate font-medium">{{
+                            block.title
+                        }}</span>
+                        <span class="ml-auto shrink-0 text-muted-foreground">
+                            {{ block.seatCount }}
+                        </span>
+                    </button>
+                    <button
+                        type="button"
+                        class="ml-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive"
+                        :title="$t('common.delete')"
+                        @click="deleteBlock(block.id)"
+                    >
+                        <Trash2 class="size-3" />
+                    </button>
+                </li>
+            </ul>
+        </section>
+
         <section v-if="multiSelectionCount > 1" class="space-y-3">
             <h3 class="font-semibold">
                 {{ $t('seating.admin.editor.mass.title') }} ({{
@@ -687,13 +779,21 @@ return false;
                     }}
                 </p>
             </div>
-            <div v-if="typeof singleBlock.id === 'number'" class="grid gap-2">
+            <div class="grid gap-2">
                 <Label>{{
                     $t(
                         'seating.admin.editor.properties.block.backgroundImageUrl',
                     )
                 }}</Label>
+                <!--
+                  The upload endpoint POSTs to /seat-plans/{plan}/blocks/{id}/background
+                  and requires the block to exist in the DB, so it can't run
+                  against a client-side `new-xyz` block id. Show the upload
+                  widget only for persisted blocks; otherwise explain why so
+                  the admin isn't left wondering where the control went.
+                 -->
                 <BackgroundImageUpload
+                    v-if="typeof singleBlock.id === 'number'"
                     :seat-plan-id="seatPlanId"
                     :block-id="singleBlock.id"
                     :current-url="singleBlock.background_image_url ?? null"
@@ -714,6 +814,16 @@ return false;
                             )
                     "
                 />
+                <p
+                    v-else
+                    class="rounded-md border border-dashed p-2 text-xs text-muted-foreground"
+                >
+                    {{
+                        $t(
+                            'seating.admin.editor.properties.block.backgroundImageSaveFirst',
+                        )
+                    }}
+                </p>
             </div>
             <Button
                 size="sm"

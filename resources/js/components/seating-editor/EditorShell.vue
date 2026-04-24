@@ -4,7 +4,7 @@ import AddBlockDialog from './AddBlockDialog.vue';
 import type { EditorBlock, EditorPlan, EntityRef, IdMap } from './editor-types';
 import EditorCanvas from './EditorCanvas.vue';
 import EditorToolbar from './EditorToolbar.vue';
-import type {SaveStatus} from './EditorToolbar.vue';
+import type { SaveStatus } from './EditorToolbar.vue';
 import { newClientId, snapToGrid } from './geometry';
 import PropertiesPanel from './PropertiesPanel.vue';
 import { useEditorStore } from './useEditorStore';
@@ -60,7 +60,32 @@ function findOrCreateDefaultRow(block: EditorBlock): string | number {
 
 function addSeatAt(x: number, y: number): void {
     store.applyMutation('add-seat', (draft) => {
-        let targetBlock = draft.blocks[0];
+        /* Prefer the block that owns the current single-block selection so
+         * the admin can pick a block in the sidebar and drop seats into it.
+         * Falls back to the block whose seat(s) are selected, then to the
+         * first block, then to a fresh "Main" block if the plan is empty. */
+        const selection = store.selection.value;
+        let targetBlock: (typeof draft.blocks)[number] | undefined;
+
+        if (selection.length === 1 && selection[0].kind === 'block') {
+            targetBlock = draft.blocks.find(
+                (b) => String(b.id) === String(selection[0].id),
+            );
+        }
+
+        if (!targetBlock && selection.length > 0) {
+            const seatRef = selection.find((r) => r.kind === 'seat');
+
+            if (seatRef?.blockId !== undefined) {
+                targetBlock = draft.blocks.find(
+                    (b) => String(b.id) === String(seatRef.blockId),
+                );
+            }
+        }
+
+        if (!targetBlock) {
+            targetBlock = draft.blocks[0];
+        }
 
         if (!targetBlock) {
             targetBlock = {
@@ -172,43 +197,43 @@ function focusOnBlock(block: EditorBlock): void {
 
     for (const seat of block.seats) {
         if (seat.x < minX) {
-minX = seat.x;
-}
+            minX = seat.x;
+        }
 
         if (seat.x > maxX) {
-maxX = seat.x;
-}
+            maxX = seat.x;
+        }
 
         if (seat.y < minY) {
-minY = seat.y;
-}
+            minY = seat.y;
+        }
 
         if (seat.y > maxY) {
-maxY = seat.y;
-}
+            maxY = seat.y;
+        }
     }
 
     for (const label of block.labels) {
         if (label.x < minX) {
-minX = label.x;
-}
+            minX = label.x;
+        }
 
         if (label.x > maxX) {
-maxX = label.x;
-}
+            maxX = label.x;
+        }
 
         if (label.y < minY) {
-minY = label.y;
-}
+            minY = label.y;
+        }
 
         if (label.y > maxY) {
-maxY = label.y;
-}
+            maxY = label.y;
+        }
     }
 
     if (!Number.isFinite(minX)) {
-return;
-}
+        return;
+    }
 
     store.view.panX = (minX + maxX) / 2;
     store.view.panY = (minY + maxY) / 2;
@@ -227,26 +252,26 @@ function computeNextBlockOffset(): number {
     for (const block of store.plan.value.blocks) {
         for (const seat of block.seats) {
             if (seat.x > maxX) {
-maxX = seat.x;
-}
+                maxX = seat.x;
+            }
         }
 
         for (const label of block.labels) {
             if (label.x > maxX) {
-maxX = label.x;
-}
+                maxX = label.x;
+            }
         }
     }
 
     for (const label of store.plan.value.labels ?? []) {
         if (label.x > maxX) {
-maxX = label.x;
-}
+            maxX = label.x;
+        }
     }
 
     if (maxX === Number.NEGATIVE_INFINITY) {
-return 0;
-}
+        return 0;
+    }
 
     return maxX + gap;
 }
@@ -298,16 +323,16 @@ function onKeydown(event: KeyboardEvent): void {
     }
 
     if (['v', 'V'].includes(event.key)) {
-store.tool.value = 'select';
-}
+        store.tool.value = 'select';
+    }
 
     if (['s', 'S'].includes(event.key)) {
-store.tool.value = 'add-seat';
-}
+        store.tool.value = 'add-seat';
+    }
 
     if (['l', 'L'].includes(event.key)) {
-store.tool.value = 'add-label';
-}
+        store.tool.value = 'add-label';
+    }
 
     if (['d', 'D'].includes(event.key)) {
         store.tool.value = 'delete';
@@ -315,8 +340,8 @@ store.tool.value = 'add-label';
     }
 
     if ([' '].includes(event.key)) {
-store.tool.value = 'pan';
-}
+        store.tool.value = 'pan';
+    }
 }
 
 function deleteSelection(): void {

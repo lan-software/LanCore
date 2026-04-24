@@ -217,13 +217,18 @@
                         "color": "Color",
                         "seatTitlePrefix": "Seat title prefix",
                         "seatTitlePrefixHint": "Optional label prepended to every seat title in this block. Example: VIP- → VIP-A1.",
-                        "backgroundImageUrl": "Block background image"
+                        "backgroundImageUrl": "Block background image",
+                        "backgroundImageSaveFirst": "Save the seat plan once before uploading a background image for this block. New blocks get their permanent ID on save."
                     },
                     "label": {
                         "title": "Label",
                         "text": "Text",
                         "planLevel": "plan-level"
                     }
+                },
+                "blocks": {
+                    "title": "Blocks",
+                    "empty": "No blocks yet. Click the block tool in the toolbar to add one."
                 },
                 "mass": {
                     "title": "Mass edit",
