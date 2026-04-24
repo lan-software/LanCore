@@ -169,26 +169,30 @@ function getBlocks(): SeatPlanBlock[] {
     for (const block of visible) {
         for (const seat of block.seats) {
             if (seat.x < minX) {
-minX = seat.x;
-}
+                minX = seat.x;
+            }
 
             if (seat.y < minY) {
-minY = seat.y;
-}
+                minY = seat.y;
+            }
         }
 
         for (const label of block.labels) {
             if (label.x < minX) {
-minX = label.x;
-}
+                minX = label.x;
+            }
 
             if (label.y < minY) {
-minY = label.y;
-}
+                minY = label.y;
+            }
         }
     }
 
-    if (Number.isFinite(minX) && Number.isFinite(minY) && (minX < 0 || minY < 0)) {
+    if (
+        Number.isFinite(minX) &&
+        Number.isFinite(minY) &&
+        (minX < 0 || minY < 0)
+    ) {
         const dx = minX < 0 ? -minX + 20 : 0;
         const dy = minY < 0 ? -minY + 20 : 0;
 

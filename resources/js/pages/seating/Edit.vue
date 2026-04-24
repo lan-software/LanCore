@@ -59,6 +59,31 @@ function executeDelete() {
 }
 
 const activeTab = ref<'editor' | 'preview' | 'categories' | 'json'>('editor');
+const previewCanvasRef = ref<InstanceType<typeof SeatMapCanvas> | null>(null);
+
+/*
+ * The preview tab uses v-show, so the canvas is mounted while display:none.
+ * The library's `calculateZoomLevels` divides by container width/height —
+ * both 0 while hidden — which yields a zero-scale VENUE zoom and parks the
+ * viewport at (0, 0). When the tab becomes visible, re-run the reset path
+ * so it re-measures against the now-real container and fits the plan.
+ */
+watch(
+    () => activeTab.value,
+    (tab) => {
+        if (tab !== 'preview') {
+            return;
+        }
+
+        /* Two rAF ticks: one for Vue to apply `v-show`, one for the browser
+         * to lay out the container so clientWidth / clientHeight are real. */
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                previewCanvasRef.value?.resetView?.();
+            });
+        });
+    },
+);
 
 const initialPlan = computed<EditorPlan>(() => ({
     id: props.seatPlan.id,
@@ -422,8 +447,12 @@ const jsonValue = computed<string>({
                 <!-- Matches the public Welcome canvas verbatim (same style
                      overrides and same SeatMapCanvas wrapper). The
                      server-side transformations that Welcome benefits from
-                     are replicated on `previewData` below. -->
+                     are replicated on `previewData` above. A ref lets us
+                     trigger a re-fit when the tab becomes visible (the
+                     container has `display:none` while hidden, so the
+                     library's initial measurement is all zeros). -->
                 <SeatMapCanvas
+                    ref="previewCanvasRef"
                     :data="previewData"
                     :options="{
                         legend: true,
