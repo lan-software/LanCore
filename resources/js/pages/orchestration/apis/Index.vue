@@ -560,7 +560,8 @@ const stripeButtonLabel = computed(() => {
                         <div>
                             <h3 class="text-base font-medium">PayPal</h3>
                             <p class="text-sm text-muted-foreground">
-                                Payment processing via PayPal Orders v2 (srmklive/paypal)
+                                Payment processing via PayPal Orders v2
+                                (srmklive/paypal)
                             </p>
                         </div>
                     </div>
@@ -580,7 +581,7 @@ const stripeButtonLabel = computed(() => {
                 <dl class="mt-4 space-y-2 text-sm">
                     <div class="flex items-center justify-between">
                         <dt class="text-muted-foreground">Mode</dt>
-                        <dd class="text-xs font-mono uppercase">
+                        <dd class="font-mono text-xs uppercase">
                             {{ connections.paypal.mode }}
                         </dd>
                     </div>

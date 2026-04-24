@@ -77,8 +77,13 @@ function save() {
 }
 
 function methodIcon(value: string) {
-    if (value === 'stripe') return CreditCard;
-    if (value === 'paypal') return Wallet;
+    if (value === 'stripe') {
+return CreditCard;
+}
+
+    if (value === 'paypal') {
+return Wallet;
+}
 
     return Banknote;
 }
@@ -88,8 +93,7 @@ function methodDescription(value: string): string {
         stripe: 'Process payments via Stripe Checkout. Requires STRIPE_KEY and STRIPE_SECRET environment variables.',
         on_site:
             'Allow attendees to pay at the venue during check-in. Orders are marked as pending until staff confirms payment.',
-        paypal:
-            'Process payments via PayPal Checkout. Requires PAYPAL_MODE and PayPal client credentials; webhook id populated via `php artisan paypal:webhook:register`.',
+        paypal: 'Process payments via PayPal Checkout. Requires PAYPAL_MODE and PayPal client credentials; webhook id populated via `php artisan paypal:webhook:register`.',
     };
 
     return map[value] ?? '';
@@ -189,7 +193,7 @@ function saveInvoice() {
                         <select
                             id="currency"
                             v-model="currencyForm.currency"
-                            class="block w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                            class="block w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none"
                         >
                             <option
                                 v-for="option in availableCurrencies"
@@ -215,11 +219,7 @@ function saveInvoice() {
                                 v-if="savingCurrency"
                                 class="mr-1.5 size-4 animate-spin"
                             />
-                            {{
-                                savingCurrency
-                                    ? 'Saving...'
-                                    : 'Save Currency'
-                            }}
+                            {{ savingCurrency ? 'Saving...' : 'Save Currency' }}
                         </Button>
                         <span
                             v-if="savedCurrency"

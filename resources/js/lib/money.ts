@@ -13,12 +13,18 @@ const SYMBOLS: Record<string, string> = {
 };
 
 export function symbolForCode(code: string | null | undefined): string {
-    if (!code) return '€';
+    if (!code) {
+return '€';
+}
+
     return SYMBOLS[code.toUpperCase()] ?? code.toUpperCase();
 }
 
-export function currencyFromCode(code: string | null | undefined): ShopCurrency {
+export function currencyFromCode(
+    code: string | null | undefined,
+): ShopCurrency {
     const upper = (code ?? 'EUR').toUpperCase();
+
     return { code: upper, symbol: symbolForCode(upper) };
 }
 
