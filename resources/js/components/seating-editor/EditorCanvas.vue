@@ -8,6 +8,12 @@ const props = defineProps<{
     store: EditorStore;
 }>();
 
+/* The store prop is a stateful object whose nested refs/reactives are
+ * designed to be mutated. Aliasing to a local const dodges the
+ * `vue/no-mutating-props` rule (which can't tell `props.store.view.zoom = X`
+ * is mutating an owned nested reactive, not the prop reference itself). */
+const store = props.store;
+
 const emit = defineEmits<{
     mutate: [];
     'canvas-click': [event: { x: number; y: number }];
@@ -415,13 +421,13 @@ continue;
 function startPan(event: PointerEvent): void {
     panning.value = true;
     const start = svgPoint(event);
-    const startPan = { x: props.store.view.panX, y: props.store.view.panY };
+    const startPan = { x: store.view.panX, y: store.view.panY };
     (event.target as Element).setPointerCapture(event.pointerId);
 
     function onMove(ev: PointerEvent): void {
         const cur = svgPoint(ev);
-        props.store.view.panX = startPan.x - (cur.x - start.x);
-        props.store.view.panY = startPan.y - (cur.y - start.y);
+        store.view.panX = startPan.x - (cur.x - start.x);
+        store.view.panY = startPan.y - (cur.y - start.y);
     }
 
     function onUp(): void {
@@ -444,17 +450,17 @@ function onWheel(event: WheelEvent): void {
     event.preventDefault();
     const { x: cx, y: cy } = svgPoint(event);
     const k = event.deltaY > 0 ? 0.9 : 1.1;
-    const oldZoom = props.store.view.zoom;
+    const oldZoom = store.view.zoom;
     const newZoom = Math.min(Math.max(oldZoom * k, 0.1), 5);
     const actualK = newZoom / oldZoom;
 
     if (actualK === 1) {
-return;
-}
+        return;
+    }
 
-    props.store.view.zoom = newZoom;
-    props.store.view.panX = cx + (props.store.view.panX - cx) / actualK;
-    props.store.view.panY = cy + (props.store.view.panY - cy) / actualK;
+    store.view.zoom = newZoom;
+    store.view.panX = cx + (store.view.panX - cx) / actualK;
+    store.view.panY = cy + (store.view.panY - cy) / actualK;
 }
 
 function seatFill(

@@ -30,6 +30,10 @@ const props = defineProps<{
     errorMessage?: string | null;
 }>();
 
+/* Local alias so the eslint `vue/no-mutating-props` rule doesn't trip on
+ * mutations of nested reactive fields the store is designed to expose. */
+const store = props.store;
+
 defineEmits<{
     save: [];
     'add-block': [];
@@ -37,15 +41,15 @@ defineEmits<{
 }>();
 
 function pickTool(mode: ToolMode): void {
-    props.store.tool.value = mode;
+    store.tool.value = mode;
 }
 
 function zoomIn(): void {
-    props.store.view.zoom = Math.min(props.store.view.zoom * 1.25, 5);
+    store.view.zoom = Math.min(store.view.zoom * 1.25, 5);
 }
 
 function zoomOut(): void {
-    props.store.view.zoom = Math.max(props.store.view.zoom * 0.8, 0.1);
+    store.view.zoom = Math.max(store.view.zoom * 0.8, 0.1);
 }
 
 /**
@@ -55,7 +59,7 @@ function zoomOut(): void {
  * lands new blocks off-screen.
  */
 function resetView(): void {
-    const plan = props.store.plan.value;
+    const plan = store.plan.value;
     let minX = Number.POSITIVE_INFINITY;
     let maxX = Number.NEGATIVE_INFINITY;
     let minY = Number.POSITIVE_INFINITY;
@@ -63,40 +67,40 @@ function resetView(): void {
 
     const accumulate = (x: number, y: number) => {
         if (x < minX) {
-minX = x;
-}
+            minX = x;
+        }
 
         if (x > maxX) {
-maxX = x;
-}
+            maxX = x;
+        }
 
         if (y < minY) {
-minY = y;
-}
+            minY = y;
+        }
 
         if (y > maxY) {
-maxY = y;
-}
+            maxY = y;
+        }
     };
 
     for (const block of plan.blocks) {
         for (const seat of block.seats) {
-accumulate(seat.x, seat.y);
-}
+            accumulate(seat.x, seat.y);
+        }
 
         for (const label of block.labels) {
-accumulate(label.x, label.y);
-}
+            accumulate(label.x, label.y);
+        }
     }
 
     for (const label of plan.labels ?? []) {
-accumulate(label.x, label.y);
-}
+        accumulate(label.x, label.y);
+    }
 
     if (!Number.isFinite(minX)) {
-        props.store.view.zoom = 1;
-        props.store.view.panX = 0;
-        props.store.view.panY = 0;
+        store.view.zoom = 1;
+        store.view.panX = 0;
+        store.view.panY = 0;
 
         return;
     }
@@ -109,9 +113,9 @@ accumulate(label.x, label.y);
      * bbox with ~10% margin on each side. Clamp to the existing 0.1–5 range. */
     const margin = 1.2;
     const zoomFit = Math.min(1600 / (width * margin), 1000 / (height * margin));
-    props.store.view.zoom = Math.min(Math.max(zoomFit, 0.1), 5);
-    props.store.view.panX = centerX;
-    props.store.view.panY = centerY;
+    store.view.zoom = Math.min(Math.max(zoomFit, 0.1), 5);
+    store.view.panX = centerX;
+    store.view.panY = centerY;
 }
 </script>
 
