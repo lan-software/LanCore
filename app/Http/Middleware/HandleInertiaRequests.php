@@ -9,6 +9,7 @@ use App\Domain\Event\Models\Event;
 use App\Domain\Integration\Models\IntegrationApp;
 use App\Domain\Program\Enums\Permission as ProgramPermission;
 use App\Domain\Seating\Enums\Permission as SeatingPermission;
+use App\Domain\Shop\Support\CurrencyResolver;
 use App\Domain\Ticketing\Enums\Permission as TicketingPermission;
 use App\Enums\RoleName;
 use App\Models\OrganizationSetting;
@@ -121,6 +122,12 @@ class HandleInertiaRequests extends Middleware
                 'mailpit_url' => config('app.demo_mailpit_url'),
             ] : null,
             'announcements' => fn () => app(ActiveAnnouncementsProvider::class)->forCurrentUser($request->user()),
+            'shop' => fn () => [
+                'currency' => [
+                    'code' => CurrencyResolver::upperCode(),
+                    'symbol' => CurrencyResolver::symbol(),
+                ],
+            ],
             'unreadNotificationsCount' => fn () => $user ? $user->unreadNotifications()->whereNull('archived_at')->count() : 0,
             'recentNotifications' => fn () => $user
                 ? $user->notifications()->whereNull('archived_at')->latest()->limit(5)->get()->map(fn ($n) => [

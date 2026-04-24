@@ -27,6 +27,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { formatCents } from '@/lib/money';
 import { dashboard, login } from '@/routes';
 import type { Event, TicketAddon, TicketType } from '@/types/domain';
 
@@ -55,7 +56,7 @@ const props = defineProps<{
 }>();
 
 function formatPrice(cents: number): string {
-    return (cents / 100).toFixed(2) + ' €';
+    return formatCents(cents);
 }
 
 function formatDate(dateString: string): string {

@@ -16,6 +16,7 @@ use App\Domain\Shop\Models\GlobalPurchaseCondition;
 use App\Domain\Shop\Models\Order;
 use App\Domain\Shop\Models\PaymentProviderCondition;
 use App\Domain\Shop\Models\PurchaseRequirement;
+use App\Domain\Shop\Models\ShopSetting;
 use App\Domain\Shop\Models\Voucher;
 use App\Domain\Shop\PaymentProviders\PaymentProviderManager;
 use App\Domain\Ticketing\Models\Addon;
@@ -232,7 +233,16 @@ class CartController extends Controller
     public function reviewCheckout(Request $request): Response|RedirectResponse
     {
         $request->validate([
-            'payment_method' => ['required', 'string', Rule::enum(PaymentMethod::class)],
+            'payment_method' => [
+                'required',
+                'string',
+                Rule::enum(PaymentMethod::class),
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (is_string($value) && ! ShopSetting::isPaymentMethodEnabled($value)) {
+                        $fail(__('shop.checkout.payment_method_disabled'));
+                    }
+                },
+            ],
         ]);
 
         $cart = Cart::forUser($request->user());
@@ -310,7 +320,16 @@ class CartController extends Controller
     public function checkout(Request $request): RedirectResponse|\Symfony\Component\HttpFoundation\Response
     {
         $request->validate([
-            'payment_method' => ['required', 'string', Rule::enum(PaymentMethod::class)],
+            'payment_method' => [
+                'required',
+                'string',
+                Rule::enum(PaymentMethod::class),
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (is_string($value) && ! ShopSetting::isPaymentMethodEnabled($value)) {
+                        $fail(__('shop.checkout.payment_method_disabled'));
+                    }
+                },
+            ],
         ]);
 
         $cart = Cart::forUser($request->user());

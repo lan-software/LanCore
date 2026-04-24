@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatCents } from '@/lib/money';
 import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import type { BreadcrumbItem } from '@/types';
 import type { Ticket } from '@/types/domain';
@@ -394,9 +395,9 @@ const statusVariant: Record<
                             class="flex items-center justify-between"
                         >
                             <span class="font-medium">{{ addon.name }}</span>
-                            <span class="text-sm text-muted-foreground"
-                                >{{ (addon.price / 100).toFixed(2) }} €</span
-                            >
+                            <span class="text-sm text-muted-foreground">{{
+                                formatCents(addon.price)
+                            }}</span>
                         </li>
                     </ul>
                 </CardContent>

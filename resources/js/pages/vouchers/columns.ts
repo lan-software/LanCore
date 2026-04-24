@@ -5,6 +5,7 @@ import { h } from 'vue';
 import VoucherAuditController from '@/actions/App/Domain/Shop/Http/Controllers/VoucherAuditController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatCents } from '@/lib/money';
 import type { Voucher } from '@/types/domain';
 
 function sortableHeader(label: string) {
@@ -60,7 +61,7 @@ export const columns: ColumnDef<Voucher>[] = [
                 return h(
                     'span',
                     { class: 'text-muted-foreground' },
-                    (voucher.discount_amount! / 100).toFixed(2) + ' €',
+                    formatCents(voucher.discount_amount!),
                 );
             }
 

@@ -19,6 +19,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { currencyFromCode, formatCents } from '@/lib/money';
 import { index as usersIndexRoute } from '@/routes/users';
 import type { BreadcrumbItem } from '@/types';
 import type { Role, User } from '@/types/auth';
@@ -41,8 +42,8 @@ function hasRole(roleName: string): boolean {
     return props.user.roles.some((r) => r.name === roleName);
 }
 
-function formatCurrency(cents: number): string {
-    return (cents / 100).toFixed(2) + ' €';
+function formatOrderCurrency(order: Order): string {
+    return formatCents(order.total, currencyFromCode(order.currency));
 }
 
 function formatDate(dateString: string): string {
@@ -259,7 +260,7 @@ const ticketStatusVariant: Record<
                                     >
                                 </TableCell>
                                 <TableCell class="text-right font-medium">{{
-                                    formatCurrency(order.total)
+                                    formatOrderCurrency(order)
                                 }}</TableCell>
                                 <TableCell
                                     class="text-sm text-muted-foreground"

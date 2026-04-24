@@ -8,18 +8,16 @@
     "herd_mcp": false,
     "mcp": true,
     "nightwatch_mcp": false,
-    "packages": [
-        "laravel/fortify"
-    ],
     "sail": true,
     "skills": [
         "cashier-stripe-development",
+        "fortify-development",
+        "laravel-best-practices",
         "pulse-development",
         "wayfinder-development",
         "configuring-horizon",
         "pest-testing",
         "inertia-vue-development",
-        "tailwindcss-development",
-        "fortify-development"
+        "tailwindcss-development"
     ]
 }

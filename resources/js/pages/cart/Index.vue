@@ -18,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { formatCents } from '@/lib/money';
 import { index as shopIndex } from '@/routes/shop';
 import type { Event } from '@/types/domain';
 
@@ -58,7 +59,7 @@ const props = defineProps<{
 }>();
 
 function formatPrice(cents: number): string {
-    return (cents / 100).toFixed(2) + ' €';
+    return formatCents(cents);
 }
 
 const { t } = useI18n();

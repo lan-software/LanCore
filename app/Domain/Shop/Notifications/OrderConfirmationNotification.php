@@ -2,6 +2,7 @@
 
 namespace App\Domain\Shop\Notifications;
 
+use App\Domain\Shop\Enums\Currency;
 use App\Domain\Shop\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -25,6 +26,7 @@ class OrderConfirmationNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $order = $this->order->load(['orderLines', 'event', 'voucher']);
+        $currency = Currency::tryFrom((string) $order->currency) ?? Currency::EUR;
 
         $message = (new MailMessage)
             ->subject(__('shop.notifications.order_confirmation.subject', ['id' => $order->id]))
@@ -38,30 +40,25 @@ class OrderConfirmationNotification extends Notification implements ShouldQueue
         $message->line('---');
 
         foreach ($order->orderLines as $line) {
-            $price = number_format($line->total_price / 100, 2, '.', ',');
-            $message->line("{$line->quantity}x {$line->description} — {$price} €");
+            $message->line("{$line->quantity}x {$line->description} — ".$currency->formatCents($line->total_price));
         }
 
         $message->line('---');
 
-        $subtotal = number_format($order->subtotal / 100, 2, '.', ',');
-        $message->line(__('shop.notifications.order_confirmation.subtotal_line', ['amount' => "{$subtotal} €"]));
+        $message->line(__('shop.notifications.order_confirmation.subtotal_line', ['amount' => $currency->formatCents($order->subtotal)]));
 
         if ($order->discount > 0) {
-            $discount = number_format($order->discount / 100, 2, '.', ',');
-
             if ($order->voucher?->code) {
                 $message->line(__('shop.notifications.order_confirmation.discount_voucher_line', [
                     'code' => $order->voucher->code,
-                    'amount' => "{$discount} €",
+                    'amount' => $currency->formatCents($order->discount),
                 ]));
             } else {
-                $message->line(__('shop.notifications.order_confirmation.discount_line', ['amount' => "{$discount} €"]));
+                $message->line(__('shop.notifications.order_confirmation.discount_line', ['amount' => $currency->formatCents($order->discount)]));
             }
         }
 
-        $total = number_format($order->total / 100, 2, '.', ',');
-        $message->line(__('shop.notifications.order_confirmation.total_line', ['amount' => "{$total} €"]));
+        $message->line(__('shop.notifications.order_confirmation.total_line', ['amount' => $currency->formatCents($order->total)]));
         $message->line(__('shop.notifications.order_confirmation.payment_line', ['method' => $order->payment_method->label()]));
 
         $message->action(__('shop.notifications.order_confirmation.action'), url('/tickets'));

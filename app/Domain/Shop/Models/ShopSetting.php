@@ -38,6 +38,7 @@ class ShopSetting extends Model
         return static::get('enabled_payment_methods', [
             'stripe' => true,
             'on_site' => true,
+            'paypal' => false,
         ]);
     }
 
@@ -46,5 +47,17 @@ class ShopSetting extends Model
         $methods = static::enabledPaymentMethods();
 
         return $methods[$method] ?? true;
+    }
+
+    public static function currency(): string
+    {
+        $fallback = strtolower((string) (config('cashier.currency') ?: 'eur'));
+
+        return strtolower((string) (static::get('currency', $fallback) ?: $fallback));
+    }
+
+    public static function setCurrency(string $code): void
+    {
+        static::set('currency', strtolower($code));
     }
 }

@@ -62,7 +62,29 @@ This document describes the requirements for all external interfaces of the LanC
 - `CASHIER_CURRENCY_LOCALE` — Locale for currency formatting (e.g., `de_DE`)
 - Config file: `config/cashier.php`
 
-### 3.2 S3-Compatible Object Storage (IF-S3)
+### 3.2 PayPal Payment API (IF-PAYPAL)
+
+| Req ID | Requirement |
+|--------|------------|
+| IF-PAYPAL-001 | The system shall integrate with the PayPal REST API via the `srmklive/paypal` package (the upstream of `blendbyte/laravel-paypal`) using PHP namespace `Srmklive\PayPal\Services\PayPal`. |
+| IF-PAYPAL-002 | The system shall create PayPal Orders v2 via `createOrder` / `capturePaymentOrder` for ticket and add-on purchases; each order's `purchase_unit` shall carry the LanCore order id in `custom_id` and the invoice number in `invoice_id`. |
+| IF-PAYPAL-003 | The system shall handle PayPal webhooks at `POST /webhooks/paypal`, verifying signatures locally via `verifyWebHookLocally()` using `PAYPAL_WEBHOOK_ID` before processing any payload. |
+| IF-PAYPAL-004 | The system shall fulfill orders on `PAYMENT.CAPTURE.COMPLETED` via the same idempotent `FulfillOrder` path used by the return-URL flow; duplicate webhooks shall be detected as `already_fulfilled` and take no action. |
+| IF-PAYPAL-005 | The system shall mark orders as `Failed` on `PAYMENT.CAPTURE.DENIED` / `PAYMENT.CAPTURE.REVERSED` events. |
+| IF-PAYPAL-006 | The system shall use HTTPS for all PayPal API communication, relying on the package default (`validate_ssl=true`). |
+| IF-PAYPAL-007 | The system shall store PayPal API credentials as environment variables, never in code. |
+| IF-PAYPAL-008 | The system shall provide `php artisan paypal:webhook:register {url?}` to create or update the webhook subscription with PayPal and persist the returned id to `.env` as `PAYPAL_WEBHOOK_ID`. |
+| IF-PAYPAL-009 | The system shall construct the `PayPalClient` per call (factory closure), never as a long-lived singleton, to remain Octane-safe. |
+
+**Configuration:**
+- `PAYPAL_MODE` — `sandbox` or `live` (default `sandbox`)
+- `PAYPAL_SANDBOX_CLIENT_ID` / `PAYPAL_SANDBOX_CLIENT_SECRET` — sandbox credentials
+- `PAYPAL_LIVE_CLIENT_ID` / `PAYPAL_LIVE_CLIENT_SECRET` / `PAYPAL_LIVE_APP_ID` — live credentials
+- `PAYPAL_WEBHOOK_ID` — populated by the artisan command above
+- `PAYPAL_TIMEOUT`, `PAYPAL_CONNECT_TIMEOUT`, `PAYPAL_MAX_RETRIES` — HTTP client tuning
+- Config file: `config/paypal.php`
+
+### 3.3 S3-Compatible Object Storage (IF-S3)
 
 | Req ID | Requirement |
 |--------|------------|
@@ -85,7 +107,7 @@ This document describes the requirements for all external interfaces of the LanC
 - Config file: `config/filesystems.php`
 - Helper: `App\Support\StorageRole::public()` / `::private()`
 
-### 3.3 SMTP Mail Service (IF-SMTP)
+### 3.4 SMTP Mail Service (IF-SMTP)
 
 | Req ID | Requirement |
 |--------|------------|
@@ -110,7 +132,7 @@ This document describes the requirements for all external interfaces of the LanC
 - `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`
 - Config file: `config/mail.php`
 
-### 3.4 Web Push Service (IF-PUSH)
+### 3.5 Web Push Service (IF-PUSH)
 
 | Req ID | Requirement |
 |--------|------------|
@@ -123,7 +145,7 @@ This document describes the requirements for all external interfaces of the LanC
 
 **Data model:** `push_subscriptions` table with user association
 
-### 3.5 LanCore Integration API (IF-INTAPI)
+### 3.6 LanCore Integration API (IF-INTAPI)
 
 | Req ID | Requirement |
 |--------|------------|
@@ -136,7 +158,7 @@ This document describes the requirements for all external interfaces of the LanC
 
 **Endpoints defined in:** `routes/api-integrations.php`
 
-### 3.5a Integration Declarative Configuration (IF-INTCFG)
+### 3.6a Integration Declarative Configuration (IF-INTCFG)
 
 A file-based interface that lets operators declare the full set of integration apps (slug, host, callback, scopes, nav, webhooks, pre-shared token + webhook secrets) in one place, rather than creating them through the UI or the imperative Artisan commands.
 
@@ -174,7 +196,7 @@ return [
 
 **Primary consumer:** the `lan-software` Helm umbrella chart populates every env var from operator `values.yaml` plus a shared auto-generated seed Secret. See SSDD §5.4.5 for the reconciler flow.
 
-### 3.6 LanCore SSO Interface (IF-SSO)
+### 3.7 LanCore SSO Interface (IF-SSO)
 
 | Req ID | Requirement |
 |--------|------------|
@@ -190,7 +212,7 @@ return [
 3. LanCore redirects to integration callback URL with authorization code
 4. Integration exchanges code for user information via API
 
-### 3.7 Webhook Delivery Interface (IF-WHK)
+### 3.8 Webhook Delivery Interface (IF-WHK)
 
 | Req ID | Requirement |
 |--------|------------|
@@ -213,7 +235,7 @@ return [
 | `TicketPurchased` | Order fulfilled |
 | `IntegrationAccessed` | Integration API accessed |
 
-### 3.8 Redis Cache Interface (IF-REDIS)
+### 3.9 Redis Cache Interface (IF-REDIS)
 
 | Req ID | Requirement |
 |--------|------------|
@@ -227,7 +249,7 @@ return [
 - `CACHE_STORE=redis`
 - Config file: `config/database.php` (redis section), `config/cache.php`
 
-### 3.9 PostgreSQL Database Interface (IF-DB)
+### 3.10 PostgreSQL Database Interface (IF-DB)
 
 | Req ID | Requirement |
 |--------|------------|
@@ -242,7 +264,7 @@ return [
 - `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
 - Config file: `config/database.php`
 
-### 3.11 LanCore Entrance API — Ticket Signing Keys (IF-JWKS)
+### 3.12 LanCore Entrance API — Ticket Signing Keys (IF-JWKS)
 
 | Req ID | Requirement |
 |--------|------------|
@@ -253,7 +275,7 @@ return [
 | IF-JWKS-005 | The endpoint shall return HTTP 401 when the Bearer token is invalid or missing |
 | IF-JWKS-006 | The endpoint shall return HTTP 200 with the JWKS object even when only retired (unexpired) keys remain; an empty `keys` array is returned only when no keys have ever been generated |
 
-### 3.12 LanCore Entrance API — Validate Endpoint Error Codes (IF-VALIDATE)
+### 3.13 LanCore Entrance API — Validate Endpoint Error Codes (IF-VALIDATE)
 
 | Req ID | Requirement |
 |--------|------------|
@@ -264,7 +286,7 @@ return [
 | IF-VALIDATE-005 | The endpoint shall return `decision: "revoked"` when no `tickets` row matches the HMAC-derived nonce hash (ticket cancelled or nonce rotated) |
 | IF-VALIDATE-006 | The existing decision values (`valid`, `already_checked_in`, `invalid`, `denied_by_policy`, `override_possible`, `verification_required`, `payment_required`) shall remain unchanged |
 
-### 3.10 Prometheus Metrics Interface (IF-PROM)
+### 3.11 Prometheus Metrics Interface (IF-PROM)
 
 | Req ID | Requirement |
 |--------|------------|

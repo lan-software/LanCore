@@ -351,7 +351,7 @@ export type PaymentProviderCondition = {
 
 export type OrderStatus = 'pending' | 'completed' | 'failed' | 'refunded';
 
-export type PaymentMethod = 'stripe' | 'on_site';
+export type PaymentMethod = 'stripe' | 'on_site' | 'paypal';
 
 export type Order = {
     id: number;
@@ -363,6 +363,7 @@ export type Order = {
     subtotal: number;
     discount: number;
     total: number;
+    currency: string;
     user_id: number;
     event_id: number;
     voucher_id: number | null;

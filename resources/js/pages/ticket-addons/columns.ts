@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
 import { h } from 'vue';
 import AddonAuditController from '@/actions/App/Domain/Ticketing/Http/Controllers/AddonAuditController';
 import { Button } from '@/components/ui/button';
+import { formatCents } from '@/lib/money';
 import type { TicketAddon } from '@/types/domain';
 
 function sortableHeader(label: string) {
@@ -58,7 +59,7 @@ export const columns: ColumnDef<TicketAddon>[] = [
             h(
                 'span',
                 { class: 'text-muted-foreground' },
-                (Number(row.getValue('price')) / 100).toFixed(2) + ' €',
+                formatCents(Number(row.getValue('price'))),
             ),
     },
     {

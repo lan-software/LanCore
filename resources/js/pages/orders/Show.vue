@@ -18,6 +18,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { currencyFromCode, formatCents } from '@/lib/money';
 import { index as ordersIndex } from '@/routes/orders';
 import type { BreadcrumbItem } from '@/types';
 import type { Order } from '@/types/domain';
@@ -25,6 +26,8 @@ import type { Order } from '@/types/domain';
 const props = defineProps<{
     order: Order;
 }>();
+
+const orderCurrency = currencyFromCode(props.order.currency);
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: ordersIndex().url },
@@ -36,7 +39,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 function formatCurrency(cents: number): string {
-    return (cents / 100).toFixed(2) + ' €';
+    return formatCents(cents, orderCurrency);
 }
 
 function formatDate(dateString: string): string {

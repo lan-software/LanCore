@@ -6,6 +6,7 @@ use App\Domain\Event\Models\Event;
 use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Jobs\GenerateReceiptPdf;
 use App\Domain\Shop\Models\Order;
+use App\Domain\Shop\Support\CurrencyResolver;
 use App\Domain\Ticketing\Actions\UpdateTicketAssignments;
 use App\Domain\Ticketing\Enums\TicketStatus;
 use App\Domain\Ticketing\Models\EntranceAuditLog;
@@ -262,7 +263,7 @@ class EntranceController extends Controller
 
     public function stats(): JsonResponse
     {
-        $currency = strtoupper((string) config('cashier.currency', 'eur'));
+        $currency = CurrencyResolver::upperCode();
 
         $totalScans = EntranceAuditLog::where('action', 'validate')->count();
         $checkedIn = EntranceAuditLog::whereIn('action', ['checkin', 'verify_checkin'])->count();
@@ -427,7 +428,7 @@ class EntranceController extends Controller
     private function buildPaymentObject(Ticket $ticket): array
     {
         $order = $ticket->order;
-        $currency = strtoupper((string) config('cashier.currency', 'eur'));
+        $currency = strtoupper((string) ($order->currency ?: 'eur'));
 
         return [
             'amount' => number_format($order->total / 100, 2, '.', ''),

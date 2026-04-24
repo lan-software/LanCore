@@ -4,11 +4,13 @@ namespace App\Domain\Orchestration\Http\Controllers;
 
 use App\Domain\Api\Clients\Tmt2Client;
 use App\Domain\Orchestration\Models\GameServer;
+use App\Domain\Shop\Support\CurrencyResolver;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Stripe\Balance;
 use Stripe\Exception\AuthenticationException;
 use Stripe\Stripe;
 
@@ -38,11 +40,32 @@ class ExternalApiController extends Controller
                     'has_publishable_key' => $stripeKey !== '',
                     'has_secret_key' => $stripeSecret !== '',
                     'has_webhook_secret' => ((string) config('cashier.webhook.secret')) !== '',
-                    'currency' => strtoupper((string) config('cashier.currency', 'usd')),
+                    'currency' => CurrencyResolver::upperCode(),
                     'currency_locale' => config('cashier.currency_locale', 'en'),
                 ],
+                'paypal' => $this->paypalStatus(),
             ],
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function paypalStatus(): array
+    {
+        $mode = (string) config('paypal.mode', 'sandbox');
+        $envCreds = (array) config("paypal.{$mode}", []);
+        $clientId = (string) ($envCreds['client_id'] ?? '');
+        $clientSecret = (string) ($envCreds['client_secret'] ?? '');
+        $webhookId = (string) config('paypal.webhook_id', '');
+
+        return [
+            'enabled' => $clientId !== '' && $clientSecret !== '',
+            'mode' => $mode,
+            'has_client_id' => $clientId !== '',
+            'has_client_secret' => $clientSecret !== '',
+            'has_webhook_id' => $webhookId !== '',
+        ];
     }
 
     public function testTmt2(Request $request): JsonResponse
@@ -75,7 +98,7 @@ class ExternalApiController extends Controller
 
         try {
             Stripe::setApiKey($secret);
-            $balance = \Stripe\Balance::retrieve();
+            $balance = Balance::retrieve();
 
             return response()->json([
                 'status' => 'connected',

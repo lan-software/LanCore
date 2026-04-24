@@ -59,16 +59,20 @@ use App\Domain\Seating\Events\SeatAssignmentInvalidated;
 use App\Domain\Seating\Listeners\NotifyAffectedAssignees;
 use App\Domain\Seating\Models\SeatPlan;
 use App\Domain\Seating\Policies\SeatPlanPolicy;
+use App\Domain\Shop\Actions\FulfillOrder;
 use App\Domain\Shop\Events\CartItemAdded;
 use App\Domain\Shop\Events\TicketPurchased;
+use App\Domain\Shop\Http\Controllers\PayPalWebhookController;
 use App\Domain\Shop\Listeners\HandleStripeCheckoutCompleted;
 use App\Domain\Shop\Listeners\HandleTicketPurchasedWebhooks;
 use App\Domain\Shop\Models\GlobalPurchaseCondition;
 use App\Domain\Shop\Models\PaymentProviderCondition;
 use App\Domain\Shop\Models\PurchaseRequirement;
+use App\Domain\Shop\Models\ShopSetting;
 use App\Domain\Shop\Models\Voucher;
 use App\Domain\Shop\PaymentProviders\OnSitePaymentProvider;
 use App\Domain\Shop\PaymentProviders\PaymentProviderManager;
+use App\Domain\Shop\PaymentProviders\PayPalPaymentProvider;
 use App\Domain\Shop\PaymentProviders\StripePaymentProvider;
 use App\Domain\Shop\Policies\GlobalPurchaseConditionPolicy;
 use App\Domain\Shop\Policies\PaymentProviderConditionPolicy;
@@ -102,10 +106,13 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Cashier\Events\WebhookReceived;
 use Laravel\Telescope\TelescopeServiceProvider;
+use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -120,9 +127,22 @@ class AppServiceProvider extends ServiceProvider
             $manager = new PaymentProviderManager;
             $manager->register($app->make(StripePaymentProvider::class));
             $manager->register($app->make(OnSitePaymentProvider::class));
+            $manager->register($app->make(PayPalPaymentProvider::class));
 
             return $manager;
         });
+
+        $paypalClientFactory = fn (): PayPalClient => tap(new PayPalClient, static function (PayPalClient $client): void {
+            $client->setApiCredentials(config('paypal'));
+            $client->getAccessToken();
+        });
+
+        $this->app->bind(PayPalPaymentProvider::class, fn () => new PayPalPaymentProvider($paypalClientFactory));
+
+        $this->app->bind(PayPalWebhookController::class, fn ($app) => new PayPalWebhookController(
+            $paypalClientFactory,
+            $app->make(FulfillOrder::class),
+        ));
 
         $this->app->tag([Tmt2MatchHandler::class], 'match_handlers');
         $this->app->when(ResolveMatchHandler::class)
@@ -143,6 +163,49 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configurePolicies();
         $this->configureEvents();
+        $this->configurePaypalAutoEnable();
+    }
+
+    /**
+     * Auto-enable the PayPal payment method the first time credentials are
+     * detected at boot. An explicit admin-toggled value (true or false) is
+     * never overridden — only the initial "never set" state is filled in.
+     */
+    protected function configurePaypalAutoEnable(): void
+    {
+        if ($this->app->runningInConsole() && ! $this->app->runningUnitTests()) {
+            return;
+        }
+
+        try {
+            if (! Schema::hasTable('shop_settings')) {
+                return;
+            }
+        } catch (\Throwable) {
+            return;
+        }
+
+        if (! $this->paypalCredentialsPresent()) {
+            return;
+        }
+
+        $methods = ShopSetting::get('enabled_payment_methods');
+
+        if (is_array($methods) && array_key_exists('paypal', $methods)) {
+            return;
+        }
+
+        $current = is_array($methods) ? $methods : ShopSetting::enabledPaymentMethods();
+        $current['paypal'] = true;
+        ShopSetting::set('enabled_payment_methods', $current);
+    }
+
+    protected function paypalCredentialsPresent(): bool
+    {
+        $mode = (string) config('paypal.mode', 'sandbox');
+        $env = config("paypal.{$mode}", []);
+
+        return ! empty($env['client_id'] ?? '') && ! empty($env['client_secret'] ?? '');
     }
 
     /**
@@ -203,6 +266,10 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
     }
 
     /**

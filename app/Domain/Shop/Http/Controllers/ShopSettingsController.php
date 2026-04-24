@@ -2,6 +2,8 @@
 
 namespace App\Domain\Shop\Http\Controllers;
 
+use App\Domain\Shop\Enums\Currency;
+use App\Domain\Shop\Http\Requests\UpdateShopCurrencyRequest;
 use App\Domain\Shop\Models\ShopSetting;
 use App\Domain\Shop\PaymentProviders\PaymentProviderManager;
 use App\Http\Controllers\Controller;
@@ -23,6 +25,15 @@ class ShopSettingsController extends Controller
                 'invoice_footer' => ShopSetting::get('invoice_footer', ''),
                 'invoice_notes' => ShopSetting::get('invoice_notes', ''),
             ],
+            'currency' => ShopSetting::currency(),
+            'availableCurrencies' => array_map(
+                fn (Currency $currency): array => [
+                    'value' => $currency->value,
+                    'label' => $currency->label(),
+                    'symbol' => $currency->symbol(),
+                ],
+                Currency::cases(),
+            ),
         ]);
     }
 
@@ -49,6 +60,13 @@ class ShopSettingsController extends Controller
         foreach ($validated as $key => $value) {
             ShopSetting::set($key, $value ?? '');
         }
+
+        return back();
+    }
+
+    public function updateCurrency(UpdateShopCurrencyRequest $request): RedirectResponse
+    {
+        ShopSetting::setCurrency($request->string('currency')->value());
 
         return back();
     }

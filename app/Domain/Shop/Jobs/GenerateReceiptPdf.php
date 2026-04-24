@@ -26,7 +26,7 @@ class GenerateReceiptPdf implements ShouldQueue
         $order = Order::with(['user', 'event', 'orderLines', 'voucher', 'confirmedBy'])->findOrFail($this->orderId);
 
         $org = OrganizationSetting::forInvoice();
-        $currency = strtoupper(config('cashier.currency', 'eur'));
+        $currency = strtoupper((string) ($order->currency ?: 'eur'));
         $invoiceFooter = ShopSetting::get('invoice_footer', '');
 
         $pdf = Pdf::loadView('pdf.receipt', [

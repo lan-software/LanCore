@@ -26,7 +26,7 @@ class GenerateInvoicePdf implements ShouldQueue
         $order = Order::with(['user', 'event', 'orderLines', 'voucher'])->findOrFail($this->orderId);
 
         $org = OrganizationSetting::forInvoice();
-        $currency = strtoupper(config('cashier.currency', 'eur'));
+        $currency = strtoupper((string) ($order->currency ?: 'eur'));
         $invoiceFooter = ShopSetting::get('invoice_footer', '');
         $invoiceNotes = ShopSetting::get('invoice_notes', '');
 

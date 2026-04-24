@@ -4,18 +4,20 @@ import { CheckCircle } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { currencyFromCode, formatCents } from '@/lib/money';
 import { index as shopIndex } from '@/routes/shop';
 import { index as ticketsIndex } from '@/routes/tickets';
 import type { Order } from '@/types/domain';
 
-defineProps<{
+const props = defineProps<{
     order: Order;
 }>();
 
 const { t } = useI18n();
+const orderCurrency = currencyFromCode(props.order.currency);
 
 function formatPrice(cents: number): string {
-    return (cents / 100).toFixed(2) + ' €';
+    return formatCents(cents, orderCurrency);
 }
 </script>
 

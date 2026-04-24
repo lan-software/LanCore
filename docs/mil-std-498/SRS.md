@@ -129,7 +129,7 @@ The LanCore CSCI shall support the following operational states:
 | SHP-F-002 | The software shall support polymorphic cart items (tickets, add-ons via Purchasable interface) |
 | SHP-F-003 | The software shall create Stripe Checkout sessions via StripePaymentProvider |
 | SHP-F-004 | The software shall support on-site payment via OnSitePaymentProvider; orders remain pending until admin confirms payment received, which triggers fulfillment |
-| SHP-F-005 | The software shall select payment provider via PaymentProviderManager factory |
+| SHP-F-005 | The software shall select payment provider via PaymentProviderManager factory (Stripe, OnSite, PayPal) |
 | SHP-F-006 | The software shall track order statuses: pending, confirmed, failed, refunded, cancelled |
 | SHP-F-007 | The software shall support vouchers with types: fixed_amount, percentage |
 | SHP-F-008 | The software shall validate voucher applicability per event |
@@ -142,6 +142,9 @@ The LanCore CSCI shall support the following operational states:
 | SHP-F-015 | The software shall fulfill orders via Stripe `checkout.session.completed` webhook when the user does not return to the checkout success URL |
 | SHP-F-016 | The software shall ensure order fulfillment is idempotent — both the success URL redirect and the webhook may trigger fulfillment, but tickets shall only be created once |
 | SHP-F-017 | The software shall provide a user-facing "My Orders" view listing the authenticated user's orders with order details, line items, and associated tickets |
+| SHP-F-018 | The software shall expose a single, admin-configurable shop currency via `shop_settings.currency`, resolved by `CurrencyResolver`; orders shall snapshot the currency in force at creation time to `orders.currency`; all historical invoices and receipts shall render the snapshot, not the live setting |
+| SHP-F-019 | The software shall create PayPal Orders v2 via `PayPalPaymentProvider` using `createOrder` and `capturePaymentOrder` from the `srmklive/paypal` package |
+| SHP-F-020 | The software shall fulfill PayPal orders idempotently via both the return-URL capture and the `PAYMENT.CAPTURE.COMPLETED` webhook, verified locally via `verifyWebHookLocally` using `PAYPAL_WEBHOOK_ID` |
 
 #### 3.2.4 Program Domain (CSCI-PRG)
 

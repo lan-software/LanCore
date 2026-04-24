@@ -153,6 +153,9 @@ File: tests/Feature/Ticketing/GroupTicketTest.php
 | SHP-F-015 | Stripe webhook fulfillment | `Domain/Shop/Listeners/HandleStripeCheckoutCompleted.php` | `Shop/StripeWebhookTest.php` (4 tests) | Covered |
 | SHP-F-016 | Idempotent order fulfillment | `Domain/Shop/Actions/FulfillOrder.php` | `Shop/StripeWebhookTest.php` (duplicate test) | Covered |
 | SHP-F-017 | User-facing "My Orders" views | `Domain/Shop/Http/Controllers/UserOrderController.php` | `Shop/UserOrderControllerTest.php` (5 tests) | Covered |
+| SHP-F-018 | Configurable currency + per-order snapshot | `Domain/Shop/Enums/Currency.php`, `Domain/Shop/Support/CurrencyResolver.php`, `Domain/Shop/Models/ShopSetting.php`, migration `*_add_currency_to_orders_table.php` | `Shop/ShopCurrencySettingTest.php` (5 tests), `Unit/Domain/Shop/CurrencyResolverTest.php` (7 tests) | Covered |
+| SHP-F-019 | PayPal Orders v2 provider | `Domain/Shop/PaymentProviders/PayPalPaymentProvider.php` | `Shop/PayPalCheckoutTest.php` (4 tests), `Unit/Domain/Shop/PayPalPaymentProviderTest.php` (4 tests) | Covered |
+| SHP-F-020 | PayPal webhook verification + idempotent fulfillment | `Domain/Shop/Http/Controllers/PayPalWebhookController.php`, `Console/Commands/PayPalWebhookRegister.php` | `Shop/PayPalWebhookTest.php` (6 tests) | Covered |
 
 ### Shop Gaps — Proposed Tests
 

@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
 import { h } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { currencyFromCode, formatCents } from '@/lib/money';
 import type { Order } from '@/types/domain';
 
 function sortableHeader(label: string) {
@@ -43,8 +44,8 @@ function formatDate(dateString: string): string {
     });
 }
 
-function formatCurrency(cents: number): string {
-    return (cents / 100).toFixed(2) + ' €';
+function formatOrderCurrency(order: Order): string {
+    return formatCents(order.total, currencyFromCode(order.currency));
 }
 
 const statusVariant: Record<
@@ -153,7 +154,7 @@ export const columns: ColumnDef<Order>[] = [
             h(
                 'span',
                 { class: 'font-medium' },
-                formatCurrency(row.getValue<number>('total')),
+                formatOrderCurrency(row.original),
             ),
     },
     {

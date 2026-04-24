@@ -3,6 +3,7 @@
 namespace App\Domain\Shop\Concerns;
 
 use App\Domain\Shop\Contracts\PurchasableDependency;
+use App\Domain\Shop\Support\CurrencyResolver;
 
 /**
  * Provides default Purchasable implementations for Eloquent models.
@@ -46,7 +47,7 @@ trait InteractsWithShop
         return [
             'name' => $this->getTitle(),
             'description' => $this->getDescription() ?? $this->getTitle(),
-            'currency' => config('cashier.currency', 'eur'),
+            'currency' => CurrencyResolver::code(),
             'unit_amount' => $this->getUnitPrice(),
             'quantity' => $quantity,
         ];
@@ -57,7 +58,7 @@ trait InteractsWithShop
      */
     public function formattedPrice(): string
     {
-        return number_format($this->getUnitPrice() / 100, 2, ',', '.').' '.strtoupper(config('cashier.currency', 'eur'));
+        return CurrencyResolver::formatCents($this->getUnitPrice());
     }
 
     /**

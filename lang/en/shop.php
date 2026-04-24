@@ -8,6 +8,9 @@ return [
         'voucher_invalid' => 'Invalid or expired voucher code.',
         'voucher_wrong_event' => 'This voucher is not valid for this event.',
     ],
+    'checkout' => [
+        'payment_method_disabled' => 'The selected payment method is not enabled.',
+    ],
     'order' => [
         'only_on_site' => 'Only on-site orders can be manually confirmed.',
         'already_paid' => 'This order has already been marked as paid.',

@@ -44,7 +44,7 @@ class StripePaymentProvider implements PaymentProvider
 
             $coupon = $stripe->coupons->create([
                 'amount_off' => $order->discount,
-                'currency' => config('cashier.currency', 'eur'),
+                'currency' => $order->currency ?: 'eur',
                 'duration' => 'once',
                 'name' => $order->voucher?->code
                     ? "Voucher: {$order->voucher->code}"
@@ -94,17 +94,17 @@ class StripePaymentProvider implements PaymentProvider
      */
     private function buildStripeLineItems(Order $order): array
     {
-        return $order->orderLines->map(function (OrderLine $line): array {
-            return [
-                'price_data' => [
-                    'currency' => config('cashier.currency', 'eur'),
-                    'product_data' => [
-                        'name' => $line->description,
-                    ],
-                    'unit_amount' => $line->unit_price,
+        $currency = $order->currency ?: 'eur';
+
+        return $order->orderLines->map(fn (OrderLine $line): array => [
+            'price_data' => [
+                'currency' => $currency,
+                'product_data' => [
+                    'name' => $line->description,
                 ],
-                'quantity' => $line->quantity,
-            ];
-        })->all();
+                'unit_amount' => $line->unit_price,
+            ],
+            'quantity' => $line->quantity,
+        ])->all();
     }
 }

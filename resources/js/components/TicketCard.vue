@@ -7,6 +7,7 @@ import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { formatCents } from '@/lib/money';
 import { picker as seatPickerRoute } from '@/routes/events/seats';
 import type { SeatAssignment, Ticket } from '@/types/domain';
 
@@ -37,7 +38,7 @@ function confirmRotate(e: Event): void {
 const showQrCode = ref(false);
 
 function formatPrice(cents: number): string {
-    return (cents / 100).toFixed(2) + ' €';
+    return formatCents(cents);
 }
 
 function formatDate(dateString: string): string {

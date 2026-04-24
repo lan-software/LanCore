@@ -330,8 +330,9 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | discount | decimal | Discount amount (from voucher) |
 | total | decimal | Order total after discount |
 | voucher_id | bigint FK (nullable) | References vouchers.id |
-| provider_session_id | varchar (nullable) | Payment provider session ID (Stripe: checkout session) |
-| provider_transaction_id | varchar (nullable) | Payment provider transaction ID (Stripe: payment intent) |
+| provider_session_id | varchar (nullable) | Payment provider session ID (Stripe: checkout session; PayPal: Orders v2 id) |
+| provider_transaction_id | varchar (nullable) | Payment provider transaction ID (Stripe: payment intent; PayPal: capture id) |
+| currency | char(3) | ISO-4217 currency snapshot (lowercase); captured at order creation from `CurrencyResolver::code()` so historical invoices/receipts never retroactively change if the shop currency is reconfigured. |
 | metadata | text (nullable) | JSON-encoded fulfillment data (ticket types, quantities, addon IDs) |
 | paid_at | timestamp (nullable) | Timestamp when payment was confirmed (on-site payments) |
 | created_at | timestamp | |
@@ -445,6 +446,26 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | purchasable_id | bigint | Polymorphic ID |
 | created_at | timestamp | |
 | updated_at | timestamp | |
+
+#### 4.5.11 shop_settings (key/value configuration)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| key | varchar (unique) | Setting key |
+| value | json | Setting value |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+**Known keys:**
+
+| Key | Value shape | Description |
+|-----|-------------|-------------|
+| `enabled_payment_methods` | `{"stripe": bool, "on_site": bool, "paypal": bool}` | Toggles for provider selection in checkout |
+| `currency` | string (ISO-4217, lowercase) | Configured shop currency; resolved by `CurrencyResolver` with fallback to `config('cashier.currency')` then `'eur'`; snapshotted onto each new order. |
+| `invoice_prefix` | string | Prefix for generated invoice numbers |
+| `invoice_footer` | string | Invoice/receipt footer text |
+| `invoice_notes` | string | Invoice notes block |
 
 ### 4.6 Sponsoring
 

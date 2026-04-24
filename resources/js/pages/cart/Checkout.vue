@@ -16,6 +16,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { formatCents } from '@/lib/money';
 import { show as cartShow } from '@/routes/cart';
 import { acknowledge as cartAcknowledge } from '@/routes/cart';
 import type { Event } from '@/types/domain';
@@ -62,7 +63,7 @@ const props = defineProps<{
 }>();
 
 function formatPrice(cents: number): string {
-    return (cents / 100).toFixed(2) + ' €';
+    return formatCents(cents);
 }
 
 // Track acknowledgement state using reactive for proper Vue tracking

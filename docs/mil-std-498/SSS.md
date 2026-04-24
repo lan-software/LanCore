@@ -99,6 +99,8 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-SHP-008 | The system shall track checkout acknowledgements per user |
 | CAP-SHP-009 | The system shall fulfill orders asynchronously via Stripe `checkout.session.completed` webhook when users do not return to the checkout success URL |
 | CAP-SHP-010 | The system shall ensure order fulfillment is idempotent — both the success URL redirect and webhook may trigger fulfillment, but tickets shall only be created once |
+| CAP-SHP-011 | The system shall support PayPal Checkout (Orders v2) as a payment provider, with idempotent fulfillment via both the return-URL capture and the `PAYMENT.CAPTURE.COMPLETED` webhook |
+| CAP-SHP-012 | The system shall expose a single admin-configurable shop currency, snapshotted per-order at creation time so historical documents remain stable across currency reconfigurations |
 
 #### 3.2.4 Programs and Scheduling (CAP-PRG)
 
@@ -272,6 +274,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | Interface | Type | Direction | Protocol |
 |-----------|------|-----------|----------|
 | Stripe API | Payment processing | Bidirectional | HTTPS/REST |
+| PayPal API (Orders v2) | Payment processing | Bidirectional | HTTPS/REST |
 | S3/Minio Storage | File storage | Bidirectional | HTTPS/S3 Protocol |
 | SMTP Server | Email delivery | Outbound | SMTP/TLS |
 | Web Push Service | Push notifications | Outbound | HTTPS (RFC 8030) |

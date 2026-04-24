@@ -62,6 +62,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('shop-settings', [ShopSettingsController::class, 'index'])->name('shop-settings.index');
     Route::patch('shop-settings/payment-methods', [ShopSettingsController::class, 'updatePaymentMethods'])->name('shop-settings.update-payment-methods');
     Route::patch('shop-settings/invoice', [ShopSettingsController::class, 'updateInvoiceConfig'])->name('shop-settings.update-invoice');
+    Route::patch('shop-settings/currency', [ShopSettingsController::class, 'updateCurrency'])->name('shop-settings.update-currency');
 
     // Admin: Payment Provider Conditions
     Route::get('payment-provider-conditions', [PaymentProviderConditionController::class, 'index'])->name('payment-provider-conditions.index');

@@ -28,6 +28,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
         $middleware->preventRequestForgery(except: ['stripe/*', 'webhooks/*']);
 
+        $middleware->trustProxies(
+            at: env('TRUSTED_PROXIES', '*'),
+            headers: Illuminate\Http\Request::HEADER_X_FORWARDED_FOR
+                | Illuminate\Http\Request::HEADER_X_FORWARDED_HOST
+                | Illuminate\Http\Request::HEADER_X_FORWARDED_PORT
+                | Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO,
+        );
+
         // Prepend globally so every request (web + API + health) gets an ID
         // and metrics are tracked before the response is sent.
         $middleware->prepend(AddRequestId::class);

@@ -11,6 +11,7 @@ use App\Domain\Shop\Models\Order;
 use App\Domain\Shop\Models\OrderLine;
 use App\Domain\Shop\Models\Voucher;
 use App\Domain\Shop\PaymentProviders\PaymentProviderManager;
+use App\Domain\Shop\Support\CurrencyResolver;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\TicketType;
 use App\Models\User;
@@ -115,6 +116,7 @@ class CreateOrder
                 'subtotal' => $subtotal,
                 'discount' => $discount,
                 'total' => $total,
+                'currency' => CurrencyResolver::code(),
                 'user_id' => $user->id,
                 'event_id' => $event->id,
                 'voucher_id' => $voucher?->id,

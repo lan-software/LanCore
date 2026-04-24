@@ -4,8 +4,10 @@ import {
     CheckCircle2,
     CreditCard,
     Banknote,
+    Coins,
     FileText,
     Loader2,
+    Wallet,
 } from 'lucide-vue-next';
 import { reactive, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
@@ -31,9 +33,17 @@ interface InvoiceConfig {
     invoice_notes: string;
 }
 
+interface CurrencyOption {
+    value: string;
+    label: string;
+    symbol: string;
+}
+
 const props = defineProps<{
     paymentMethods: PaymentMethodInfo[];
     invoiceConfig: InvoiceConfig;
+    currency: string;
+    availableCurrencies: CurrencyOption[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -67,7 +77,10 @@ function save() {
 }
 
 function methodIcon(value: string) {
-    return value === 'stripe' ? CreditCard : Banknote;
+    if (value === 'stripe') return CreditCard;
+    if (value === 'paypal') return Wallet;
+
+    return Banknote;
 }
 
 function methodDescription(value: string): string {
@@ -75,9 +88,56 @@ function methodDescription(value: string): string {
         stripe: 'Process payments via Stripe Checkout. Requires STRIPE_KEY and STRIPE_SECRET environment variables.',
         on_site:
             'Allow attendees to pay at the venue during check-in. Orders are marked as pending until staff confirms payment.',
+        paypal:
+            'Process payments via PayPal Checkout. Requires PAYPAL_MODE and PayPal client credentials; webhook id populated via `php artisan paypal:webhook:register`.',
     };
 
     return map[value] ?? '';
+}
+
+function methodAccent(value: string): {
+    wrapper: string;
+    icon: string;
+} {
+    if (value === 'stripe') {
+        return {
+            wrapper: 'bg-violet-50 dark:bg-violet-950',
+            icon: 'text-violet-600 dark:text-violet-400',
+        };
+    }
+
+    if (value === 'paypal') {
+        return {
+            wrapper: 'bg-sky-50 dark:bg-sky-950',
+            icon: 'text-sky-600 dark:text-sky-400',
+        };
+    }
+
+    return {
+        wrapper: 'bg-emerald-50 dark:bg-emerald-950',
+        icon: 'text-emerald-600 dark:text-emerald-400',
+    };
+}
+
+const currencyForm = reactive({ currency: props.currency });
+const savingCurrency = ref(false);
+const savedCurrency = ref(false);
+
+function saveCurrency() {
+    savingCurrency.value = true;
+    savedCurrency.value = false;
+    router.patch(
+        '/shop-settings/currency',
+        { currency: currencyForm.currency },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                savedCurrency.value = true;
+                setTimeout(() => (savedCurrency.value = false), 2000);
+            },
+            onFinish: () => (savingCurrency.value = false),
+        },
+    );
 }
 
 // Invoice config
@@ -114,6 +174,63 @@ function saveInvoice() {
                 description="Configure payment providers and shop behavior."
             />
 
+            <!-- Currency -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-2 text-sm font-semibold">
+                    <Coins class="size-4 text-muted-foreground" />
+                    Currency
+                </div>
+
+                <div
+                    class="rounded-xl border border-sidebar-border/70 p-5 dark:border-sidebar-border"
+                >
+                    <div class="grid gap-2">
+                        <Label for="currency">Shop Currency</Label>
+                        <select
+                            id="currency"
+                            v-model="currencyForm.currency"
+                            class="block w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                        >
+                            <option
+                                v-for="option in availableCurrencies"
+                                :key="option.value"
+                                :value="option.value"
+                            >
+                                {{ option.label }} ({{ option.symbol }})
+                            </option>
+                        </select>
+                        <p class="text-xs text-muted-foreground">
+                            All new orders snapshot this currency on checkout.
+                            Historical invoices and receipts keep the currency
+                            they were placed in.
+                        </p>
+                    </div>
+
+                    <div class="mt-4 flex items-center gap-3">
+                        <Button
+                            :disabled="savingCurrency"
+                            @click="saveCurrency"
+                        >
+                            <Loader2
+                                v-if="savingCurrency"
+                                class="mr-1.5 size-4 animate-spin"
+                            />
+                            {{
+                                savingCurrency
+                                    ? 'Saving...'
+                                    : 'Save Currency'
+                            }}
+                        </Button>
+                        <span
+                            v-if="savedCurrency"
+                            class="flex items-center gap-1 text-sm text-green-600"
+                        >
+                            <CheckCircle2 class="size-4" /> Saved
+                        </span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Payment Providers -->
             <div class="space-y-4">
                 <h2 class="text-sm font-semibold">Payment Providers</h2>
@@ -128,20 +245,12 @@ function saveInvoice() {
                         <div class="flex items-center gap-3">
                             <div
                                 class="flex size-10 items-center justify-center rounded-lg"
-                                :class="
-                                    method.value === 'stripe'
-                                        ? 'bg-violet-50 dark:bg-violet-950'
-                                        : 'bg-emerald-50 dark:bg-emerald-950'
-                                "
+                                :class="methodAccent(method.value).wrapper"
                             >
                                 <component
                                     :is="methodIcon(method.value)"
                                     class="size-5"
-                                    :class="
-                                        method.value === 'stripe'
-                                            ? 'text-violet-600 dark:text-violet-400'
-                                            : 'text-emerald-600 dark:text-emerald-400'
-                                    "
+                                    :class="methodAccent(method.value).icon"
                                 />
                             </div>
                             <div>

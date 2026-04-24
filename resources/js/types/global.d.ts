@@ -30,6 +30,12 @@ declare module '@inertiajs/core' {
                 logoUrl: string | null;
                 name: string | null;
             };
+            shop: {
+                currency: {
+                    code: string;
+                    symbol: string;
+                };
+            };
             vapidPublicKey: string;
             integrationLinks: {
                 url: string;

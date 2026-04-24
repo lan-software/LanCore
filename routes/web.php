@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Event\Http\Controllers\PublicEventController;
+use App\Domain\Shop\Http\Controllers\PayPalWebhookController;
 use App\Http\Controllers\CookiePreferenceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventContextController;
@@ -27,6 +28,8 @@ Route::post('cookie-preferences', [CookiePreferenceController::class, 'update'])
 Route::get('files/{path}', StorageFileController::class)
     ->where('path', '.*')
     ->name('storage.file');
+
+Route::post('webhooks/paypal', PayPalWebhookController::class)->name('webhooks.paypal');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');

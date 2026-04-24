@@ -6,6 +6,7 @@ use App\Domain\Event\Models\Event;
 use App\Domain\Shop\Enums\OrderStatus;
 use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Models\Order;
+use App\Domain\Shop\Support\CurrencyResolver;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -31,6 +32,7 @@ class OrderFactory extends Factory
             'subtotal' => $subtotal,
             'discount' => 0,
             'total' => $subtotal,
+            'currency' => CurrencyResolver::code(),
             'user_id' => User::factory(),
             'event_id' => Event::factory(),
             'voucher_id' => null,

@@ -9,6 +9,7 @@ import {
     Loader2,
     PlugZap,
     Server,
+    Wallet,
     XCircle,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -37,10 +38,19 @@ interface StripeConnection {
     currency_locale: string;
 }
 
+interface PayPalConnection {
+    enabled: boolean;
+    mode: string;
+    has_client_id: boolean;
+    has_client_secret: boolean;
+    has_webhook_id: boolean;
+}
+
 defineProps<{
     connections: {
         tmt2: ApiConnection;
         stripe: StripeConnection;
+        paypal: PayPalConnection;
     };
 }>();
 
@@ -531,6 +541,126 @@ const stripeButtonLabel = computed(() => {
                     <code class="block">STRIPE_SECRET=sk_test_...</code>
                     <code class="block">STRIPE_WEBHOOK_SECRET=whsec_...</code>
                     <code class="block">CASHIER_CURRENCY=eur</code>
+                </div>
+            </div>
+
+            <!-- PayPal -->
+            <div
+                class="rounded-xl border border-sidebar-border/70 p-6 dark:border-sidebar-border"
+            >
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="flex size-10 items-center justify-center rounded-lg bg-sky-50 dark:bg-sky-950"
+                        >
+                            <Wallet
+                                class="size-5 text-sky-600 dark:text-sky-400"
+                            />
+                        </div>
+                        <div>
+                            <h3 class="text-base font-medium">PayPal</h3>
+                            <p class="text-sm text-muted-foreground">
+                                Payment processing via PayPal Orders v2 (srmklive/paypal)
+                            </p>
+                        </div>
+                    </div>
+                    <Badge
+                        :class="
+                            connections.paypal.enabled
+                                ? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400'
+                                : 'bg-gray-50 text-gray-500 dark:bg-gray-900 dark:text-gray-500'
+                        "
+                    >
+                        {{
+                            connections.paypal.enabled ? 'Enabled' : 'Disabled'
+                        }}
+                    </Badge>
+                </div>
+
+                <dl class="mt-4 space-y-2 text-sm">
+                    <div class="flex items-center justify-between">
+                        <dt class="text-muted-foreground">Mode</dt>
+                        <dd class="text-xs font-mono uppercase">
+                            {{ connections.paypal.mode }}
+                        </dd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <dt class="text-muted-foreground">Client ID</dt>
+                        <dd>
+                            <Badge
+                                v-if="connections.paypal.has_client_id"
+                                variant="outline"
+                                class="border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                            >
+                                <CheckCircle2 class="mr-1 size-3" />
+                                Configured
+                            </Badge>
+                            <Badge
+                                v-else
+                                variant="outline"
+                                class="border-red-300 text-red-600 dark:border-red-700 dark:text-red-400"
+                            >
+                                <XCircle class="mr-1 size-3" />
+                                Missing
+                            </Badge>
+                        </dd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <dt class="text-muted-foreground">Client Secret</dt>
+                        <dd>
+                            <Badge
+                                v-if="connections.paypal.has_client_secret"
+                                variant="outline"
+                                class="border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                            >
+                                <CheckCircle2 class="mr-1 size-3" />
+                                Configured
+                            </Badge>
+                            <Badge
+                                v-else
+                                variant="outline"
+                                class="border-red-300 text-red-600 dark:border-red-700 dark:text-red-400"
+                            >
+                                <XCircle class="mr-1 size-3" />
+                                Missing
+                            </Badge>
+                        </dd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <dt class="text-muted-foreground">Webhook ID</dt>
+                        <dd>
+                            <Badge
+                                v-if="connections.paypal.has_webhook_id"
+                                variant="outline"
+                                class="border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                            >
+                                <CheckCircle2 class="mr-1 size-3" />
+                                Configured
+                            </Badge>
+                            <Badge
+                                v-else
+                                variant="outline"
+                                class="border-yellow-300 text-yellow-700 dark:border-yellow-700 dark:text-yellow-400"
+                            >
+                                <AlertCircle class="mr-1 size-3" />
+                                Not set
+                            </Badge>
+                        </dd>
+                    </div>
+                </dl>
+
+                <div
+                    class="mt-4 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground"
+                >
+                    <p class="font-medium">Environment Variables</p>
+                    <code class="mt-1 block">PAYPAL_MODE=sandbox</code>
+                    <code class="block">PAYPAL_SANDBOX_CLIENT_ID=...</code>
+                    <code class="block">PAYPAL_SANDBOX_CLIENT_SECRET=...</code>
+                    <code class="block">PAYPAL_WEBHOOK_ID=...</code>
+                    <p class="mt-2 text-[11px]">
+                        Populate PAYPAL_WEBHOOK_ID by running
+                        <code>php artisan paypal:webhook:register</code>.
+                    </p>
                 </div>
             </div>
 

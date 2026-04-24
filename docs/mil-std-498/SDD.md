@@ -459,17 +459,30 @@ Provides distributed caching with Redis tag support:
 
 Factory pattern for payment provider selection:
 
-- Resolves `StripePaymentProvider` or `OnSitePaymentProvider` based on configuration
+- Resolves `StripePaymentProvider`, `OnSitePaymentProvider`, or `PayPalPaymentProvider` based on configuration
 - Implements `PaymentProvider` contract
 - Returns `PaymentResult` objects
 
-#### 5.2.3 Webhook Listeners
+Providers are registered in `AppServiceProvider::register()` with an Octane-safe resolver closure (PayPal client is constructed per-call, not cached as a singleton).
+
+#### 5.2.3 Currency Configuration
+
+Shop currency is a single configurable value per deployment (not a per-order user choice).
+
+- Source of truth: `shop_settings.currency` (ISO-4217, lowercase).
+- Resolution order (runtime): `ShopSetting::currency()` → `config('cashier.currency')` → `'eur'` — encapsulated in `App\Domain\Shop\Support\CurrencyResolver`.
+- Allowed values: `EUR`, `USD`, `GBP`, `CHF` (see `App\Domain\Shop\Enums\Currency`).
+- Order snapshot: every new order persists the resolver output to `orders.currency` at creation time. Every historical render (invoice PDF, receipt PDF, `OrderConfirmationNotification`, admin order views, Stripe/PayPal line items on payment capture retry) reads `$order->currency` — not the live resolver — so reconfiguring the shop currency never retroactively mutates historical documents.
+- Inertia share: `HandleInertiaRequests::share()` includes `shop.currency = {code, symbol}` for the current live shop currency. Frontend uses `resources/js/lib/money.ts` (`formatCents`, `currencyFromCode`) to format either the live value (product grids, cart) or an order's snapshot value.
+
+#### 5.2.4 Webhook Listeners
 
 Event-driven listeners handle side effects from external systems:
 
 | Listener | Event | Responsibility |
 |----------|-------|---------------|
 | HandleStripeCheckoutCompleted | `WebhookReceived` (Cashier) | Fulfills orders on `checkout.session.completed` webhook |
+| PayPalWebhookController (invokable) | HTTP `POST /webhooks/paypal` | Verifies signature locally and fulfills orders on `PAYMENT.CAPTURE.COMPLETED`; marks failed on `DENIED`/`VOIDED` |
 | HandleTicketPurchasedWebhooks | `TicketPurchased` | Dispatches webhook notifications to integration apps |
 
 **HandleStripeCheckoutCompleted** design:
@@ -480,7 +493,14 @@ Event-driven listeners handle side effects from external systems:
 - Delegates to `FulfillOrder` action (idempotent — skips if already `Completed`)
 - Gracefully ignores malformed or irrelevant webhooks
 
-#### 5.2.4 Contracts
+**PayPalWebhookController** design:
+- Verifies incoming webhook signature via `verifyWebHookLocally()` using `PAYPAL_WEBHOOK_ID`
+- Looks up order by the `custom_id` field on the captured PayPal order (set to `Order::$id` at create time)
+- On `PAYMENT.CAPTURE.COMPLETED`: records `provider_transaction_id` (capture id), delegates to `FulfillOrder` (same idempotent path used by the return-URL capture)
+- On `PAYMENT.CAPTURE.DENIED` / `CHECKOUT.ORDER.APPROVAL_REVERSED`: marks the order `Failed`
+- Route is registered outside the `web` middleware group so CSRF is not enforced
+
+#### 5.2.5 Contracts
 
 | Contract | Purpose |
 |----------|---------|

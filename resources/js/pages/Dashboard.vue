@@ -29,6 +29,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatCents as formatCentsShared } from '@/lib/money';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
@@ -124,10 +125,7 @@ const roleLabels: Record<string, string> = {
 };
 
 function formatCents(cents: number): string {
-    return new Intl.NumberFormat('de-DE', {
-        style: 'currency',
-        currency: 'EUR',
-    }).format(cents / 100);
+    return formatCentsShared(cents);
 }
 </script>
 

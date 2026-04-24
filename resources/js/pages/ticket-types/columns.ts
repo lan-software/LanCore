@@ -5,6 +5,7 @@ import { h } from 'vue';
 import TicketTypeAuditController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketTypeAuditController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatCents } from '@/lib/money';
 import type { TicketType } from '@/types/domain';
 
 function sortableHeader(label: string) {
@@ -59,7 +60,7 @@ export const columns: ColumnDef<TicketType>[] = [
             h(
                 'span',
                 { class: 'text-muted-foreground' },
-                (Number(row.getValue('price')) / 100).toFixed(2) + ' €',
+                formatCents(Number(row.getValue('price'))),
             ),
     },
     {

@@ -15,6 +15,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { currencySymbol } from '@/lib/money';
 import { index as vouchersIndex } from '@/routes/vouchers';
 import type { BreadcrumbItem } from '@/types';
 
@@ -22,6 +23,8 @@ defineProps<{
     events: { id: number; name: string }[];
     selectedEventId?: number | null;
 }>();
+
+const amountPlaceholder = `e.g. 500 for 5.00 ${currencySymbol()}`;
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: vouchersIndex().url },
@@ -98,7 +101,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 name="discount_amount"
                                 type="number"
                                 min="0"
-                                placeholder="e.g. 500 for 5.00 €"
+                                :placeholder="amountPlaceholder"
                             />
                             <InputError :message="errors.discount_amount" />
                         </div>
