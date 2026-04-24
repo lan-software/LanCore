@@ -7,7 +7,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 
 /**
  * Fired after a confirmed invalidating seat-plan update has released an
- * assignment. The SeatAssignment row is already deleted at dispatch time, so
+ * assignment. The SeatAssignment row is already deleted at dispatch time so
  * we carry the snapshot data inline.
  *
  * @see docs/mil-std-498/SRS.md SET-F-013
@@ -23,8 +23,9 @@ class SeatAssignmentInvalidated
         public readonly int $ticketId,
         public readonly int $userId,
         public readonly SeatPlan $seatPlan,
-        public readonly string $previousSeatId,
-        public readonly ?string $previousBlockId,
+        public readonly int $previousSeatId,
+        public readonly ?string $previousSeatTitle,
+        public readonly ?int $previousBlockId,
         public readonly string $reason,
     ) {}
 }

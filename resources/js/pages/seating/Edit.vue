@@ -5,6 +5,14 @@ import { computed, ref, watch } from 'vue';
 import SeatPlanController from '@/actions/App/Domain/Seating/Http/Controllers/SeatPlanController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import { celebrateSave } from '@/components/seating-editor/celebrate';
+import type {
+    EditorPlan,
+    IdMap,
+} from '@/components/seating-editor/editor-types';
+import EditorShell from '@/components/seating-editor/EditorShell.vue';
+import type { SaveStatus } from '@/components/seating-editor/EditorToolbar.vue';
+import SeatMapCanvas from '@/components/SeatMapCanvas.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -50,43 +58,83 @@ function executeDelete() {
     });
 }
 
-/**
- * Structured-edit form.
- *
- * We DO NOT name the field `data` — Inertia's `useForm()` already exposes a
- * public `data()` method on the form instance, which shadows any field with
- * the same name and causes `v-model="form.data"` to resolve to the method's
- * source code instead of our string value. The field is renamed `dataJson`
- * here; `transform()` below maps it back to the server's `data` key.
- */
-const form = useForm({
+const activeTab = ref<'editor' | 'preview' | 'categories' | 'json'>('editor');
+
+const initialPlan = computed<EditorPlan>(() => ({
+    id: props.seatPlan.id,
     name: props.seatPlan.name,
-    dataJson: JSON.stringify(props.seatPlan.data, null, 2),
-    confirm_invalidations: false as boolean,
+    event_id: props.seatPlan.event_id,
+    background_image_url: props.seatPlan.background_image_url ?? null,
+    labels: (props.seatPlan.labels ?? []).map((label) => ({ ...label })),
+    blocks: (props.seatPlan.blocks ?? []).map((block) => ({
+        ...block,
+        rows: block.rows ?? [],
+    })),
+}));
+
+const workingPlan = ref<EditorPlan>(
+    JSON.parse(JSON.stringify(initialPlan.value)),
+);
+
+function serialiseForServer(plan: EditorPlan): string {
+    return JSON.stringify({ blocks: plan.blocks, labels: plan.labels ?? [] });
+}
+
+/**
+ * Inertia's `useForm` exposes a public `.data()` method on the form instance.
+ * A field literally named `data` would shadow it — `form.data = "..."` then
+ * overwrites the method and `form.patch()` throws "typedForm.data is not a
+ * function" when Inertia reads the payload. Keep the field as `dataJson` and
+ * map it back to the server's `data` key via `.transform()`.
+ */
+const form = useForm<{
+    name: string;
+    dataJson: string;
+    background_image_url: string | null;
+    confirm_invalidations: boolean;
+}>({
+    name: initialPlan.value.name,
+    dataJson: serialiseForServer(initialPlan.value),
+    background_image_url: initialPlan.value.background_image_url ?? null,
+    confirm_invalidations: false,
 }).transform((d) => ({
     name: d.name,
     data: d.dataJson,
+    background_image_url: d.background_image_url,
     confirm_invalidations: d.confirm_invalidations,
 }));
 
-const parsedData = computed<SeatPlanData | null>({
-    get() {
-        try {
-            return JSON.parse(form.dataJson) as SeatPlanData;
-        } catch {
-            return null;
-        }
-    },
-    set(value) {
-        if (value !== null) {
-            form.dataJson = JSON.stringify(value, null, 2);
-        }
-    },
-});
+const idMap = ref<IdMap | undefined>(undefined);
+const saveStatus = ref<SaveStatus>('idle');
+const errorMessage = ref<string | null>(null);
+let savedPillTimeout: number | null = null;
 
-// Invalidations flashed from server when confirm_invalidations was false and
-// the proposed change would orphan existing assignments (SET-F-012).
-const page = usePage<{ flash: { invalidations?: InvalidationRow[] } }>();
+function scheduleSavedPillReset(): void {
+    if (savedPillTimeout !== null) {
+        window.clearTimeout(savedPillTimeout);
+    }
+
+    savedPillTimeout = window.setTimeout(() => {
+        if (saveStatus.value === 'saved') {
+            saveStatus.value = 'idle';
+        }
+
+        savedPillTimeout = null;
+    }, 2000);
+}
+
+function dismissError(): void {
+    saveStatus.value = 'idle';
+    errorMessage.value = null;
+}
+
+const previewData = computed<SeatPlanData>(() => ({
+    blocks: workingPlan.value.blocks,
+}));
+
+const page = usePage<{
+    flash: { invalidations?: InvalidationRow[]; id_map?: IdMap };
+}>();
 const flaggedInvalidations = ref<InvalidationRow[]>([]);
 const showInvalidationDialog = ref(false);
 
@@ -101,16 +149,93 @@ watch(
     { immediate: true, deep: true },
 );
 
-function submit(): void {
-    form.patch(SeatPlanController.update.url(props.seatPlan.id), {
+watch(
+    () => page.props.flash?.id_map,
+    (map) => {
+        if (map) {
+            idMap.value = map;
+        }
+    },
+    { immediate: true, deep: true },
+);
+
+function flattenErrors(
+    errors: Record<string, string | string[] | undefined>,
+): string {
+    const parts: string[] = [];
+
+    for (const value of Object.values(errors)) {
+        if (Array.isArray(value)) {
+            for (const v of value) {
+                if (typeof v === 'string' && v.length > 0) {
+parts.push(v);
+}
+            }
+        } else if (typeof value === 'string' && value.length > 0) {
+            parts.push(value);
+        }
+    }
+
+    return parts.join(' · ');
+}
+
+function save(nextPlan?: EditorPlan): void {
+    if (nextPlan) {
+        workingPlan.value = nextPlan;
+    }
+
+    form.name = workingPlan.value.name;
+    form.dataJson = serialiseForServer(workingPlan.value);
+    form.background_image_url = workingPlan.value.background_image_url ?? null;
+
+    saveStatus.value = 'saving';
+    errorMessage.value = null;
+
+    form.patch(SeatPlanController.update(props.seatPlan.id).url, {
         preserveScroll: true,
+        onSuccess: () => {
+            /* A successful save may still be a two-phase-invalidation pause —
+             * detect it by the presence of the invalidations flash; only
+             * celebrate when the plan actually persisted. */
+            if ((page.props.flash?.invalidations ?? []).length > 0) {
+                saveStatus.value = 'idle';
+
+                return;
+            }
+
+            saveStatus.value = 'saved';
+            celebrateSave(workingPlan.value);
+            scheduleSavedPillReset();
+        },
+        onError: (errors) => {
+            saveStatus.value = 'error';
+            errorMessage.value =
+                flattenErrors(
+                    errors as Record<string, string | string[] | undefined>,
+                ) || null;
+        },
     });
 }
 
 function confirmInvalidations(): void {
     form.confirm_invalidations = true;
-    form.patch(SeatPlanController.update.url(props.seatPlan.id), {
+    saveStatus.value = 'saving';
+    errorMessage.value = null;
+
+    form.patch(SeatPlanController.update(props.seatPlan.id).url, {
         preserveScroll: true,
+        onSuccess: () => {
+            saveStatus.value = 'saved';
+            celebrateSave(workingPlan.value);
+            scheduleSavedPillReset();
+        },
+        onError: (errors) => {
+            saveStatus.value = 'error';
+            errorMessage.value =
+                flattenErrors(
+                    errors as Record<string, string | string[] | undefined>,
+                ) || null;
+        },
         onFinish: () => {
             form.confirm_invalidations = false;
             showInvalidationDialog.value = false;
@@ -124,114 +249,97 @@ function cancelInvalidationDialog(): void {
     flaggedInvalidations.value = [];
     form.confirm_invalidations = false;
 }
+
+const categoryEditorData = computed<SeatPlanData>(() => ({
+    blocks: workingPlan.value.blocks,
+}));
+
+function onCategoryEditorUpdate(next: SeatPlanData): void {
+    workingPlan.value = {
+        ...workingPlan.value,
+        blocks: next.blocks.map((block) => ({
+            ...block,
+            rows:
+                block.rows ??
+                workingPlan.value.blocks.find(
+                    (b) => String(b.id) === String(block.id),
+                )?.rows ??
+                [],
+        })),
+    };
+}
+
+/**
+ * The seatmap-canvas library auto-fits to the bounding box of all content on
+ * each render. When a plan has multiple blocks (offset by `computeNextBlockOffset`
+ * in the editor), the bbox stretches and the library zooms way out. Zoom to
+ * the first block after init so the preview starts at a sensible scale.
+ */
+const previewCanvasRef = ref<InstanceType<typeof SeatMapCanvas> | null>(null);
+
+function onPreviewReady(): void {
+    const firstBlock = workingPlan.value.blocks[0];
+
+    if (!firstBlock) {
+return;
+}
+
+    /* Library's getInstance may lag behind `ready`; poll briefly. */
+    const tryZoom = (attempt = 0) => {
+        const canvas = previewCanvasRef.value;
+
+        if (!canvas) {
+return;
+}
+
+        if (canvas.getInstance() === null && attempt < 10) {
+            window.setTimeout(() => tryZoom(attempt + 1), 50);
+
+            return;
+        }
+
+        canvas.zoomToBlock(String(firstBlock.id));
+    };
+    tryZoom();
+}
+
+const jsonValue = computed<string>({
+    get() {
+        return JSON.stringify(workingPlan.value, null, 2);
+    },
+    set(v) {
+        try {
+            const parsed = JSON.parse(v) as EditorPlan;
+            workingPlan.value = parsed;
+        } catch {
+            // ignore invalid JSON mid-typing
+        }
+    },
+});
 </script>
 
 <template>
     <Head :title="`Edit ${seatPlan.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full max-w-4xl flex-1 flex-col gap-8 p-4">
-            <div>
+        <div class="flex h-full flex-1 flex-col gap-4 p-4">
+            <div class="flex items-center justify-between">
                 <Link
                     :href="seatPlansRoute().url"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
                     &larr; Back to Seat Plans
                 </Link>
-            </div>
 
-            <form @submit.prevent="submit" class="space-y-8">
-                <div class="space-y-4">
-                    <Heading
-                        variant="small"
-                        title="Seat Plan Information"
-                        description="Update the details for this seat plan"
-                    />
-
-                    <div class="grid gap-2">
-                        <Label for="name">Name</Label>
+                <div class="flex items-center gap-2">
+                    <div class="grid gap-1">
+                        <Label for="name" class="sr-only">Name</Label>
                         <Input
                             id="name"
-                            v-model="form.name"
-                            required
-                            placeholder="e.g. Main Hall"
+                            v-model="workingPlan.name"
+                            placeholder="Plan name"
+                            class="w-64"
                         />
-                        <InputError :message="form.errors.name" />
-                    </div>
-
-                    <div class="grid gap-2">
-                        <Label>Event</Label>
-                        <Input
-                            :default-value="seatPlan.event?.name ?? ''"
-                            disabled
-                        />
-                        <p class="text-xs text-muted-foreground">
-                            The event cannot be changed after creation.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Per-block category restriction editor (SET-F-011). Mutates
-                     the same `data` string the textarea below exposes, so
-                     admins can switch freely between structured + raw. -->
-                <div v-if="parsedData" class="space-y-3">
-                    <Heading
-                        variant="small"
-                        :title="$t('seating.admin.categoryEditorTitle')"
-                        :description="
-                            $t('seating.admin.categoryEditorDescription')
-                        "
-                    />
-                    <BlockCategoryEditor
-                        :data="parsedData"
-                        :ticket-categories="ticketCategories"
-                        @update:data="(d) => (parsedData = d)"
-                    />
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="dataJson">Seat Plan Data (JSON)</Label>
-                    <Textarea
-                        id="dataJson"
-                        v-model="form.dataJson"
-                        rows="20"
-                        class="font-mono text-sm"
-                        placeholder='{"blocks": []}'
-                    />
-                    <p class="text-xs text-muted-foreground">
-                        JSON describing blocks, seats, labels, and per-block
-                        <code>allowed_ticket_category_ids</code>.
-                    </p>
-                    <InputError :message="form.errors.data" />
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <Button type="submit" :disabled="form.processing">
-                        {{
-                            form.processing
-                                ? $t('common.saving')
-                                : 'Save Changes'
-                        }}
-                    </Button>
-
-                    <p
-                        v-if="form.recentlySuccessful"
-                        class="text-sm text-muted-foreground"
-                    >
-                        Saved.
-                    </p>
-                </div>
-            </form>
-
-            <div class="border-t pt-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-sm font-medium text-destructive">
-                            Delete Seat Plan
-                        </h3>
-                        <p class="text-sm text-muted-foreground">
-                            Permanently delete this seat plan and all its data.
-                        </p>
                     </div>
                     <Button
                         variant="destructive"
@@ -239,9 +347,120 @@ function cancelInvalidationDialog(): void {
                         @click="showDeleteDialog = true"
                     >
                         <Trash2 class="size-4" />
-                        Delete
                     </Button>
                 </div>
+            </div>
+
+            <div class="flex gap-1 border-b">
+                <button
+                    type="button"
+                    class="border-b-2 px-3 py-2 text-sm transition-colors"
+                    :class="
+                        activeTab === 'editor'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                    "
+                    @click="activeTab = 'editor'"
+                >
+                    {{ $t('seating.admin.editor.tabs.editor') }}
+                </button>
+                <button
+                    type="button"
+                    class="border-b-2 px-3 py-2 text-sm transition-colors"
+                    :class="
+                        activeTab === 'preview'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                    "
+                    @click="activeTab = 'preview'"
+                >
+                    {{ $t('seating.admin.editor.tabs.preview') }}
+                </button>
+                <button
+                    type="button"
+                    class="border-b-2 px-3 py-2 text-sm transition-colors"
+                    :class="
+                        activeTab === 'categories'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                    "
+                    @click="activeTab = 'categories'"
+                >
+                    {{ $t('seating.admin.editor.tabs.categories') }}
+                </button>
+                <button
+                    type="button"
+                    class="border-b-2 px-3 py-2 text-sm transition-colors"
+                    :class="
+                        activeTab === 'json'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                    "
+                    @click="activeTab = 'json'"
+                >
+                    {{ $t('seating.admin.editor.tabs.advancedJson') }}
+                </button>
+            </div>
+
+            <div v-show="activeTab === 'editor'" class="flex-1">
+                <EditorShell
+                    :initial="initialPlan"
+                    :processing="form.processing"
+                    :id-map="idMap"
+                    :save-status="saveStatus"
+                    :error-message="errorMessage"
+                    @save="save"
+                    @dismiss-error="dismissError"
+                />
+            </div>
+
+            <div
+                v-show="activeTab === 'preview'"
+                class="flex-1 overflow-hidden rounded-md border"
+            >
+                <SeatMapCanvas
+                    ref="previewCanvasRef"
+                    :data="previewData"
+                    @ready="onPreviewReady"
+                />
+            </div>
+
+            <div v-show="activeTab === 'categories'" class="flex-1 space-y-3">
+                <Heading
+                    variant="small"
+                    :title="$t('seating.admin.categoryEditorTitle')"
+                    :description="$t('seating.admin.categoryEditorDescription')"
+                />
+                <BlockCategoryEditor
+                    :data="categoryEditorData"
+                    :ticket-categories="ticketCategories"
+                    @update:data="onCategoryEditorUpdate"
+                />
+                <Button @click="save()" :disabled="form.processing">
+                    {{
+                        form.processing
+                            ? $t('common.saving')
+                            : $t('seating.admin.editor.toolbar.save')
+                    }}
+                </Button>
+            </div>
+
+            <div v-show="activeTab === 'json'" class="flex-1 space-y-3">
+                <Label for="dataJson">Seat Plan JSON</Label>
+                <Textarea
+                    id="dataJson"
+                    v-model="jsonValue"
+                    rows="24"
+                    class="font-mono text-sm"
+                />
+                <InputError :message="form.errors.data" />
+                <Button @click="save()" :disabled="form.processing">
+                    {{
+                        form.processing
+                            ? $t('common.saving')
+                            : $t('seating.admin.editor.toolbar.save')
+                    }}
+                </Button>
             </div>
         </div>
 
@@ -265,8 +484,6 @@ function cancelInvalidationDialog(): void {
             </DialogContent>
         </Dialog>
 
-        <!-- Fires when the server reports invalidations on a non-confirmed
-             save. Clicking Confirm re-submits with confirm_invalidations=true. -->
         <InvalidationConfirmDialog
             v-model:open="showInvalidationDialog"
             :invalidations="flaggedInvalidations"

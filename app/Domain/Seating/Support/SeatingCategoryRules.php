@@ -2,15 +2,14 @@
 
 namespace App\Domain\Seating\Support;
 
-use App\Domain\Seating\Models\SeatPlan;
+use App\Domain\Seating\Models\SeatPlanBlock;
+use Illuminate\Support\Collection;
 
 /**
- * Pure helper for reasoning about per-block ticket-category restrictions.
+ * Per-block ticket-category restrictions (SET-F-011).
  *
- * Each block in a seat plan's JSONB `data` may carry an optional
- * `allowed_ticket_category_ids: number[]`. An empty/missing list is treated as
- * open to all categories (permissive default — keeps existing plans working
- * without retroactive edits).
+ * Restrictions live in `seat_plan_block_category_restrictions`. An empty pivot
+ * for a block is treated as accepting every category (permissive default).
  *
  * @see docs/mil-std-498/SSS.md CAP-SET-005
  * @see docs/mil-std-498/SRS.md SET-F-011
@@ -18,64 +17,11 @@ use App\Domain\Seating\Models\SeatPlan;
 class SeatingCategoryRules
 {
     /**
-     * Does the identified block accept a ticket belonging to the given category?
-     * Unknown blocks fall back to `true` because enforcement must happen elsewhere
-     * — we don't punish callers for giving us a stale block id.
+     * Does the block accept a ticket belonging to the given category?
+     * Expects the pivot to be eager-loaded via `with('categoryRestrictions')`
+     * to avoid N+1.
      */
-    public static function blockAccepts(SeatPlan $plan, string $blockId, ?int $categoryId): bool
-    {
-        $block = self::findBlockById($plan, $blockId);
-
-        if ($block === null) {
-            return true;
-        }
-
-        return self::blockAcceptsCategoryList($block, $categoryId);
-    }
-
-    /**
-     * Find the block whose seats contain the given seat id.
-     *
-     * @return array<string, mixed>|null
-     */
-    public static function findBlockForSeat(SeatPlan $plan, string $seatId): ?array
-    {
-        foreach (($plan->data['blocks'] ?? []) as $block) {
-            foreach (($block['seats'] ?? []) as $seat) {
-                if ((string) ($seat['id'] ?? '') === $seatId) {
-                    return $block;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Normalise the allowed-category list of a block. Missing/invalid ⇒ empty
-     * (i.e. open to all).
-     *
-     * @param  array<string, mixed>  $block
-     * @return array<int, int>
-     */
-    public static function allowedCategoryIds(array $block): array
-    {
-        $raw = $block['allowed_ticket_category_ids'] ?? [];
-
-        if (! is_array($raw)) {
-            return [];
-        }
-
-        return array_values(array_filter(array_map(
-            fn ($id): ?int => is_numeric($id) ? (int) $id : null,
-            $raw,
-        ), fn (?int $id): bool => $id !== null));
-    }
-
-    /**
-     * @param  array<string, mixed>  $block
-     */
-    private static function blockAcceptsCategoryList(array $block, ?int $categoryId): bool
+    public static function blockAccepts(SeatPlanBlock $block, ?int $categoryId): bool
     {
         $allowed = self::allowedCategoryIds($block);
 
@@ -91,16 +37,15 @@ class SeatingCategoryRules
     }
 
     /**
-     * @return array<string, mixed>|null
+     * @return array<int, int>
      */
-    private static function findBlockById(SeatPlan $plan, string $blockId): ?array
+    public static function allowedCategoryIds(SeatPlanBlock $block): array
     {
-        foreach (($plan->data['blocks'] ?? []) as $block) {
-            if ((string) ($block['id'] ?? '') === $blockId) {
-                return $block;
-            }
-        }
+        /** @var Collection<int, mixed> $restrictions */
+        $restrictions = $block->relationLoaded('categoryRestrictions')
+            ? $block->getRelation('categoryRestrictions')
+            : $block->categoryRestrictions()->get();
 
-        return null;
+        return $restrictions->pluck('id')->map(fn ($id): int => (int) $id)->values()->all();
     }
 }

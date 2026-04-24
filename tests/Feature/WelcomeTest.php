@@ -96,6 +96,6 @@ it('includes seat plans for the upcoming event', function () {
             fn ($page) => $page
                 ->component('Welcome')
                 ->has('nextEvent.seat_plans', 1)
-                ->has('nextEvent.seat_plans.0.data.blocks', 1)
+                ->has('nextEvent.seat_plans.0.blocks', 1)
         );
 });

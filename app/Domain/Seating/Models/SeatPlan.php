@@ -12,7 +12,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
-#[Fillable(['name', 'event_id', 'data'])]
+/**
+ * Normalized seat plan. Blocks → rows → seats + labels live in their own
+ * tables; the old JSONB blob was retired in the normalization migration.
+ *
+ * @see docs/mil-std-498/SRS.md SET-F-001, SET-F-002, SET-F-003
+ * @see docs/mil-std-498/DBDD.md §4.5 Seating
+ */
+#[Fillable(['name', 'event_id', 'background_image_url'])]
 class SeatPlan extends Model implements AuditableContract
 {
     use Auditable;
@@ -25,26 +32,44 @@ class SeatPlan extends Model implements AuditableContract
         return SeatPlanFactory::new();
     }
 
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'data' => 'array',
-        ];
-    }
-
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
     }
 
+    public function blocks(): HasMany
+    {
+        return $this->hasMany(SeatPlanBlock::class)->orderBy('sort_order');
+    }
+
     /**
-     * @see docs/mil-std-498/SRS.md SET-F-013 (used by UpdateSeatPlan to diff invalidations)
+     * Direct access to every seat in the plan, via the denormalized
+     * `seat_plan_id` FK on `seat_plan_seats`. Avoids a hasManyThrough hop on
+     * hot paths such as the AssignSeat validation.
+     */
+    public function seats(): HasMany
+    {
+        return $this->hasMany(SeatPlanSeat::class);
+    }
+
+    /**
+     * @see docs/mil-std-498/SRS.md SET-F-013 (UpdateSeatPlan invalidation diff)
      */
     public function seatAssignments(): HasMany
     {
         return $this->hasMany(SeatAssignment::class);
+    }
+
+    /**
+     * Labels scoped directly to the plan (no parent block). The library
+     * requires labels under a block on the wire — SeatPlanResource flattens
+     * these into the first block at serialisation time, but the editor
+     * treats them as plan-owned (SET-F-020).
+     */
+    public function globalLabels(): HasMany
+    {
+        return $this->hasMany(SeatPlanLabel::class)
+            ->whereNull('seat_plan_block_id')
+            ->orderBy('sort_order');
     }
 }

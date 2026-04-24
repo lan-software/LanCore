@@ -64,19 +64,6 @@ it('validates event exists when storing a seat plan', function () {
         ->assertSessionHasErrors(['event_id']);
 });
 
-it('validates data is valid json', function () {
-    $admin = User::factory()->withRole(RoleName::Admin)->create();
-    $event = Event::factory()->create();
-
-    $this->actingAs($admin)
-        ->post('/seat-plans', [
-            'name' => 'Test Plan',
-            'event_id' => $event->id,
-            'data' => 'not valid json',
-        ])
-        ->assertSessionHasErrors(['data']);
-});
-
 it('allows admins to view the edit seat plan page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
     $seatPlan = SeatPlan::factory()->create();
@@ -92,35 +79,56 @@ it('allows admins to view the edit seat plan page', function () {
         );
 });
 
-it('allows admins to update a seat plan', function () {
+it('allows admins to update a seat plan with a normalized block payload', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
-    $seatPlan = SeatPlan::factory()->create();
+    $seatPlan = SeatPlan::factory()->empty()->create();
 
     $newData = json_encode([
-        'blocks' => [
-            [
-                'id' => 'orchestra',
-                'title' => 'Orchestra',
-                'color' => '#2c3e50',
-                'seats' => [
-                    ['id' => 1, 'title' => 'A1', 'x' => 0, 'y' => 0, 'salable' => true],
-                ],
-                'labels' => [],
-            ],
-        ],
+        'blocks' => [[
+            'title' => 'Orchestra',
+            'color' => '#2c3e50',
+            'seat_title_prefix' => 'VIP-',
+            'sort_order' => 0,
+            'rows' => [[
+                'id' => 'new-row-a',
+                'name' => 'A',
+                'sort_order' => 0,
+            ]],
+            'seats' => [[
+                'row_id' => 'new-row-a',
+                'number' => 1,
+                'title' => 'A1',
+                'x' => 0,
+                'y' => 0,
+                'salable' => true,
+            ]],
+            'labels' => [],
+            'allowed_ticket_category_ids' => [],
+        ]],
     ]);
 
-    $this->actingAs($admin)
+    $response = $this->actingAs($admin)
         ->patch("/seat-plans/{$seatPlan->id}", [
             'name' => 'Updated Hall',
             'data' => $newData,
         ])
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertSessionHas('status', 'seat-plan-updated')
+        ->assertSessionHas('id_map');
 
     $seatPlan->refresh();
     expect($seatPlan->name)->toBe('Updated Hall');
-    expect($seatPlan->data['blocks'])->toHaveCount(1);
-    expect($seatPlan->data['blocks'][0]['id'])->toBe('orchestra');
+    $blocks = $seatPlan->blocks()->with('seats')->get();
+    expect($blocks)->toHaveCount(1);
+    expect($blocks[0]->title)->toBe('Orchestra');
+    expect($blocks[0]->seat_title_prefix)->toBe('VIP-');
+    expect($blocks[0]->seats)->toHaveCount(1);
+    expect($blocks[0]->seats->first()->title)->toBe('A1');
+
+    $idMap = $response->getSession()->get('id_map');
+    expect($idMap)->toHaveKey('blocks')
+        ->and($idMap)->toHaveKey('rows')
+        ->and($idMap)->toHaveKey('seats');
 });
 
 it('allows admins to delete a seat plan', function () {
@@ -154,7 +162,7 @@ it('forbids regular users from creating seat plans', function () {
         ->assertForbidden();
 });
 
-it('stores seat plan with default empty data when no data provided', function () {
+it('stores seat plan with no blocks when data is omitted', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
     $event = Event::factory()->create();
 
@@ -167,7 +175,7 @@ it('stores seat plan with default empty data when no data provided', function ()
 
     $seatPlan = SeatPlan::where('name', 'Empty Plan')->first();
     expect($seatPlan)->not->toBeNull();
-    expect($seatPlan->data)->toBe(['blocks' => []]);
+    expect($seatPlan->blocks()->count())->toBe(0);
 });
 
 it('allows searching seat plans by name', function () {

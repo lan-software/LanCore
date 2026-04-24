@@ -8,6 +8,7 @@ use App\Domain\Competition\Models\Competition;
 use App\Domain\Event\Models\Event;
 use App\Domain\News\Models\NewsArticle;
 use App\Domain\Program\Enums\ProgramVisibility;
+use App\Domain\Seating\Http\Resources\SeatPlanResource;
 use App\Domain\Seating\Models\SeatAssignment;
 use App\Support\StorageRole;
 use Illuminate\Http\Request;
@@ -29,7 +30,10 @@ class WelcomeController extends Controller
                 'programs.timeSlots' => fn ($q) => $q->where('visibility', ProgramVisibility::Public)->orderBy('starts_at'),
                 'programs.timeSlots.sponsors',
                 'sponsors.sponsorLevel',
-                'seatPlans',
+                'seatPlans.blocks.seats',
+                'seatPlans.blocks.labels',
+                'seatPlans.blocks.categoryRestrictions',
+                'seatPlans.globalLabels',
             ])
             ->orderBy('start_date')
             ->first();
@@ -38,6 +42,7 @@ class WelcomeController extends Controller
 
         if ($nextEvent) {
             $nextEventData = $nextEvent->toArray();
+            $nextEventData['seat_plans'] = SeatPlanResource::collection($nextEvent->seatPlans)->resolve();
             $bannerImages = array_values(array_filter($nextEvent->banner_images ?? [], fn ($p) => is_string($p) && $p !== ''));
             $nextEventData['banner_images'] = $bannerImages;
             $nextEventData['banner_image_urls'] = array_map(
@@ -154,7 +159,7 @@ class WelcomeController extends Controller
 
                 return [
                     'seat_plan_id' => $assignment->seat_plan_id,
-                    'seat_id' => $assignment->seat_id,
+                    'seat_id' => $assignment->seat_plan_seat_id,
                     'name' => $isVisible ? $assignment->user->name : null,
                 ];
             })

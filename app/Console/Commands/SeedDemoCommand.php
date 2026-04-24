@@ -594,44 +594,50 @@ class SeedDemoCommand extends Command
      * Build a grid-shaped seat block for SeatPlanFactory::withBlocks().
      *
      * @return array{
-     *     id: string,
      *     title: string,
      *     color: string,
-     *     seats: list<array{id: int, title: string, x: int, y: int, salable: bool}>,
-     *     labels: list<array{title: string, x: int, y: int}>,
+     *     rows: list<array{name: string, sort_order: int, seats: list<array{number: int, title: string, x: int, y: int, salable: bool}>}>,
+     *     labels: list<array{title: string, x: int, y: int, sort_order: int}>,
      * }
      */
     private function buildGridBlock(string $id, string $title, string $color, int $cols, int $rows, int $offsetX, int $offsetY): array
     {
         $pitch = 30;
-        $seats = [];
+        $rowsPayload = [];
         $labels = [];
-        $seatId = 1;
 
         for ($row = 0; $row < $rows; $row++) {
             $rowLetter = chr(ord('A') + $row);
+
             $labels[] = [
                 'title' => 'Row '.$rowLetter,
                 'x' => $offsetX - $pitch,
                 'y' => $offsetY + ($row * $pitch),
+                'sort_order' => $row,
             ];
 
+            $seats = [];
             for ($col = 0; $col < $cols; $col++) {
                 $seats[] = [
-                    'id' => $seatId++,
+                    'number' => $col + 1,
                     'title' => $rowLetter.($col + 1),
                     'x' => $offsetX + ($col * $pitch),
                     'y' => $offsetY + ($row * $pitch),
                     'salable' => true,
                 ];
             }
+
+            $rowsPayload[] = [
+                'name' => $rowLetter,
+                'sort_order' => $row,
+                'seats' => $seats,
+            ];
         }
 
         return [
-            'id' => $id,
             'title' => $title,
             'color' => $color,
-            'seats' => $seats,
+            'rows' => $rowsPayload,
             'labels' => $labels,
         ];
     }

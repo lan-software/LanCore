@@ -30,25 +30,22 @@ beforeEach(function (): void {
         'max_users_per_ticket' => 1,
     ]);
 
-    // Block `vip` restricted to the VIP category; block `open` has no allowlist.
-    $this->plan = SeatPlan::factory()->create([
-        'event_id' => $this->event->id,
-        'data' => ['blocks' => [
-            [
-                'id' => 'vip', 'title' => 'VIP', 'color' => '#fff',
-                'allowed_ticket_category_ids' => [$this->vipCategory->id],
-                'seats' => [
-                    ['id' => 'V1', 'title' => 'V1', 'x' => 0, 'y' => 0, 'salable' => true],
-                ],
-            ],
-            [
-                'id' => 'open', 'title' => 'Open', 'color' => '#fff',
-                'seats' => [
-                    ['id' => 'O1', 'title' => 'O1', 'x' => 0, 'y' => 0, 'salable' => true],
-                ],
-            ],
-        ]],
-    ]);
+    $this->plan = SeatPlan::factory()->empty()->withBlocks([
+        [
+            'title' => 'VIP',
+            'color' => '#fff',
+            'allowed_ticket_category_ids' => [$this->vipCategory->id],
+            'rows' => [['name' => 'V', 'seats' => [['number' => 1, 'title' => 'V1', 'x' => 0, 'y' => 0, 'salable' => true]]]],
+        ],
+        [
+            'title' => 'Open',
+            'color' => '#fff',
+            'rows' => [['name' => 'O', 'seats' => [['number' => 1, 'title' => 'O1', 'x' => 0, 'y' => 0, 'salable' => true]]]],
+        ],
+    ])->create(['event_id' => $this->event->id]);
+
+    $this->seatV1 = $this->plan->seats()->where('title', 'V1')->firstOrFail();
+    $this->seatO1 = $this->plan->seats()->where('title', 'O1')->firstOrFail();
 });
 
 it('rejects a Standard ticket seating into the VIP block', function (): void {
@@ -64,7 +61,7 @@ it('rejects a Standard ticket seating into the VIP block', function (): void {
             'ticket_id' => $ticket->id,
             'user_id' => $owner->id,
             'seat_plan_id' => $this->plan->id,
-            'seat_id' => 'V1',
+            'seat_id' => $this->seatV1->id,
         ])
         ->assertRedirect()
         ->assertSessionHasErrors('seat_id');
@@ -85,7 +82,7 @@ it('allows a VIP ticket to seat into the VIP block', function (): void {
             'ticket_id' => $ticket->id,
             'user_id' => $owner->id,
             'seat_plan_id' => $this->plan->id,
-            'seat_id' => 'V1',
+            'seat_id' => $this->seatV1->id,
         ])
         ->assertRedirect();
 
@@ -105,7 +102,7 @@ it('allows any ticket to seat into a block with no allowlist (permissive default
             'ticket_id' => $ticket->id,
             'user_id' => $owner->id,
             'seat_plan_id' => $this->plan->id,
-            'seat_id' => 'O1',
+            'seat_id' => $this->seatO1->id,
         ])
         ->assertRedirect();
 

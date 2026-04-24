@@ -239,6 +239,11 @@ Covers SET-F-006..010.
 | SEAT-018 | Notification via() branches: mail fires iff `mail_on_seating=true`; push fires iff `push_on_seating=true`; database always fires | Unit |
 | SEAT-U-001 | SeatingCategoryRules rule matrix (permissive / restricted / unknown block / allowed_category_ids normalisation) | Unit |
 | SEAT-U-002 | UpdateSeatPlan diff logic: no-change, seat removed, category narrowed, confirm→delete+dispatch | Unit |
+| SEAT-019 | Resource shape: `SeatPlanResource` preserves the `{blocks:[{seats,labels,allowed_ticket_category_ids}]}` wire shape with integer IDs (SET-F-016) | Unit |
+| SEAT-020 | Backfill idempotency: `LegacySeatPlanConverter::backfillAll` skips plans that already have normalized blocks | Feature |
+| SEAT-021 | Backfill: plain `{blocks:[…]}` JSONB is migrated with seats, labels, and category-restriction pivot preserved (permissive orphan handling) | Feature |
+| SEAT-022 | Seat plan tree syncer: full-state replace creates blocks/rows/seats/labels for `new-*` placeholders and returns an `id_map` covering every newly-created entity | Unit |
+| SEAT-023 | Editor → save round-trip: admin edits a plan, first-save reports invalidations, confirmed save commits the tree and swaps placeholders for PKs | Feature |
 
 #### 4.3.8 Architecture Tests (TGRP-ARC)
 

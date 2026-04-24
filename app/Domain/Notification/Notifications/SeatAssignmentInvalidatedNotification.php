@@ -50,7 +50,7 @@ class SeatAssignmentInvalidatedNotification extends Notification implements Shou
     public function toMail(object $notifiable): MailMessage
     {
         $eventName = $this->event->seatPlan->event?->name ?? '';
-        $seatLabel = $this->event->previousSeatId;
+        $seatLabel = $this->event->previousSeatTitle ?? ('#'.$this->event->previousSeatId);
         $pickerUrl = url('/events/'.$this->event->seatPlan->event_id.'/seats?ticket='.$this->event->ticketId.'&user='.$this->event->userId);
 
         return (new MailMessage)
@@ -75,6 +75,7 @@ class SeatAssignmentInvalidatedNotification extends Notification implements Shou
             'event_id' => $this->event->seatPlan->event_id,
             'seat_plan_id' => $this->event->seatPlan->id,
             'previous_seat_id' => $this->event->previousSeatId,
+            'previous_seat_title' => $this->event->previousSeatTitle,
             'previous_block_id' => $this->event->previousBlockId,
             'reason' => $this->event->reason,
         ];

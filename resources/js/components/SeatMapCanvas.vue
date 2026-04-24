@@ -133,7 +133,17 @@ function getBlocks(): SeatPlanBlock[] {
     // re-run, which fires this component's `watch(() => props.data, …)`,
     // which re-inits the canvas — wiping the very selection we just applied.
     // Deep-clone so the library's internal mutations stay out of Vue's graph.
-    return deepCloneBlocks(raw);
+    const cloned = deepCloneBlocks(raw);
+
+    // Filter out blocks with no seats. An empty block has no visible content
+    // and, more importantly, breaks the library's internal bbox math: its
+    // zoomManager computes venue bounds from seat positions, and an empty
+    // `seats` array leaves that block's bounds as NaN, which then poisons
+    // the venue-fit zoom for the whole canvas. Symptom: the canvas renders
+    // as an empty viewport even when sibling blocks have seats. Admin "empty"
+    // blocks are still editable in the admin editor — this filter only runs
+    // on the read-side wrapper the Picker / Welcome consume.
+    return cloned.filter((block) => (block.seats?.length ?? 0) > 0);
 }
 
 function deepCloneBlocks(blocks: SeatPlanBlock[]): SeatPlanBlock[] {
@@ -176,6 +186,7 @@ async function initSeatmap(): Promise<void> {
         typeof document !== 'undefined' &&
         document.documentElement.classList.contains('dark');
     const legendFontColor = isDark ? '#f3f4f6' : '#111827';
+    const labelFontColor = isDark ? '#e5e7eb' : '#1f2937';
 
     const defaultOptions = {
         legend: true,
@@ -191,11 +202,15 @@ async function initSeatmap(): Promise<void> {
                 fill: '#e2e2e2',
                 stroke: '#e2e2e2',
             },
+            /* Library reads `style.label.bg` and `style.label.font_size`
+             * (not `background` / `fontSize` — different from the seat style
+             * keys). `bg: transparent` + `radius: 0` removes the white pill
+             * and leaves only the text. Font color follows the app theme. */
             label: {
-                color: '#000',
-                radius: 12,
-                fontSize: '12px',
-                background: '#ffffff',
+                color: labelFontColor,
+                radius: 0,
+                font_size: '12px',
+                bg: 'transparent',
             },
             legend: {
                 font_color: legendFontColor,
@@ -212,10 +227,21 @@ async function initSeatmap(): Promise<void> {
         },
     };
 
-    seatmapInstance = new SeatMapCanvas(containerRef.value, mergedOptions);
-    seatmapInstance.data.replaceData(
-        blocks as unknown as Record<string, unknown>[],
-    );
+    try {
+        seatmapInstance = new SeatMapCanvas(containerRef.value, mergedOptions);
+        seatmapInstance.data.replaceData(
+            blocks as unknown as Record<string, unknown>[],
+        );
+    } catch (error) {
+        console.error('[SeatMapCanvas] Library init failed:', error, {
+            blockCount: blocks.length,
+            seatCount: blocks.reduce((n, b) => n + (b.seats?.length ?? 0), 0),
+            firstBlock: blocks[0],
+        });
+        seatmapInstance = null;
+
+        return;
+    }
 
     // Library v2.7.1 has NO click binding on seat elements — the README
     // documents a `seat_click` event but the published bundle never dispatches

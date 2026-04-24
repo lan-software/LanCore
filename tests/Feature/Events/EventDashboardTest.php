@@ -200,7 +200,17 @@ it('counts seated users distinctly via seat assignments', function () {
         'end_date' => now()->addDay(),
     ]);
 
-    $seatPlan = SeatPlan::factory()->create(['event_id' => $event->id]);
+    $seatPlan = SeatPlan::factory()->empty()->withBlocks([[
+        'title' => 'A',
+        'color' => '#fff',
+        'rows' => [['name' => 'A', 'seats' => [
+            ['number' => 1, 'title' => 'A1', 'x' => 0, 'y' => 0, 'salable' => true],
+            ['number' => 2, 'title' => 'A2', 'x' => 30, 'y' => 0, 'salable' => true],
+            ['number' => 3, 'title' => 'A3', 'x' => 60, 'y' => 0, 'salable' => true],
+        ]]],
+    ]])->create(['event_id' => $event->id]);
+    $seats = $seatPlan->seats()->orderBy('number')->get();
+
     $ticketType = TicketType::factory()->create(['event_id' => $event->id]);
     $u1 = User::factory()->create();
     $u2 = User::factory()->create();
@@ -227,19 +237,19 @@ it('counts seated users distinctly via seat assignments', function () {
         'ticket_id' => $t1->id,
         'user_id' => $u1->id,
         'seat_plan_id' => $seatPlan->id,
-        'seat_id' => '1',
+        'seat_plan_seat_id' => $seats[0]->id,
     ]);
     SeatAssignment::factory()->create([
         'ticket_id' => $t2->id,
         'user_id' => $u2->id,
         'seat_plan_id' => $seatPlan->id,
-        'seat_id' => '2',
+        'seat_plan_seat_id' => $seats[1]->id,
     ]);
     SeatAssignment::factory()->create([
         'ticket_id' => $t1b->id,
         'user_id' => $u1->id,
         'seat_plan_id' => $seatPlan->id,
-        'seat_id' => '3',
+        'seat_plan_seat_id' => $seats[2]->id,
     ]);
 
     $this->actingAs($admin)

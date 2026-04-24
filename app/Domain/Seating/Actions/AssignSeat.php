@@ -4,6 +4,7 @@ namespace App\Domain\Seating\Actions;
 
 use App\Domain\Seating\Models\SeatAssignment;
 use App\Domain\Seating\Models\SeatPlan;
+use App\Domain\Seating\Models\SeatPlanSeat;
 use App\Domain\Seating\Support\SeatingCategoryRules;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Models\User;
@@ -17,22 +18,22 @@ use Illuminate\Validation\ValidationException;
  * Authorization is the caller's responsibility — typically `TicketPolicy::pickSeat`.
  *
  * @see docs/mil-std-498/SRS.md SET-F-006, SET-F-007
- * @see docs/mil-std-498/SDD.md §3.6 Seating
+ * @see docs/mil-std-498/SDD.md §5.3c Seating
  */
 class AssignSeat
 {
-    public function execute(Ticket $ticket, User $assignee, SeatPlan $seatPlan, string $seatId): SeatAssignment
+    public function execute(Ticket $ticket, User $assignee, SeatPlan $seatPlan, int $seatId): SeatAssignment
     {
         $this->ensureSeatPlanBelongsToTicketEvent($ticket, $seatPlan);
-        $this->ensureSeatExistsAndIsSalable($seatPlan, $seatId);
+        $seat = $this->ensureSeatExistsAndIsSalable($seatPlan, $seatId);
         $this->ensureAssigneeIsOnTicket($ticket, $assignee);
-        $this->ensureBlockAcceptsCategory($ticket, $seatPlan, $seatId);
+        $this->ensureBlockAcceptsCategory($ticket, $seat);
 
         try {
-            return DB::transaction(function () use ($ticket, $assignee, $seatPlan, $seatId): SeatAssignment {
+            return DB::transaction(function () use ($ticket, $assignee, $seatPlan, $seat): SeatAssignment {
                 return SeatAssignment::updateOrCreate(
                     ['ticket_id' => $ticket->id, 'user_id' => $assignee->id],
-                    ['seat_plan_id' => $seatPlan->id, 'seat_id' => $seatId],
+                    ['seat_plan_id' => $seatPlan->id, 'seat_plan_seat_id' => $seat->id],
                 );
             });
         } catch (QueryException $exception) {
@@ -55,27 +56,26 @@ class AssignSeat
         }
     }
 
-    private function ensureSeatExistsAndIsSalable(SeatPlan $seatPlan, string $seatId): void
+    private function ensureSeatExistsAndIsSalable(SeatPlan $seatPlan, int $seatId): SeatPlanSeat
     {
-        $blocks = $seatPlan->data['blocks'] ?? [];
+        $seat = $seatPlan->seats()
+            ->with(['block.categoryRestrictions'])
+            ->whereKey($seatId)
+            ->first();
 
-        foreach ($blocks as $block) {
-            foreach ($block['seats'] ?? [] as $seat) {
-                if ((string) ($seat['id'] ?? '') === $seatId) {
-                    if (! ($seat['salable'] ?? false)) {
-                        throw ValidationException::withMessages([
-                            'seat_id' => __('seating.errors.seat_not_available'),
-                        ]);
-                    }
-
-                    return;
-                }
-            }
+        if ($seat === null) {
+            throw ValidationException::withMessages([
+                'seat_id' => __('seating.errors.seat_not_found'),
+            ]);
         }
 
-        throw ValidationException::withMessages([
-            'seat_id' => __('seating.errors.seat_not_found'),
-        ]);
+        if (! $seat->salable) {
+            throw ValidationException::withMessages([
+                'seat_id' => __('seating.errors.seat_not_available'),
+            ]);
+        }
+
+        return $seat;
     }
 
     private function ensureAssigneeIsOnTicket(Ticket $ticket, User $assignee): void
@@ -94,17 +94,13 @@ class AssignSeat
     }
 
     /**
-     * Enforce per-block ticket-category restrictions (SET-F-011).
-     *
-     * The block holding the target seat may declare an
-     * `allowed_ticket_category_ids` list. When set and non-empty, the ticket's
-     * category must be a member — otherwise the assignment is rejected as a
-     * validation error (not a 403) because the viewer has every right to act
-     * on the ticket; they've just aimed at the wrong block.
+     * Enforce per-block ticket-category restrictions (SET-F-011). A ValidationException
+     * (not 403) is surfaced — the user has the right to act on the ticket; they just
+     * aimed at the wrong block.
      */
-    private function ensureBlockAcceptsCategory(Ticket $ticket, SeatPlan $seatPlan, string $seatId): void
+    private function ensureBlockAcceptsCategory(Ticket $ticket, SeatPlanSeat $seat): void
     {
-        $block = SeatingCategoryRules::findBlockForSeat($seatPlan, $seatId);
+        $block = $seat->block;
 
         if ($block === null) {
             return;
@@ -113,7 +109,7 @@ class AssignSeat
         $ticket->loadMissing('ticketType');
         $categoryId = $ticket->ticketType?->ticket_category_id;
 
-        if (SeatingCategoryRules::blockAccepts($seatPlan, (string) ($block['id'] ?? ''), $categoryId)) {
+        if (SeatingCategoryRules::blockAccepts($block, $categoryId)) {
             return;
         }
 

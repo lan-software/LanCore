@@ -89,7 +89,7 @@ app/
 | Form Request validation | Decouples validation from controllers; reusable across routes |
 | Laravel Policies | Declarative authorization co-located with domain concerns |
 | Event/Listener pattern | Decouples side effects (notifications, webhooks) from primary operations |
-| JSONB for flexible data | Seat plans and banner images benefit from schemaless storage |
+| JSONB for flexible data | Banner images and per-seat `custom_data` benefit from schemaless storage (seat plans themselves are fully normalized — see SET-F-002) |
 | Laravel Octane/FrankenPHP | Application boot once, reuse across requests for performance |
 | Redis for caching | Tag-based invalidation, high throughput, shared cache across workers |
 | Demo mode via `SeedDemoCommand` + Stripe test-mode keys | Enables end-to-end showcases using Stripe's sandbox; activated via environment flag `APP_DEMO=true` paired with `STRIPE_KEY=pk_test_...` / `STRIPE_SECRET=sk_test_...`; `PaymentProviderManager` resolves `StripePaymentProvider` as normal — no custom provider is needed |
@@ -587,14 +587,27 @@ The `myEventContext` Inertia shared prop (set by `HandleInertiaRequests`) re-res
 
 ### 5.3c Design Notes — Seating Domain
 
-#### Seat Assignment Data Model (SET-F-006)
+#### Seat Assignment Data Model (SET-F-002, SET-F-006)
 
-`SeatAssignment` (`App\Domain\Seating\Models`) joins `Ticket`, `User`, and `SeatPlan`, plus a free-form `seat_id` string that matches the `id` of a seat inside the seat plan's JSONB blob (`SeatPlan.data.blocks[].seats[].id`). Two database-enforced unique constraints keep the model honest:
+Seating state lives in six relational tables rooted at `seat_plans`:
 
-1. `UNIQUE (seat_plan_id, seat_id)` — a single seat can never be double-booked.
+| Table | Purpose |
+|---|---|
+| `seat_plans` | Named plan belonging to an `event`; carries optional `background_image_url`. |
+| `seat_plan_blocks` | Visual grouping within a plan (title, color, optional background image, sort order). |
+| `seat_plan_rows` | Ordered row within a block (unique name per block). Drives incremental per-row seat numbering. |
+| `seat_plan_seats` | Individual seat with denormalized `seat_plan_id` (hot-path lookup), nullable `seat_plan_row_id`, optional `number`, x/y coordinates, salable flag, color/note/custom JSONB. Unique `(block, row, number)`. |
+| `seat_plan_labels` | Free-form text annotations on a block (e.g., row letters). |
+| `seat_plan_block_category_restrictions` | Pivot between a block and the `ticket_categories` it accepts — SET-F-011. |
+
+`SeatAssignment` (`App\Domain\Seating\Models`) joins `Ticket`, `User`, `SeatPlan`, and a `seat_plan_seat_id` foreign key. Two database-enforced unique constraints keep the model honest:
+
+1. `UNIQUE (seat_plan_id, seat_plan_seat_id)` — a single seat can never be double-booked.
 2. `UNIQUE (ticket_id, user_id)` — each user holds at most one seat per ticket.
 
-The model is `Auditable` (laravel-auditing), so every assignment, change and release leaves an audit row.
+The FK on `seat_plan_seat_id` is `RESTRICT ON DELETE` so the two-phase save flow (below) is the only code path that releases assignments — Postgres will not silently cascade away an active assignment when a seat is removed.
+
+All seating models (`SeatPlan`, `SeatPlanBlock`, `SeatPlanRow`, `SeatPlanSeat`, `SeatPlanLabel`, `SeatAssignment`) implement `Auditable` (laravel-auditing), so every entity-level mutation leaves an audit row.
 
 #### Authorization (SET-F-007)
 
@@ -604,8 +617,8 @@ The model is `Auditable` (laravel-auditing), so every assignment, change and rel
 
 `SeatPickerController@show` (`GET /events/{event}/seats`) renders the Inertia page `seating/Picker.vue`. It hydrates four props:
 
-- `event`, `seatPlans` — the event's seat plans with full JSONB.
-- `taken[]` — every existing assignment on this event's seat plans, with `name` set per `User::isSeatNameVisibleTo` (privacy + same-event override).
+- `event`, `seatPlans` — the event's seat plans projected via `SeatPlanResource`. The resource emits the pre-normalization wire shape `{id, name, event_id, background_image_url, blocks:[{id, title, color, background_image_url, seats:[…], labels:[…], allowed_ticket_category_ids:[…]}]}`, so the `@alisaitteke/seatmap-canvas` wrapper continues to consume it unchanged (SET-F-016).
+- `taken[]` — every existing assignment on this event's seat plans, with `name` set per `User::isSeatNameVisibleTo` (privacy + same-event override). The `seat_id` field now carries the integer `seat_plan_seat_id` PK.
 - `myTickets[]` — tickets the viewer can act on, decorated per assignee with `can_pick` (the `Gate::pickSeat` outcome) and the existing `assignment` if any.
 - `context` — the optional `?ticket=&user=` query, used to preselect a context.
 
@@ -640,13 +653,12 @@ Both `WelcomeController::getTakenSeats` and `SeatPickerController::show` use thi
 
 #### 5.3c.2 Category Rules Helper (SET-F-011)
 
-`App\Domain\Seating\Support\SeatingCategoryRules` exposes three static methods that are the single source of truth for per-block category gating:
+`App\Domain\Seating\Support\SeatingCategoryRules` is the single source of truth for per-block category gating:
 
-- `blockAccepts(SeatPlan $plan, string $blockId, ?int $categoryId): bool`
-- `findBlockForSeat(SeatPlan $plan, string $seatId): ?array`
-- `allowedCategoryIds(array $block): int[]`
+- `blockAccepts(SeatPlanBlock $block, ?int $categoryId): bool`
+- `allowedCategoryIds(SeatPlanBlock $block): int[]`
 
-Rationale: the restriction lives inside the existing `seat_plans.data` JSONB blob as an optional `allowed_ticket_category_ids: number[]` per block. Empty/missing ⇒ accept all — this permissive default keeps every existing seat plan working without retroactive edits and makes restriction strictly opt-in.
+The allowlist now lives in the `seat_plan_block_category_restrictions(seat_plan_block_id, ticket_category_id)` pivot. An empty pivot for a block ⇒ accept all — this permissive default keeps plans working without retroactive edits and makes restriction strictly opt-in. Callers should eager-load `block.categoryRestrictions` to avoid N+1.
 
 Enforcement happens in three places, all of which call `SeatingCategoryRules`:
 1. `AssignSeat::ensureBlockAcceptsCategory` on the server — throws `ValidationException` with key `seat_id` and message `seating.errors.block_category_forbidden`.
@@ -659,18 +671,18 @@ Category-mismatch is deliberately NOT modelled as a `TicketPolicy::pickSeat` rej
 
 `UpdateSeatPlan::execute(SeatPlan, array $attributes, bool $confirmInvalidations = false): UpdateSeatPlanResult`.
 
-The `UpdateSeatPlanResult` value object (`App\Domain\Seating\Support`) carries two named constructors: `pending($invalidations)` and `saved(int $count)`. The instance method `needsConfirmation(): bool` + public `invalidations` / `releasedCount` props let the controller branch on `back()->with('invalidations', ...)` vs `back()->with('status', 'seat-plan-updated')`.
+The `UpdateSeatPlanResult` value object (`App\Domain\Seating\Support`) carries three named constructors: `pending($invalidations)`, `saved(int $count, array $idMap)`, and `emptyIdMap()`. Public props `invalidations`, `releasedCount`, and `idMap` let the controller branch on `back()->with('invalidations', ...)` vs `back()->with('status', 'seat-plan-updated')->with('id_map', ...)`. The `id_map` flash lets the editor reconcile client-generated `new-*` placeholders with the persisted PKs without a full page reload.
 
-Diff logic:
-1. Load all `SeatAssignment`s for the plan (eager-loaded with `ticket.ticketType` + `user` so the confirmation dialog has the full human-readable row).
-2. Index the proposed new JSON by seat id → `{block, seat}`.
+Diff logic (now O(n) over PK sets, since seats have stable IDs):
+1. Index the proposed payload's seats by numeric PK (`payload.blocks[].rows[].seats[].id`). Non-numeric IDs indicate client-generated `new-*` placeholders and are skipped for diff purposes.
+2. Load all `SeatAssignment`s for the plan (eager-loaded with `ticket.ticketType`, `user`, and `seat.block` for the confirmation dialog).
 3. For each existing assignment:
-   - seat id not in new index ⇒ `reason: 'seat_removed'`
-   - seat id present but its block's `allowed_ticket_category_ids` excludes the assignment's ticket-type category ⇒ `reason: 'category_mismatch'`
+   - assignment's `seat_plan_seat_id` not in the incoming index ⇒ `reason: 'seat_removed'`
+   - seat still present but the incoming block's `allowed_ticket_category_ids` excludes the assignment's ticket-type category ⇒ `reason: 'category_mismatch'`
 
-The DB transaction is entered only when there is work to release. For the no-invalidation happy path the action uses a direct `$seatPlan->fill()->save()` — avoids a pointless nested savepoint during RefreshDatabase-driven tests and cleaner audit rows.
+Persistence is delegated to `App\Domain\Seating\Support\SeatPlanTreeSyncer`, which performs a full-state replace: entities with numeric IDs are updated in place, new-* placeholders are inserted (and their PK recorded in `idMap`), and any existing row not referenced in the payload is deleted. The whole `UpdateSeatPlan::execute` body runs inside a single `DB::transaction` when there is work to do; assignment deletes dispatch `SeatAssignmentInvalidated` before the syncer deletes the underlying seats (ordering matters — the FK is `restrictOnDelete`).
 
-`SeatPlanController::update` reads `confirm_invalidations` from the validated request and passes it through. The Inertia form flashes invalidation rows back to `Edit.vue`'s `<InvalidationConfirmDialog>` when needed; confirming re-submits with the flag set.
+`SeatPlanController::update` reads `confirm_invalidations` from the validated request and passes it through. On success it also flashes `id_map` for the editor. The Inertia form flashes invalidation rows back to `Edit.vue`'s `<InvalidationConfirmDialog>` when needed; confirming re-submits with the flag set.
 
 #### 5.3c.4 Notification & Preferences (SET-F-014)
 
@@ -688,13 +700,39 @@ The DB transaction is entered only when there is work to release. For the no-inv
   "user_id": int,
   "event_id": int,
   "seat_plan_id": int,
-  "previous_seat_id": "string",
-  "previous_block_id": "string|null",
+  "previous_seat_id": int,
+  "previous_seat_title": "string|null",
+  "previous_block_id": "int|null",
   "reason": "seat_removed" | "category_mismatch"
 }
 ```
 
 The listener `App\Domain\Seating\Listeners\NotifyAffectedAssignees` is queued (`ShouldQueue`) and dispatches to the deduped set of ticket owner + manager + assignee. Registered in `AppServiceProvider` alongside the other `EventFacade::listen(...)` calls.
+
+#### 5.3c.5 Admin Editor Architecture (SET-F-001, SET-F-015)
+
+The admin-facing seat-plan editor is a lightweight SVG-based Vue component tree hosted in `resources/js/pages/seating/Edit.vue`, which exposes a four-tab layout (Editor / Preview / Categories / JSON). The editor tree lives under `resources/js/components/seating-editor/`.
+
+| Component | Role |
+|---|---|
+| `EditorShell.vue` | Orchestrator. Owns the working-copy store, wires tool changes, routes canvas clicks into seat/label creation, mounts `AddBlockDialog`, registers keyboard shortcuts (V/S/L/Space tools, Ctrl+Z/Y undo/redo, Delete, Esc, Ctrl+S). |
+| `EditorCanvas.vue` | Pure Vue SVG canvas. Renders the plan-level and per-block `<image>` backgrounds, optional grid, every block → seats/labels. Pointer handlers implement drag-to-move (on selected seats/labels), marquee-select (in Select mode), pan (middle-mouse or Pan tool), wheel-zoom. Uses `@vueuse` primitives minimally; no external canvas library. |
+| `EditorToolbar.vue` | Tool switcher, snap-to-grid toggle, zoom +/−/reset, undo/redo, unsaved-changes pill, Save button. |
+| `PropertiesPanel.vue` | Context-sensitive right sidebar. Switches on selection count: plan-level fields (name, global background upload) when empty; seat / block / label fields for one selection; mass-edit controls (toggle salable, bulk delete) for many. |
+| `AddBlockDialog.vue` | "Empty" and "NxM grid" modes. The grid wizard synthesizes rows and seats at a configurable pitch + origin and writes them into a fresh block — the fastest path from "empty plan" to a realistic venue layout. |
+| `BackgroundImageUpload.vue` | Thin wrapper around the plan- and block-level background upload endpoints (§3.17 IDD). Plain multipart POST; emits the persisted URL back to the properties panel. |
+| `useEditorStore.ts` | Reactive working-copy state plus a 50-snapshot undo/redo ring. Exposes `applyMutation(label, fn)` as the sole entry point for edits, so every change is undoable. `reconcileIds(map)` rewrites client `new-*` placeholders to persisted PKs after save, then clears the undo stack. |
+| `geometry.ts` | Pure helpers (`snapToGrid`, `rectContainsPoint`, `newClientId`, `generateGridSeats`), trivially unit-testable. |
+
+**New-ID reconciliation.** While a block, row, seat, or label exists only in the working copy, it carries a client-generated `new-<base36>` string ID (`geometry.ts::newClientId`). `SeatPlanTreeSyncer` on the server treats non-numeric IDs as "insert", records the mapping `{'new-abc' → 42, …}` in `UpdateSeatPlanResult::idMap`, and the controller flashes it back as `id_map`. `useEditorStore::reconcileIds` walks the working copy and rewrites IDs in place, then calls `markSaved()`. The admin sees no reload flicker; subsequent edits already reference the real PKs.
+
+**Preview tab** renders the same working copy through the existing read-only `SeatMapCanvas.vue` so the admin can sanity-check the editor output without leaving the page.
+
+**JSON tab** retains a raw `{blocks:[…]}` textarea escape hatch — valid on-type JSON replaces the working copy; invalid input is ignored without clobbering state.
+
+**Save contract.** `EditorShell` emits `save(plan)` into `Edit.vue`, which serialises only the `{blocks: [...]}` subset into `form.data`, then PATCHes `SeatPlanController::update`. The two-phase flow (SET-F-012/013) is unchanged from the user's perspective — the existing `InvalidationConfirmDialog` fires from `flash.invalidations` exactly as before.
+
+**Interaction bindings and save feedback.** Plain left-drag on empty space starts a rubber-band marquee selection (Select tool); panning is triggered by right-click or middle-click drag, regardless of the active tool (the SVG has `@contextmenu.prevent` to suppress the browser context menu). Holding Space also switches to the Pan tool for left-drag panning. Wheel zoom is centred on the cursor via a linear-mapping solve that keeps the world point under the pointer fixed as the viewBox width shrinks / grows. The Delete tool (keyboard `D`) turns clicks on seats and labels into single-entity removes. Creating a block through `AddBlockDialog` selects every seat in the new block (or the block itself for the empty mode) so the admin can move or mass-edit without a second selection pass. A Move-to-block `<Select>` in `PropertiesPanel` splices the selected seats out of their source blocks, nulls their `seat_plan_row_id`, and pushes them onto the target block, updating the selection refs so the panel stays stable. Blocks may carry a `seat_title_prefix` — `EditorCanvas` renders `prefix + seat.title` on the SVG label while `PropertiesPanel` edits the raw title; `SeatPlanResource` bakes the prefix into the wire `seats[].title` so the `seatmap-canvas` library shows the combined string without any client-side join. Save feedback lives in the toolbar: `idle | saving | saved | error` state; `saved` triggers a palette-aware `canvas-confetti` burst (`celebrate.ts::celebrateSave`) that honours `prefers-reduced-motion: reduce`, and `error` surfaces a dismissible red banner populated from the Inertia `onError` payload.
 
 ### 5.4 Console Commands (21)
 

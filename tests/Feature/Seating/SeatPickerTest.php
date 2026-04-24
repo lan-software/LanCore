@@ -14,16 +14,22 @@ beforeEach(function (): void {
         'event_id' => $this->event->id,
         'max_users_per_ticket' => 3,
     ]);
-    $this->plan = SeatPlan::factory()->create([
-        'event_id' => $this->event->id,
-        'data' => ['blocks' => [
-            ['id' => 'a', 'title' => 'A', 'color' => '#fff', 'seats' => [
-                ['id' => 'A1', 'title' => 'A1', 'x' => 0, 'y' => 0, 'salable' => true],
-                ['id' => 'A2', 'title' => 'A2', 'x' => 1, 'y' => 0, 'salable' => true],
-                ['id' => 'A3', 'title' => 'A3', 'x' => 2, 'y' => 0, 'salable' => true],
-            ]],
-        ]],
-    ]);
+    $this->plan = SeatPlan::factory()->empty()->withBlocks([
+        [
+            'title' => 'A',
+            'color' => '#fff',
+            'rows' => [
+                ['name' => 'A', 'seats' => [
+                    ['number' => 1, 'title' => 'A1', 'x' => 0, 'y' => 0, 'salable' => true],
+                    ['number' => 2, 'title' => 'A2', 'x' => 1, 'y' => 0, 'salable' => true],
+                    ['number' => 3, 'title' => 'A3', 'x' => 2, 'y' => 0, 'salable' => true],
+                ]],
+            ],
+        ],
+    ])->create(['event_id' => $this->event->id]);
+
+    $this->seatA1 = $this->plan->seats()->where('title', 'A1')->firstOrFail();
+    $this->seatA2 = $this->plan->seats()->where('title', 'A2')->firstOrFail();
 });
 
 it('owner picks a seat for themselves', function (): void {
@@ -39,7 +45,7 @@ it('owner picks a seat for themselves', function (): void {
             'ticket_id' => $ticket->id,
             'user_id' => $owner->id,
             'seat_plan_id' => $this->plan->id,
-            'seat_id' => 'A1',
+            'seat_id' => $this->seatA1->id,
         ])
         ->assertRedirect();
 
@@ -63,13 +69,13 @@ it('manager picks a seat for an assigned user on a group ticket', function (): v
             'ticket_id' => $ticket->id,
             'user_id' => $assignee->id,
             'seat_plan_id' => $this->plan->id,
-            'seat_id' => 'A2',
+            'seat_id' => $this->seatA2->id,
         ])
         ->assertRedirect();
 
     $assignment = SeatAssignment::query()->where('ticket_id', $ticket->id)->first();
     expect($assignment->user_id)->toBe($assignee->id)
-        ->and($assignment->seat_id)->toBe('A2');
+        ->and($assignment->seat_plan_seat_id)->toBe($this->seatA2->id);
 });
 
 it('an assigned user can pick their own seat but not someone elses on the same ticket', function (): void {
@@ -83,23 +89,21 @@ it('an assigned user can pick their own seat but not someone elses on the same t
     ]);
     $ticket->users()->attach([$assignee->id, $otherAssignee->id]);
 
-    // Self-assign succeeds
     $this->actingAs($assignee)
         ->post("/events/{$this->event->id}/seats", [
             'ticket_id' => $ticket->id,
             'user_id' => $assignee->id,
             'seat_plan_id' => $this->plan->id,
-            'seat_id' => 'A1',
+            'seat_id' => $this->seatA1->id,
         ])
         ->assertRedirect();
 
-    // Trying to seat the other user fails
     $this->actingAs($assignee)
         ->post("/events/{$this->event->id}/seats", [
             'ticket_id' => $ticket->id,
             'user_id' => $otherAssignee->id,
             'seat_plan_id' => $this->plan->id,
-            'seat_id' => 'A2',
+            'seat_id' => $this->seatA2->id,
         ])
         ->assertForbidden();
 });
@@ -118,7 +122,7 @@ it('a stranger cannot pick a seat on a ticket they do not belong to', function (
             'ticket_id' => $ticket->id,
             'user_id' => $stranger->id,
             'seat_plan_id' => $this->plan->id,
-            'seat_id' => 'A1',
+            'seat_id' => $this->seatA1->id,
         ])
         ->assertForbidden();
 });
@@ -134,7 +138,7 @@ it('cancelling a ticket releases all its seat assignments', function (): void {
         'ticket_id' => $ticket->id,
         'user_id' => $owner->id,
         'seat_plan_id' => $this->plan->id,
-        'seat_id' => 'A1',
+        'seat_plan_seat_id' => $this->seatA1->id,
     ]);
 
     expect(SeatAssignment::query()->where('ticket_id', $ticket->id)->count())->toBe(1);
@@ -157,7 +161,7 @@ it('removing a user from a group ticket releases their seat', function (): void 
         'ticket_id' => $ticket->id,
         'user_id' => $assignee->id,
         'seat_plan_id' => $this->plan->id,
-        'seat_id' => 'A1',
+        'seat_plan_seat_id' => $this->seatA1->id,
     ]);
 
     $this->actingAs($owner)
@@ -182,21 +186,19 @@ it('flashes a seat_id validation error into the session when the seat is already
         'owner_id' => $ownerB->id,
     ]);
 
-    // Seat A1 already assigned to owner A on ticket A.
     SeatAssignment::factory()->create([
         'ticket_id' => $ticketA->id,
         'user_id' => $ownerA->id,
         'seat_plan_id' => $this->plan->id,
-        'seat_id' => 'A1',
+        'seat_plan_seat_id' => $this->seatA1->id,
     ]);
 
-    // Owner B tries to grab the same seat via their own ticket.
     $this->actingAs($ownerB)
         ->post("/events/{$this->event->id}/seats", [
             'ticket_id' => $ticketB->id,
             'user_id' => $ownerB->id,
             'seat_plan_id' => $this->plan->id,
-            'seat_id' => 'A1',
+            'seat_id' => $this->seatA1->id,
         ])
         ->assertRedirect()
         ->assertSessionHasErrors('seat_id');
@@ -214,7 +216,7 @@ it('returns the picker page with my tickets and visible-name overlay', function 
         'ticket_id' => $otherTicket->id,
         'user_id' => $other->id,
         'seat_plan_id' => $this->plan->id,
-        'seat_id' => 'A1',
+        'seat_plan_seat_id' => $this->seatA1->id,
     ]);
 
     Ticket::factory()->create([

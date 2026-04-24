@@ -150,7 +150,7 @@ All four CI pipelines were failing on `main` as of 2026-04-03. Root causes and r
 | Sponsors | High | 28 | CRUD, levels, access control, manager roles |
 | Announcements | High | 20 | CRUD, dismissals, priority, notifications, webhooks |
 | Programs | High | 20 | CRUD, time slots, primary assignment, sponsor integration |
-| Seating | High | 20 | CRUD, JSONB storage, event association, validation |
+| Seating | High | 20 | CRUD on normalized blocks/rows/seats/labels tables, event association, two-phase invalidation, category pivot, wire-shape resource |
 | Games | High | 22 | CRUD, modes, access control |
 | Achievements | High | 16 | CRUD, granting, event triggers, deduplication, notification payload |
 | Venues | High | 19 | CRUD, images, access control |

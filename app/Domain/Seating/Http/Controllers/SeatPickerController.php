@@ -6,6 +6,7 @@ use App\Domain\Event\Models\Event;
 use App\Domain\Seating\Actions\AssignSeat;
 use App\Domain\Seating\Actions\ReleaseSeat;
 use App\Domain\Seating\Http\Requests\StoreSeatAssignmentRequest;
+use App\Domain\Seating\Http\Resources\SeatPlanResource;
 use App\Domain\Seating\Models\SeatAssignment;
 use App\Domain\Seating\Models\SeatPlan;
 use App\Domain\Ticketing\Models\Ticket;
@@ -23,7 +24,7 @@ use Inertia\Response;
  * a seat for any user on a ticket they have rights to (see TicketPolicy::pickSeat).
  *
  * @see docs/mil-std-498/SRS.md SET-F-006, SET-F-007, SET-F-008
- * @see docs/mil-std-498/IDD.md §4 Seating Picker Endpoints
+ * @see docs/mil-std-498/IDD.md §3.14 Seating Picker Endpoints
  */
 class SeatPickerController extends Controller
 {
@@ -34,13 +35,18 @@ class SeatPickerController extends Controller
 
     public function show(Request $request, Event $event): Response
     {
-        $event->loadMissing(['seatPlans']);
+        $event->loadMissing([
+            'seatPlans.blocks.seats',
+            'seatPlans.blocks.labels',
+            'seatPlans.blocks.categoryRestrictions',
+            'seatPlans.globalLabels',
+        ]);
 
         $viewer = $request->user();
 
         $assignments = SeatAssignment::query()
             ->forEvent($event->id)
-            ->with(['user', 'ticket.users'])
+            ->with(['user', 'ticket.users', 'seat.block'])
             ->get();
 
         $taken = $assignments->map(function (SeatAssignment $assignment) use ($viewer, $event): array {
@@ -49,7 +55,7 @@ class SeatPickerController extends Controller
             return [
                 'id' => $assignment->id,
                 'seat_plan_id' => $assignment->seat_plan_id,
-                'seat_id' => $assignment->seat_id,
+                'seat_id' => $assignment->seat_plan_seat_id,
                 'ticket_id' => $assignment->ticket_id,
                 'user_id' => $assignment->user_id,
                 'name' => $isVisible ? $assignment->user->name : null,
@@ -63,7 +69,7 @@ class SeatPickerController extends Controller
                     ->orWhere('manager_id', $viewer->id)
                     ->orWhereHas('users', fn ($users) => $users->whereKey($viewer->id));
             })
-            ->with(['ticketType', 'owner', 'manager', 'users', 'seatAssignments.seatPlan'])
+            ->with(['ticketType', 'owner', 'manager', 'users', 'seatAssignments.seat.block'])
             ->get()
             ->map(function (Ticket $ticket) use ($viewer): array {
                 $candidates = collect();
@@ -80,14 +86,11 @@ class SeatPickerController extends Controller
                         'user_id' => $assignee->id,
                         'name' => $assignee->name,
                         'can_pick' => Gate::forUser($viewer)->allows('pickSeat', [$ticket, $assignee]),
-                        // Exposed so the picker can grey out blocks whose
-                        // allowed_ticket_category_ids excludes this category
-                        // (SET-F-011).
                         'ticket_category_id' => $ticket->ticketType?->ticket_category_id,
                         'assignment' => $assignment ? [
                             'id' => $assignment->id,
                             'seat_plan_id' => $assignment->seat_plan_id,
-                            'seat_id' => $assignment->seat_id,
+                            'seat_id' => $assignment->seat_plan_seat_id,
                             'seat_title' => $assignment->seat_title,
                         ] : null,
                     ];
@@ -114,11 +117,7 @@ class SeatPickerController extends Controller
                 'name' => $event->name,
                 'banner_image_urls' => $bannerUrls,
             ],
-            'seatPlans' => $event->seatPlans->map(fn (SeatPlan $plan) => [
-                'id' => $plan->id,
-                'name' => $plan->name,
-                'data' => $plan->data,
-            ])->values()->all(),
+            'seatPlans' => SeatPlanResource::collection($event->seatPlans)->resolve(),
             'taken' => $taken,
             'myTickets' => $myTickets,
             'context' => [
@@ -140,7 +139,7 @@ class SeatPickerController extends Controller
 
         Gate::authorize('pickSeat', [$ticket, $assignee]);
 
-        $this->assignSeat->execute($ticket, $assignee, $seatPlan, (string) $validated['seat_id']);
+        $this->assignSeat->execute($ticket, $assignee, $seatPlan, (int) $validated['seat_id']);
 
         return back()->with('status', 'seat-assigned');
     }

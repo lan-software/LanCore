@@ -410,10 +410,9 @@ This ensures complete isolation between test cases.
 | Test | Preconditions | Input | Expected Result |
 |------|--------------|-------|-----------------|
 | allows admins to store a new seat plan | Admin, event exists | POST /seat-plans {name, event_id, data} | 302, seat plan created |
-| validates data is valid JSON | Admin | POST /seat-plans {invalid data} | 422 validation error |
-| allows admins to update a seat plan | Admin, seat plan exists | PATCH /seat-plans/{id} | 302, updated |
+| allows admins to update a seat plan with a normalized block payload | Admin, seat plan exists | PATCH /seat-plans/{id} with normalized blocks/rows/seats | 302, block + seat row upserted |
 | allows admins to delete a seat plan | Admin, seat plan exists | DELETE /seat-plans/{id} | 302, deleted |
-| stores blocks with seats and labels as JSON | — | Factory create | JSONB data stored correctly |
+| stores blocks with seats and labels in normalized tables | — | Factory `withBlocks([...])` create | Block, row, seat, label rows inserted correctly |
 | belongs to an event | — | SeatPlan model | Relationship correct |
 | cascades deletion when event is deleted | Event with seat plans | DELETE event | Seat plans cascade deleted |
 | allows searching seat plans by name | Admin | GET /seat-plans?search=Main | Filtered results |
@@ -447,7 +446,17 @@ This ensures complete isolation between test cases.
 | defaults to mail+database when prefs missing | User with `notificationPreference = null` | `via($user)` | `['mail','database']` |
 | disables mail when `mail_on_seating=false` | Prefs with mail=false | `via($user)` | `['database']` only |
 | includes push when `push_on_seating=true` | Prefs with both flags true | `via($user)` | `['mail','database','push']` |
-| toArray shape | — | `toArray($user)` | matches the documented payload (ticket_id, user_id, event_id, seat_plan_id, previous_seat_id, previous_block_id, reason) |
+| toArray shape | — | `toArray($user)` | matches the documented payload (ticket_id, user_id, event_id, seat_plan_id, previous_seat_id, previous_seat_title, previous_block_id, reason) |
+
+#### 4.11.4 Seating v2 — Resource & Backfill (SET-F-016, SET-F-017)
+
+**Files:** `tests/Unit/Domain/Seating/SeatPlanResourceTest.php`, `tests/Feature/Commands/MigrateJsonToNormalizedCommandTest.php`
+
+| Test (SEAT-*) | Preconditions | Input | Expected Result |
+|---|---|---|---|
+| SEAT-019 preserves the pre-normalization wire shape with integer IDs | Plan with one restricted block, two seats, one label | `(new SeatPlanResource($plan))->resolve()` | Payload contains `blocks[].{id,title,color,seats,labels,allowed_ticket_category_ids}` with numeric seat IDs |
+| SEAT-020 backfill is idempotent | Plan already normalized | `LegacySeatPlanConverter::backfillAll()` twice | Both runs report the plan as skipped; no duplicate blocks created |
+| SEAT-021 backfill migrates legacy `{blocks:[…]}` JSONB | Plan with legacy `data` column populated (no normalized rows) | `LegacySeatPlanConverter::backfillPlan($plan)` | Block, default row, seats (with `legacy_id` in `custom_data`), labels, and category pivot all created; no orphan report |
 
 ### 4.12 Achievement CRUD Tests
 

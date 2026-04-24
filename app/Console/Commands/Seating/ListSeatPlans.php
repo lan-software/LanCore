@@ -13,7 +13,7 @@ class ListSeatPlans extends Command
 {
     public function handle(): int
     {
-        $query = SeatPlan::query()->with('event');
+        $query = SeatPlan::query()->with('event')->withCount('blocks');
 
         if ($this->option('event') !== null) {
             $query->where('event_id', $this->option('event'));
@@ -33,7 +33,7 @@ class ListSeatPlans extends Command
                 $seatPlan->id,
                 $seatPlan->name,
                 $seatPlan->event?->name ?? '-',
-                count($seatPlan->data['blocks'] ?? []),
+                $seatPlan->blocks_count ?? 0,
             ]),
         );
 

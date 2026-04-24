@@ -13,7 +13,7 @@ it('lists all seat plans in a table', function () {
                     $seatPlan->id,
                     'Hall A',
                     $seatPlan->event?->name ?? '-',
-                    count($seatPlan->data['blocks'] ?? []),
+                    $seatPlan->blocks()->count(),
                 ],
             ],
         )

@@ -21,15 +21,17 @@ beforeEach(function (): void {
         'max_users_per_ticket' => 1,
     ]);
 
-    $this->plan = SeatPlan::factory()->create([
-        'event_id' => $this->event->id,
-        'data' => ['blocks' => [
-            ['id' => 'a', 'title' => 'A', 'color' => '#fff', 'seats' => [
-                ['id' => 'A1', 'title' => 'A1', 'x' => 0, 'y' => 0, 'salable' => true],
-                ['id' => 'A2', 'title' => 'A2', 'x' => 1, 'y' => 0, 'salable' => true],
-            ]],
-        ]],
-    ]);
+    $this->plan = SeatPlan::factory()->empty()->withBlocks([[
+        'title' => 'A',
+        'color' => '#fff',
+        'rows' => [['name' => 'A', 'seats' => [
+            ['number' => 1, 'title' => 'A1', 'x' => 0, 'y' => 0, 'salable' => true],
+            ['number' => 2, 'title' => 'A2', 'x' => 1, 'y' => 0, 'salable' => true],
+        ]]],
+    ]])->create(['event_id' => $this->event->id]);
+
+    $this->seatA1 = $this->plan->seats()->where('title', 'A1')->firstOrFail();
+    $this->seatA2 = $this->plan->seats()->where('title', 'A2')->firstOrFail();
 
     $this->ticketOwner = User::factory()->create();
     $this->ticket = Ticket::factory()->create([
@@ -41,17 +43,40 @@ beforeEach(function (): void {
         'ticket_id' => $this->ticket->id,
         'user_id' => $this->ticketOwner->id,
         'seat_plan_id' => $this->plan->id,
-        'seat_id' => 'A1',
+        'seat_plan_seat_id' => $this->seatA1->id,
     ]);
 });
 
-it('reports invalidations without writing when confirm_invalidations is false', function (): void {
-    // New data removes seat A1.
-    $newData = json_encode(['blocks' => [
-        ['id' => 'a', 'title' => 'A', 'color' => '#fff', 'seats' => [
-            ['id' => 'A2', 'title' => 'A2', 'x' => 1, 'y' => 0, 'salable' => true],
+function payloadKeepingOnlyA2(SeatPlan $plan, int $seatA2Id, int $blockId, int $rowId): string
+{
+    return json_encode([
+        'blocks' => [[
+            'id' => $blockId,
+            'title' => 'A',
+            'color' => '#fff',
+            'rows' => [[
+                'id' => $rowId,
+                'name' => 'A',
+            ]],
+            'seats' => [[
+                'id' => $seatA2Id,
+                'row_id' => $rowId,
+                'number' => 2,
+                'title' => 'A2',
+                'x' => 1,
+                'y' => 0,
+                'salable' => true,
+            ]],
+            'labels' => [],
+            'allowed_ticket_category_ids' => [],
         ]],
-    ]]);
+    ], JSON_THROW_ON_ERROR);
+}
+
+it('reports invalidations without writing when confirm_invalidations is false', function (): void {
+    $block = $this->plan->blocks()->first();
+    $row = $block->rows()->first();
+    $newData = payloadKeepingOnlyA2($this->plan, $this->seatA2->id, $block->id, $row->id);
 
     $this->actingAs($this->admin)
         ->patch("/seat-plans/{$this->plan->id}", [
@@ -61,19 +86,16 @@ it('reports invalidations without writing when confirm_invalidations is false', 
         ->assertRedirect()
         ->assertSessionHas('invalidations');
 
-    // DB unchanged.
-    expect($this->plan->fresh()->data['blocks'][0]['seats'])->toHaveCount(2)
+    expect($this->plan->fresh()->seats()->count())->toBe(2)
         ->and(SeatAssignment::query()->count())->toBe(1);
 });
 
 it('persists + releases + notifies when confirm_invalidations is true', function (): void {
     Notification::fake();
 
-    $newData = json_encode(['blocks' => [
-        ['id' => 'a', 'title' => 'A', 'color' => '#fff', 'seats' => [
-            ['id' => 'A2', 'title' => 'A2', 'x' => 1, 'y' => 0, 'salable' => true],
-        ]],
-    ]]);
+    $block = $this->plan->blocks()->first();
+    $row = $block->rows()->first();
+    $newData = payloadKeepingOnlyA2($this->plan, $this->seatA2->id, $block->id, $row->id);
 
     $this->actingAs($this->admin)
         ->patch("/seat-plans/{$this->plan->id}", [
@@ -84,7 +106,7 @@ it('persists + releases + notifies when confirm_invalidations is true', function
         ->assertRedirect()
         ->assertSessionHas('status', 'seat-plan-updated');
 
-    expect($this->plan->fresh()->data['blocks'][0]['seats'])->toHaveCount(1)
+    expect($this->plan->fresh()->seats()->count())->toBe(1)
         ->and(SeatAssignment::query()->count())->toBe(0);
 
     Notification::assertSentTo(
@@ -99,7 +121,7 @@ it('requires the ManageSeating (or SeatPlanPolicy::update) permission', function
     $this->actingAs($stranger)
         ->patch("/seat-plans/{$this->plan->id}", [
             'name' => $this->plan->name,
-            'data' => json_encode($this->plan->data),
+            'data' => json_encode(['blocks' => []]),
         ])
         ->assertForbidden();
 });

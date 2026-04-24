@@ -79,7 +79,7 @@ LanCore is a ground-up rewrite providing:
 - Domain-driven architecture for maintainability
 - Real-time notifications via Web Push
 - Webhook-driven integration ecosystem
-- Canvas-based seating plan editor
+- Drag-to-place seat-plan editor with row/grid wizard, mass editing, undo/redo, and optional background images
 - Flexible ticketing with quotas, categories, groups, and add-ons
 - Achievement/badge system for attendee engagement
 
@@ -331,7 +331,7 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 |------|-----------|
 | LAN Party | A social gathering where participants bring personal computers to play multiplayer games together on a local network |
 | BYOD | Bring Your Own Device — events where attendees bring their own computing equipment |
-| Seating Plan | A visual layout of physical seat positions at a venue |
+| Seating Plan | A relational layout of blocks, rows, seats, and labels at a venue, with optional global and per-block background images |
 | Voucher | A discount code that can be applied during ticket checkout |
 | Add-on | An additional purchasable item attached to a ticket (e.g., t-shirt, meal) |
 | Group Ticket | A ticket that allows multiple users to gain entry, purchased by one owner and assignable to multiple attendees |

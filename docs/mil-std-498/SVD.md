@@ -134,7 +134,7 @@ As this is the initial PoC version, there is no previous version. Key capabiliti
 | Event Management (CRUD, publish/unpublish) | Complete |
 | Venue Management with addresses and images | Complete |
 | Ticketing (types, categories, groups, add-ons) | Complete |
-| Canvas-based Seating Plans | Complete |
+| Seating Plans (normalized schema + drag-to-place admin editor with row/grid wizard, mass-edit, undo/redo, background images) | Complete |
 | Sponsor Management with tier levels | Complete |
 | Program Scheduling with time slots | Complete |
 | News Articles with rich text, comments, voting | Complete |

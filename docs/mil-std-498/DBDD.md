@@ -55,7 +55,7 @@ This document describes the database schema, entity relationships, data types, a
 - **Soft Deletes:** Applied where logical deletion is preferred over hard deletion
 - **Foreign Keys:** Enforced with `constrained()` and `cascadeOnDelete()` where appropriate
 - **Naming:** Snake_case table and column names; pivot tables alphabetical (e.g., `event_sponsor`)
-- **JSONB:** Used for flexible structured data (seat plans, banner images, sidebar favorites)
+- **JSONB:** Used for flexible structured data (banner images, sidebar favorites, per-seat `custom_data`)
 - **Indexes:** Applied on foreign keys and frequently queried columns
 
 ### 3.3 Schema Management
@@ -573,34 +573,90 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 
 ### 4.9 Seating
 
-#### 4.8.1 seat_plans
+Implements SET-F-001 through SET-F-016. The earlier JSONB-per-plan representation has been replaced by a normalized tree rooted at `seat_plans`; the JSONB column has been dropped.
+
+#### 4.9.1 seat_plans
 
 | Column | Type | Description |
 |--------|------|-------------|
 | id | bigint PK | Primary key |
-| event_id | bigint FK | References events.id |
+| event_id | bigint FK | References events.id (ON DELETE CASCADE) |
 | name | varchar | Plan name |
-| data | jsonb | Canvas seat plan data, see shape below |
+| background_image_url | varchar(2048) (nullable) | Optional global background image (SET-F-015) |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 
-**`data` JSONB shape (SET-F-001/002/011):**
-```
-{
-  "blocks": [
-    {
-      "id": string,
-      "title": string,
-      "color": string,
-      "seats": [ { "id": string, "x": number, "y": number, "salable": bool, "title": string, ... } ],
-      "labels": [...],
-      "allowed_ticket_category_ids": number[]   // SET-F-011; empty/missing = open to all ticket categories
-    }
-  ]
-}
-```
+#### 4.9.2 seat_plan_blocks
 
-#### 4.8.2 seat_assignments
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| seat_plan_id | bigint FK | References seat_plans.id (ON DELETE CASCADE) |
+| title | varchar | Display title |
+| color | varchar(16) | Default fill color |
+| seat_title_prefix | varchar(16) (nullable) | Optional prefix prepended to every seat title in this block (SET-F-018). Example: `VIP-` → `VIP-A1`. |
+| background_image_url | varchar(2048) (nullable) | Optional per-block background image (SET-F-015) |
+| sort_order | unsigned int | Display order within plan |
+| created_at / updated_at | timestamp | |
+
+Indexed on `(seat_plan_id, sort_order)`.
+
+#### 4.9.3 seat_plan_rows
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| seat_plan_block_id | bigint FK | References seat_plan_blocks.id (ON DELETE CASCADE) |
+| name | varchar(64) | Row label (A, B, …) — unique per block |
+| sort_order | unsigned int | Display order within block |
+| created_at / updated_at | timestamp | |
+
+Unique constraint on `(seat_plan_block_id, name)`.
+
+#### 4.9.4 seat_plan_seats
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| seat_plan_id | bigint FK | References seat_plans.id (ON DELETE CASCADE) — denormalized for hot-path "find seat in plan" queries; consistency enforced in `SeatPlanSeat::saving` |
+| seat_plan_block_id | bigint FK | References seat_plan_blocks.id (ON DELETE CASCADE) |
+| seat_plan_row_id | bigint FK (nullable) | References seat_plan_rows.id (ON DELETE SET NULL) |
+| number | unsigned int (nullable) | Per-row seat number |
+| title | varchar(64) | Display label (e.g., "A1") |
+| x, y | int | Coordinates on the canvas |
+| salable | boolean (default TRUE) | Whether the seat can be assigned |
+| color | varchar(16) (nullable) | Optional per-seat color override |
+| note | text (nullable) | Free-form admin note |
+| custom_data | jsonb (nullable) | Extensibility bucket (per-seat metadata, legacy import payload, etc.) |
+| created_at / updated_at | timestamp | |
+
+Constraints and indexes:
+- `UNIQUE (seat_plan_block_id, seat_plan_row_id, number)` — supports per-row incremental seat numbering.
+- `INDEX (seat_plan_id, salable)` — hot path for picker queries.
+
+#### 4.9.5 seat_plan_labels
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| seat_plan_block_id | bigint FK | References seat_plan_blocks.id (ON DELETE CASCADE) |
+| title | varchar | Label text |
+| x, y | int | Canvas coordinates |
+| sort_order | unsigned int | Render order within block |
+| created_at / updated_at | timestamp | |
+
+#### 4.9.6 seat_plan_block_category_restrictions
+
+Implements SET-F-011. An empty pivot for a block ⇒ block accepts any ticket category (permissive default).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| seat_plan_block_id | bigint FK | References seat_plan_blocks.id (ON DELETE CASCADE) |
+| ticket_category_id | bigint FK | References ticket_categories.id (ON DELETE CASCADE) |
+
+Composite primary key `(seat_plan_block_id, ticket_category_id)`.
+
+#### 4.9.7 seat_assignments
 
 Implements SET-F-006/007/008/013. Rows are hard-deleted (and `SeatAssignmentInvalidated` events emitted) when an admin edit invalidates the assignment via SET-F-013.
 
@@ -610,16 +666,16 @@ Implements SET-F-006/007/008/013. Rows are hard-deleted (and `SeatAssignmentInva
 | ticket_id | bigint FK | References tickets.id (ON DELETE CASCADE) |
 | user_id | bigint FK | References users.id (ON DELETE CASCADE) — the assignee |
 | seat_plan_id | bigint FK | References seat_plans.id (ON DELETE CASCADE) |
-| seat_id | varchar(64) | Matches the `id` of a seat inside `seat_plans.data.blocks[].seats[]` |
+| seat_plan_seat_id | bigint FK | References seat_plan_seats.id (ON DELETE RESTRICT — the two-phase save in `UpdateSeatPlan::execute` is the only code path that deletes assignments before releasing the seat) |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 
 **Constraints:**
-- `UNIQUE (seat_plan_id, seat_id)` — prevents double-booking a seat.
+- `UNIQUE (seat_plan_id, seat_plan_seat_id)` — prevents double-booking a seat.
 - `UNIQUE (ticket_id, user_id)` — at most one seat per user per ticket.
 - Indexes on `ticket_id` and `user_id`.
 
-**Auditing:** Auditable via `OwenIt\Auditing\Auditable`.
+**Auditing:** Every seating model (`SeatPlan`, `SeatPlanBlock`, `SeatPlanRow`, `SeatPlanSeat`, `SeatPlanLabel`, `SeatAssignment`) is Auditable via `OwenIt\Auditing\Auditable`.
 
 ### 4.9 News & Content
 
@@ -990,7 +1046,7 @@ OrchestrationJob ──< MatchChatMessage
 | Table | Column | Content |
 |-------|--------|---------|
 | events | banner_images | Array of image paths and metadata |
-| seat_plans | data | Canvas seat plan structure |
+| seat_plan_seats | custom_data | Per-seat extensibility metadata (legacy import payload, pricing hints, etc.) |
 | game_modes | parameters | Custom mode parameters |
 | users | sidebar_favorites | Navigation bookmark IDs |
 | integration_apps | webhook_events | Subscribed event type array |

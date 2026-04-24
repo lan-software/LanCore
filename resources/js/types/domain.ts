@@ -432,16 +432,32 @@ export type SeatAssignment = {
     ticket_id: number;
     user_id: number;
     seat_plan_id: number;
-    seat_id: string;
+    seat_id: number;
     seat_title: string | null;
     created_at?: string;
     updated_at?: string;
 };
 
+/**
+ * Blocks, rows, seats and labels live in their own tables since the normalization
+ * migration. The client widens `id` to `number | string` so the editor can tag
+ * freshly-created entities with `new-*` placeholders until the save response
+ * swaps in the persisted PKs.
+ */
 export type SeatPlanBlock = {
-    id: string;
+    id: number | string;
     title: string;
     color: string;
+    /**
+     * Optional prefix prepended to every seat title in this block at render
+     * time (e.g. "VIP-" turns "A1" into "VIP-A1"). Null/empty ⇒ no prefix.
+     * Only stored on editor payloads; the public `SeatPlanResource` emits
+     * seat titles with the prefix already baked in.
+     */
+    seat_title_prefix?: string | null;
+    background_image_url?: string | null;
+    sort_order?: number;
+    rows?: SeatPlanRow[];
     seats: SeatPlanSeat[];
     labels: SeatPlanLabel[];
     /**
@@ -451,22 +467,32 @@ export type SeatPlanBlock = {
     allowed_ticket_category_ids?: number[] | null;
 };
 
+export type SeatPlanRow = {
+    id: number | string;
+    name: string;
+    sort_order?: number;
+};
+
 export type SeatPlanSeat = {
     id: number | string;
+    row_id?: number | string | null;
+    number?: number | null;
     title: string;
     x: number;
     y: number;
     salable: boolean;
     selected?: boolean;
-    note?: string;
-    color?: string;
-    custom_data?: Record<string, unknown>;
+    note?: string | null;
+    color?: string | null;
+    custom_data?: Record<string, unknown> | null;
 };
 
 export type SeatPlanLabel = {
+    id?: number | string;
     title: string;
     x: number;
     y: number;
+    sort_order?: number;
 };
 
 export type SeatPlanData = {
@@ -477,10 +503,17 @@ export type SeatPlan = {
     id: number;
     name: string;
     event_id: number;
-    data: SeatPlanData;
+    background_image_url?: string | null;
+    /**
+     * Plan-level labels (SET-F-020). On the editor payload these live here;
+     * the public SeatPlanResource flattens them into the first block for
+     * seatmap-canvas compatibility, so the Picker never sees this field.
+     */
+    labels?: SeatPlanLabel[];
+    blocks: SeatPlanBlock[];
     event?: { id: number; name: string };
-    created_at: string;
-    updated_at: string;
+    created_at?: string;
+    updated_at?: string;
 };
 
 // Auditing

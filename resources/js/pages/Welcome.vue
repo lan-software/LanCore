@@ -80,14 +80,13 @@ const seatPlanData = computed(() => {
     );
 
     if (taken.length === 0) {
-        return plan.data;
+        return { blocks: plan.blocks ?? [] };
     }
 
-    const takenById = new Map(taken.map((t) => [t.seat_id, t]));
+    const takenById = new Map(taken.map((t) => [String(t.seat_id), t]));
 
     return {
-        ...plan.data,
-        blocks: (plan.data.blocks ?? []).map((block) => ({
+        blocks: (plan.blocks ?? []).map((block) => ({
             ...block,
             seats: block.seats.map((seat) => {
                 const occupant = takenById.get(String(seat.id));

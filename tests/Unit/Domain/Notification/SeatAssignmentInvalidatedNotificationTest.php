@@ -15,8 +15,9 @@ function makeNotification(): SeatAssignmentInvalidatedNotification
             ticketId: 1,
             userId: 1,
             seatPlan: $plan,
-            previousSeatId: 'A1',
-            previousBlockId: 'a',
+            previousSeatId: 42,
+            previousSeatTitle: 'A1',
+            previousBlockId: 7,
             reason: 'seat_removed',
         ),
     );
@@ -60,8 +61,9 @@ it('toArray produces the documented shape', function (): void {
             ticketId: 42,
             userId: 7,
             seatPlan: $plan,
-            previousSeatId: 'B-12',
-            previousBlockId: 'b',
+            previousSeatId: 13,
+            previousSeatTitle: 'B-12',
+            previousBlockId: 4,
             reason: 'category_mismatch',
         ),
     );
@@ -74,8 +76,9 @@ it('toArray produces the documented shape', function (): void {
         'user_id' => 7,
         'event_id' => $plan->event_id,
         'seat_plan_id' => $plan->id,
-        'previous_seat_id' => 'B-12',
-        'previous_block_id' => 'b',
+        'previous_seat_id' => 13,
+        'previous_seat_title' => 'B-12',
+        'previous_block_id' => 4,
         'reason' => 'category_mismatch',
     ]);
 });

@@ -16,9 +16,9 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @see docs/mil-std-498/SRS.md SET-F-006, SET-F-007, SET-F-008
- * @see docs/mil-std-498/SDD.md §3.6 Seating
+ * @see docs/mil-std-498/SDD.md §5.3c Seating Domain Design
  */
-#[Fillable(['ticket_id', 'user_id', 'seat_plan_id', 'seat_id'])]
+#[Fillable(['ticket_id', 'user_id', 'seat_plan_id', 'seat_plan_seat_id'])]
 class SeatAssignment extends Model implements AuditableContract
 {
     use Auditable;
@@ -37,31 +37,29 @@ class SeatAssignment extends Model implements AuditableContract
     }
 
     /**
-     * Human-readable seat label (e.g. "A1") resolved from the related seat plan's
-     * JSON data. Callers should eager-load `seatPlan` to avoid N+1; when the
-     * relation isn't loaded we return null and the UI falls back to seat_id.
+     * Human-readable seat label (e.g. "VIP-A1"). If the seat's block carries
+     * a `seat_title_prefix`, it is prepended to the raw seat title. Callers
+     * should eager-load `seat.block` to avoid N+1.
      */
     protected function seatTitle(): Attribute
     {
         return Attribute::make(
             get: function (): ?string {
-                if (! $this->relationLoaded('seatPlan') || $this->seatPlan === null) {
+                if (! $this->relationLoaded('seat') || $this->seat === null) {
                     return null;
                 }
 
-                $blocks = $this->seatPlan->data['blocks'] ?? [];
-
-                foreach ($blocks as $block) {
-                    foreach ($block['seats'] ?? [] as $seat) {
-                        if ((string) ($seat['id'] ?? '') === (string) $this->seat_id) {
-                            $title = $seat['title'] ?? null;
-
-                            return is_string($title) && $title !== '' ? $title : null;
-                        }
-                    }
+                $title = $this->seat->title;
+                if (! is_string($title) || $title === '') {
+                    return null;
                 }
 
-                return null;
+                $prefix = null;
+                if ($this->seat->relationLoaded('block') && $this->seat->block !== null) {
+                    $prefix = $this->seat->block->seat_title_prefix;
+                }
+
+                return (is_string($prefix) ? $prefix : '').$title;
             },
         );
     }
@@ -79,6 +77,11 @@ class SeatAssignment extends Model implements AuditableContract
     public function seatPlan(): BelongsTo
     {
         return $this->belongsTo(SeatPlan::class);
+    }
+
+    public function seat(): BelongsTo
+    {
+        return $this->belongsTo(SeatPlanSeat::class, 'seat_plan_seat_id');
     }
 
     /**

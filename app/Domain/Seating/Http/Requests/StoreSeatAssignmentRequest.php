@@ -3,6 +3,7 @@
 namespace App\Domain\Seating\Http\Requests;
 
 use App\Domain\Seating\Models\SeatPlan;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -27,7 +28,7 @@ class StoreSeatAssignmentRequest extends FormRequest
                 'required',
                 'integer',
                 'exists:seat_plans,id',
-                function (string $attribute, mixed $value, \Closure $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $event = $this->route('event');
                     $eventId = is_object($event) ? $event->id : (int) $event;
 
@@ -41,7 +42,7 @@ class StoreSeatAssignmentRequest extends FormRequest
                     }
                 },
             ],
-            'seat_id' => ['required', 'string', 'max:64'],
+            'seat_id' => ['required', 'integer', 'exists:seat_plan_seats,id'],
         ];
     }
 }

@@ -657,9 +657,11 @@ Body (JSON / form):
   "ticket_id": 45,
   "user_id": 7,
   "seat_plan_id": 2,
-  "seat_id": "B-12"
+  "seat_id": 812
 }
 ```
+
+`seat_id` is the integer PK of the `seat_plan_seats` row (the normalization migration replaced the earlier `varchar(64)` JSON pointer).
 
 Authorization: `Gate::authorize('pickSeat', [$ticket, $assignee])` — see SDD §5.3c.
 
@@ -691,8 +693,48 @@ Implements SET-F-012/013. Auth: `SeatPlanPolicy::update`.
 **Request body:**
 ```
 name?: string
-data?: string                    // JSON (serialised), see DBDD §4.8.1 shape
-confirm_invalidations?: boolean  // default false
+background_image_url?: string|null
+data?: string | object            // Full normalized tree — see below. Serialised JSON or direct object.
+confirm_invalidations?: boolean   // default false
+```
+
+`data` carries the full desired state of the plan's block/row/seat/label tree (full-state replace):
+
+```
+{
+  "blocks": [
+    {
+      "id"?: int,                                      // omit or send "new-*" for inserts
+      "title": string,
+      "color": string,
+      "background_image_url"?: string|null,
+      "sort_order"?: int,
+      "allowed_ticket_category_ids"?: int[],           // pivot contents; empty = open
+      "rows": [
+        {
+          "id"?: int,
+          "name": string,
+          "sort_order"?: int,
+          "seats": [
+            {
+              "id"?: int,
+              "number"?: int,
+              "title": string,
+              "x": int, "y": int,
+              "salable": bool,
+              "color"?: string|null,
+              "note"?: string|null,
+              "custom_data"?: object|null
+            }
+          ]
+        }
+      ],
+      "labels": [
+        { "id"?: int, "title": string, "x": int, "y": int, "sort_order"?: int }
+      ]
+    }
+  ]
+}
 ```
 
 **Responses:**
@@ -701,11 +743,24 @@ confirm_invalidations?: boolean  // default false
     block_id, block_title, assignee_name,
     reason: 'seat_removed' | 'category_mismatch'
   }>` — when the proposed change would orphan existing seat assignments AND `confirm_invalidations` is false. **No DB write occurs.** The `Edit.vue` page renders an `<InvalidationConfirmDialog>` from this flash payload.
-- `302` + session flash `status = 'seat-plan-updated'` on final success (either no invalidations detected, or `confirm_invalidations=true`). Affected `seat_assignments` rows are hard-deleted inside the transaction and a `SeatAssignmentInvalidated` domain event is dispatched for each.
+- `302` + session flash `status = 'seat-plan-updated'` AND `id_map: { blocks: {<new-*>: int}, rows: {...}, seats: {...}, labels: {...} }` on final success (either no invalidations detected, or `confirm_invalidations=true`). The editor calls `useEditorStore.reconcileIds(id_map)` to rewrite its client placeholders in place. Affected `seat_assignments` rows are hard-deleted inside the transaction and a `SeatAssignmentInvalidated` domain event is dispatched for each.
 - `403` Forbidden — viewer lacks `SeatPlanPolicy::update`.
 - `422` ValidationException — standard validation errors on `name`, `data`, or `confirm_invalidations`.
 
 **Emitted notification (SET-F-014):** `SeatAssignmentInvalidatedNotification` is dispatched (queued) for each released assignment to ticket owner + manager + assignee (deduped). Channels are gated by `mail_on_seating` / `push_on_seating` preferences; the `database` channel is always used. See SDD §5.3c.4 for the `toArray()` payload schema.
+
+### 3.17 Admin Seat-Plan Background Image Endpoints
+
+Implements SET-F-015. Auth: `SeatPlanPolicy::update`.
+
+| Method + path | Name | Purpose |
+|---|---|---|
+| `POST /seat-plans/{seatPlan}/background` | `seat-plans.background.store` | Upload (multipart `image`, PNG/JPG/WEBP ≤ 5 MB) and set the plan's global background image URL. |
+| `DELETE /seat-plans/{seatPlan}/background` | `seat-plans.background.destroy` | Remove the plan's global background image. |
+| `POST /seat-plans/{seatPlan}/blocks/{block}/background` | `seat-plans.blocks.background.store` | Upload a per-block background image. |
+| `DELETE /seat-plans/{seatPlan}/blocks/{block}/background` | `seat-plans.blocks.background.destroy` | Remove a block's background image. |
+
+Files are written through `StorageRole::public()` under `seat-plans/{plan_id}/…`. Responses are `302` Inertia redirects with a `status=seat-plan-background-uploaded|…` flash.
 
 ---
 
@@ -727,6 +782,8 @@ confirm_invalidations?: boolean  // default false
 | SET-F-011 (Category filter in picker / assign 422) | Section 3.14.1, 3.14.2 |
 | SET-F-010 (Privacy) | Section 3.15 |
 | SET-F-012..013 (Two-phase seat-plan update) | Section 3.16 |
+| SET-F-015 (Background images) | Section 3.17 |
+| SET-F-016 (Wire-shape preservation via SeatPlanResource) | Section 3.14.1 |
 
 ---
 

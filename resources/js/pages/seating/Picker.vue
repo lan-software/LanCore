@@ -21,7 +21,8 @@ import type { SeatPlanBlock, SeatPlanData, SeatPlanSeat } from '@/types/domain';
 interface SeatPlan {
     id: number;
     name: string;
-    data: SeatPlanData;
+    background_image_url?: string | null;
+    blocks: SeatPlanBlock[];
 }
 
 interface Assignee {
@@ -33,7 +34,7 @@ interface Assignee {
     assignment: {
         id: number;
         seat_plan_id: number;
-        seat_id: string;
+        seat_id: number;
         seat_title: string | null;
     } | null;
 }
@@ -48,7 +49,7 @@ interface MyTicket {
 interface TakenSeat {
     id: number;
     seat_plan_id: number;
-    seat_id: string;
+    seat_id: number;
     ticket_id: number;
     user_id: number;
     name: string | null;
@@ -89,7 +90,7 @@ const activeTicketId = ref<number | null>(props.context.ticket_id);
 const activeUserId = ref<number | null>(props.context.user_id);
 const selectedSeat = ref<{
     planId: number;
-    seatId: string;
+    seatId: number;
     title: string;
 } | null>(null);
 const clickHint = ref<string | null>(null);
@@ -103,7 +104,7 @@ const form = useForm<{
     ticket_id: number | null;
     user_id: number | null;
     seat_plan_id: number | null;
-    seat_id: string | null;
+    seat_id: number | null;
 }>({
     ticket_id: null,
     user_id: null,
@@ -199,7 +200,7 @@ function isBlockBlockedByCategory(
 ): boolean {
     const seatIdStr = String(seat.id);
 
-    for (const block of plan.data.blocks ?? []) {
+    for (const block of plan.blocks ?? []) {
         if (block.seats.some((s) => String(s.id) === seatIdStr)) {
             return !blockAcceptsCategory(block, categoryId);
         }
@@ -215,7 +216,7 @@ const decoratedPlanData = computed<SeatPlanData | null>(() => {
 
     const assigneeCategoryId = activeAssignee.value?.ticket_category_id ?? null;
 
-    const blocks = (activePlan.value.data.blocks ?? []).map((block) => {
+    const blocks = (activePlan.value.blocks ?? []).map((block) => {
         // When the active assignee has a ticket category AND the block
         // restricts categories, mark every seat in the block as not salable
         // so it renders in the "taken" style and clicks are short-circuited.
@@ -231,8 +232,8 @@ const decoratedPlanData = computed<SeatPlanData | null>(() => {
                 const isOwnAssignment =
                     activeAssignee.value?.assignment?.seat_plan_id ===
                         activePlan.value!.id &&
-                    activeAssignee.value?.assignment?.seat_id ===
-                        String(seat.id);
+                    Number(activeAssignee.value?.assignment?.seat_id) ===
+                        Number(seat.id);
 
                 if (taken && !isOwnAssignment) {
                     return {
@@ -253,7 +254,7 @@ const decoratedPlanData = computed<SeatPlanData | null>(() => {
         };
     });
 
-    return { ...activePlan.value.data, blocks };
+    return { blocks } as SeatPlanData;
 });
 
 const submitError = computed<string | null>(() => {
@@ -377,7 +378,7 @@ function onSeatClick(payload: unknown): void {
 
     selectedSeat.value = {
         planId: activePlan.value.id,
-        seatId: String(seat.id),
+        seatId: Number(seat.id),
         title: seat.title ?? String(seat.id),
     };
     clickHint.value = null;
@@ -458,12 +459,11 @@ async function highlightSavedSeat(): Promise<void> {
     }
 
     // getSeat signature: (seatId, blockId). We have to search blocks for the match.
-    for (const block of activePlan.value.data.blocks ?? []) {
-        if (block.seats.some((s) => String(s.id) === assignment.seat_id)) {
-            const seat = instance.getSeat?.(
-                assignment.seat_id,
-                String(block.id),
-            );
+    const assignmentSeatId = String(assignment.seat_id);
+
+    for (const block of activePlan.value.blocks ?? []) {
+        if (block.seats.some((s) => String(s.id) === assignmentSeatId)) {
+            const seat = instance.getSeat?.(assignmentSeatId, String(block.id));
 
             if (seat && typeof seat === 'object' && 'select' in seat) {
                 (seat as LibrarySeat).select?.();

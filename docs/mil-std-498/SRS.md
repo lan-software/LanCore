@@ -162,26 +162,32 @@ The LanCore CSCI shall support the following operational states:
 #### 3.2.5 Seating Domain (CSCI-SET)
 
 **Models:** SeatPlan, SeatAssignment
-**Controllers:** SeatPlanController, SeatPlanAuditController, SeatPickerController
+**Controllers:** SeatPlanController, SeatPlanAuditController, SeatPickerController, SeatPlanBackgroundController
 **Actions:** CreateSeatPlan, UpdateSeatPlan, DeleteSeatPlan, AssignSeat, ReleaseSeat
+**Support:** SeatPlanTreeSyncer, LegacySeatPlanConverter, SeatingCategoryRules
+**Resources:** SeatPlanResource, SeatPlanEditorResource
 **Events/Listeners:** SeatAssignmentInvalidated → NotifyAffectedAssignees
 
 | Req ID | Requirement |
 |--------|------------|
-| SET-F-001 | The software shall provide a canvas-based seat plan editor using seatmap-canvas library |
-| SET-F-002 | The software shall store seat plan data as JSONB in PostgreSQL |
+| SET-F-001 | The software shall provide an admin-facing canvas-based seat plan editor (EditorShell / EditorCanvas / PropertiesPanel) supporting drag-to-place seats, draggable labels, left-drag marquee selection, right-click (or middle-click) drag panning, a dedicated delete tool (D), wheel zoom centred on the cursor, auto-selection of a block after creation, a Move-to-block control in the properties panel, undo/redo, and keyboard shortcuts |
+| SET-F-002 | The software shall store seat plan data in a normalized relational schema (`seat_plans`, `seat_plan_blocks`, `seat_plan_rows`, `seat_plan_seats`, `seat_plan_labels`) with cascading foreign keys rooted at `seat_plans` |
 | SET-F-003 | The software shall associate seat plans with events |
 | SET-F-004 | The software shall enforce SeatPlanPolicy authorization |
-| SET-F-005 | The software shall maintain audit trails for seat plan modifications |
-| SET-F-006 | The software shall persist a seat assignment as the tuple (ticket, user, seat_plan, seat) with database-enforced uniqueness on (seat_plan, seat) and on (ticket, user) |
+| SET-F-005 | The software shall maintain audit trails for seat plan modifications including per-entity Auditable rows on `SeatPlan`, `SeatPlanBlock`, `SeatPlanRow`, `SeatPlanSeat`, `SeatPlanLabel` |
+| SET-F-006 | The software shall persist a seat assignment as the tuple (ticket, user, seat_plan, seat) with database-enforced uniqueness on (`seat_plan_id`, `seat_plan_seat_id`) and on (ticket, user); the seat FK is `restrictOnDelete` so the two-phase save flow is the only code path that can release assignments |
 | SET-F-007 | The software shall allow ticket owners, ticket managers, the assignee themselves, and ManageTicketing permission holders to pick or change a seat assignment, provided the ticket has not been checked in (TicketPolicy::pickSeat). Roles are non-exclusive — being a ticket user never blocks owner or manager rights |
 | SET-F-008 | The software shall auto-release seat assignments when a ticket transitions to Cancelled status, when a ticket is deleted, or when a user is removed from a group ticket's user pivot |
 | SET-F-009 | The software shall render occupied seats on public seat plans showing the assignee's initials, gated by the assignee's `is_seat_visible_publicly` flag with an override that always reveals the name to viewers who themselves hold an active ticket (owner, manager, or pivot user) for the same event |
 | SET-F-010 | The software shall provide a Settings → Privacy page through which a user may toggle `is_seat_visible_publicly` |
-| SET-F-011 | The software shall support per-block `allowed_ticket_category_ids` in the seat plan JSONB restricting which ticket categories may be assigned to seats in that block; empty/missing = open to all (permissive default) |
-| SET-F-012 | On seat-plan update, the software shall diff the proposed change against existing seat assignments and block the save unless the admin explicitly confirms when assignments would be invalidated (seat removed OR category allowlist would reject the current assignment) |
+| SET-F-011 | The software shall support per-block ticket-category restrictions via the `seat_plan_block_category_restrictions(seat_plan_block_id, ticket_category_id)` pivot; an empty pivot for a block = open to all categories (permissive default) |
+| SET-F-012 | On seat-plan update, the software shall diff the proposed block/row/seat tree against existing seat assignments and block the save unless the admin explicitly confirms when assignments would be invalidated (seat removed OR category allowlist would reject the current assignment) |
 | SET-F-013 | Upon a confirmed invalidating save, the software shall release affected assignments in a single transaction and emit a `SeatAssignmentInvalidated` domain event per released assignment |
 | SET-F-014 | The software shall notify ticket owner, ticket manager and the affected assigned user about each invalidated assignment via email + in-app (database) channels by default, with push as an opt-in per-user preference (`push_on_seating`); email is opt-out (`mail_on_seating`, default true) |
+| SET-F-015 | The software shall support an optional global background image per seat plan (`seat_plans.background_image_url`) and per block (`seat_plan_blocks.background_image_url`), uploaded through authenticated endpoints gated by `SeatPlanPolicy::update` |
+| SET-F-016 | The software shall preserve the pre-normalization `{blocks:[{seats,labels,allowed_ticket_category_ids}]}` wire shape via `SeatPlanResource`, so `@alisaitteke/seatmap-canvas` consumers (Picker, public Welcome overlay) require no frontend rework |
+| SET-F-018 | The software shall support an optional `seat_title_prefix` per block that is prepended to every seat's display title. The raw seat title remains unchanged in storage; `SeatPlanResource` emits prefixed titles to picker consumers, while `SeatPlanEditorResource` keeps the raw title and exposes the prefix separately for admin editing |
+| SET-F-019 | The software shall surface save feedback in the editor: a `Saving…` state during the request, a green `Saved` confirmation with a `canvas-confetti` burst coloured by the plan's block/seat palette on success, and a dismissible red banner carrying the server-side error text on failure. The confetti animation is suppressed when `prefers-reduced-motion: reduce` is set |
 
 #### 3.2.6 Sponsoring Domain (CSCI-SPO)
 

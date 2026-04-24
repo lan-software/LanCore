@@ -22,6 +22,7 @@
         "back": "Back",
         "create": "Create",
         "update": "Update",
+        "upload": "Upload",
         "confirm": "Confirm",
         "continue": "Continue",
         "yes": "Yes",
@@ -141,7 +142,7 @@
         "admin": {
             "categoryEditorTitle": "Block category restrictions",
             "categoryEditorDescription": "Pick which ticket categories may sit in each block. Leave empty to allow any ticket.",
-            "noBlocks": "This plan has no blocks yet — add blocks to the JSON below first.",
+            "noBlocks": "This plan has no blocks yet — add blocks in the editor.",
             "noCategoriesForEvent": "No ticket categories for this event yet.",
             "blockOpenToAll": "Open to all ticket categories.",
             "blockRestrictedTo": "Restricted to {count} ticket categories.",
@@ -157,6 +158,109 @@
                 "notificationHint": "Affected users will receive an email + in-app notification with a link to pick a new seat.",
                 "cancel": "Cancel",
                 "confirm": "Confirm & save"
+            },
+            "editor": {
+                "tabs": {
+                    "editor": "Editor",
+                    "preview": "Preview",
+                    "categories": "Categories",
+                    "advancedJson": "JSON (advanced)"
+                },
+                "toolbar": {
+                    "tool": {
+                        "select": "Select (V)",
+                        "addSeat": "Add seat (S)",
+                        "addRow": "Add row (R)",
+                        "addLabel": "Add label (L)",
+                        "addBlock": "Add block",
+                        "delete": "Delete tool (D)",
+                        "pan": "Pan (Space)"
+                    },
+                    "snap": "Snap",
+                    "gridSize": "Grid size",
+                    "zoomIn": "Zoom in",
+                    "zoomOut": "Zoom out",
+                    "zoomReset": "Reset view",
+                    "undo": "Undo (Ctrl+Z)",
+                    "redo": "Redo (Ctrl+Shift+Z)",
+                    "unsavedChanges": "Unsaved changes",
+                    "save": "Save",
+                    "saving": "Saving…",
+                    "saved": "Saved",
+                    "saveFailedGeneric": "Could not save. Please try again.",
+                    "dismiss": "Dismiss"
+                },
+                "properties": {
+                    "plan": {
+                        "title": "Plan",
+                        "name": "Name",
+                        "backgroundImageUrl": "Global background image",
+                        "backgroundImageHint": "Rendered behind the entire canvas."
+                    },
+                    "seat": {
+                        "title": "Seat",
+                        "titleField": "Label",
+                        "salable": "Salable",
+                        "color": "Color",
+                        "note": "Note"
+                    },
+                    "row": {
+                        "title": "Row",
+                        "label": "Row label",
+                        "startNumber": "Start number",
+                        "step": "Step",
+                        "renumber": "Renumber seats"
+                    },
+                    "block": {
+                        "title": "Block",
+                        "name": "Name",
+                        "color": "Color",
+                        "seatTitlePrefix": "Seat title prefix",
+                        "seatTitlePrefixHint": "Optional label prepended to every seat title in this block. Example: VIP- → VIP-A1.",
+                        "backgroundImageUrl": "Block background image"
+                    },
+                    "label": {
+                        "title": "Label",
+                        "text": "Text",
+                        "planLevel": "plan-level"
+                    }
+                },
+                "mass": {
+                    "title": "Mass edit",
+                    "count": "{count} items selected",
+                    "titlePattern": "Title pattern",
+                    "titlePatternHint": "Use {row} and {n} as placeholders",
+                    "setSalableTrue": "Mark salable",
+                    "setSalableFalse": "Mark non-salable",
+                    "moveToBlock": "Move to block",
+                    "moveBy": "Move by",
+                    "delete": "Delete selected"
+                },
+                "addRowDialog": {
+                    "title": "Add row",
+                    "startNumber": "Start number",
+                    "step": "Step",
+                    "label": "Row label",
+                    "orientation": "Orientation"
+                },
+                "addBlockDialog": {
+                    "title": "Add block",
+                    "description": "Create an empty block or seed it with a grid of seats.",
+                    "mode": "Mode",
+                    "modeEmpty": "Empty",
+                    "modeGrid": "Grid",
+                    "modeDraw": "Draw rectangle",
+                    "gridRows": "Rows",
+                    "gridCols": "Columns",
+                    "gridPitch": "Spacing",
+                    "seatTitlePrefix": "Seat title prefix"
+                },
+                "shortcuts": {
+                    "openHelp": "Keyboard shortcuts",
+                    "title": "Keyboard shortcuts"
+                },
+                "unsavedLeaveWarning": "You have unsaved changes. Leave the page anyway?",
+                "emptyCanvasHint": "Select a seat, row, block, or label to edit its properties. Add a block to get started."
             }
         }
     },

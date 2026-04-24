@@ -1,63 +1,60 @@
 <?php
 
 use App\Domain\Seating\Models\SeatPlan;
+use App\Domain\Seating\Models\SeatPlanBlock;
 use App\Domain\Seating\Support\SeatingCategoryRules;
+use App\Domain\Ticketing\Models\TicketCategory;
 
-function makePlan(array $blocks): SeatPlan
+function buildBlockWithRestrictions(array $categoryIds): SeatPlanBlock
 {
-    return SeatPlan::factory()->create(['data' => ['blocks' => $blocks]]);
+    $plan = SeatPlan::factory()->empty()->create();
+    $block = SeatPlanBlock::factory()->create(['seat_plan_id' => $plan->id]);
+
+    if ($categoryIds !== []) {
+        $block->categoryRestrictions()->sync($categoryIds);
+    }
+
+    return $block->fresh(['categoryRestrictions']);
 }
 
 it('accepts any category when the block has no allowlist (permissive default)', function (): void {
-    $plan = makePlan([
-        ['id' => 'a', 'title' => 'A', 'color' => '#fff', 'seats' => [
-            ['id' => 'A1', 'title' => 'A1', 'x' => 0, 'y' => 0, 'salable' => true],
-        ]],
-    ]);
+    $block = buildBlockWithRestrictions([]);
 
-    expect(SeatingCategoryRules::blockAccepts($plan, 'a', null))->toBeTrue()
-        ->and(SeatingCategoryRules::blockAccepts($plan, 'a', 1))->toBeTrue()
-        ->and(SeatingCategoryRules::blockAccepts($plan, 'a', 99))->toBeTrue();
+    expect(SeatingCategoryRules::blockAccepts($block, null))->toBeTrue()
+        ->and(SeatingCategoryRules::blockAccepts($block, 1))->toBeTrue()
+        ->and(SeatingCategoryRules::blockAccepts($block, 99))->toBeTrue();
 });
 
 it('accepts only listed categories when the block has a non-empty allowlist', function (): void {
-    $plan = makePlan([
-        ['id' => 'vip', 'title' => 'VIP', 'color' => '#fff', 'seats' => [], 'allowed_ticket_category_ids' => [7, 9]],
-    ]);
+    $plan = SeatPlan::factory()->empty()->create();
+    $categoryA = TicketCategory::factory()->create(['event_id' => $plan->event_id]);
+    $categoryB = TicketCategory::factory()->create(['event_id' => $plan->event_id]);
+    $categoryOther = TicketCategory::factory()->create(['event_id' => $plan->event_id]);
 
-    expect(SeatingCategoryRules::blockAccepts($plan, 'vip', 7))->toBeTrue()
-        ->and(SeatingCategoryRules::blockAccepts($plan, 'vip', 9))->toBeTrue()
-        ->and(SeatingCategoryRules::blockAccepts($plan, 'vip', 1))->toBeFalse()
-        ->and(SeatingCategoryRules::blockAccepts($plan, 'vip', null))->toBeFalse();
+    $block = SeatPlanBlock::factory()->create(['seat_plan_id' => $plan->id]);
+    $block->categoryRestrictions()->sync([$categoryA->id, $categoryB->id]);
+    $block->refresh()->load('categoryRestrictions');
+
+    expect(SeatingCategoryRules::blockAccepts($block, $categoryA->id))->toBeTrue()
+        ->and(SeatingCategoryRules::blockAccepts($block, $categoryB->id))->toBeTrue()
+        ->and(SeatingCategoryRules::blockAccepts($block, $categoryOther->id))->toBeFalse()
+        ->and(SeatingCategoryRules::blockAccepts($block, null))->toBeFalse();
 });
 
-it('treats an unknown block id as permissive (enforcement is elsewhere)', function (): void {
-    $plan = makePlan([
-        ['id' => 'vip', 'title' => 'VIP', 'color' => '#fff', 'seats' => [], 'allowed_ticket_category_ids' => [7]],
-    ]);
+it('allowedCategoryIds returns the pivot ids as integers', function (): void {
+    $plan = SeatPlan::factory()->empty()->create();
+    $categoryA = TicketCategory::factory()->create(['event_id' => $plan->event_id]);
+    $categoryB = TicketCategory::factory()->create(['event_id' => $plan->event_id]);
 
-    expect(SeatingCategoryRules::blockAccepts($plan, 'unknown', 1))->toBeTrue();
+    $block = SeatPlanBlock::factory()->create(['seat_plan_id' => $plan->id]);
+    $block->categoryRestrictions()->sync([$categoryA->id, $categoryB->id]);
+    $block->load('categoryRestrictions');
+
+    expect(SeatingCategoryRules::allowedCategoryIds($block))->toEqualCanonicalizing([$categoryA->id, $categoryB->id]);
 });
 
-it('findBlockForSeat returns the containing block or null', function (): void {
-    $plan = makePlan([
-        ['id' => 'a', 'title' => 'A', 'color' => '#fff', 'seats' => [
-            ['id' => 'A1', 'title' => 'A1', 'x' => 0, 'y' => 0, 'salable' => true],
-        ]],
-        ['id' => 'b', 'title' => 'B', 'color' => '#fff', 'seats' => [
-            ['id' => 'B1', 'title' => 'B1', 'x' => 0, 'y' => 0, 'salable' => true],
-        ]],
-    ]);
+it('allowedCategoryIds returns an empty array when no restrictions exist', function (): void {
+    $block = buildBlockWithRestrictions([]);
 
-    $block = SeatingCategoryRules::findBlockForSeat($plan, 'B1');
-    expect($block)->not->toBeNull()
-        ->and($block['id'])->toBe('b')
-        ->and(SeatingCategoryRules::findBlockForSeat($plan, 'NONE'))->toBeNull();
-});
-
-it('allowedCategoryIds normalises missing and invalid values to an empty list', function (): void {
-    expect(SeatingCategoryRules::allowedCategoryIds([]))->toBe([])
-        ->and(SeatingCategoryRules::allowedCategoryIds(['allowed_ticket_category_ids' => null]))->toBe([])
-        ->and(SeatingCategoryRules::allowedCategoryIds(['allowed_ticket_category_ids' => 'not-an-array']))->toBe([])
-        ->and(SeatingCategoryRules::allowedCategoryIds(['allowed_ticket_category_ids' => [1, '2', 'x']]))->toBe([1, 2]);
+    expect(SeatingCategoryRules::allowedCategoryIds($block))->toBe([]);
 });
