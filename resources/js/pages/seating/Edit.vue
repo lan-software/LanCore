@@ -22,9 +22,8 @@ import { index as seatPlansRoute } from '@/routes/seat-plans';
 import type { BreadcrumbItem } from '@/types';
 import type { SeatPlan, SeatPlanData, TicketCategory } from '@/types/domain';
 import BlockCategoryEditor from './partials/BlockCategoryEditor.vue';
-import InvalidationConfirmDialog, {
-    type InvalidationRow,
-} from './partials/InvalidationConfirmDialog.vue';
+import InvalidationConfirmDialog from './partials/InvalidationConfirmDialog.vue';
+import type { InvalidationRow } from './partials/InvalidationConfirmDialog.vue';
 
 const props = defineProps<{
     seatPlan: SeatPlan;

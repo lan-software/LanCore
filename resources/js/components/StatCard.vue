@@ -18,10 +18,7 @@ defineProps<{
             <div class="text-3xl font-semibold tabular-nums">
                 {{ value }}
             </div>
-            <div
-                v-if="subtext"
-                class="text-xs text-muted-foreground"
-            >
+            <div v-if="subtext" class="text-xs text-muted-foreground">
                 {{ subtext }}
             </div>
             <div

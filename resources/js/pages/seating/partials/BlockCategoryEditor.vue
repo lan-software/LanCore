@@ -3,8 +3,11 @@ import { Armchair } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import type { SeatPlanBlock, SeatPlanData, TicketCategory } from '@/types/domain';
+import type {
+    SeatPlanBlock,
+    SeatPlanData,
+    TicketCategory,
+} from '@/types/domain';
 
 type BlockWithCategories = SeatPlanBlock & {
     allowed_ticket_category_ids?: number[] | null;
@@ -25,6 +28,7 @@ const blocks = computed<BlockWithCategories[]>(
 
 function isSelected(blockId: string | number, categoryId: number): boolean {
     const block = blocks.value.find((b) => String(b.id) === String(blockId));
+
     return (block?.allowed_ticket_category_ids ?? []).includes(categoryId);
 }
 
@@ -37,10 +41,12 @@ function toggle(
         if (String(block.id) !== String(blockId)) {
             return block;
         }
+
         const current = block.allowed_ticket_category_ids ?? [];
         const next = nextState
             ? Array.from(new Set([...current, categoryId]))
             : current.filter((id) => id !== categoryId);
+
         return { ...block, allowed_ticket_category_ids: next };
     });
 
@@ -52,6 +58,7 @@ function clearAll(blockId: string | number): void {
         if (String(block.id) !== String(blockId)) {
             return block;
         }
+
         return { ...block, allowed_ticket_category_ids: [] };
     });
     emit('update:data', { ...props.data, blocks: nextBlocks } as SeatPlanData);
@@ -122,9 +129,7 @@ function clearAll(blockId: string | number): void {
                     <Checkbox
                         :id="`block-${block.id}-cat-${cat.id}`"
                         :model-value="isSelected(block.id, cat.id)"
-                        @update:model-value="
-                            (v) => toggle(block.id, cat.id, v)
-                        "
+                        @update:model-value="(v) => toggle(block.id, cat.id, v)"
                     />
                     <span class="truncate">{{ cat.name }}</span>
                 </label>

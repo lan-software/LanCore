@@ -37,6 +37,7 @@ const emit = defineEmits<{
 
 function onOpenUpdate(value: boolean): void {
     emit('update:open', value);
+
     if (!value) {
         emit('cancel');
     }
@@ -62,7 +63,9 @@ function seatLabel(row: InvalidationRow): string {
                 </DialogDescription>
             </DialogHeader>
 
-            <ul class="max-h-72 space-y-2 overflow-y-auto rounded-md border p-2">
+            <ul
+                class="max-h-72 space-y-2 overflow-y-auto rounded-md border p-2"
+            >
                 <li
                     v-for="row in invalidations"
                     :key="row.assignment_id"

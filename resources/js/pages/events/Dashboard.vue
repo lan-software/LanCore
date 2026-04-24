@@ -130,7 +130,8 @@ const checkInProgress = computed(() => {
     }
 
     return Math.round(
-        (props.stats.headline.checkedIn / props.stats.headline.activeAssignees) *
+        (props.stats.headline.checkedIn /
+            props.stats.headline.activeAssignees) *
             100,
     );
 });
@@ -150,10 +151,7 @@ const checkInProgress = computed(() => {
                             : t('eventDashboard.noEventDescription')
                     "
                 />
-                <div
-                    v-if="stats"
-                    class="flex items-center gap-3"
-                >
+                <div v-if="stats" class="flex items-center gap-3">
                     <span class="text-xs text-muted-foreground">
                         {{ t('eventDashboard.lastRefreshed') }}
                         {{ generatedAtFormatted }}
@@ -177,9 +175,7 @@ const checkInProgress = computed(() => {
                 <CardContent
                     class="flex flex-col items-center gap-3 py-12 text-center"
                 >
-                    <CalendarRange
-                        class="size-10 text-muted-foreground"
-                    />
+                    <CalendarRange class="size-10 text-muted-foreground" />
                     <p class="text-sm text-muted-foreground">
                         {{ t('eventDashboard.emptyHelp') }}
                     </p>
@@ -232,9 +228,7 @@ const checkInProgress = computed(() => {
                                     t('eventDashboard.seating.seatedCheckedIn')
                                 }}
                             </div>
-                            <div
-                                class="text-2xl font-semibold tabular-nums"
-                            >
+                            <div class="text-2xl font-semibold tabular-nums">
                                 {{ stats.seating.seatedCheckedIn }}
                             </div>
                         </CardContent>
@@ -250,9 +244,7 @@ const checkInProgress = computed(() => {
                                     )
                                 }}
                             </div>
-                            <div
-                                class="text-2xl font-semibold tabular-nums"
-                            >
+                            <div class="text-2xl font-semibold tabular-nums">
                                 {{ stats.seating.unseatedCheckedIn }}
                             </div>
                         </CardContent>
@@ -407,14 +399,18 @@ const checkInProgress = computed(() => {
                                         <TableCell>
                                             {{ entry.ticketTypeName ?? '—' }}
                                         </TableCell>
-                                        <TableCell>{{ entry.action }}</TableCell>
+                                        <TableCell>{{
+                                            entry.action
+                                        }}</TableCell>
                                         <TableCell>
                                             {{ formatDateTime(entry.at) }}
                                         </TableCell>
                                     </TableRow>
                                 </template>
                                 <TableEmpty v-else :colspan="4">
-                                    {{ t('eventDashboard.recentCheckins.empty') }}
+                                    {{
+                                        t('eventDashboard.recentCheckins.empty')
+                                    }}
                                 </TableEmpty>
                             </TableBody>
                         </Table>

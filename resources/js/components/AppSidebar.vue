@@ -62,7 +62,10 @@ import { index as adminTeamsIndex } from '@/routes/admin/teams';
 import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import { index as announcementsIndex } from '@/routes/announcements';
 import { index as competitionsIndex } from '@/routes/competitions';
-import { dashboard as eventsDashboard, index as eventsIndex } from '@/routes/events';
+import {
+    dashboard as eventsDashboard,
+    index as eventsIndex,
+} from '@/routes/events';
 import { index as externalApisIndex } from '@/routes/external-apis';
 import { index as gameServersIndex } from '@/routes/game-servers';
 import { index as gamesIndex } from '@/routes/games';

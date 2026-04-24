@@ -172,8 +172,9 @@ async function initSeatmap(): Promise<void> {
     // renders with readable contrast. A CSS !important override in <style>
     // below backstops this for the hardcoded `dark:fill-white` class the
     // library emits regardless.
-    const isDark = typeof document !== 'undefined'
-        && document.documentElement.classList.contains('dark');
+    const isDark =
+        typeof document !== 'undefined' &&
+        document.documentElement.classList.contains('dark');
     const legendFontColor = isDark ? '#f3f4f6' : '#111827';
 
     const defaultOptions = {
@@ -459,7 +460,10 @@ watch(
  */
 let themeObserver: MutationObserver | null = null;
 function wireThemeObserver(): void {
-    if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') {
+    if (
+        typeof document === 'undefined' ||
+        typeof MutationObserver === 'undefined'
+    ) {
         return;
     }
 
@@ -468,13 +472,17 @@ function wireThemeObserver(): void {
 
     themeObserver = new MutationObserver(() => {
         const isDark = root.classList.contains('dark');
+
         if (isDark !== lastDark) {
             lastDark = isDark;
             initSeatmap();
         }
     });
 
-    themeObserver.observe(root, { attributes: true, attributeFilter: ['class'] });
+    themeObserver.observe(root, {
+        attributes: true,
+        attributeFilter: ['class'],
+    });
 }
 </script>
 

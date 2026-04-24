@@ -179,9 +179,11 @@ function blockAcceptsCategory(
     if (!Array.isArray(allowed) || allowed.length === 0) {
         return true;
     }
+
     if (categoryId === null) {
         return false;
     }
+
     return allowed.includes(categoryId);
 }
 
@@ -196,11 +198,13 @@ function isBlockBlockedByCategory(
     categoryId: number | null,
 ): boolean {
     const seatIdStr = String(seat.id);
+
     for (const block of plan.data.blocks ?? []) {
         if (block.seats.some((s) => String(s.id) === seatIdStr)) {
             return !blockAcceptsCategory(block, categoryId);
         }
     }
+
     return false;
 }
 
@@ -316,9 +320,15 @@ function onSeatClick(payload: unknown): void {
         seat.salable === false &&
         activeAssignee.value &&
         activePlan.value &&
-        isBlockBlockedByCategory(seat, activePlan.value, activeAssignee.value.ticket_category_id)
+        isBlockBlockedByCategory(
+            seat,
+            activePlan.value,
+            activeAssignee.value.ticket_category_id,
+        )
     ) {
-        console.warn('[Picker] click rejected: block does not accept this ticket category');
+        console.warn(
+            '[Picker] click rejected: block does not accept this ticket category',
+        );
         flashHint(t('seating.picker.hint.blockNotForCategory'));
 
         return;
