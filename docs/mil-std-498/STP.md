@@ -230,6 +230,15 @@ Covers SET-F-006..010.
 | SEAT-009 | Lifecycle: cancelling a ticket releases all its seat assignments | Feature |
 | SEAT-010 | Lifecycle: removing a user from a group ticket releases that user's seat | Feature |
 | SEAT-011 | Welcome / picker: privacy override reveals name to same-event ticket holder | Feature |
+| SEAT-012 | Category restriction: Standard-category ticket cannot assign into a VIP-only block (returns 422) | Feature |
+| SEAT-013 | Category restriction: VIP-category ticket CAN assign into a VIP-only block | Feature |
+| SEAT-014 | Category restriction: any ticket can assign when block has no allowlist (permissive default) | Feature |
+| SEAT-015 | Invalidation detection: PATCH removing an occupied seat without `confirm_invalidations` returns 302 + `invalidations` flash; no DB write | Feature |
+| SEAT-016 | Invalidation detection: PATCH narrowing a category allowlist that rejects an existing assignment is detected | Feature |
+| SEAT-017 | Confirmed invalidation: PATCH with `confirm_invalidations=true` deletes `seat_assignments`, dispatches `SeatAssignmentInvalidated`, mail + database channels fire | Feature |
+| SEAT-018 | Notification via() branches: mail fires iff `mail_on_seating=true`; push fires iff `push_on_seating=true`; database always fires | Unit |
+| SEAT-U-001 | SeatingCategoryRules rule matrix (permissive / restricted / unknown block / allowed_category_ids normalisation) | Unit |
+| SEAT-U-002 | UpdateSeatPlan diff logic: no-change, seat removed, category narrowed, confirm→delete+dispatch | Unit |
 
 #### 4.3.8 Architecture Tests (TGRP-ARC)
 

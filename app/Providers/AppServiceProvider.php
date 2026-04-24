@@ -55,6 +55,8 @@ use App\Domain\Program\Events\ProgramTimeSlotApproaching;
 use App\Domain\Program\Listeners\SendProgramTimeSlotNotification;
 use App\Domain\Program\Models\Program;
 use App\Domain\Program\Policies\ProgramPolicy;
+use App\Domain\Seating\Events\SeatAssignmentInvalidated;
+use App\Domain\Seating\Listeners\NotifyAffectedAssignees;
 use App\Domain\Seating\Models\SeatPlan;
 use App\Domain\Seating\Policies\SeatPlanPolicy;
 use App\Domain\Shop\Events\CartItemAdded;
@@ -219,6 +221,7 @@ class AppServiceProvider extends ServiceProvider
         EventFacade::listen(NewsArticlePublished::class, HandleNewsArticlePublishedWebhooks::class);
         EventFacade::listen(EventPublished::class, HandleEventPublishedWebhooks::class);
         EventFacade::listen(WebhookDispatched::class, SendWebhookPayload::class);
+        EventFacade::listen(SeatAssignmentInvalidated::class, NotifyAffectedAssignees::class);
 
         // Stripe webhook listener for checkout fulfillment
         EventFacade::listen(WebhookReceived::class, HandleStripeCheckoutCompleted::class);

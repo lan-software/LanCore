@@ -63,7 +63,7 @@ class SeatPickerController extends Controller
                     ->orWhere('manager_id', $viewer->id)
                     ->orWhereHas('users', fn ($users) => $users->whereKey($viewer->id));
             })
-            ->with(['ticketType', 'owner', 'manager', 'users', 'seatAssignments'])
+            ->with(['ticketType', 'owner', 'manager', 'users', 'seatAssignments.seatPlan'])
             ->get()
             ->map(function (Ticket $ticket) use ($viewer): array {
                 $candidates = collect();
@@ -80,10 +80,15 @@ class SeatPickerController extends Controller
                         'user_id' => $assignee->id,
                         'name' => $assignee->name,
                         'can_pick' => Gate::forUser($viewer)->allows('pickSeat', [$ticket, $assignee]),
+                        // Exposed so the picker can grey out blocks whose
+                        // allowed_ticket_category_ids excludes this category
+                        // (SET-F-011).
+                        'ticket_category_id' => $ticket->ticketType?->ticket_category_id,
                         'assignment' => $assignment ? [
                             'id' => $assignment->id,
                             'seat_plan_id' => $assignment->seat_plan_id,
                             'seat_id' => $assignment->seat_id,
+                            'seat_title' => $assignment->seat_title,
                         ] : null,
                     ];
                 })->values()->all();

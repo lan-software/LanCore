@@ -41,13 +41,13 @@ class TicketController extends Controller
 
         $ownedTickets = $user->ownedTickets()
             ->when($selectedEventId, fn ($q) => $q->where('event_id', $selectedEventId))
-            ->with(['ticketType', 'event', 'manager', 'users', 'addons', 'order', 'seatAssignments'])
+            ->with(['ticketType', 'event', 'manager', 'users', 'addons', 'order', 'seatAssignments.seatPlan'])
             ->get();
 
         $managedTickets = $user->managedTickets()
             ->where('owner_id', '!=', $user->id)
             ->when($selectedEventId, fn ($q) => $q->where('event_id', $selectedEventId))
-            ->with(['ticketType', 'event', 'owner', 'users', 'addons', 'order', 'seatAssignments'])
+            ->with(['ticketType', 'event', 'owner', 'users', 'addons', 'order', 'seatAssignments.seatPlan'])
             ->get();
 
         $assignedTickets = $user->assignedTickets()
@@ -57,7 +57,7 @@ class TicketController extends Controller
                     ->orWhereNull('manager_id');
             })
             ->when($selectedEventId, fn ($q) => $q->where('tickets.event_id', $selectedEventId))
-            ->with(['ticketType', 'event', 'owner', 'users', 'addons', 'order', 'seatAssignments'])
+            ->with(['ticketType', 'event', 'owner', 'users', 'addons', 'order', 'seatAssignments.seatPlan'])
             ->get();
 
         return Inertia::render('tickets/Index', [
@@ -79,7 +79,7 @@ class TicketController extends Controller
             'manager',
             'users',
             'addons',
-            'seatAssignments',
+            'seatAssignments.seatPlan',
         ]);
 
         $ticketData = $this->enrichTickets(collect([$ticket]))[0];

@@ -164,6 +164,7 @@ The LanCore CSCI shall support the following operational states:
 **Models:** SeatPlan, SeatAssignment
 **Controllers:** SeatPlanController, SeatPlanAuditController, SeatPickerController
 **Actions:** CreateSeatPlan, UpdateSeatPlan, DeleteSeatPlan, AssignSeat, ReleaseSeat
+**Events/Listeners:** SeatAssignmentInvalidated → NotifyAffectedAssignees
 
 | Req ID | Requirement |
 |--------|------------|
@@ -177,6 +178,10 @@ The LanCore CSCI shall support the following operational states:
 | SET-F-008 | The software shall auto-release seat assignments when a ticket transitions to Cancelled status, when a ticket is deleted, or when a user is removed from a group ticket's user pivot |
 | SET-F-009 | The software shall render occupied seats on public seat plans showing the assignee's initials, gated by the assignee's `is_seat_visible_publicly` flag with an override that always reveals the name to viewers who themselves hold an active ticket (owner, manager, or pivot user) for the same event |
 | SET-F-010 | The software shall provide a Settings → Privacy page through which a user may toggle `is_seat_visible_publicly` |
+| SET-F-011 | The software shall support per-block `allowed_ticket_category_ids` in the seat plan JSONB restricting which ticket categories may be assigned to seats in that block; empty/missing = open to all (permissive default) |
+| SET-F-012 | On seat-plan update, the software shall diff the proposed change against existing seat assignments and block the save unless the admin explicitly confirms when assignments would be invalidated (seat removed OR category allowlist would reject the current assignment) |
+| SET-F-013 | Upon a confirmed invalidating save, the software shall release affected assignments in a single transaction and emit a `SeatAssignmentInvalidated` domain event per released assignment |
+| SET-F-014 | The software shall notify ticket owner, ticket manager and the affected assigned user about each invalidated assignment via email + in-app (database) channels by default, with push as an opt-in per-user preference (`push_on_seating`); email is opt-out (`mail_on_seating`, default true) |
 
 #### 3.2.6 Sponsoring Domain (CSCI-SPO)
 
@@ -250,7 +255,7 @@ The LanCore CSCI shall support the following operational states:
 | Req ID | Requirement |
 |--------|------------|
 | NTF-F-001 | The software shall store per-user notification preferences with mail and push toggles per category |
-| NTF-F-002 | The software shall support notification categories: news, events, comments, programs, announcements |
+| NTF-F-002 | The software shall support notification categories: news, events, comments, programs, announcements, seating |
 | NTF-F-003 | The software shall support Web Push subscriptions with endpoint, public key, and auth token |
 | NTF-F-004 | The software shall support program-specific notification subscriptions |
 | NTF-F-005 | The software shall support notification archiving with archived_at timestamp |
@@ -577,6 +582,8 @@ Additional CSCI-level requirements:
 | CAP-SHP-* | SHP-F-* |
 | CAP-PRG-* | PRG-F-* |
 | CAP-SET-* | SET-F-* |
+| CAP-SET-005 | SET-F-011 |
+| CAP-SET-006 | SET-F-012, SET-F-013, SET-F-014 |
 | CAP-SPO-* | SPO-F-* |
 | CAP-NWS-* | NWS-F-* |
 | CAP-ANN-* | ANN-F-* |

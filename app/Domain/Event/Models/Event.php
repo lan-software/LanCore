@@ -146,6 +146,14 @@ class Event extends Model implements AuditableContract
     }
 
     /**
+     * @param  Builder<self>  $query
+     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('start_date', '<=', now())->where('end_date', '>=', now());
+    }
+
+    /**
      * Events the user has any participation in (ticket owner/manager/assignee, order, or competition team membership).
      *
      * @param  Builder<self>  $query

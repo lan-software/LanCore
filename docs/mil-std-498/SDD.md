@@ -516,7 +516,8 @@ Organized under `resources/js/pages/`:
 | Payment Conditions | 3 | Index, Create, Edit |
 | Games | 3 | Index, Create, Edit |
 | Game Modes | 2 | Create, Edit |
-| Seating | 4 | Index, Create, Edit, Audit |
+| Seating | 6 | Index, Create, Edit, Audit, partials/BlockCategoryEditor, partials/InvalidationConfirmDialog |
+| Seating Picker | 1 | Picker (end-user seat selection) |
 | Sponsors | 4 | Index, Create, Edit, Audit |
 | Sponsor Levels | 4 | Index, Create, Edit, Audit |
 | News | 5 | Index, Create, Edit, Show, Audit |
@@ -636,6 +637,64 @@ A hard-delete of the ticket itself is also covered by the migration's `cascadeOn
 Both `WelcomeController::getTakenSeats` and `SeatPickerController::show` use this accessor when assembling their `taken[]` overlays — emitting `null` for the name when the viewer is not allowed to see it. Initials are derived client-side via the existing `getInitials()` composable so no server-side initials helper is needed.
 
 `/settings/privacy` (`PrivacyController` mirroring the existing `TicketDiscoveryController` shape) is the toggle UI. Default for new users is `true` (visible).
+
+#### 5.3c.2 Category Rules Helper (SET-F-011)
+
+`App\Domain\Seating\Support\SeatingCategoryRules` exposes three static methods that are the single source of truth for per-block category gating:
+
+- `blockAccepts(SeatPlan $plan, string $blockId, ?int $categoryId): bool`
+- `findBlockForSeat(SeatPlan $plan, string $seatId): ?array`
+- `allowedCategoryIds(array $block): int[]`
+
+Rationale: the restriction lives inside the existing `seat_plans.data` JSONB blob as an optional `allowed_ticket_category_ids: number[]` per block. Empty/missing ⇒ accept all — this permissive default keeps every existing seat plan working without retroactive edits and makes restriction strictly opt-in.
+
+Enforcement happens in three places, all of which call `SeatingCategoryRules`:
+1. `AssignSeat::ensureBlockAcceptsCategory` on the server — throws `ValidationException` with key `seat_id` and message `seating.errors.block_category_forbidden`.
+2. `Picker.vue::decoratedPlanData` on the client — marks rejected seats `salable: false` so they render greyed out.
+3. `Picker.vue::onSeatClick` — surfaces the amber `seating.picker.hint.blockNotForCategory` banner when the user clicks a rejected seat, distinguishing category-forbidden from taken-by-another-user.
+
+Category-mismatch is deliberately NOT modelled as a `TicketPolicy::pickSeat` rejection: the viewer has every right to act on the ticket; they've just aimed at the wrong block. A 422 validation error with a clear message is correct UX; a 403 would be misleading.
+
+#### 5.3c.3 Edit-Safety / Two-Phase Save (SET-F-012, SET-F-013)
+
+`UpdateSeatPlan::execute(SeatPlan, array $attributes, bool $confirmInvalidations = false): UpdateSeatPlanResult`.
+
+The `UpdateSeatPlanResult` value object (`App\Domain\Seating\Support`) carries two named constructors: `pending($invalidations)` and `saved(int $count)`. The instance method `needsConfirmation(): bool` + public `invalidations` / `releasedCount` props let the controller branch on `back()->with('invalidations', ...)` vs `back()->with('status', 'seat-plan-updated')`.
+
+Diff logic:
+1. Load all `SeatAssignment`s for the plan (eager-loaded with `ticket.ticketType` + `user` so the confirmation dialog has the full human-readable row).
+2. Index the proposed new JSON by seat id → `{block, seat}`.
+3. For each existing assignment:
+   - seat id not in new index ⇒ `reason: 'seat_removed'`
+   - seat id present but its block's `allowed_ticket_category_ids` excludes the assignment's ticket-type category ⇒ `reason: 'category_mismatch'`
+
+The DB transaction is entered only when there is work to release. For the no-invalidation happy path the action uses a direct `$seatPlan->fill()->save()` — avoids a pointless nested savepoint during RefreshDatabase-driven tests and cleaner audit rows.
+
+`SeatPlanController::update` reads `confirm_invalidations` from the validated request and passes it through. The Inertia form flashes invalidation rows back to `Edit.vue`'s `<InvalidationConfirmDialog>` when needed; confirming re-submits with the flag set.
+
+#### 5.3c.4 Notification & Preferences (SET-F-014)
+
+`App\Domain\Notification\Notifications\SeatAssignmentInvalidatedNotification` mirrors the `NewsPublishedNotification` shape.
+
+`via()` contract:
+- `'database'` — always (in-app bell requires it; no preference can disable).
+- `'mail'` — when `preferences.mail_on_seating === true` (default true — email is opt-out).
+- `'push'` — when `preferences.push_on_seating === true` (default false — push is opt-in).
+
+`toArray()` schema, used for both the bell and the push payload:
+```json
+{
+  "ticket_id": int,
+  "user_id": int,
+  "event_id": int,
+  "seat_plan_id": int,
+  "previous_seat_id": "string",
+  "previous_block_id": "string|null",
+  "reason": "seat_removed" | "category_mismatch"
+}
+```
+
+The listener `App\Domain\Seating\Listeners\NotifyAffectedAssignees` is queued (`ShouldQueue`) and dispatches to the deduped set of ticket owner + manager + assignee. Registered in `AppServiceProvider` alongside the other `EventFacade::listen(...)` calls.
 
 ### 5.4 Console Commands (21)
 

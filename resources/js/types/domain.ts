@@ -433,6 +433,7 @@ export type SeatAssignment = {
     user_id: number;
     seat_plan_id: number;
     seat_id: string;
+    seat_title: string | null;
     created_at?: string;
     updated_at?: string;
 };
@@ -443,6 +444,11 @@ export type SeatPlanBlock = {
     color: string;
     seats: SeatPlanSeat[];
     labels: SeatPlanLabel[];
+    /**
+     * Per-block ticket-category allowlist (SET-F-011).
+     * Empty / missing = open to all categories (permissive default).
+     */
+    allowed_ticket_category_ids?: number[] | null;
 };
 
 export type SeatPlanSeat = {

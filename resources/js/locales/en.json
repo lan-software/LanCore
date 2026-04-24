@@ -129,12 +129,34 @@
             "hint": {
                 "chooseAssigneeFirst": "Select a person on the right before picking a seat.",
                 "cannotPickForPerson": "You do not have permission to pick a seat for this person.",
-                "seatTaken": "This seat is already taken."
+                "seatTaken": "This seat is already taken.",
+                "blockNotForCategory": "Your ticket category can't sit in this block."
             },
             "nav": {
                 "resetView": "Reset view",
                 "zoomToMySeat": "Zoom to my seat",
                 "pickASeat": "Click a seat on the map to pick one."
+            }
+        },
+        "admin": {
+            "categoryEditorTitle": "Block category restrictions",
+            "categoryEditorDescription": "Pick which ticket categories may sit in each block. Leave empty to allow any ticket.",
+            "noBlocks": "This plan has no blocks yet — add blocks to the JSON below first.",
+            "noCategoriesForEvent": "No ticket categories for this event yet.",
+            "blockOpenToAll": "Open to all ticket categories.",
+            "blockRestrictedTo": "Restricted to {count} ticket categories.",
+            "clearCategories": "Clear restrictions",
+            "invalidationDialog": {
+                "title": "Seats will be released",
+                "description": "These seats are currently occupied and your change will remove them or no longer match the assignee's ticket category. Confirming notifies each affected user by email + in-app.",
+                "ticket": "Ticket #{id}",
+                "reason": {
+                    "seat_removed": "Seat removed",
+                    "category_mismatch": "Category mismatch"
+                },
+                "notificationHint": "Affected users will receive an email + in-app notification with a link to pick a new seat.",
+                "cancel": "Cancel",
+                "confirm": "Confirm & save"
             }
         }
     },
@@ -242,6 +264,7 @@
         "language": "Language",
         "notifications": "Notifications",
         "events": "Events",
+        "eventDashboard": "Event Dashboard",
         "programs": "Programs",
         "tickets": "Tickets",
         "users": "Users",
@@ -307,6 +330,44 @@
         "title": "Dashboard",
         "welcome": "Welcome back!",
         "overview": "Overview"
+    },
+    "eventDashboard": {
+        "refresh": "Refresh",
+        "lastRefreshed": "Last refreshed",
+        "noEventDescription": "No event selected.",
+        "emptyHelp": "No published event is currently running or upcoming. Publish an event to see live stats here.",
+        "cards": {
+            "ticketsSold": "Tickets Sold",
+            "ticketsInSale": "Tickets In Sale",
+            "ticketsInSaleHelp": "Remaining quota across all ticket types",
+            "seatedUsers": "Seated Users",
+            "checkedIn": "Checked In",
+            "ofActive": "of {total} active",
+            "ofCapacity": "of {total} seats"
+        },
+        "seating": {
+            "seatedCheckedIn": "Checked in and seated",
+            "unseatedCheckedIn": "Checked in without a seat"
+        },
+        "ticketTypes": {
+            "heading": "Ticket types",
+            "name": "Name",
+            "sold": "Sold",
+            "quota": "Quota",
+            "remaining": "Remaining",
+            "status": "Status",
+            "onSale": "On sale",
+            "closed": "Closed",
+            "empty": "No ticket types configured for this event."
+        },
+        "recentCheckins": {
+            "heading": "Recent check-ins",
+            "user": "User",
+            "ticketType": "Ticket type",
+            "action": "Action",
+            "time": "Time",
+            "empty": "No check-ins recorded yet."
+        }
     },
     "validation": {
         "required": "This field is required",

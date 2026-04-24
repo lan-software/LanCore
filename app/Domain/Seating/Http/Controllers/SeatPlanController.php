@@ -10,6 +10,7 @@ use App\Domain\Seating\Http\Requests\SeatPlanIndexRequest;
 use App\Domain\Seating\Http\Requests\StoreSeatPlanRequest;
 use App\Domain\Seating\Http\Requests\UpdateSeatPlanRequest;
 use App\Domain\Seating\Models\SeatPlan;
+use App\Domain\Ticketing\Models\TicketCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -95,9 +96,18 @@ class SeatPlanController extends Controller
 
         $seatPlan->load('event:id,name');
 
+        // Ticket categories for the plan's event drive the per-block restriction
+        // editor (SET-F-011). Scoped to event only — a plan never needs
+        // categories from a different event.
+        $ticketCategories = TicketCategory::query()
+            ->where('event_id', $seatPlan->event_id)
+            ->orderBy('sort_order')
+            ->get(['id', 'name', 'sort_order']);
+
         return Inertia::render('seating/Edit', [
             'seatPlan' => $seatPlan,
             'events' => Event::dropdownOptions(),
+            'ticketCategories' => $ticketCategories,
         ]);
     }
 
@@ -111,9 +121,21 @@ class SeatPlanController extends Controller
             $validated['data'] = json_decode($validated['data'], true);
         }
 
-        $this->updateSeatPlan->execute($seatPlan, $validated);
+        $confirmInvalidations = (bool) ($validated['confirm_invalidations'] ?? false);
+        unset($validated['confirm_invalidations']);
 
-        return back();
+        $result = $this->updateSeatPlan->execute($seatPlan, $validated, $confirmInvalidations);
+
+        if ($result->needsConfirmation()) {
+            // Two-phase save: first call reports what WOULD be invalidated; no
+            // DB write has happened. The Edit.vue dialog re-submits with
+            // confirm_invalidations=true once the admin acknowledges.
+            return back()
+                ->with('invalidations', $result->invalidations->values()->all())
+                ->withInput($request->all());
+        }
+
+        return back()->with('status', 'seat-plan-updated');
     }
 
     public function destroy(SeatPlan $seatPlan): RedirectResponse

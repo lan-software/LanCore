@@ -418,6 +418,37 @@ This ensures complete isolation between test cases.
 | cascades deletion when event is deleted | Event with seat plans | DELETE event | Seat plans cascade deleted |
 | allows searching seat plans by name | Admin | GET /seat-plans?search=Main | Filtered results |
 
+#### 4.11.1 Seating v2 — Category Restrictions (SET-F-011)
+
+**File:** `tests/Feature/Seating/CategoryRestrictionPickerTest.php`
+
+| Test (SEAT-*) | Preconditions | Input | Expected Result |
+|---|---|---|---|
+| SEAT-012 rejects a Standard ticket seating into the VIP block | Event, block `vip` allows `[VIP]` only, Standard-category ticket owned by user | POST /events/{event}/seats `{seat_id:"V1",…}` as Standard-ticket owner | 302 + `assertSessionHasErrors('seat_id')` with `seating.errors.block_category_forbidden`; no SeatAssignment row written |
+| SEAT-013 allows a VIP ticket to seat into the VIP block | Same event, VIP-category ticket | Same POST, VIP owner | 302 redirect success, SeatAssignment row created |
+| SEAT-014 allows any ticket to seat into a block with no allowlist | Block `open` has no allowlist | POST to `O1` | 302 success, row created |
+
+#### 4.11.2 Seating v2 — Two-Phase Edit Safety (SET-F-012/013)
+
+**File:** `tests/Unit/Domain/Seating/UpdateSeatPlanTest.php`, `tests/Feature/Seating/SeatPlanInvalidationFlowTest.php`
+
+| Test (SEAT-*) | Preconditions | Input | Expected Result |
+|---|---|---|---|
+| SEAT-015 reports invalidations without writing when confirm is false | Occupied seat A1 exists; proposed data removes A1 | PATCH /seat-plans/{id} without `confirm_invalidations` | 302 + `assertSessionHas('invalidations')`; DB unchanged; SeatAssignment row intact |
+| SEAT-016 detects category-mismatch invalidations when allowlist narrows | Occupied seat with VIP ticket; proposed data narrows allowlist to Standard | Action.execute with confirm=false | Result.needsConfirmation() = true; row reason = `category_mismatch` |
+| SEAT-017 persists + releases + dispatches when confirm is true | Same setup as SEAT-015 | PATCH with `confirm_invalidations=true` | 302 + `status=seat-plan-updated`; SeatAssignment hard-deleted; `SeatAssignmentInvalidated` event dispatched |
+
+#### 4.11.3 Seating v2 — Notification Channels (SET-F-014)
+
+**File:** `tests/Unit/Domain/Notification/SeatAssignmentInvalidatedNotificationTest.php`
+
+| Test (SEAT-018-*) | Preconditions | Input | Expected Result |
+|---|---|---|---|
+| defaults to mail+database when prefs missing | User with `notificationPreference = null` | `via($user)` | `['mail','database']` |
+| disables mail when `mail_on_seating=false` | Prefs with mail=false | `via($user)` | `['database']` only |
+| includes push when `push_on_seating=true` | Prefs with both flags true | `via($user)` | `['mail','database','push']` |
+| toArray shape | — | `toArray($user)` | matches the documented payload (ticket_id, user_id, event_id, seat_plan_id, previous_seat_id, previous_block_id, reason) |
+
 ### 4.12 Achievement CRUD Tests
 
 **File:** `tests/Feature/Achievements/AchievementCrudTest.php`
@@ -767,6 +798,9 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | ACH-F-001..007 | Achievement CRUD tests (4.12), notification tests (4.4.1) |
 | TKT-F-001..016 | Ticketing tests (4.5, 4.5.1) |
 | TKT-F-017..023 | Signed ticket token tests (4.20) |
+| SET-F-011 | Category restriction tests (4.11.1) |
+| SET-F-012..013 | Two-phase edit safety tests (4.11.2) |
+| SET-F-014 | Notification channels tests (4.11.3) |
 | SEC-014..020 | Signed ticket token tests (4.20) |
 | CAP-TKT-013..014 | Signed ticket token tests (4.20) |
 | SHP-F-003, SHP-F-015, SHP-F-016 | Shop/Payment tests (4.6) |

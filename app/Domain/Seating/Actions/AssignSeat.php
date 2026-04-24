@@ -4,6 +4,7 @@ namespace App\Domain\Seating\Actions;
 
 use App\Domain\Seating\Models\SeatAssignment;
 use App\Domain\Seating\Models\SeatPlan;
+use App\Domain\Seating\Support\SeatingCategoryRules;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Models\User;
 use Illuminate\Database\QueryException;
@@ -25,6 +26,7 @@ class AssignSeat
         $this->ensureSeatPlanBelongsToTicketEvent($ticket, $seatPlan);
         $this->ensureSeatExistsAndIsSalable($seatPlan, $seatId);
         $this->ensureAssigneeIsOnTicket($ticket, $assignee);
+        $this->ensureBlockAcceptsCategory($ticket, $seatPlan, $seatId);
 
         try {
             return DB::transaction(function () use ($ticket, $assignee, $seatPlan, $seatId): SeatAssignment {
@@ -88,6 +90,35 @@ class AssignSeat
 
         throw ValidationException::withMessages([
             'user_id' => __('seating.errors.user_not_on_ticket'),
+        ]);
+    }
+
+    /**
+     * Enforce per-block ticket-category restrictions (SET-F-011).
+     *
+     * The block holding the target seat may declare an
+     * `allowed_ticket_category_ids` list. When set and non-empty, the ticket's
+     * category must be a member — otherwise the assignment is rejected as a
+     * validation error (not a 403) because the viewer has every right to act
+     * on the ticket; they've just aimed at the wrong block.
+     */
+    private function ensureBlockAcceptsCategory(Ticket $ticket, SeatPlan $seatPlan, string $seatId): void
+    {
+        $block = SeatingCategoryRules::findBlockForSeat($seatPlan, $seatId);
+
+        if ($block === null) {
+            return;
+        }
+
+        $ticket->loadMissing('ticketType');
+        $categoryId = $ticket->ticketType?->ticket_category_id;
+
+        if (SeatingCategoryRules::blockAccepts($seatPlan, (string) ($block['id'] ?? ''), $categoryId)) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'seat_id' => __('seating.errors.block_category_forbidden'),
         ]);
     }
 

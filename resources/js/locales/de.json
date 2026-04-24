@@ -129,12 +129,34 @@
             "hint": {
                 "chooseAssigneeFirst": "Wähle rechts eine Person aus, bevor du einen Sitzplatz wählst.",
                 "cannotPickForPerson": "Du hast keine Berechtigung, einen Sitzplatz für diese Person zu wählen.",
-                "seatTaken": "Dieser Sitzplatz ist bereits belegt."
+                "seatTaken": "Dieser Sitzplatz ist bereits belegt.",
+                "blockNotForCategory": "Deine Ticketkategorie darf in diesem Bereich nicht sitzen."
             },
             "nav": {
                 "resetView": "Ansicht zurücksetzen",
                 "zoomToMySeat": "Zu meinem Sitzplatz",
                 "pickASeat": "Klicke auf einen Sitzplatz, um ihn auszuwählen."
+            }
+        },
+        "admin": {
+            "categoryEditorTitle": "Kategorie-Beschränkungen pro Bereich",
+            "categoryEditorDescription": "Wähle aus, welche Ticketkategorien in welchem Bereich sitzen dürfen. Leer lassen, um alle Tickets zuzulassen.",
+            "noBlocks": "Dieser Plan enthält noch keine Bereiche — füge zuerst Bereiche im JSON unten hinzu.",
+            "noCategoriesForEvent": "Für diese Veranstaltung gibt es noch keine Ticketkategorien.",
+            "blockOpenToAll": "Offen für alle Ticketkategorien.",
+            "blockRestrictedTo": "Eingeschränkt auf {count} Ticketkategorien.",
+            "clearCategories": "Beschränkungen entfernen",
+            "invalidationDialog": {
+                "title": "Sitzplätze werden freigegeben",
+                "description": "Diese Sitzplätze sind derzeit belegt und deine Änderung entfernt sie oder lässt die Ticketkategorie der Person nicht mehr zu. Beim Bestätigen werden die betroffenen Benutzer per E-Mail und In-App benachrichtigt.",
+                "ticket": "Ticket #{id}",
+                "reason": {
+                    "seat_removed": "Sitzplatz entfernt",
+                    "category_mismatch": "Kategorie nicht zulässig"
+                },
+                "notificationHint": "Betroffene Benutzer erhalten eine E-Mail und eine In-App-Benachrichtigung mit einem Link zur Auswahl eines neuen Sitzplatzes.",
+                "cancel": "Abbrechen",
+                "confirm": "Bestätigen & Speichern"
             }
         }
     },
@@ -242,6 +264,7 @@
         "language": "Sprache",
         "notifications": "Benachrichtigungen",
         "events": "Veranstaltungen",
+        "eventDashboard": "Event-Dashboard",
         "programs": "Programme",
         "tickets": "Tickets",
         "myTickets": "Meine Tickets",
@@ -307,6 +330,44 @@
         "title": "Dashboard",
         "welcome": "Willkommen zurück!",
         "overview": "Überblick"
+    },
+    "eventDashboard": {
+        "refresh": "Aktualisieren",
+        "lastRefreshed": "Zuletzt aktualisiert",
+        "noEventDescription": "Kein Event ausgewählt.",
+        "emptyHelp": "Derzeit läuft oder ist kein veröffentlichtes Event geplant. Veröffentliche ein Event, um hier Live-Statistiken zu sehen.",
+        "cards": {
+            "ticketsSold": "Verkaufte Tickets",
+            "ticketsInSale": "Tickets im Verkauf",
+            "ticketsInSaleHelp": "Verbleibendes Kontingent über alle Ticket-Typen",
+            "seatedUsers": "Platzzugewiesene Nutzer",
+            "checkedIn": "Eingecheckt",
+            "ofActive": "von {total} aktiven",
+            "ofCapacity": "von {total} Plätzen"
+        },
+        "seating": {
+            "seatedCheckedIn": "Eingecheckt mit Platz",
+            "unseatedCheckedIn": "Eingecheckt ohne Platz"
+        },
+        "ticketTypes": {
+            "heading": "Ticket-Typen",
+            "name": "Name",
+            "sold": "Verkauft",
+            "quota": "Kontingent",
+            "remaining": "Verbleibend",
+            "status": "Status",
+            "onSale": "Im Verkauf",
+            "closed": "Geschlossen",
+            "empty": "Für dieses Event sind keine Ticket-Typen konfiguriert."
+        },
+        "recentCheckins": {
+            "heading": "Letzte Check-ins",
+            "user": "Nutzer",
+            "ticketType": "Ticket-Typ",
+            "action": "Aktion",
+            "time": "Zeit",
+            "empty": "Noch keine Check-ins erfasst."
+        }
     },
     "validation": {
         "required": "Dieses Feld ist erforderlich",

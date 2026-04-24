@@ -580,13 +580,29 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | id | bigint PK | Primary key |
 | event_id | bigint FK | References events.id |
 | name | varchar | Plan name |
-| data | jsonb | Canvas seat plan data |
+| data | jsonb | Canvas seat plan data, see shape below |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 
+**`data` JSONB shape (SET-F-001/002/011):**
+```
+{
+  "blocks": [
+    {
+      "id": string,
+      "title": string,
+      "color": string,
+      "seats": [ { "id": string, "x": number, "y": number, "salable": bool, "title": string, ... } ],
+      "labels": [...],
+      "allowed_ticket_category_ids": number[]   // SET-F-011; empty/missing = open to all ticket categories
+    }
+  ]
+}
+```
+
 #### 4.8.2 seat_assignments
 
-Implements SET-F-006/007/008.
+Implements SET-F-006/007/008/013. Rows are hard-deleted (and `SeatAssignmentInvalidated` events emitted) when an admin edit invalidates the assignment via SET-F-013.
 
 | Column | Type | Description |
 |--------|------|-------------|
@@ -719,6 +735,8 @@ Implements SET-F-006/007/008.
 | programs_push | boolean | Push on programs |
 | announcements_mail | boolean | Email on announcements |
 | announcements_push | boolean | Push on announcements |
+| mail_on_seating | boolean (default TRUE) | Email for SeatAssignmentInvalidatedNotification (SET-F-014; opt-out) |
+| push_on_seating | boolean (default FALSE) | Web Push for the same notification (SET-F-014; opt-in) |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 

@@ -7,6 +7,7 @@ import {
     CreditCard,
     FileCheck,
     Gamepad2,
+    Gauge,
     Gift,
     Grid2x2,
     Handshake,
@@ -61,7 +62,7 @@ import { index as adminTeamsIndex } from '@/routes/admin/teams';
 import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import { index as announcementsIndex } from '@/routes/announcements';
 import { index as competitionsIndex } from '@/routes/competitions';
-import { index as eventsIndex } from '@/routes/events';
+import { dashboard as eventsDashboard, index as eventsIndex } from '@/routes/events';
 import { index as externalApisIndex } from '@/routes/external-apis';
 import { index as gameServersIndex } from '@/routes/game-servers';
 import { index as gamesIndex } from '@/routes/games';
@@ -642,6 +643,26 @@ function toggleFavorite(itemId: string): void {
                             >
                                 <PinOff
                                     v-if="isFavorited('events')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child>
+                                <Link :href="eventsDashboard()">
+                                    <Gauge />
+                                    <span>{{
+                                        $t('navigation.eventDashboard')
+                                    }}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('event-dashboard')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('event-dashboard')"
                                     class="size-4"
                                 />
                                 <Pin v-else class="size-4" />

@@ -166,6 +166,16 @@ async function initSeatmap(): Promise<void> {
 
     const { SeatMapCanvas } = await import('@alisaitteke/seatmap-canvas');
 
+    // Detect effective theme — the app toggles the "dark" class on <html> via
+    // the appearance setting. Pass a matching legend font_color to the library
+    // so the inline-SVG legend ("Non Selectable Seats", "Selectable", …)
+    // renders with readable contrast. A CSS !important override in <style>
+    // below backstops this for the hardcoded `dark:fill-white` class the
+    // library emits regardless.
+    const isDark = typeof document !== 'undefined'
+        && document.documentElement.classList.contains('dark');
+    const legendFontColor = isDark ? '#f3f4f6' : '#111827';
+
     const defaultOptions = {
         legend: true,
         style: {
@@ -185,6 +195,9 @@ async function initSeatmap(): Promise<void> {
                 radius: 12,
                 fontSize: '12px',
                 background: '#ffffff',
+            },
+            legend: {
+                font_color: legendFontColor,
             },
         },
     };
@@ -422,10 +435,13 @@ function destroySeatmap(): void {
 
 onMounted(() => {
     initSeatmap();
+    wireThemeObserver();
 });
 
 onBeforeUnmount(() => {
     destroySeatmap();
+    themeObserver?.disconnect();
+    themeObserver = null;
 });
 
 watch(
@@ -434,6 +450,32 @@ watch(
         initSeatmap();
     },
 );
+
+/**
+ * Observe changes to `<html class="dark">` so the legend re-renders with the
+ * correct font_color when the user toggles the theme. The init path already
+ * reads the dark class; we just need to re-run init on change. The CSS
+ * override in <style> handles frames between re-init.
+ */
+let themeObserver: MutationObserver | null = null;
+function wireThemeObserver(): void {
+    if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') {
+        return;
+    }
+
+    const root = document.documentElement;
+    let lastDark = root.classList.contains('dark');
+
+    themeObserver = new MutationObserver(() => {
+        const isDark = root.classList.contains('dark');
+        if (isDark !== lastDark) {
+            lastDark = isDark;
+            initSeatmap();
+        }
+    });
+
+    themeObserver.observe(root, { attributes: true, attributeFilter: ['class'] });
+}
 </script>
 
 <template>
@@ -470,5 +512,18 @@ watch(
 
 .seatmap-container .seatmap-svg .stage .blocks .block .seats .seat {
     cursor: pointer;
+}
+
+/*
+ * Library v2.7.1 emits legend <text> nodes with a hardcoded
+ * `dark:fill-white` class and an inline `fill` set from its own config.
+ * Force the fill to follow the app's dark/light theme — belt + braces
+ * alongside the theme-aware `font_color` option passed from the script.
+ */
+html:not(.dark) .seatmap-container .legend text {
+    fill: #111827 !important;
+}
+html.dark .seatmap-container .legend text {
+    fill: #f3f4f6 !important;
 }
 </style>

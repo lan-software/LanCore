@@ -16,7 +16,7 @@ import { getInitials } from '@/composables/useInitials';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { picker as pickerRoute } from '@/routes/events/seats';
 import type { BreadcrumbItem } from '@/types';
-import type { SeatPlanData, SeatPlanSeat } from '@/types/domain';
+import type { SeatPlanBlock, SeatPlanData, SeatPlanSeat } from '@/types/domain';
 
 interface SeatPlan {
     id: number;
@@ -28,10 +28,13 @@ interface Assignee {
     user_id: number;
     name: string;
     can_pick: boolean;
+    /** ticket_type.ticket_category_id — drives SET-F-011 block filtering */
+    ticket_category_id: number | null;
     assignment: {
         id: number;
         seat_plan_id: number;
         seat_id: string;
+        seat_title: string | null;
     } | null;
 }
 
@@ -159,34 +162,92 @@ const takenByPlanAndSeat = computed<Map<string, TakenSeat>>(() => {
     return map;
 });
 
+/**
+ * Mirror of SeatingCategoryRules::blockAccepts on the server (SET-F-011).
+ * Empty/missing allowed list ⇒ open to all categories (permissive default).
+ */
+function blockAcceptsCategory(
+    block: SeatPlanBlock,
+    categoryId: number | null,
+): boolean {
+    const allowed = (
+        block as SeatPlanBlock & {
+            allowed_ticket_category_ids?: number[] | null;
+        }
+    ).allowed_ticket_category_ids;
+
+    if (!Array.isArray(allowed) || allowed.length === 0) {
+        return true;
+    }
+    if (categoryId === null) {
+        return false;
+    }
+    return allowed.includes(categoryId);
+}
+
+/**
+ * Given a library-synthesised seat payload, find whether its block is
+ * currently blocked by the category filter. Used to distinguish "seat taken"
+ * from "category forbidden" at click time.
+ */
+function isBlockBlockedByCategory(
+    seat: LibrarySeat,
+    plan: SeatPlan,
+    categoryId: number | null,
+): boolean {
+    const seatIdStr = String(seat.id);
+    for (const block of plan.data.blocks ?? []) {
+        if (block.seats.some((s) => String(s.id) === seatIdStr)) {
+            return !blockAcceptsCategory(block, categoryId);
+        }
+    }
+    return false;
+}
+
 const decoratedPlanData = computed<SeatPlanData | null>(() => {
     if (!activePlan.value) {
         return null;
     }
 
-    const blocks = (activePlan.value.data.blocks ?? []).map((block) => ({
-        ...block,
-        seats: block.seats.map((seat: SeatPlanSeat) => {
-            const key = `${activePlan.value!.id}::${seat.id}`;
-            const taken = takenByPlanAndSeat.value.get(key);
-            const isOwnAssignment =
-                activeAssignee.value?.assignment?.seat_plan_id ===
-                    activePlan.value!.id &&
-                activeAssignee.value?.assignment?.seat_id === String(seat.id);
+    const assigneeCategoryId = activeAssignee.value?.ticket_category_id ?? null;
 
-            if (taken && !isOwnAssignment) {
-                return {
-                    ...seat,
-                    salable: false,
-                    title: taken.name
-                        ? getInitials(taken.name)
-                        : (seat.title ?? ''),
-                };
-            }
+    const blocks = (activePlan.value.data.blocks ?? []).map((block) => {
+        // When the active assignee has a ticket category AND the block
+        // restricts categories, mark every seat in the block as not salable
+        // so it renders in the "taken" style and clicks are short-circuited.
+        const blockBlockedByCategory =
+            activeAssignee.value !== null &&
+            !blockAcceptsCategory(block, assigneeCategoryId);
 
-            return seat;
-        }),
-    }));
+        return {
+            ...block,
+            seats: block.seats.map((seat: SeatPlanSeat) => {
+                const key = `${activePlan.value!.id}::${seat.id}`;
+                const taken = takenByPlanAndSeat.value.get(key);
+                const isOwnAssignment =
+                    activeAssignee.value?.assignment?.seat_plan_id ===
+                        activePlan.value!.id &&
+                    activeAssignee.value?.assignment?.seat_id ===
+                        String(seat.id);
+
+                if (taken && !isOwnAssignment) {
+                    return {
+                        ...seat,
+                        salable: false,
+                        title: taken.name
+                            ? getInitials(taken.name)
+                            : (seat.title ?? ''),
+                    };
+                }
+
+                if (blockBlockedByCategory && !isOwnAssignment) {
+                    return { ...seat, salable: false };
+                }
+
+                return seat;
+            }),
+        };
+    });
 
     return { ...activePlan.value.data, blocks };
 });
@@ -242,6 +303,23 @@ function onSeatClick(payload: unknown): void {
     // Guard: must have a plan on screen.
     if (!activePlan.value) {
         console.warn('[Picker] click rejected: no activePlan');
+
+        return;
+    }
+
+    // Guard: if the clicked seat landed in a block that the active assignee's
+    // ticket category is forbidden from, explain the rejection explicitly.
+    // The seat's `salable` is already false (decoratedPlanData forces it), so
+    // without this branch the user would get the generic "seat is taken"
+    // message, which is misleading.
+    if (
+        seat.salable === false &&
+        activeAssignee.value &&
+        activePlan.value &&
+        isBlockBlockedByCategory(seat, activePlan.value, activeAssignee.value.ticket_category_id)
+    ) {
+        console.warn('[Picker] click rejected: block does not accept this ticket category');
+        flashHint(t('seating.picker.hint.blockNotForCategory'));
 
         return;
     }
@@ -591,6 +669,8 @@ function zoomToMySeat(): void {
                                     <span
                                         class="ml-1 font-mono font-semibold"
                                         >{{
+                                            activeAssignee.assignment
+                                                .seat_title ??
                                             activeAssignee.assignment.seat_id
                                         }}</span
                                     >
@@ -718,6 +798,8 @@ function zoomToMySeat(): void {
                                             >
                                                 <Armchair class="size-3" />
                                                 {{
+                                                    assignee.assignment
+                                                        .seat_title ??
                                                     assignee.assignment.seat_id
                                                 }}
                                             </span>

@@ -425,7 +425,11 @@ function pickerUrl(userId: number): string {
                                 class="gap-1 font-mono text-xs"
                             >
                                 <Armchair class="size-3" />
-                                {{ seatAssignmentFor(assignee.id)?.seat_id }}
+                                {{
+                                    seatAssignmentFor(assignee.id)
+                                        ?.seat_title ??
+                                    seatAssignmentFor(assignee.id)?.seat_id
+                                }}
                             </Badge>
                             <Link :href="pickerUrl(assignee.id)">
                                 <Button

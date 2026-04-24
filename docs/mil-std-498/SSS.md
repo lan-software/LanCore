@@ -118,6 +118,8 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-SET-002 | The system shall store seat plans as JSONB data for flexibility |
 | CAP-SET-003 | The system shall link seat plans to events |
 | CAP-SET-004 | The system shall maintain audit trails for seat plan modifications |
+| CAP-SET-005 | The system shall enforce per-block ticket-category restrictions on seat assignments, with an open-to-all permissive default when no restriction is configured |
+| CAP-SET-006 | The system shall protect existing seat assignments from silent invalidation during seat-plan edits, releasing affected assignments only upon explicit admin confirmation, and shall notify all affected parties via configurable channels |
 
 #### 3.2.6 Sponsors (CAP-SPO)
 

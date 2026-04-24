@@ -7,6 +7,7 @@ use App\Models\User;
 use Database\Factories\SeatAssignmentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,9 +26,44 @@ class SeatAssignment extends Model implements AuditableContract
     /** @use HasFactory<SeatAssignmentFactory> */
     use HasFactory;
 
+    /**
+     * @var list<string>
+     */
+    protected $appends = ['seat_title'];
+
     protected static function newFactory(): SeatAssignmentFactory
     {
         return SeatAssignmentFactory::new();
+    }
+
+    /**
+     * Human-readable seat label (e.g. "A1") resolved from the related seat plan's
+     * JSON data. Callers should eager-load `seatPlan` to avoid N+1; when the
+     * relation isn't loaded we return null and the UI falls back to seat_id.
+     */
+    protected function seatTitle(): Attribute
+    {
+        return Attribute::make(
+            get: function (): ?string {
+                if (! $this->relationLoaded('seatPlan') || $this->seatPlan === null) {
+                    return null;
+                }
+
+                $blocks = $this->seatPlan->data['blocks'] ?? [];
+
+                foreach ($blocks as $block) {
+                    foreach ($block['seats'] ?? [] as $seat) {
+                        if ((string) ($seat['id'] ?? '') === (string) $this->seat_id) {
+                            $title = $seat['title'] ?? null;
+
+                            return is_string($title) && $title !== '' ? $title : null;
+                        }
+                    }
+                }
+
+                return null;
+            },
+        );
     }
 
     public function ticket(): BelongsTo
