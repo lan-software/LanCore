@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link, router } from '@inertiajs/vue3';
 import { ArrowLeft, Check, Crown, Trash2, X } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import AdminTeamController from '@/actions/App/Domain/Competition/Http/Controllers/AdminTeamController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -11,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index as adminTeamsRoute } from '@/routes/admin/teams';
 import type { BreadcrumbItem } from '@/types';
+
+const { t } = useI18n();
 
 interface Member {
     id: number;
@@ -59,8 +62,8 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Administration', href: adminTeamsRoute().url },
-    { title: 'Teams', href: adminTeamsRoute().url },
+    { title: t('common.administration'), href: adminTeamsRoute().url },
+    { title: t('competitions.admin.teamsHeading'), href: adminTeamsRoute().url },
     {
         title: props.team.name,
         href: AdminTeamController.edit({ team: props.team.id }).url,
@@ -68,7 +71,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 function removeMember(member: Member) {
-    if (!window.confirm(`Remove ${member.name} from the team?`)) {
+    if (
+        !window.confirm(
+            t('competitions.admin.removeMemberConfirm', {
+                name: member.name ?? '',
+            }),
+        )
+    ) {
         return;
     }
 
@@ -88,7 +97,9 @@ function resolveRequest(requestId: number, action: 'approve' | 'deny') {
 function deleteTeam() {
     if (
         !window.confirm(
-            `Delete team "${props.team.name}"? This cannot be undone.`,
+            t('competitions.admin.deleteTeamConfirm', {
+                name: props.team.name,
+            }),
         )
     ) {
         return;
@@ -123,7 +134,9 @@ function statusColor(status: string): string {
 </script>
 
 <template>
-    <Head :title="`Edit Team: ${team.name}`" />
+    <Head
+        :title="$t('competitions.admin.editTeamTitle', { name: team.name })"
+    />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-4">
@@ -132,7 +145,8 @@ function statusColor(status: string): string {
                     :href="adminTeamsRoute().url"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
-                    <ArrowLeft class="mr-1 inline size-3" /> Back to Teams
+                    <ArrowLeft class="mr-1 inline size-3" />
+                    {{ $t('competitions.admin.backToTeams') }}
                 </Link>
                 <Button
                     variant="ghost"
@@ -140,7 +154,8 @@ function statusColor(status: string): string {
                     class="text-destructive hover:text-destructive"
                     @click="deleteTeam"
                 >
-                    <Trash2 class="mr-1 size-3" /> Delete Team
+                    <Trash2 class="mr-1 size-3" />
+                    {{ $t('competitions.admin.deleteTeamButton') }}
                 </Button>
             </div>
 
@@ -157,12 +172,14 @@ function statusColor(status: string): string {
                         <Heading
                             variant="small"
                             :title="team.name"
-                            description="Edit team details"
+                            :description="
+                                $t('competitions.admin.editTeamDescription')
+                            "
                         />
 
                         <div class="grid grid-cols-2 gap-4">
                             <div class="grid gap-2">
-                                <Label for="name">Name</Label>
+                                <Label for="name">{{ $t('common.name') }}</Label>
                                 <Input
                                     id="name"
                                     name="name"
@@ -171,7 +188,9 @@ function statusColor(status: string): string {
                                 <InputError :message="errors.name" />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="tag">Tag</Label>
+                                <Label for="tag">{{
+                                    $t('competitions.admin.tag')
+                                }}</Label>
                                 <Input
                                     id="tag"
                                     name="tag"
@@ -183,14 +202,20 @@ function statusColor(status: string): string {
                         </div>
 
                         <Button type="submit" size="sm" :disabled="processing">
-                            {{ processing ? 'Saving...' : 'Save Changes' }}
+                            {{
+                                processing
+                                    ? $t('common.saving')
+                                    : $t('common.saveChanges')
+                            }}
                         </Button>
                     </Form>
 
                     <!-- Members -->
                     <div class="rounded-xl border p-5">
                         <div class="mb-4 flex items-center justify-between">
-                            <h2 class="text-sm font-semibold">Members</h2>
+                            <h2 class="text-sm font-semibold">
+                                {{ $t('competitions.admin.members') }}
+                            </h2>
                             <span class="text-xs text-muted-foreground">
                                 {{ team.members.length
                                 }}<template v-if="team.competition?.team_size">
@@ -259,7 +284,7 @@ function statusColor(status: string): string {
                                 v-if="team.members.length === 0"
                                 class="text-xs text-muted-foreground"
                             >
-                                No members.
+                                {{ $t('competitions.admin.noMembers') }}
                             </p>
                         </div>
                     </div>
@@ -270,7 +295,11 @@ function statusColor(status: string): string {
                         class="rounded-xl border border-blue-200 bg-blue-50/50 p-5 dark:border-blue-900 dark:bg-blue-950/30"
                     >
                         <h2 class="mb-4 text-sm font-semibold">
-                            Join Requests ({{ team.pending_requests.length }})
+                            {{
+                                $t('competitions.admin.joinRequestsCount', {
+                                    count: team.pending_requests.length,
+                                })
+                            }}
                         </h2>
                         <div class="space-y-3">
                             <div
@@ -301,7 +330,8 @@ function statusColor(status: string): string {
                                             resolveRequest(req.id, 'approve')
                                         "
                                     >
-                                        <Check class="mr-1 size-3" /> Approve
+                                        <Check class="mr-1 size-3" />
+                                        {{ $t('competitions.admin.approve') }}
                                     </Button>
                                     <Button
                                         size="sm"
@@ -309,7 +339,8 @@ function statusColor(status: string): string {
                                         class="text-red-600"
                                         @click="resolveRequest(req.id, 'deny')"
                                     >
-                                        <X class="mr-1 size-3" /> Deny
+                                        <X class="mr-1 size-3" />
+                                        {{ $t('competitions.admin.deny') }}
                                     </Button>
                                 </div>
                             </div>
@@ -320,7 +351,9 @@ function statusColor(status: string): string {
                 <!-- Sidebar -->
                 <div class="space-y-4">
                     <div class="rounded-xl border p-4">
-                        <h3 class="mb-3 text-sm font-semibold">Competition</h3>
+                        <h3 class="mb-3 text-sm font-semibold">
+                            {{ $t('competitions.admin.competition') }}
+                        </h3>
                         <div v-if="team.competition" class="space-y-2 text-sm">
                             <div class="font-medium">
                                 {{ team.competition.name }}
@@ -341,25 +374,35 @@ function statusColor(status: string): string {
                     </div>
 
                     <div class="rounded-xl border p-4">
-                        <h3 class="mb-3 text-sm font-semibold">Details</h3>
+                        <h3 class="mb-3 text-sm font-semibold">
+                            {{ $t('competitions.admin.details') }}
+                        </h3>
                         <dl class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <dt class="text-muted-foreground">Captain</dt>
+                                <dt class="text-muted-foreground">
+                                    {{ $t('competitions.captain') }}
+                                </dt>
                                 <dd>{{ team.captain?.name ?? '—' }}</dd>
                             </div>
                             <div class="flex justify-between">
-                                <dt class="text-muted-foreground">Members</dt>
+                                <dt class="text-muted-foreground">
+                                    {{ $t('competitions.admin.members') }}
+                                </dt>
                                 <dd>{{ team.members.length }}</dd>
                             </div>
                             <div class="flex justify-between">
                                 <dt class="text-muted-foreground">
-                                    Pending Requests
+                                    {{
+                                        $t('competitions.admin.pendingRequests')
+                                    }}
                                 </dt>
                                 <dd>{{ team.pending_requests.length }}</dd>
                             </div>
                             <div class="flex justify-between">
                                 <dt class="text-muted-foreground">
-                                    Pending Invites
+                                    {{
+                                        $t('competitions.admin.pendingInvites')
+                                    }}
                                 </dt>
                                 <dd>{{ team.pending_invites.length }}</dd>
                             </div>
@@ -371,7 +414,7 @@ function statusColor(status: string): string {
                         class="rounded-xl border p-4"
                     >
                         <h3 class="mb-3 text-sm font-semibold">
-                            Pending Invites
+                            {{ $t('competitions.admin.pendingInvites') }}
                         </h3>
                         <div class="space-y-2">
                             <div

@@ -173,19 +173,17 @@ const shouldShowPrompt = computed(
                 <Bell class="mt-0.5 size-5 shrink-0 text-muted-foreground" />
                 <div>
                     <p class="text-sm font-medium">
-                        Browser push notifications
+                        {{ $t('notifications.push.label') }}
                     </p>
                     <p class="text-xs text-muted-foreground">
                         <template v-if="permissionState === 'denied'">
-                            Push notifications are blocked in your browser.
-                            Enable them in your browser settings.
+                            {{ $t('notifications.push.blockedHint') }}
                         </template>
                         <template v-else-if="subscribed">
-                            You will receive push notifications in this browser.
+                            {{ $t('notifications.push.activeHint') }}
                         </template>
                         <template v-else>
-                            Get notified instantly in this browser, even when
-                            the site is not open.
+                            {{ $t('notifications.push.offHint') }}
                         </template>
                     </p>
                 </div>
@@ -197,7 +195,11 @@ const shouldShowPrompt = computed(
                     :disabled="loading"
                     @click="subscribe"
                 >
-                    {{ loading ? 'Enabling…' : 'Enable' }}
+                    {{
+                        loading
+                            ? $t('notifications.push.enabling')
+                            : $t('notifications.push.enable')
+                    }}
                 </Button>
                 <Button
                     v-else-if="subscribed"
@@ -206,11 +208,15 @@ const shouldShowPrompt = computed(
                     :disabled="loading"
                     @click="unsubscribe"
                 >
-                    {{ loading ? 'Disabling…' : 'Disable' }}
+                    {{
+                        loading
+                            ? $t('notifications.push.disabling')
+                            : $t('notifications.push.disable')
+                    }}
                 </Button>
-                <span v-else class="text-xs text-muted-foreground"
-                    >Blocked</span
-                >
+                <span v-else class="text-xs text-muted-foreground">{{
+                    $t('notifications.push.blocked')
+                }}</span>
             </div>
         </div>
     </template>
@@ -226,11 +232,10 @@ const shouldShowPrompt = computed(
                 </div>
                 <div class="min-w-0 flex-1">
                     <p class="text-sm font-semibold">
-                        Enable push notifications
+                        {{ $t('notifications.push.bannerHeadline') }}
                     </p>
                     <p class="mt-0.5 text-xs text-muted-foreground">
-                        Get instant notifications in your browser, even when the
-                        site isn't open.
+                        {{ $t('notifications.push.bannerDescription') }}
                     </p>
                     <div class="mt-3 flex gap-2">
                         <Button
@@ -238,11 +243,15 @@ const shouldShowPrompt = computed(
                             :disabled="loading"
                             @click="subscribe"
                         >
-                            {{ loading ? 'Enabling…' : 'Enable' }}
+                            {{
+                                loading
+                                    ? $t('notifications.push.enabling')
+                                    : $t('notifications.push.enable')
+                            }}
                         </Button>
-                        <Button variant="ghost" size="sm" @click="dismiss"
-                            >Not now</Button
-                        >
+                        <Button variant="ghost" size="sm" @click="dismiss">{{
+                            $t('notifications.push.notNow')
+                        }}</Button>
                     </div>
                 </div>
             </div>

@@ -2,6 +2,7 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { ExternalLink, Users } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import TeamController from '@/actions/App/Domain/Competition/Http/Controllers/TeamController';
 import UserCompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/UserCompetitionController';
 import MailLetterAnimation from '@/components/MailLetterAnimation.vue';
@@ -14,6 +15,8 @@ import { index as myCompetitionsRoute } from '@/routes/my-competitions';
 import type { BreadcrumbItem } from '@/types';
 import type { Competition, CompetitionTeam } from '@/types/domain';
 
+const { t } = useI18n();
+
 const props = defineProps<{
     competition: Competition;
     userTeam: CompetitionTeam | null;
@@ -21,7 +24,7 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'My Competitions', href: myCompetitionsRoute().url },
+    { title: t('navigation.myCompetitions'), href: myCompetitionsRoute().url },
     {
         title: props.competition.name,
         href: UserCompetitionController.show(props.competition.id).url,
@@ -51,8 +54,8 @@ function leaveTeam() {
     const isCaptain =
         authUserId != null && props.userTeam.captain_user_id === authUserId;
     const msg = isCaptain
-        ? 'You are the captain. If you leave, captaincy transfers to another member. If you are the last member, the team is deleted. Continue?'
-        : `Leave team "${props.userTeam.name}"?`;
+        ? t('competitions.user.leaveCaptainConfirm')
+        : t('competitions.user.leaveTeamConfirm', { name: props.userTeam.name });
 
     if (!window.confirm(msg)) {
         return;
@@ -103,7 +106,7 @@ function requestJoin(teamId: number) {
                     :href="myCompetitionsRoute().url"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
-                    &larr; Back to My Competitions
+                    {{ $t('competitions.user.backToMyCompetitions') }}
                 </Link>
             </div>
 
@@ -141,7 +144,9 @@ function requestJoin(teamId: number) {
                         v-if="bracketUrl"
                         class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
-                        <h3 class="mb-2 text-sm font-semibold">Bracket View</h3>
+                        <h3 class="mb-2 text-sm font-semibold">
+                            {{ $t('competitions.user.bracketView') }}
+                        </h3>
                         <a
                             :href="bracketUrl"
                             target="_blank"
@@ -149,7 +154,7 @@ function requestJoin(teamId: number) {
                             class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                         >
                             <ExternalLink class="size-3" />
-                            Open Bracket in LanBrackets
+                            {{ $t('competitions.user.openBracket') }}
                         </a>
                     </div>
 
@@ -159,7 +164,11 @@ function requestJoin(teamId: number) {
                         class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
                         <h3 class="mb-3 text-sm font-semibold">
-                            Your Team: {{ userTeam.name }}
+                            {{
+                                $t('competitions.user.yourTeam', {
+                                    name: userTeam.name,
+                                })
+                            }}
                             <span
                                 v-if="userTeam.tag"
                                 class="text-muted-foreground"
@@ -182,7 +191,7 @@ function requestJoin(teamId: number) {
                                     variant="outline"
                                     class="text-[10px]"
                                 >
-                                    Captain
+                                    {{ $t('competitions.captain') }}
                                 </Badge>
                             </div>
                         </div>
@@ -197,7 +206,11 @@ function requestJoin(teamId: number) {
                                 :disabled="leaving"
                                 @click="leaveTeam"
                             >
-                                {{ leaving ? 'Leaving...' : 'Leave Team' }}
+                                {{
+                                    leaving
+                                        ? $t('competitions.user.leavingTeam')
+                                        : $t('competitions.user.leaveTeam')
+                                }}
                             </Button>
                         </div>
                     </div>
@@ -208,28 +221,36 @@ function requestJoin(teamId: number) {
                         class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
                         <h3 class="mb-3 text-sm font-semibold">
-                            Create a Team
+                            {{ $t('competitions.user.createTeamHeading') }}
                         </h3>
                         <form
                             class="space-y-3"
                             @submit.prevent="submitCreateTeam"
                         >
                             <div class="grid gap-2">
-                                <Label for="team-name">Team Name</Label>
+                                <Label for="team-name">{{
+                                    $t('competitions.user.teamName')
+                                }}</Label>
                                 <Input
                                     id="team-name"
                                     v-model="createTeamForm.name"
                                     required
-                                    placeholder="e.g. Team Rocket"
+                                    :placeholder="
+                                        $t('competitions.user.teamNamePlaceholder')
+                                    "
                                 />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="team-tag">Tag (optional)</Label>
+                                <Label for="team-tag">{{
+                                    $t('competitions.user.tagOptional')
+                                }}</Label>
                                 <Input
                                     id="team-tag"
                                     v-model="createTeamForm.tag"
                                     maxlength="10"
-                                    placeholder="e.g. TR"
+                                    :placeholder="
+                                        $t('competitions.user.tagPlaceholder')
+                                    "
                                 />
                             </div>
                             <Button
@@ -237,7 +258,7 @@ function requestJoin(teamId: number) {
                                 size="sm"
                                 :disabled="createTeamForm.processing"
                             >
-                                Create Team
+                                {{ $t('competitions.user.submitCreateTeam') }}
                             </Button>
                         </form>
                     </div>
@@ -249,7 +270,11 @@ function requestJoin(teamId: number) {
                         class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
                         <h3 class="mb-3 text-sm font-semibold">
-                            All Teams ({{ competition.teams?.length ?? 0 }})
+                            {{
+                                $t('competitions.user.allTeams', {
+                                    count: competition.teams?.length ?? 0,
+                                })
+                            }}
                         </h3>
                         <div class="space-y-2">
                             <div
@@ -268,11 +293,13 @@ function requestJoin(teamId: number) {
                                 </div>
                                 <div class="text-xs text-muted-foreground">
                                     {{
-                                        team.active_members_count ??
-                                        team.active_members?.length ??
-                                        0
+                                        $t('competitions.user.membersCount', {
+                                            count:
+                                                team.active_members_count ??
+                                                team.active_members?.length ??
+                                                0,
+                                        })
                                     }}
-                                    members
                                 </div>
 
                                 <!-- Request to Join -->
@@ -290,8 +317,8 @@ function requestJoin(teamId: number) {
                                 >
                                     {{
                                         requestingTeamId === team.id
-                                            ? 'Sending…'
-                                            : 'Request to Join'
+                                            ? $t('competitions.user.sendingRequest')
+                                            : $t('competitions.user.requestToJoin')
                                     }}
                                 </Button>
                                 <MailLetterAnimation
@@ -303,7 +330,7 @@ function requestJoin(teamId: number) {
                                 v-if="!competition.teams?.length"
                                 class="text-xs text-muted-foreground"
                             >
-                                No teams registered yet.
+                                {{ $t('competitions.user.noTeams') }}
                             </p>
                         </div>
                     </div>

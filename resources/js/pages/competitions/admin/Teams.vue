@@ -2,6 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Search, Users } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AdminTeamController from '@/actions/App/Domain/Competition/Http/Controllers/AdminTeamController';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index as adminTeamsRoute } from '@/routes/admin/teams';
 import type { BreadcrumbItem } from '@/types';
+
+const { t } = useI18n();
 
 interface Team {
     id: number;
@@ -35,9 +38,9 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Administration', href: adminTeamsRoute().url },
-    { title: 'Competition', href: adminTeamsRoute().url },
-    { title: 'Teams', href: adminTeamsRoute().url },
+    { title: t('common.administration'), href: adminTeamsRoute().url },
+    { title: t('competitions.admin.competition'), href: adminTeamsRoute().url },
+    { title: t('competitions.admin.teamsHeading'), href: adminTeamsRoute().url },
 ];
 
 const search = ref(props.filters.search);
@@ -74,14 +77,14 @@ function statusColor(status: string): string {
 </script>
 
 <template>
-    <Head title="Teams" />
+    <Head :title="$t('competitions.admin.teamsHeading')" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-4">
             <div class="flex items-center justify-between">
                 <Heading
-                    title="Teams"
-                    description="Manage all competition teams."
+                    :title="$t('competitions.admin.teamsHeading')"
+                    :description="$t('competitions.admin.teamsDescription')"
                 />
             </div>
 
@@ -92,7 +95,7 @@ function statusColor(status: string): string {
                     />
                     <Input
                         v-model="search"
-                        placeholder="Search teams..."
+                        :placeholder="$t('competitions.admin.searchPlaceholder')"
                         class="pl-9"
                     />
                 </div>
@@ -104,13 +107,21 @@ function statusColor(status: string): string {
                         <tr
                             class="border-b text-left text-xs text-muted-foreground"
                         >
-                            <th class="px-4 py-3 font-medium">Team</th>
-                            <th class="px-4 py-3 font-medium">Competition</th>
-                            <th class="px-4 py-3 font-medium">Captain</th>
-                            <th class="px-4 py-3 text-center font-medium">
-                                Members
+                            <th class="px-4 py-3 font-medium">
+                                {{ $t('competitions.admin.team') }}
                             </th>
-                            <th class="px-4 py-3 font-medium">Status</th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ $t('competitions.admin.competition') }}
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ $t('competitions.captain') }}
+                            </th>
+                            <th class="px-4 py-3 text-center font-medium">
+                                {{ $t('competitions.admin.members') }}
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ $t('common.status') }}
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -170,7 +181,7 @@ function statusColor(status: string): string {
                                 colspan="5"
                                 class="px-4 py-8 text-center text-muted-foreground"
                             >
-                                No teams found.
+                                {{ $t('competitions.admin.noTeams') }}
                             </td>
                         </tr>
                     </tbody>
@@ -182,7 +193,12 @@ function statusColor(status: string): string {
                 class="flex items-center justify-between"
             >
                 <span class="text-sm text-muted-foreground">
-                    Page {{ teams.current_page }} of {{ teams.last_page }}
+                    {{
+                        $t('competitions.admin.pageInfo', {
+                            current: teams.current_page,
+                            total: teams.last_page,
+                        })
+                    }}
                 </span>
                 <div class="flex gap-2">
                     <Button
@@ -191,7 +207,9 @@ function statusColor(status: string): string {
                         size="sm"
                         as-child
                     >
-                        <Link :href="teams.prev_page_url">Previous</Link>
+                        <Link :href="teams.prev_page_url">{{
+                            $t('common.previous')
+                        }}</Link>
                     </Button>
                     <Button
                         v-if="teams.next_page_url"
@@ -199,7 +217,9 @@ function statusColor(status: string): string {
                         size="sm"
                         as-child
                     >
-                        <Link :href="teams.next_page_url">Next</Link>
+                        <Link :href="teams.next_page_url">{{
+                            $t('common.next')
+                        }}</Link>
                     </Button>
                 </div>
             </div>

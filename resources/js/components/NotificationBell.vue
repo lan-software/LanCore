@@ -9,6 +9,7 @@ import {
     ExternalLink,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
     archive as archiveNotification,
     index as notificationsIndex,
@@ -27,6 +28,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { AppNotification } from '@/types';
 
+const { t } = useI18n();
 const page = usePage();
 
 const unreadCount = computed(() => page.props.unreadNotificationsCount ?? 0);
@@ -72,36 +74,40 @@ function notificationLabel(notification: AppNotification): string {
     const data = notification.data;
 
     if (type === 'NewsPublishedNotification' && data.title) {
-        return `New article: ${data.title}`;
+        return t('notifications.types.newArticle', { title: data.title });
     }
 
     if (type === 'AnnouncementPublishedNotification' && data.title) {
-        return `Announcement: ${data.title}`;
+        return t('notifications.types.announcement', { title: data.title });
     }
 
     if (type === 'ProgramTimeSlotNotification') {
-        return 'Upcoming program time slot';
+        return t('notifications.types.upcomingProgramSlot');
     }
 
     if (type === 'UserAttributesUpdatedNotification') {
-        return 'Your profile was updated';
+        return t('notifications.types.profileUpdated');
     }
 
     if (type === 'UserRolesChangedNotification') {
-        return 'Your roles have changed';
+        return t('notifications.types.rolesChanged');
     }
 
     if (type === 'AchievementEarnedNotification' && data.name) {
-        return `Achievement unlocked: ${data.name}`;
+        return t('notifications.types.achievementUnlocked', {
+            name: data.name,
+        });
     }
 
     if (type === 'TicketTokenRotatedNotification') {
         return data.event_name
-            ? `Ticket QR updated: ${data.event_name}`
-            : 'Ticket QR updated';
+            ? t('notifications.types.ticketQrUpdatedNamed', {
+                  eventName: data.event_name,
+              })
+            : t('notifications.types.ticketQrUpdated');
     }
 
-    return 'New notification';
+    return t('notifications.types.generic');
 }
 
 function handleMarkAsRead(notification: AppNotification) {
@@ -128,7 +134,7 @@ function handleArchive(notification: AppNotification) {
                 variant="ghost"
                 size="icon"
                 class="relative"
-                aria-label="Notifications"
+                :aria-label="$t('notifications.heading')"
             >
                 <Bell class="size-5" />
                 <span
@@ -142,7 +148,7 @@ function handleArchive(notification: AppNotification) {
 
         <DropdownMenuContent class="w-80" align="end" :side-offset="8">
             <DropdownMenuLabel class="flex items-center justify-between">
-                <span>Notifications</span>
+                <span>{{ $t('notifications.heading') }}</span>
                 <Button
                     v-if="unreadCount > 0"
                     variant="ghost"
@@ -151,7 +157,7 @@ function handleArchive(notification: AppNotification) {
                     @click="handleMarkAllAsRead"
                 >
                     <CheckCheck class="mr-1 size-3" />
-                    Mark all read
+                    {{ $t('notifications.markAllRead') }}
                 </Button>
             </DropdownMenuLabel>
 
@@ -189,14 +195,14 @@ function handleArchive(notification: AppNotification) {
                             <button
                                 v-if="!notification.read_at"
                                 class="rounded p-0.5 hover:bg-muted"
-                                :title="'Mark as read'"
+                                :title="$t('notifications.markAsRead')"
                                 @click.stop="handleMarkAsRead(notification)"
                             >
                                 <Check class="size-3" />
                             </button>
                             <button
                                 class="rounded p-0.5 hover:bg-muted"
-                                title="Archive"
+                                :title="$t('notifications.archive')"
                                 @click.stop="handleArchive(notification)"
                             >
                                 <Archive class="size-3" />
@@ -214,7 +220,7 @@ function handleArchive(notification: AppNotification) {
                 class="flex flex-col items-center gap-2 px-4 py-6 text-sm text-muted-foreground"
             >
                 <BellOff class="size-8 opacity-40" />
-                <p>No notifications yet</p>
+                <p>{{ $t('notifications.empty') }}</p>
             </div>
 
             <DropdownMenuSeparator />
@@ -223,7 +229,7 @@ function handleArchive(notification: AppNotification) {
                 <Button variant="outline" class="w-full" as-child>
                     <Link :href="notificationsIndex().url">
                         <ExternalLink class="mr-2 size-4" />
-                        View all notifications
+                        {{ $t('notifications.viewAll') }}
                     </Link>
                 </Button>
             </div>

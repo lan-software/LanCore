@@ -2,6 +2,7 @@
 import { Form, Head, Link, router } from '@inertiajs/vue3';
 import { ImagePlus, Trash2, X } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import EventController from '@/actions/App/Domain/Event/Http/Controllers/EventController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -30,14 +31,16 @@ import { index as eventsRoute } from '@/routes/events';
 import type { BreadcrumbItem } from '@/types';
 import type { Event } from '@/types/domain';
 
+const { t } = useI18n();
+
 const props = defineProps<{
     event: Event;
     venues: { id: number; name: string }[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Administration', href: eventsRoute().url },
-    { title: 'Events', href: eventsRoute().url },
+    { title: t('common.administration'), href: eventsRoute().url },
+    { title: t('navigation.events'), href: eventsRoute().url },
     { title: props.event.name, href: EventController.edit(props.event.id).url },
 ];
 
@@ -126,7 +129,7 @@ function unpublishEvent() {
 </script>
 
 <template>
-    <Head :title="`Edit ${event.name}`" />
+    <Head :title="$t('events.editTitle', { name: event.name })" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
@@ -136,7 +139,7 @@ function unpublishEvent() {
                     :href="eventsRoute().url"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
-                    &larr; Back to Events
+                    {{ $t('events.backToList') }}
                 </Link>
             </div>
 
@@ -147,14 +150,18 @@ function unpublishEvent() {
                         event.status === 'published' ? 'default' : 'secondary'
                     "
                 >
-                    {{ event.status === 'published' ? 'Published' : 'Draft' }}
+                    {{
+                        event.status === 'published'
+                            ? $t('common.published')
+                            : $t('common.draft')
+                    }}
                 </Badge>
                 <Button
                     v-if="event.status === 'draft'"
                     size="sm"
                     @click="publishEvent"
                 >
-                    Publish
+                    {{ $t('events.publish') }}
                 </Button>
                 <Button
                     v-else
@@ -162,7 +169,7 @@ function unpublishEvent() {
                     size="sm"
                     @click="unpublishEvent"
                 >
-                    Unpublish
+                    {{ $t('events.unpublish') }}
                 </Button>
             </div>
             <div v-if="Object.keys(publishErrors).length > 0" class="space-y-1">
@@ -184,30 +191,36 @@ function unpublishEvent() {
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Event Information"
-                        description="Update the basic details for this event"
+                        :title="$t('events.form.eventInfoHeading')"
+                        :description="
+                            $t('events.form.eventInfoEditDescription')
+                        "
                     />
 
                     <div class="grid gap-2">
-                        <Label for="name">Name</Label>
+                        <Label for="name">{{ $t('common.name') }}</Label>
                         <Input
                             id="name"
                             name="name"
                             :default-value="event.name"
                             required
-                            placeholder="Event name"
+                            :placeholder="$t('events.form.namePlaceholder')"
                         />
                         <InputError :message="errors.name" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="description">Description</Label>
+                        <Label for="description">{{
+                            $t('common.description')
+                        }}</Label>
                         <Textarea
                             id="description"
                             name="description"
                             :default-value="event.description ?? ''"
                             rows="4"
-                            placeholder="Describe the event…"
+                            :placeholder="
+                                $t('events.form.descriptionPlaceholder')
+                            "
                         />
                         <InputError :message="errors.description" />
                     </div>
@@ -217,13 +230,17 @@ function unpublishEvent() {
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Schedule"
-                        description="Update the start and end date and time"
+                        :title="$t('events.form.scheduleHeading')"
+                        :description="
+                            $t('events.form.scheduleEditDescription')
+                        "
                     />
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="start_date">Start Date & Time</Label>
+                            <Label for="start_date">{{
+                                $t('events.form.startDate')
+                            }}</Label>
                             <Input
                                 id="start_date"
                                 type="datetime-local"
@@ -237,7 +254,9 @@ function unpublishEvent() {
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="end_date">End Date & Time</Label>
+                            <Label for="end_date">{{
+                                $t('events.form.endDate')
+                            }}</Label>
                             <Input
                                 id="end_date"
                                 type="datetime-local"
@@ -256,12 +275,16 @@ function unpublishEvent() {
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Venue & Capacity"
-                        description="Update the venue and seating capacity"
+                        :title="$t('events.form.venueCapacityHeading')"
+                        :description="
+                            $t('events.form.venueCapacityEditDescription')
+                        "
                     />
 
                     <div class="grid gap-2">
-                        <Label for="venue_id">Venue</Label>
+                        <Label for="venue_id">{{
+                            $t('events.form.venue')
+                        }}</Label>
                         <Select
                             name="venue_id"
                             :default-value="
@@ -272,7 +295,9 @@ function unpublishEvent() {
                         >
                             <SelectTrigger>
                                 <SelectValue
-                                    placeholder="Select a venue (optional)"
+                                    :placeholder="
+                                        $t('events.form.venuePlaceholder')
+                                    "
                                 />
                             </SelectTrigger>
                             <SelectContent>
@@ -289,7 +314,9 @@ function unpublishEvent() {
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="seat_capacity">Seating Capacity</Label>
+                        <Label for="seat_capacity">{{
+                            $t('events.form.seatCapacity')
+                        }}</Label>
                         <Input
                             id="seat_capacity"
                             type="number"
@@ -300,7 +327,9 @@ function unpublishEvent() {
                                     : ''
                             "
                             min="0"
-                            placeholder="Leave empty for unlimited"
+                            :placeholder="
+                                $t('events.form.seatCapacityPlaceholder')
+                            "
                         />
                         <InputError :message="errors.seat_capacity" />
                     </div>
@@ -310,12 +339,12 @@ function unpublishEvent() {
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Media"
-                        description="Add or remove banner images. Multiple images will cycle automatically."
+                        :title="$t('events.form.mediaHeading')"
+                        :description="$t('events.form.mediaEditDescription')"
                     />
 
                     <div class="grid gap-3">
-                        <Label>Banner Images</Label>
+                        <Label>{{ $t('events.form.bannerImages') }}</Label>
 
                         <!-- Retained existing images -->
                         <div
@@ -336,7 +365,7 @@ function unpublishEvent() {
                                 @click="markImageForRemoval(index)"
                             >
                                 <X class="size-4" />
-                                Remove
+                                {{ $t('common.remove') }}
                             </Button>
                         </div>
 
@@ -363,8 +392,8 @@ function unpublishEvent() {
                                     <ImagePlus class="size-4" />
                                     {{
                                         slot.preview
-                                            ? 'Replace'
-                                            : 'Choose Image'
+                                            ? $t('events.form.replaceImage')
+                                            : $t('events.form.chooseImage')
                                     }}
                                 </label>
                                 <input
@@ -390,7 +419,7 @@ function unpublishEvent() {
                                 @click="removeNewBannerSlot(index)"
                             >
                                 <X class="size-4" />
-                                Remove
+                                {{ $t('common.remove') }}
                             </Button>
                         </div>
 
@@ -402,12 +431,11 @@ function unpublishEvent() {
                             @click="addBannerSlot"
                         >
                             <ImagePlus class="size-4" />
-                            Add Image
+                            {{ $t('common.addImage') }}
                         </Button>
 
                         <p class="text-xs text-muted-foreground">
-                            Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB
-                            each.
+                            {{ $t('events.form.acceptedFormats') }}
                         </p>
                         <InputError
                             :message="
@@ -422,14 +450,18 @@ function unpublishEvent() {
                 <!-- Actions -->
                 <div class="flex items-center gap-4">
                     <Button type="submit" :disabled="processing">
-                        {{ processing ? 'Saving…' : 'Save Changes' }}
+                        {{
+                            processing
+                                ? $t('common.saving')
+                                : $t('common.saveChanges')
+                        }}
                     </Button>
 
                     <p
                         v-if="recentlySuccessful"
                         class="text-sm text-muted-foreground"
                     >
-                        Saved.
+                        {{ $t('common.saved') }}
                     </p>
                 </div>
             </Form>
@@ -439,10 +471,10 @@ function unpublishEvent() {
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm font-medium text-destructive">
-                            Delete Event
+                            {{ $t('events.deleteHeading') }}
                         </h3>
                         <p class="text-sm text-muted-foreground">
-                            Permanently delete this event.
+                            {{ $t('events.deleteHint') }}
                         </p>
                     </div>
                     <Button
@@ -451,7 +483,7 @@ function unpublishEvent() {
                         @click="showDeleteDialog = true"
                     >
                         <Trash2 class="size-4" />
-                        Delete
+                        {{ $t('common.delete') }}
                     </Button>
                 </div>
             </div>
@@ -461,18 +493,19 @@ function unpublishEvent() {
         <Dialog v-model:open="showDeleteDialog">
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Delete {{ event.name }}?</DialogTitle>
+                    <DialogTitle>{{
+                        $t('events.deleteConfirmTitle', { name: event.name })
+                    }}</DialogTitle>
                     <DialogDescription>
-                        This action cannot be undone. The event will be
-                        permanently removed.
+                        {{ $t('events.deleteConfirmDescription') }}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
                     <Button variant="outline" @click="showDeleteDialog = false">
-                        Cancel
+                        {{ $t('common.cancel') }}
                     </Button>
                     <Button variant="destructive" @click="executeDelete">
-                        Delete
+                        {{ $t('common.delete') }}
                     </Button>
                 </DialogFooter>
             </DialogContent>

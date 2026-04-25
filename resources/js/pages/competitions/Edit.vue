@@ -11,6 +11,7 @@ import {
     Users,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/CompetitionController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -24,6 +25,8 @@ import { index as competitionsRoute } from '@/routes/competitions';
 import type { BreadcrumbItem } from '@/types';
 import type { Competition, Game } from '@/types/domain';
 
+const { t } = useI18n();
+
 const props = defineProps<{
     competition: Competition;
     games: Game[];
@@ -33,8 +36,8 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Administration', href: competitionsRoute().url },
-    { title: 'Competitions', href: competitionsRoute().url },
+    { title: t('common.administration'), href: competitionsRoute().url },
+    { title: t('navigation.competitions'), href: competitionsRoute().url },
     {
         title: props.competition.name,
         href: CompetitionController.edit(props.competition.id).url,
@@ -42,56 +45,63 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 // Status lifecycle
-const allStatuses = [
-    { key: 'draft', label: 'Draft' },
-    { key: 'registration_open', label: 'Registration' },
-    { key: 'registration_closed', label: 'Reg. Closed' },
-    { key: 'running', label: 'Running' },
-    { key: 'finished', label: 'Finished' },
-    { key: 'archived', label: 'Archived' },
-];
+const allStatuses = computed(() => [
+    { key: 'draft', label: t('competitions.lifecycle.draft') },
+    { key: 'registration_open', label: t('competitions.lifecycle.registrationOpen') },
+    { key: 'registration_closed', label: t('competitions.lifecycle.registrationClosed') },
+    { key: 'running', label: t('competitions.lifecycle.running') },
+    { key: 'finished', label: t('competitions.lifecycle.finished') },
+    { key: 'archived', label: t('competitions.lifecycle.archived') },
+]);
 
 const currentStatusIndex = computed(() =>
-    allStatuses.findIndex((s) => s.key === props.competition.status),
+    allStatuses.value.findIndex((s) => s.key === props.competition.status),
 );
 
-const statusTransitions: Record<
-    string,
-    { label: string; target: string; variant: string; confirm?: string }
-> = {
+const statusTransitions = computed<
+    Record<
+        string,
+        { label: string; target: string; variant: string; confirm?: string }
+    >
+>(() => ({
     draft: {
-        label: 'Open Registration',
+        label: t('competitions.transition.openRegistration'),
         target: 'registration_open',
         variant: 'default',
     },
     registration_open: {
-        label: 'Close Registration',
+        label: t('competitions.transition.closeRegistration'),
         target: 'registration_closed',
         variant: 'default',
-        confirm: 'This will prevent new teams from joining. Continue?',
+        confirm: t('competitions.transition.closeRegistrationConfirm'),
     },
     registration_closed: {
-        label: 'Go Live',
+        label: t('competitions.transition.goLive'),
         target: 'running',
         variant: 'default',
-        confirm:
-            'This will start the competition. Teams will be synced to LanBrackets. Continue?',
+        confirm: t('competitions.transition.goLiveConfirm'),
     },
     running: {
-        label: 'Mark Finished',
+        label: t('competitions.transition.markFinished'),
         target: 'finished',
         variant: 'destructive',
-        confirm: 'This will end the competition. Are you sure?',
+        confirm: t('competitions.transition.markFinishedConfirm'),
     },
-    finished: { label: 'Archive', target: 'archived', variant: 'outline' },
-};
+    finished: {
+        label: t('competitions.transition.archive'),
+        target: 'archived',
+        variant: 'outline',
+    },
+}));
 
-const transition = statusTransitions[props.competition.status] ?? null;
-const transitionForm = useForm({ status: transition?.target ?? '' });
+const transition = computed(
+    () => statusTransitions.value[props.competition.status] ?? null,
+);
+const transitionForm = useForm({ status: transition.value?.target ?? '' });
 const transitioning = ref(false);
 
 function submitTransition() {
-    if (transition?.confirm && !window.confirm(transition.confirm)) {
+    if (transition.value?.confirm && !window.confirm(transition.value.confirm)) {
         return;
     }
 
@@ -137,7 +147,7 @@ const deleting = ref(false);
 function deleteCompetition() {
     if (
         !window.confirm(
-            `Delete "${props.competition.name}"? This cannot be undone.`,
+            t('competitions.deleteConfirm', { name: props.competition.name }),
         )
     ) {
         return;
@@ -168,7 +178,7 @@ function statusColor(status: string): string {
 </script>
 
 <template>
-    <Head :title="`Edit: ${competition.name}`" />
+    <Head :title="$t('competitions.editTitle', { name: competition.name })" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-4">
@@ -177,7 +187,7 @@ function statusColor(status: string): string {
                     :href="competitionsRoute().url"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
-                    &larr; Back to Competitions
+                    {{ $t('competitions.backToList') }}
                 </Link>
                 <Button
                     v-if="competition.status === 'draft'"
@@ -187,7 +197,11 @@ function statusColor(status: string): string {
                     :disabled="deleting"
                     @click="deleteCompetition"
                 >
-                    {{ deleting ? 'Deleting...' : 'Delete' }}
+                    {{
+                        deleting
+                            ? $t('competitions.deleting')
+                            : $t('common.delete')
+                    }}
                 </Button>
             </div>
 
@@ -241,6 +255,8 @@ function statusColor(status: string): string {
                             v-if="i < allStatuses.length - 1"
                             class="mb-5 size-4 shrink-0 text-muted-foreground/40"
                         />
+
+
                     </template>
                 </div>
             </div>
@@ -260,13 +276,13 @@ function statusColor(status: string): string {
                             :title="competition.name"
                             :description="
                                 canEditDetails
-                                    ? 'Edit competition details'
-                                    : 'Competition details (read-only after registration closes)'
+                                    ? $t('competitions.form.editDescriptionEditable')
+                                    : $t('competitions.form.editDescriptionLocked')
                             "
                         />
 
                         <div class="grid gap-2">
-                            <Label for="name">Name</Label>
+                            <Label for="name">{{ $t('common.name') }}</Label>
                             <Input
                                 id="name"
                                 name="name"
@@ -277,7 +293,9 @@ function statusColor(status: string): string {
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="description">Description</Label>
+                            <Label for="description">{{
+                                $t('common.description')
+                            }}</Label>
                             <Textarea
                                 id="description"
                                 name="description"
@@ -290,14 +308,18 @@ function statusColor(status: string): string {
 
                         <div class="grid grid-cols-2 gap-4">
                             <div class="grid gap-2">
-                                <Label for="game_id">Game</Label>
+                                <Label for="game_id">{{
+                                    $t('competitions.form.game')
+                                }}</Label>
                                 <select
                                     id="game_id"
                                     name="game_id"
                                     :disabled="!canEditDetails"
                                     class="rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
                                 >
-                                    <option value="">None</option>
+                                    <option value="">
+                                        {{ $t('common.none') }}
+                                    </option>
                                     <option
                                         v-for="game in games"
                                         :key="game.id"
@@ -313,14 +335,18 @@ function statusColor(status: string): string {
                             </div>
 
                             <div class="grid gap-2">
-                                <Label for="event_id">Event</Label>
+                                <Label for="event_id">{{
+                                    $t('competitions.form.event')
+                                }}</Label>
                                 <select
                                     id="event_id"
                                     name="event_id"
                                     :disabled="!canEditDetails"
                                     class="rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
                                 >
-                                    <option value="">None</option>
+                                    <option value="">
+                                        {{ $t('common.none') }}
+                                    </option>
                                     <option
                                         v-for="event in events"
                                         :key="event.id"
@@ -338,7 +364,9 @@ function statusColor(status: string): string {
 
                         <div class="grid grid-cols-2 gap-4">
                             <div class="grid gap-2">
-                                <Label for="team_size">Team Size</Label>
+                                <Label for="team_size">{{
+                                    $t('competitions.form.teamSize')
+                                }}</Label>
                                 <Input
                                     id="team_size"
                                     name="team_size"
@@ -352,7 +380,9 @@ function statusColor(status: string): string {
                                 <InputError :message="errors.team_size" />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="max_teams">Max Teams</Label>
+                                <Label for="max_teams">{{
+                                    $t('competitions.form.maxTeams')
+                                }}</Label>
                                 <Input
                                     id="max_teams"
                                     name="max_teams"
@@ -369,7 +399,9 @@ function statusColor(status: string): string {
 
                         <div class="grid grid-cols-2 gap-4">
                             <div class="grid gap-2">
-                                <Label for="starts_at">Starts At</Label>
+                                <Label for="starts_at">{{
+                                    $t('competitions.form.startsAt')
+                                }}</Label>
                                 <Input
                                     id="starts_at"
                                     name="starts_at"
@@ -383,7 +415,9 @@ function statusColor(status: string): string {
                                 <InputError :message="errors.starts_at" />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="ends_at">Ends At</Label>
+                                <Label for="ends_at">{{
+                                    $t('competitions.form.endsAt')
+                                }}</Label>
                                 <Input
                                     id="ends_at"
                                     name="ends_at"
@@ -402,7 +436,11 @@ function statusColor(status: string): string {
                             class="flex items-center gap-4"
                         >
                             <Button type="submit" :disabled="processing">
-                                {{ processing ? 'Saving...' : 'Save Changes' }}
+                                {{
+                                    processing
+                                        ? $t('common.saving')
+                                        : $t('common.saveChanges')
+                                }}
                             </Button>
                         </div>
                     </Form>
@@ -414,7 +452,9 @@ function statusColor(status: string): string {
                     <div
                         class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
-                        <h3 class="mb-3 text-sm font-semibold">Status</h3>
+                        <h3 class="mb-3 text-sm font-semibold">
+                            {{ $t('competitions.sidebar.status') }}
+                        </h3>
                         <Badge
                             :class="statusColor(competition.status)"
                             class="mb-3 capitalize"
@@ -442,8 +482,8 @@ function statusColor(status: string): string {
                                 <AlertTriangle class="mr-0.5 inline size-3" />
                                 {{
                                     competition.status === 'running'
-                                        ? 'This will end the competition.'
-                                        : 'This action cannot be undone.'
+                                        ? $t('competitions.transition.willEnd')
+                                        : $t('competitions.transition.cannotUndo')
                                 }}
                             </p>
                         </div>
@@ -454,7 +494,9 @@ function statusColor(status: string): string {
                         class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
                         <div class="mb-3 flex items-center justify-between">
-                            <h3 class="text-sm font-semibold">Teams</h3>
+                            <h3 class="text-sm font-semibold">
+                                {{ $t('competitions.sidebar.teams') }}
+                            </h3>
                             <span class="text-xs text-muted-foreground">
                                 {{ teamCount
                                 }}<template v-if="maxTeams">
@@ -497,14 +539,20 @@ function statusColor(status: string): string {
                                     </span>
                                 </div>
                                 <div class="text-xs text-muted-foreground">
-                                    Captain: {{ team.captain?.name ?? 'None' }}
+                                    {{
+                                        $t('competitions.captainNamed', {
+                                            name:
+                                                team.captain?.name ??
+                                                $t('competitions.sidebar.captainNone'),
+                                        })
+                                    }}
                                 </div>
                             </div>
                             <p
                                 v-if="!competition.teams?.length"
                                 class="text-xs text-muted-foreground"
                             >
-                                No teams registered yet.
+                                {{ $t('competitions.sidebar.noTeams') }}
                             </p>
                         </div>
                     </div>
@@ -514,14 +562,17 @@ function statusColor(status: string): string {
                         v-if="lanbracketsEnabled"
                         class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
-                        <h3 class="mb-3 text-sm font-semibold">LanBrackets</h3>
+                        <h3 class="mb-3 text-sm font-semibold">
+                            {{ $t('competitions.sidebar.lanbrackets') }}
+                        </h3>
                         <div class="space-y-2">
                             <template v-if="competition.lanbrackets_id">
                                 <Badge
                                     variant="outline"
                                     class="border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
                                 >
-                                    <CheckCircle2 class="mr-1 size-3" /> Synced
+                                    <CheckCircle2 class="mr-1 size-3" />
+                                    {{ $t('competitions.sidebar.synced') }}
                                 </Badge>
                                 <div class="mt-2 space-y-1.5">
                                     <a
@@ -531,7 +582,8 @@ function statusColor(status: string): string {
                                         rel="noopener"
                                         class="flex items-center gap-1 text-sm text-primary hover:underline"
                                     >
-                                        <ExternalLink class="size-3" /> Admin UI
+                                        <ExternalLink class="size-3" />
+                                        {{ $t('competitions.sidebar.adminUi') }}
                                     </a>
                                     <a
                                         v-if="bracketViewUrl"
@@ -540,14 +592,15 @@ function statusColor(status: string): string {
                                         rel="noopener"
                                         class="flex items-center gap-1 text-sm text-primary hover:underline"
                                     >
-                                        <ExternalLink class="size-3" /> Bracket
-                                        View
+                                        <ExternalLink class="size-3" />
+                                        {{
+                                            $t('competitions.sidebar.bracketView')
+                                        }}
                                     </a>
                                 </div>
                             </template>
                             <p v-else class="text-xs text-muted-foreground">
-                                Not synced yet. Sync happens automatically after
-                                creation.
+                                {{ $t('competitions.sidebar.notSynced') }}
                             </p>
                         </div>
                     </div>
@@ -556,16 +609,22 @@ function statusColor(status: string): string {
                     <div
                         class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
-                        <h3 class="mb-3 text-sm font-semibold">Details</h3>
+                        <h3 class="mb-3 text-sm font-semibold">
+                            {{ $t('competitions.sidebar.details') }}
+                        </h3>
                         <dl class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <dt class="text-muted-foreground">Type</dt>
+                                <dt class="text-muted-foreground">
+                                    {{ $t('competitions.form.type') }}
+                                </dt>
                                 <dd class="capitalize">
                                     {{ competition.type }}
                                 </dd>
                             </div>
                             <div class="flex justify-between">
-                                <dt class="text-muted-foreground">Format</dt>
+                                <dt class="text-muted-foreground">
+                                    {{ $t('competitions.sidebar.format') }}
+                                </dt>
                                 <dd class="capitalize">
                                     {{
                                         competition.stage_type?.replace(
@@ -579,14 +638,18 @@ function statusColor(status: string): string {
                                 v-if="competition.game"
                                 class="flex justify-between"
                             >
-                                <dt class="text-muted-foreground">Game</dt>
+                                <dt class="text-muted-foreground">
+                                    {{ $t('competitions.form.game') }}
+                                </dt>
                                 <dd>{{ competition.game.name }}</dd>
                             </div>
                             <div
                                 v-if="competition.starts_at"
                                 class="flex justify-between"
                             >
-                                <dt class="text-muted-foreground">Starts</dt>
+                                <dt class="text-muted-foreground">
+                                    {{ $t('competitions.sidebar.starts') }}
+                                </dt>
                                 <dd class="text-xs">
                                     {{
                                         new Date(
@@ -599,7 +662,9 @@ function statusColor(status: string): string {
                                 v-if="competition.ends_at"
                                 class="flex justify-between"
                             >
-                                <dt class="text-muted-foreground">Ends</dt>
+                                <dt class="text-muted-foreground">
+                                    {{ $t('competitions.sidebar.ends') }}
+                                </dt>
                                 <dd class="text-xs">
                                     {{
                                         new Date(

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import CompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/CompetitionController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -19,6 +20,8 @@ import { index as competitionsRoute } from '@/routes/competitions';
 import type { BreadcrumbItem } from '@/types';
 import type { Game } from '@/types/domain';
 
+const { t } = useI18n();
+
 const props = defineProps<{
     games: Game[];
     events: { id: number; name: string; start_date: string }[];
@@ -26,14 +29,14 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Administration', href: competitionsRoute().url },
-    { title: 'Competitions', href: competitionsRoute().url },
-    { title: 'Create', href: CompetitionController.create().url },
+    { title: t('common.administration'), href: competitionsRoute().url },
+    { title: t('navigation.competitions'), href: competitionsRoute().url },
+    { title: t('common.create'), href: CompetitionController.create().url },
 ];
 </script>
 
 <template>
-    <Head title="Create Competition" />
+    <Head :title="$t('competitions.createTitle')" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
@@ -42,7 +45,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                     :href="competitionsRoute().url"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
-                    &larr; Back to Competitions
+                    {{ $t('competitions.backToList') }}
                 </Link>
             </div>
 
@@ -54,50 +57,64 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Competition Details"
-                        description="Configure the basic settings for this competition"
+                        :title="$t('competitions.form.detailsHeading')"
+                        :description="$t('competitions.form.detailsDescription')"
                     />
 
                     <div class="grid gap-2">
-                        <Label for="name">Name</Label>
+                        <Label for="name">{{ $t('common.name') }}</Label>
                         <Input
                             id="name"
                             name="name"
                             required
-                            placeholder="e.g. CS2 5v5 Tournament"
+                            :placeholder="$t('competitions.form.namePlaceholder')"
                         />
                         <InputError :message="errors.name" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="description">Description</Label>
+                        <Label for="description">{{
+                            $t('common.description')
+                        }}</Label>
                         <Textarea
                             id="description"
                             name="description"
                             rows="3"
-                            placeholder="Describe the competition..."
+                            :placeholder="
+                                $t('competitions.form.descriptionPlaceholder')
+                            "
                         />
                         <InputError :message="errors.description" />
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="type">Type</Label>
+                            <Label for="type">{{
+                                $t('competitions.form.type')
+                            }}</Label>
                             <select
                                 id="type"
                                 name="type"
                                 required
                                 class="rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
-                                <option value="tournament">Tournament</option>
-                                <option value="league">League</option>
-                                <option value="race">Race</option>
+                                <option value="tournament">
+                                    {{ $t('competitions.types.tournament') }}
+                                </option>
+                                <option value="league">
+                                    {{ $t('competitions.types.league') }}
+                                </option>
+                                <option value="race">
+                                    {{ $t('competitions.types.race') }}
+                                </option>
                             </select>
                             <InputError :message="errors.type" />
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="stage_type">Stage Type</Label>
+                            <Label for="stage_type">{{
+                                $t('competitions.form.stageType')
+                            }}</Label>
                             <select
                                 id="stage_type"
                                 name="stage_type"
@@ -105,14 +122,36 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 class="rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
                                 <option value="single_elimination">
-                                    Single Elimination
+                                    {{
+                                        $t(
+                                            'competitions.stageTypes.singleElimination',
+                                        )
+                                    }}
                                 </option>
                                 <option value="double_elimination">
-                                    Double Elimination
+                                    {{
+                                        $t(
+                                            'competitions.stageTypes.doubleElimination',
+                                        )
+                                    }}
                                 </option>
-                                <option value="round_robin">Round Robin</option>
-                                <option value="swiss">Swiss</option>
-                                <option value="group_stage">Group Stage</option>
+                                <option value="round_robin">
+                                    {{
+                                        $t(
+                                            'competitions.stageTypes.roundRobin',
+                                        )
+                                    }}
+                                </option>
+                                <option value="swiss">
+                                    {{ $t('competitions.stageTypes.swiss') }}
+                                </option>
+                                <option value="group_stage">
+                                    {{
+                                        $t(
+                                            'competitions.stageTypes.groupStage',
+                                        )
+                                    }}
+                                </option>
                             </select>
                             <InputError :message="errors.stage_type" />
                         </div>
@@ -120,25 +159,33 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="team_size">Team Size</Label>
+                            <Label for="team_size">{{
+                                $t('competitions.form.teamSize')
+                            }}</Label>
                             <Input
                                 id="team_size"
                                 name="team_size"
                                 type="number"
                                 min="1"
-                                placeholder="e.g. 5"
+                                :placeholder="
+                                    $t('competitions.form.teamSizePlaceholder')
+                                "
                             />
                             <InputError :message="errors.team_size" />
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="max_teams">Max Teams</Label>
+                            <Label for="max_teams">{{
+                                $t('competitions.form.maxTeams')
+                            }}</Label>
                             <Input
                                 id="max_teams"
                                 name="max_teams"
                                 type="number"
                                 min="2"
-                                placeholder="e.g. 16"
+                                :placeholder="
+                                    $t('competitions.form.maxTeamsPlaceholder')
+                                "
                             />
                             <InputError :message="errors.max_teams" />
                         </div>
@@ -146,13 +193,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="game_id">Game</Label>
+                            <Label for="game_id">{{
+                                $t('competitions.form.game')
+                            }}</Label>
                             <select
                                 id="game_id"
                                 name="game_id"
                                 class="rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
-                                <option value="">None</option>
+                                <option value="">
+                                    {{ $t('common.none') }}
+                                </option>
                                 <option
                                     v-for="game in games"
                                     :key="game.id"
@@ -165,7 +216,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="event_id">Event</Label>
+                            <Label for="event_id">{{
+                                $t('competitions.form.event')
+                            }}</Label>
                             <Select
                                 name="event_id"
                                 :default-value="
@@ -176,7 +229,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                             >
                                 <SelectTrigger>
                                     <SelectValue
-                                        placeholder="Select an event"
+                                        :placeholder="
+                                            $t('competitions.form.selectEvent')
+                                        "
                                     />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -195,7 +250,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="starts_at">Starts At</Label>
+                            <Label for="starts_at">{{
+                                $t('competitions.form.startsAt')
+                            }}</Label>
                             <Input
                                 id="starts_at"
                                 name="starts_at"
@@ -205,7 +262,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="ends_at">Ends At</Label>
+                            <Label for="ends_at">{{
+                                $t('competitions.form.endsAt')
+                            }}</Label>
                             <Input
                                 id="ends_at"
                                 name="ends_at"
@@ -218,7 +277,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                 <div class="flex items-center gap-4">
                     <Button type="submit" :disabled="processing">
-                        {{ processing ? 'Creating...' : 'Create Competition' }}
+                        {{
+                            processing
+                                ? $t('competitions.creating')
+                                : $t('competitions.submitCreate')
+                        }}
                     </Button>
                 </div>
             </Form>

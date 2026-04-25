@@ -2,6 +2,7 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ImagePlus, X } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import EventController from '@/actions/App/Domain/Event/Http/Controllers/EventController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -20,14 +21,16 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { index as eventsRoute } from '@/routes/events';
 import type { BreadcrumbItem } from '@/types';
 
+const { t } = useI18n();
+
 defineProps<{
     venues: { id: number; name: string }[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Administration', href: eventsRoute().url },
-    { title: 'Events', href: eventsRoute().url },
-    { title: 'Create', href: EventController.create().url },
+    { title: t('common.administration'), href: eventsRoute().url },
+    { title: t('navigation.events'), href: eventsRoute().url },
+    { title: t('common.create'), href: EventController.create().url },
 ];
 
 const bannerPreviews = ref<{ id: number; preview: string }[]>([]);
@@ -57,7 +60,7 @@ function removeBannerSlot(index: number) {
 </script>
 
 <template>
-    <Head title="Create Event" />
+    <Head :title="$t('events.createTitle')" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
@@ -67,7 +70,7 @@ function removeBannerSlot(index: number) {
                     :href="eventsRoute().url"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
-                    &larr; Back to Events
+                    {{ $t('events.backToList') }}
                 </Link>
             </div>
 
@@ -80,28 +83,34 @@ function removeBannerSlot(index: number) {
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Event Information"
-                        description="Provide the basic details for this event"
+                        :title="$t('events.form.eventInfoHeading')"
+                        :description="
+                            $t('events.form.eventInfoCreateDescription')
+                        "
                     />
 
                     <div class="grid gap-2">
-                        <Label for="name">Name</Label>
+                        <Label for="name">{{ $t('common.name') }}</Label>
                         <Input
                             id="name"
                             name="name"
                             required
-                            placeholder="Event name"
+                            :placeholder="$t('events.form.namePlaceholder')"
                         />
                         <InputError :message="errors.name" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="description">Description</Label>
+                        <Label for="description">{{
+                            $t('common.description')
+                        }}</Label>
                         <Textarea
                             id="description"
                             name="description"
                             rows="4"
-                            placeholder="Describe the event…"
+                            :placeholder="
+                                $t('events.form.descriptionPlaceholder')
+                            "
                         />
                         <InputError :message="errors.description" />
                     </div>
@@ -111,13 +120,17 @@ function removeBannerSlot(index: number) {
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Schedule"
-                        description="Set the start and end date and time"
+                        :title="$t('events.form.scheduleHeading')"
+                        :description="
+                            $t('events.form.scheduleCreateDescription')
+                        "
                     />
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="start_date">Start Date & Time</Label>
+                            <Label for="start_date">{{
+                                $t('events.form.startDate')
+                            }}</Label>
                             <Input
                                 id="start_date"
                                 type="datetime-local"
@@ -128,7 +141,9 @@ function removeBannerSlot(index: number) {
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="end_date">End Date & Time</Label>
+                            <Label for="end_date">{{
+                                $t('events.form.endDate')
+                            }}</Label>
                             <Input
                                 id="end_date"
                                 type="datetime-local"
@@ -144,16 +159,22 @@ function removeBannerSlot(index: number) {
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Venue & Capacity"
-                        description="Optionally assign a venue and set the seating capacity"
+                        :title="$t('events.form.venueCapacityHeading')"
+                        :description="
+                            $t('events.form.venueCapacityCreateDescription')
+                        "
                     />
 
                     <div class="grid gap-2">
-                        <Label for="venue_id">Venue</Label>
+                        <Label for="venue_id">{{
+                            $t('events.form.venue')
+                        }}</Label>
                         <Select name="venue_id">
                             <SelectTrigger>
                                 <SelectValue
-                                    placeholder="Select a venue (optional)"
+                                    :placeholder="
+                                        $t('events.form.venuePlaceholder')
+                                    "
                                 />
                             </SelectTrigger>
                             <SelectContent>
@@ -170,13 +191,17 @@ function removeBannerSlot(index: number) {
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="seat_capacity">Seating Capacity</Label>
+                        <Label for="seat_capacity">{{
+                            $t('events.form.seatCapacity')
+                        }}</Label>
                         <Input
                             id="seat_capacity"
                             type="number"
                             name="seat_capacity"
                             min="0"
-                            placeholder="Leave empty for unlimited"
+                            :placeholder="
+                                $t('events.form.seatCapacityPlaceholder')
+                            "
                         />
                         <InputError :message="errors.seat_capacity" />
                     </div>
@@ -186,12 +211,12 @@ function removeBannerSlot(index: number) {
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Media"
-                        description="Optionally add one or more banner images. Multiple images will cycle automatically."
+                        :title="$t('events.form.mediaHeading')"
+                        :description="$t('events.form.mediaCreateDescription')"
                     />
 
                     <div class="grid gap-3">
-                        <Label>Banner Images</Label>
+                        <Label>{{ $t('events.form.bannerImages') }}</Label>
 
                         <!-- Existing image slots -->
                         <div
@@ -207,8 +232,8 @@ function removeBannerSlot(index: number) {
                                     <ImagePlus class="size-4" />
                                     {{
                                         slot.preview
-                                            ? 'Replace'
-                                            : 'Choose Image'
+                                            ? $t('events.form.replaceImage')
+                                            : $t('events.form.chooseImage')
                                     }}
                                 </label>
                                 <input
@@ -234,7 +259,7 @@ function removeBannerSlot(index: number) {
                                 @click="removeBannerSlot(index)"
                             >
                                 <X class="size-4" />
-                                Remove
+                                {{ $t('common.remove') }}
                             </Button>
                         </div>
 
@@ -246,12 +271,11 @@ function removeBannerSlot(index: number) {
                             @click="addBannerSlot"
                         >
                             <ImagePlus class="size-4" />
-                            Add Image
+                            {{ $t('common.addImage') }}
                         </Button>
 
                         <p class="text-xs text-muted-foreground">
-                            Accepted formats: JPEG, PNG, GIF, WebP. Max 5 MB
-                            each.
+                            {{ $t('events.form.acceptedFormats') }}
                         </p>
                         <InputError
                             :message="
@@ -273,7 +297,11 @@ function removeBannerSlot(index: number) {
                 <!-- Submit -->
                 <div class="flex items-center gap-4">
                     <Button type="submit" :disabled="processing">
-                        {{ processing ? 'Creating…' : 'Create Event' }}
+                        {{
+                            processing
+                                ? $t('events.creating')
+                                : $t('events.submitCreate')
+                        }}
                     </Button>
                 </div>
             </Form>

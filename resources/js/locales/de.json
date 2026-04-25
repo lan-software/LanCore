@@ -498,6 +498,9 @@
             "ticketsPurchased": "{count} Tickets gekauft",
             "viewMyTickets": "Meine Tickets anzeigen",
             "backToShop": "Zurück zum Shop"
+        },
+        "checkout": {
+            "readBeforeChecking": "Erst lesen dann klicken"
         }
     },
     "tickets": {

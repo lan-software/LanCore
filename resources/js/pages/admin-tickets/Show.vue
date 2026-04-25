@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import { edit as eventEdit } from '@/actions/App/Domain/Event/Http/Controllers/EventController';
 import OrderController from '@/actions/App/Domain/Shop/Http/Controllers/OrderController';
 import { show as adminTicketShow } from '@/actions/App/Domain/Ticketing/Http/Controllers/AdminTicketController';
@@ -15,6 +16,8 @@ import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import type { BreadcrumbItem } from '@/types';
 import type { Ticket } from '@/types/domain';
 
+const { t } = useI18n();
+
 interface ValidationToken {
     kid: string | null;
     issued_at: string | null;
@@ -28,11 +31,7 @@ const props = defineProps<{
 }>();
 
 function rotateToken(): void {
-    if (
-        !confirm(
-            'Rotate the validation token for this ticket? The current QR code will stop working.',
-        )
-    ) {
+    if (!confirm(t('adminTickets.rotateConfirm'))) {
         return;
     }
 
@@ -53,10 +52,12 @@ const tokenStatusVariant: Record<
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Administration', href: adminTicketsIndex().url },
-    { title: 'Tickets', href: adminTicketsIndex().url },
+    { title: t('common.administration'), href: adminTicketsIndex().url },
+    { title: t('navigation.tickets'), href: adminTicketsIndex().url },
     {
-        title: props.ticket.ticket_type?.name ?? `Ticket #${props.ticket.id}`,
+        title:
+            props.ticket.ticket_type?.name ??
+            t('adminTickets.ticketNumber', { id: props.ticket.id }),
         href: adminTicketShow(props.ticket.id).url,
     },
 ];
@@ -82,7 +83,12 @@ const statusVariant: Record<
 </script>
 
 <template>
-    <Head :title="ticket.ticket_type?.name ?? `Ticket #${ticket.id}`" />
+    <Head
+        :title="
+            ticket.ticket_type?.name ??
+            $t('adminTickets.ticketNumber', { id: ticket.id })
+        "
+    />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full max-w-4xl flex-1 flex-col gap-6 p-4">
@@ -91,19 +97,22 @@ const statusVariant: Record<
                     :href="adminTicketsIndex().url"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
-                    &larr; Back to Tickets
+                    {{ $t('adminTickets.backToList') }}
                 </Link>
             </div>
 
             <Heading
-                :title="ticket.ticket_type?.name ?? `Ticket #${ticket.id}`"
-                :description="`Ticket #${ticket.id}`"
+                :title="
+                    ticket.ticket_type?.name ??
+                    $t('adminTickets.ticketNumber', { id: ticket.id })
+                "
+                :description="$t('adminTickets.ticketNumber', { id: ticket.id })"
             />
 
             <!-- Ticket Details -->
             <Card>
                 <CardHeader>
-                    <CardTitle>Ticket Details</CardTitle>
+                    <CardTitle>{{ $t('adminTickets.details.title') }}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -111,7 +120,7 @@ const statusVariant: Record<
                             <dt
                                 class="text-sm font-medium text-muted-foreground"
                             >
-                                Status
+                                {{ $t('common.status') }}
                             </dt>
                             <dd class="mt-1">
                                 <Badge
@@ -127,7 +136,7 @@ const statusVariant: Record<
                             <dt
                                 class="text-sm font-medium text-muted-foreground"
                             >
-                                Created
+                                {{ $t('common.created') }}
                             </dt>
                             <dd class="mt-1 text-sm">
                                 {{ formatDate(ticket.created_at) }}
@@ -137,7 +146,7 @@ const statusVariant: Record<
                             <dt
                                 class="text-sm font-medium text-muted-foreground"
                             >
-                                Checked In At
+                                {{ $t('adminTickets.checkedInAt') }}
                             </dt>
                             <dd class="mt-1 text-sm">
                                 {{ formatDate(ticket.checked_in_at) }}
@@ -151,7 +160,9 @@ const statusVariant: Record<
             <Card v-if="validation_token">
                 <CardHeader>
                     <div class="flex items-center justify-between">
-                        <CardTitle>Validation Token</CardTitle>
+                        <CardTitle>{{
+                            $t('adminTickets.validationToken.title')
+                        }}</CardTitle>
                         <Badge
                             :variant="
                                 tokenStatusVariant[validation_token.status] ??
@@ -168,7 +179,7 @@ const statusVariant: Record<
                             <dt
                                 class="text-sm font-medium text-muted-foreground"
                             >
-                                Key ID
+                                {{ $t('adminTickets.validationToken.keyId') }}
                             </dt>
                             <dd class="mt-1 font-mono text-sm">
                                 {{ validation_token.kid ?? '—' }}
@@ -178,7 +189,9 @@ const statusVariant: Record<
                             <dt
                                 class="text-sm font-medium text-muted-foreground"
                             >
-                                Issued At
+                                {{
+                                    $t('adminTickets.validationToken.issuedAt')
+                                }}
                             </dt>
                             <dd class="mt-1 text-sm">
                                 {{
@@ -192,7 +205,9 @@ const statusVariant: Record<
                             <dt
                                 class="text-sm font-medium text-muted-foreground"
                             >
-                                Expires At
+                                {{
+                                    $t('adminTickets.validationToken.expiresAt')
+                                }}
                             </dt>
                             <dd class="mt-1 text-sm">
                                 {{
@@ -206,9 +221,13 @@ const statusVariant: Record<
                         </div>
                     </dl>
                     <div class="mt-4">
-                        <Button variant="outline" size="sm" @click="rotateToken"
-                            >Rotate token</Button
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            @click="rotateToken"
                         >
+                            {{ $t('adminTickets.validationToken.rotate') }}
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -216,7 +235,9 @@ const statusVariant: Record<
             <!-- Ticket Type -->
             <Card v-if="ticket.ticket_type">
                 <CardHeader>
-                    <CardTitle>Ticket Type</CardTitle>
+                    <CardTitle>{{
+                        $t('adminTickets.ticketType.title')
+                    }}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div class="flex items-center justify-between">
@@ -228,8 +249,12 @@ const statusVariant: Record<
                                 v-if="ticket.ticket_type.ticket_category"
                                 class="text-sm text-muted-foreground"
                             >
-                                Category:
-                                {{ ticket.ticket_type.ticket_category.name }}
+                                {{
+                                    $t('adminTickets.ticketType.category', {
+                                        name: ticket.ticket_type
+                                            .ticket_category.name,
+                                    })
+                                }}
                             </p>
                         </div>
                         <Button variant="outline" size="sm" as-child>
@@ -237,7 +262,7 @@ const statusVariant: Record<
                                 :href="
                                     ticketTypeEdit(ticket.ticket_type_id).url
                                 "
-                                >View Type</Link
+                                >{{ $t('adminTickets.ticketType.view') }}</Link
                             >
                         </Button>
                     </div>
@@ -247,15 +272,15 @@ const statusVariant: Record<
             <!-- Event -->
             <Card v-if="ticket.event">
                 <CardHeader>
-                    <CardTitle>Event</CardTitle>
+                    <CardTitle>{{ $t('common.event') }}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div class="flex items-center justify-between">
                         <p class="font-medium">{{ ticket.event.name }}</p>
                         <Button variant="outline" size="sm" as-child>
-                            <Link :href="eventEdit(ticket.event_id).url"
-                                >View Event</Link
-                            >
+                            <Link :href="eventEdit(ticket.event_id).url">{{
+                                $t('adminTickets.event.view')
+                            }}</Link>
                         </Button>
                     </div>
                 </CardContent>
@@ -264,13 +289,17 @@ const statusVariant: Record<
             <!-- Order -->
             <Card v-if="ticket.order">
                 <CardHeader>
-                    <CardTitle>Order</CardTitle>
+                    <CardTitle>{{ $t('common.order') }}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="font-medium">
-                                Order #{{ ticket.order.id }}
+                                {{
+                                    $t('adminTickets.order.number', {
+                                        id: ticket.order.id,
+                                    })
+                                }}
                             </p>
                             <p class="text-sm text-muted-foreground">
                                 {{ ticket.order.user?.name }} &middot;
@@ -282,7 +311,7 @@ const statusVariant: Record<
                                 :href="
                                     OrderController.show(ticket.order_id).url
                                 "
-                                >View Order</Link
+                                >{{ $t('adminTickets.order.view') }}</Link
                             >
                         </Button>
                     </div>
@@ -292,7 +321,7 @@ const statusVariant: Record<
             <!-- Owner -->
             <Card v-if="ticket.owner">
                 <CardHeader>
-                    <CardTitle>Owner</CardTitle>
+                    <CardTitle>{{ $t('adminTickets.owner.title') }}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div class="flex items-center justify-between">
@@ -303,9 +332,9 @@ const statusVariant: Record<
                             </p>
                         </div>
                         <Button variant="outline" size="sm" as-child>
-                            <Link :href="userShow(ticket.owner_id).url"
-                                >View User</Link
-                            >
+                            <Link :href="userShow(ticket.owner_id).url">{{
+                                $t('adminTickets.viewUser')
+                            }}</Link>
                         </Button>
                     </div>
                 </CardContent>
@@ -314,7 +343,9 @@ const statusVariant: Record<
             <!-- Manager -->
             <Card v-if="ticket.manager">
                 <CardHeader>
-                    <CardTitle>Manager</CardTitle>
+                    <CardTitle>{{
+                        $t('adminTickets.manager.title')
+                    }}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div class="flex items-center justify-between">
@@ -325,9 +356,9 @@ const statusVariant: Record<
                             </p>
                         </div>
                         <Button variant="outline" size="sm" as-child>
-                            <Link :href="userShow(ticket.manager.id).url"
-                                >View User</Link
-                            >
+                            <Link :href="userShow(ticket.manager.id).url">{{
+                                $t('adminTickets.viewUser')
+                            }}</Link>
                         </Button>
                     </div>
                 </CardContent>
@@ -337,7 +368,9 @@ const statusVariant: Record<
             <Card v-if="ticket.users && ticket.users.length > 0">
                 <CardHeader>
                     <div class="flex items-center gap-2">
-                        <CardTitle>Assigned Users</CardTitle>
+                        <CardTitle>{{
+                            $t('adminTickets.assignedUsers.title')
+                        }}</CardTitle>
                         <Badge
                             v-if="
                                 ticket.ticket_type &&
@@ -369,12 +402,12 @@ const statusVariant: Record<
                                     v-if="user.pivot?.checked_in_at"
                                     variant="secondary"
                                 >
-                                    Checked in
+                                    {{ $t('common.checkedIn') }}
                                 </Badge>
                                 <Button variant="outline" size="sm" as-child>
-                                    <Link :href="userShow(user.id).url"
-                                        >View User</Link
-                                    >
+                                    <Link :href="userShow(user.id).url">{{
+                                        $t('adminTickets.viewUser')
+                                    }}</Link>
                                 </Button>
                             </div>
                         </div>
@@ -385,7 +418,7 @@ const statusVariant: Record<
             <!-- Addons -->
             <Card v-if="ticket.addons && ticket.addons.length > 0">
                 <CardHeader>
-                    <CardTitle>Addons</CardTitle>
+                    <CardTitle>{{ $t('common.addons') }}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <ul class="space-y-2">

@@ -85,7 +85,7 @@ function resolveIcon(name: string | null): Component {
                         <button
                             type="button"
                             class="inline-flex size-9 items-center justify-center rounded-full border border-border/70 bg-background/80 text-muted-foreground shadow-sm transition hover:bg-accent hover:text-accent-foreground"
-                            aria-label="Toggle navigation menu"
+                            :aria-label="$t('navigation.toggleMenu')"
                         >
                             <Menu v-if="!mobileMenuOpen" class="size-4" />
                             <X v-else class="size-4" />
@@ -103,21 +103,21 @@ function resolveIcon(name: string | null): Component {
                         class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
                     >
                         <Calendar class="size-4" />
-                        Upcoming Events
+                        {{ $t('navigation.upcomingEvents') }}
                     </Link>
                     <Link
                         href="/past-events"
                         class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
                     >
                         <Clock class="size-4" />
-                        Past Events
+                        {{ $t('navigation.pastEvents') }}
                     </Link>
                     <Link
                         :href="shopIndex().url"
                         class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
                     >
                         <ShoppingCart class="size-4" />
-                        Shop
+                        {{ $t('navigation.shop') }}
                     </Link>
                     <a
                         v-for="link in integrationLinks"
@@ -138,16 +138,16 @@ function resolveIcon(name: string | null): Component {
                         <div
                             class="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2"
                         >
-                            <span class="text-sm font-medium text-foreground"
-                                >Notifications</span
-                            >
+                            <span class="text-sm font-medium text-foreground">{{
+                                $t('navigation.notifications')
+                            }}</span>
                             <NotificationBell />
                         </div>
                         <Link
                             :href="dashboard()"
                             class="rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90"
                         >
-                            Dashboard
+                            {{ $t('common.dashboard') }}
                         </Link>
                     </template>
                     <template v-else>
@@ -155,14 +155,14 @@ function resolveIcon(name: string | null): Component {
                             :href="login()"
                             class="rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
                         >
-                            Log in
+                            {{ $t('auth.login.button') }}
                         </Link>
                         <Link
                             v-if="canRegister"
                             :href="register()"
                             class="rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90"
                         >
-                            Register
+                            {{ $t('navigation.register') }}
                         </Link>
                     </template>
                 </nav>
@@ -181,21 +181,21 @@ function resolveIcon(name: string | null): Component {
                     class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                 >
                     <Calendar class="size-4" />
-                    Upcoming Events
+                    {{ $t('navigation.upcomingEvents') }}
                 </Link>
                 <Link
                     href="/past-events"
                     class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                 >
                     <Clock class="size-4" />
-                    Past Events
+                    {{ $t('navigation.pastEvents') }}
                 </Link>
                 <Link
                     :href="shopIndex().url"
                     class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                 >
                     <ShoppingCart class="size-4" />
-                    Shop
+                    {{ $t('navigation.shop') }}
                 </Link>
                 <DropdownMenu v-if="integrationLinks.length > 0">
                     <DropdownMenuTrigger as-child>
@@ -205,7 +205,7 @@ function resolveIcon(name: string | null): Component {
                             data-test="topbar-apps-button"
                         >
                             <LayoutGrid class="size-4" />
-                            Apps
+                            {{ $t('navigation.apps') }}
                             <ChevronDown class="size-3.5 opacity-70" />
                         </button>
                     </DropdownMenuTrigger>
@@ -214,7 +214,9 @@ function resolveIcon(name: string | null): Component {
                         align="end"
                         :side-offset="8"
                     >
-                        <DropdownMenuLabel>Other apps</DropdownMenuLabel>
+                        <DropdownMenuLabel>{{
+                            $t('navigation.otherApps')
+                        }}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             v-for="link in integrationLinks"
@@ -242,7 +244,7 @@ function resolveIcon(name: string | null): Component {
                     :href="dashboard()"
                     class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
-                    Dashboard
+                    {{ $t('common.dashboard') }}
                 </Link>
                 <NavUser v-if="$page.props.auth.user" variant="topbar" />
                 <template v-else>
@@ -250,14 +252,14 @@ function resolveIcon(name: string | null): Component {
                         :href="login()"
                         class="text-sm text-muted-foreground hover:text-foreground"
                     >
-                        Log in
+                        {{ $t('auth.login.button') }}
                     </Link>
                     <Link
                         v-if="canRegister"
                         :href="register()"
                         class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                     >
-                        Register
+                        {{ $t('navigation.register') }}
                     </Link>
                 </template>
             </nav>

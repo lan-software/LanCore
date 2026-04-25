@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { Shield, Swords, Users } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import EventSelector from '@/components/EventSelector.vue';
 import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { show as myCompetitionShow } from '@/routes/my-competitions';
 import { index as myTeamsRoute, show as myTeamShow } from '@/routes/my-teams';
 import type { BreadcrumbItem } from '@/types';
+
+const { t } = useI18n();
 
 interface TeamItem {
     id: number;
@@ -29,7 +32,7 @@ defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'My Teams', href: myTeamsRoute().url },
+    { title: t('competitions.user.myTeams'), href: myTeamsRoute().url },
 ];
 
 function statusColor(status: string): string {
@@ -54,14 +57,16 @@ function statusColor(status: string): string {
 </script>
 
 <template>
-    <Head title="My Teams" />
+    <Head :title="$t('competitions.user.myTeams')" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-4">
             <div>
-                <h1 class="text-2xl font-bold">My Teams</h1>
+                <h1 class="text-2xl font-bold">
+                    {{ $t('competitions.user.myTeams') }}
+                </h1>
                 <p class="mt-1 text-sm text-muted-foreground">
-                    Teams you are a member of across all competitions.
+                    {{ $t('competitions.user.teamsListDescription') }}
                 </p>
             </div>
 
@@ -95,7 +100,8 @@ function statusColor(status: string): string {
                             variant="outline"
                             class="text-[10px]"
                         >
-                            <Shield class="mr-0.5 size-2.5" /> Captain
+                            <Shield class="mr-0.5 size-2.5" />
+                            {{ $t('competitions.captain') }}
                         </Badge>
                     </div>
 
@@ -145,9 +151,11 @@ function statusColor(status: string): string {
                 class="rounded-xl border border-dashed p-12 text-center"
             >
                 <Swords class="mx-auto size-10 text-muted-foreground/50" />
-                <h3 class="mt-4 text-sm font-medium">No teams yet</h3>
+                <h3 class="mt-4 text-sm font-medium">
+                    {{ $t('competitions.user.noTeamsYet') }}
+                </h3>
                 <p class="mt-1 text-sm text-muted-foreground">
-                    Join a competition and create or join a team to get started.
+                    {{ $t('competitions.user.teamsEmptyHint') }}
                 </p>
             </div>
         </div>

@@ -40,7 +40,7 @@ function removeFavorite(itemId: string) {
 
 <template>
     <SidebarGroup v-if="favorites.length > 0" class="px-2 py-0">
-        <SidebarGroupLabel>Favorites</SidebarGroupLabel>
+        <SidebarGroupLabel>{{ $t('navigation.favorites') }}</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in favorites" :key="item.id">
                 <SidebarMenuButton
@@ -58,7 +58,9 @@ function removeFavorite(itemId: string) {
                     @click="removeFavorite(item.id!)"
                 >
                     <PinOff class="size-4" />
-                    <span class="sr-only">Unpin {{ item.title }}</span>
+                    <span class="sr-only">{{
+                        $t('navigation.unpinItem', { name: item.title })
+                    }}</span>
                 </SidebarMenuAction>
             </SidebarMenuItem>
         </SidebarMenu>

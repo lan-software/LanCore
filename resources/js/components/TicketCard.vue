@@ -2,6 +2,7 @@
 import { Form, Link, router } from '@inertiajs/vue3';
 import { Armchair, Download, QrCode, RefreshCw, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import TicketController from '@/actions/App/Domain/Ticketing/Http/Controllers/TicketController';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { formatCents } from '@/lib/money';
 import { picker as seatPickerRoute } from '@/routes/events/seats';
 import type { SeatAssignment, Ticket } from '@/types/domain';
+
+const { t } = useI18n();
 
 const props = defineProps<{
     ticket: Ticket;
@@ -26,9 +29,7 @@ const showRotateButton = computed<boolean>(
 );
 
 function confirmRotate(e: Event): void {
-    const ok = window.confirm(
-        'Rotating the QR invalidates any previously printed or shared copy. Continue?',
-    );
+    const ok = window.confirm(t('ticketCard.rotateConfirm'));
 
     if (!ok) {
         e.preventDefault();
@@ -139,7 +140,7 @@ function pickerUrl(userId: number): string {
                     "
                     variant="outline"
                     class="shrink-0 border-amber-500 text-amber-600"
-                    >Pay on Site</Badge
+                    >{{ $t('ticketCard.payOnSite') }}</Badge
                 >
                 <Badge
                     :variant="statusVariant(ticket.status)"
@@ -166,7 +167,9 @@ function pickerUrl(userId: number): string {
 
             <!-- Price -->
             <div v-if="ticket.ticket_type" class="text-sm">
-                <span class="text-muted-foreground">Price paid: </span>
+                <span class="text-muted-foreground"
+                    >{{ $t('ticketCard.pricePaid') }}
+                </span>
                 <span class="font-medium">{{
                     formatPrice(ticket.ticket_type.price)
                 }}</span>
@@ -180,7 +183,7 @@ function pickerUrl(userId: number): string {
                 <p
                     class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
                 >
-                    Add-ons
+                    {{ $t('ticketCard.addonsHeading') }}
                 </p>
                 <div class="flex flex-wrap gap-1.5">
                     <Badge
@@ -203,12 +206,16 @@ function pickerUrl(userId: number): string {
                     @click="showQrCode = !showQrCode"
                 >
                     <QrCode class="size-4" />
-                    {{ showQrCode ? 'Hide QR Code' : 'Show QR Code' }}
+                    {{
+                        showQrCode
+                            ? $t('ticketCard.hideQrCode')
+                            : $t('ticketCard.showQrCode')
+                    }}
                 </Button>
                 <a :href="`/tickets/${ticket.id}/download`">
                     <Button variant="outline" size="sm" class="gap-1.5">
                         <Download class="size-4" />
-                        PDF
+                        {{ $t('ticketCard.downloadPdf') }}
                     </Button>
                 </a>
                 <Form
@@ -223,7 +230,7 @@ function pickerUrl(userId: number): string {
                         class="gap-1.5"
                     >
                         <RefreshCw class="size-4" />
-                        Rotate QR
+                        {{ $t('ticketCard.rotateQr') }}
                     </Button>
                 </Form>
             </div>
@@ -235,15 +242,17 @@ function pickerUrl(userId: number): string {
             >
                 <img
                     :src="`/tickets/${ticket.id}/qr`"
-                    :alt="`QR Code for ticket #${ticket.id}`"
+                    :alt="$t('ticketCard.qrAlt', { id: ticket.id })"
                     class="size-48"
                 />
                 <p
                     class="font-mono text-sm font-bold tracking-normal text-foreground sm:tracking-[0.2em]"
                 >
-                    Ticket #{{ ticket.id }}
+                    {{ $t('ticketCard.ticketNumber', { id: ticket.id }) }}
                 </p>
-                <p class="text-xs text-muted-foreground">Scan at entrance</p>
+                <p class="text-xs text-muted-foreground">
+                    {{ $t('ticketCard.scanAtEntrance') }}
+                </p>
             </div>
 
             <!-- Manager Assignment -->
@@ -251,7 +260,7 @@ function pickerUrl(userId: number): string {
                 <p
                     class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
                 >
-                    Manager
+                    {{ $t('ticketCard.manager') }}
                 </p>
                 <div v-if="canUpdateManager">
                     <Form
@@ -263,7 +272,7 @@ function pickerUrl(userId: number): string {
                             name="manager_email"
                             type="email"
                             :default-value="ticket.manager?.email ?? ''"
-                            placeholder="Manager email"
+                            :placeholder="$t('ticketCard.managerEmailPlaceholder')"
                             class="h-8 text-sm"
                         />
                         <Button
@@ -273,13 +282,13 @@ function pickerUrl(userId: number): string {
                             :disabled="processing"
                             class="shrink-0"
                         >
-                            {{ processing ? '…' : 'Set' }}
+                            {{ processing ? '…' : $t('ticketCard.set') }}
                         </Button>
                         <p
                             v-if="recentlySuccessful"
                             class="text-xs text-muted-foreground"
                         >
-                            Saved
+                            {{ $t('ticketCard.saved') }}
                         </p>
                         <InputError :message="errors.manager_email" />
                     </Form>
@@ -293,7 +302,7 @@ function pickerUrl(userId: number): string {
                     <p
                         class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
                     >
-                        Assigned Users
+                        {{ $t('ticketCard.assignedUsers') }}
                     </p>
                     <Badge
                         v-if="
@@ -303,9 +312,12 @@ function pickerUrl(userId: number): string {
                         variant="outline"
                         class="text-xs"
                     >
-                        Group ({{ ticket.users?.length ?? 0 }}/{{
-                            ticket.ticket_type.max_users_per_ticket
-                        }})
+                        {{
+                            $t('ticketCard.groupCount', {
+                                current: ticket.users?.length ?? 0,
+                                max: ticket.ticket_type.max_users_per_ticket,
+                            })
+                        }}
                     </Badge>
                 </div>
 
@@ -326,7 +338,7 @@ function pickerUrl(userId: number): string {
                                 variant="secondary"
                                 class="text-xs"
                             >
-                                Checked in
+                                {{ $t('ticketCard.checkedIn') }}
                             </Badge>
                             <button
                                 v-if="
@@ -344,15 +356,19 @@ function pickerUrl(userId: number): string {
                                 "
                             >
                                 <X class="size-3.5" />
-                                <span class="sr-only"
-                                    >Remove {{ user.name }}</span
-                                >
+                                <span class="sr-only">
+                                    {{
+                                        $t('ticketCard.removeUser', {
+                                            name: user.name,
+                                        })
+                                    }}
+                                </span>
                             </button>
                         </div>
                     </div>
                 </div>
                 <p v-else class="text-sm text-muted-foreground">
-                    No users assigned
+                    {{ $t('ticketCard.noUsers') }}
                 </p>
 
                 <!-- Add user form (only when there's room for more users) -->
@@ -372,7 +388,7 @@ function pickerUrl(userId: number): string {
                         <Input
                             name="user_email"
                             type="email"
-                            placeholder="Add user by email"
+                            :placeholder="$t('ticketCard.addUserPlaceholder')"
                             class="h-8 text-sm"
                         />
                         <Button
@@ -382,13 +398,13 @@ function pickerUrl(userId: number): string {
                             :disabled="processing"
                             class="shrink-0"
                         >
-                            {{ processing ? '…' : 'Add' }}
+                            {{ processing ? '…' : $t('ticketCard.addUser') }}
                         </Button>
                         <p
                             v-if="recentlySuccessful"
                             class="text-xs text-muted-foreground"
                         >
-                            Added
+                            {{ $t('ticketCard.added') }}
                         </p>
                         <InputError :message="errors.user_email" />
                     </Form>

@@ -2,6 +2,7 @@
 import { Form, Head, Link, router } from '@inertiajs/vue3';
 import { Check, Pencil, Plus, Trash2, X } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import GameController from '@/actions/App/Domain/Games/Http/Controllers/GameController';
 import GameModeController from '@/actions/App/Domain/Games/Http/Controllers/GameModeController';
 import Heading from '@/components/Heading.vue';
@@ -32,13 +33,15 @@ import { index as gamesRoute } from '@/routes/games';
 import type { BreadcrumbItem } from '@/types';
 import type { Game } from '@/types/domain';
 
+const { t } = useI18n();
+
 const props = defineProps<{
     game: Game;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Administration', href: gamesRoute().url },
-    { title: 'Games', href: gamesRoute().url },
+    { title: t('common.administration'), href: gamesRoute().url },
+    { title: t('navigation.games'), href: gamesRoute().url },
     { title: props.game.name, href: GameController.edit(props.game.id).url },
 ];
 
@@ -54,7 +57,7 @@ function executeDelete() {
 </script>
 
 <template>
-    <Head :title="`Edit ${game.name}`" />
+    <Head :title="$t('games.editTitle', { name: game.name })" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
@@ -64,7 +67,7 @@ function executeDelete() {
                     :href="gamesRoute().url"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
-                    &larr; Back to Games
+                    {{ $t('games.backToList') }}
                 </Link>
             </div>
 
@@ -77,53 +80,57 @@ function executeDelete() {
                 <div class="space-y-4">
                     <Heading
                         variant="small"
-                        title="Game Information"
-                        description="Update the basic details for this game"
+                        :title="$t('games.gameInfoHeading')"
+                        :description="$t('games.gameInfoDescription')"
                     />
 
                     <div class="grid gap-2">
-                        <Label for="name">Name</Label>
+                        <Label for="name">{{ $t('common.name') }}</Label>
                         <Input
                             id="name"
                             name="name"
                             :default-value="game.name"
                             required
-                            placeholder="e.g. Counter-Strike 2"
+                            :placeholder="$t('games.namePlaceholder')"
                         />
                         <InputError :message="errors.name" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="slug">Slug</Label>
+                        <Label for="slug">{{ $t('games.slug') }}</Label>
                         <Input
                             id="slug"
                             name="slug"
                             :default-value="game.slug"
                             required
-                            placeholder="e.g. counter-strike-2"
+                            :placeholder="$t('games.slugPlaceholder')"
                         />
                         <InputError :message="errors.slug" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="publisher">Publisher</Label>
+                        <Label for="publisher">{{
+                            $t('games.publisher')
+                        }}</Label>
                         <Input
                             id="publisher"
                             name="publisher"
                             :default-value="game.publisher ?? ''"
-                            placeholder="e.g. Valve"
+                            :placeholder="$t('games.publisherPlaceholder')"
                         />
                         <InputError :message="errors.publisher" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="description">Description</Label>
+                        <Label for="description">{{
+                            $t('common.description')
+                        }}</Label>
                         <Textarea
                             id="description"
                             name="description"
                             :default-value="game.description ?? ''"
                             rows="4"
-                            placeholder="Describe the game…"
+                            :placeholder="$t('games.descriptionPlaceholder')"
                         />
                         <InputError :message="errors.description" />
                     </div>
@@ -135,21 +142,25 @@ function executeDelete() {
                             :default-checked="game.is_active"
                             :value="true"
                         />
-                        <Label for="is_active">Active</Label>
+                        <Label for="is_active">{{ $t('common.active') }}</Label>
                     </div>
                 </div>
 
                 <!-- Actions -->
                 <div class="flex items-center gap-4">
                     <Button type="submit" :disabled="processing">
-                        {{ processing ? 'Saving…' : 'Save Changes' }}
+                        {{
+                            processing
+                                ? $t('common.saving')
+                                : $t('common.saveChanges')
+                        }}
                     </Button>
 
                     <p
                         v-if="recentlySuccessful"
                         class="text-sm text-muted-foreground"
                     >
-                        Saved.
+                        {{ $t('common.saved') }}
                     </p>
                 </div>
             </Form>
@@ -159,13 +170,13 @@ function executeDelete() {
                 <div class="flex items-center justify-between">
                     <Heading
                         variant="small"
-                        title="Game Modes"
-                        description="Manage the available modes for this game"
+                        :title="$t('games.modesHeading')"
+                        :description="$t('games.modesDescription')"
                     />
                     <Button as-child size="sm">
                         <Link :href="GameModeController.create(game.id).url">
                             <Plus class="size-4" />
-                            Add Mode
+                            {{ $t('games.addMode') }}
                         </Link>
                     </Button>
                 </div>
@@ -176,10 +187,18 @@ function executeDelete() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead class="px-4">Name</TableHead>
-                                <TableHead class="px-4">Team Size</TableHead>
-                                <TableHead class="px-4">Active</TableHead>
-                                <TableHead class="w-24 px-4">Actions</TableHead>
+                                <TableHead class="px-4">{{
+                                    $t('common.name')
+                                }}</TableHead>
+                                <TableHead class="px-4">{{
+                                    $t('games.teamSize')
+                                }}</TableHead>
+                                <TableHead class="px-4">{{
+                                    $t('common.active')
+                                }}</TableHead>
+                                <TableHead class="w-24 px-4">{{
+                                    $t('common.actions')
+                                }}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -231,7 +250,7 @@ function executeDelete() {
                                     :colspan="4"
                                     class="px-4 py-6 text-center text-muted-foreground"
                                 >
-                                    No game modes yet.
+                                    {{ $t('games.noModes') }}
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -244,10 +263,10 @@ function executeDelete() {
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm font-medium text-destructive">
-                            Delete Game
+                            {{ $t('games.deleteHeading') }}
                         </h3>
                         <p class="text-sm text-muted-foreground">
-                            Permanently delete this game and all its modes.
+                            {{ $t('games.deleteHint') }}
                         </p>
                     </div>
                     <Button
@@ -256,7 +275,7 @@ function executeDelete() {
                         @click="showDeleteDialog = true"
                     >
                         <Trash2 class="size-4" />
-                        Delete
+                        {{ $t('common.delete') }}
                     </Button>
                 </div>
             </div>
@@ -266,18 +285,19 @@ function executeDelete() {
         <Dialog v-model:open="showDeleteDialog">
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Delete {{ game.name }}?</DialogTitle>
+                    <DialogTitle>{{
+                        $t('games.deleteConfirmTitle', { name: game.name })
+                    }}</DialogTitle>
                     <DialogDescription>
-                        This action cannot be undone. The game and all its modes
-                        will be permanently removed.
+                        {{ $t('games.deleteConfirmDescription') }}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
                     <Button variant="outline" @click="showDeleteDialog = false">
-                        Cancel
+                        {{ $t('common.cancel') }}
                     </Button>
                     <Button variant="destructive" @click="executeDelete">
-                        Delete
+                        {{ $t('common.delete') }}
                     </Button>
                 </DialogFooter>
             </DialogContent>

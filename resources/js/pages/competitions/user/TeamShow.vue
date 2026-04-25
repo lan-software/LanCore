@@ -2,6 +2,7 @@
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Check, Crown, Mail, Shield, X } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import TeamController from '@/actions/App/Domain/Competition/Http/Controllers/TeamController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { show as myCompetitionShow } from '@/routes/my-competitions';
 import { index as myTeamsRoute } from '@/routes/my-teams';
 import type { BreadcrumbItem } from '@/types';
+
+const { t } = useI18n();
 
 interface Member {
     id: number;
@@ -60,7 +63,7 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'My Teams', href: myTeamsRoute().url },
+    { title: t('competitions.user.myTeams'), href: myTeamsRoute().url },
     { title: props.team.name, href: '#' },
 ];
 
@@ -72,8 +75,8 @@ function leaveTeam() {
     }
 
     const msg = props.team.is_captain
-        ? 'You are the captain. If you leave, captaincy transfers to another member. If you are the last member, the team is deleted. Continue?'
-        : `Leave team "${props.team.name}"?`;
+        ? t('competitions.user.leaveCaptainConfirm')
+        : t('competitions.user.leaveTeamConfirm', { name: props.team.name });
 
     if (!window.confirm(msg)) {
         return;
@@ -145,7 +148,8 @@ function statusColor(status: string): string {
                 :href="myTeamsRoute().url"
                 class="text-sm text-muted-foreground hover:text-foreground"
             >
-                <ArrowLeft class="mr-1 inline size-3" /> Back to My Teams
+                <ArrowLeft class="mr-1 inline size-3" />
+                {{ $t('competitions.user.backToMyTeams') }}
             </Link>
 
             <div class="grid gap-6 lg:grid-cols-3">
@@ -160,7 +164,8 @@ function statusColor(status: string): string {
                                 >[{{ team.tag }}]</span
                             >
                             <Badge v-if="team.is_captain" variant="outline">
-                                <Shield class="mr-1 size-3" /> Captain
+                                <Shield class="mr-1 size-3" />
+                                {{ $t('competitions.captain') }}
                             </Badge>
                         </div>
                         <div
@@ -194,7 +199,9 @@ function statusColor(status: string): string {
                     <!-- Members list -->
                     <div class="rounded-xl border p-5">
                         <div class="mb-4 flex items-center justify-between">
-                            <h2 class="text-sm font-semibold">Members</h2>
+                            <h2 class="text-sm font-semibold">
+                                {{ $t('competitions.admin.members') }}
+                            </h2>
                             <span class="text-xs text-muted-foreground">
                                 {{ team.members.length
                                 }}<template v-if="team.competition?.team_size">
@@ -238,14 +245,21 @@ function statusColor(status: string): string {
                                 </div>
                                 <div class="text-xs text-muted-foreground">
                                     <template v-if="member.joined_at">
-                                        Joined
                                         {{
-                                            new Date(
-                                                member.joined_at,
-                                            ).toLocaleDateString(undefined, {
-                                                month: 'short',
-                                                day: 'numeric',
-                                            })
+                                            $t(
+                                                'competitions.user.joinedDateShort',
+                                                {
+                                                    date: new Date(
+                                                        member.joined_at,
+                                                    ).toLocaleDateString(
+                                                        undefined,
+                                                        {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                        },
+                                                    ),
+                                                },
+                                            )
                                         }}
                                     </template>
                                 </div>
@@ -259,7 +273,11 @@ function statusColor(status: string): string {
                         class="rounded-xl border border-blue-200 bg-blue-50/50 p-5 dark:border-blue-900 dark:bg-blue-950/30"
                     >
                         <h2 class="mb-4 text-sm font-semibold">
-                            Join Requests ({{ pendingRequests.length }})
+                            {{
+                                $t('competitions.user.joinRequestsHeading', {
+                                    count: pendingRequests.length,
+                                })
+                            }}
                         </h2>
                         <div class="space-y-3">
                             <div
@@ -290,7 +308,8 @@ function statusColor(status: string): string {
                                             resolveRequest(req.id, 'approve')
                                         "
                                     >
-                                        <Check class="mr-1 size-3" /> Approve
+                                        <Check class="mr-1 size-3" />
+                                        {{ $t('competitions.user.approveRequest') }}
                                     </Button>
                                     <Button
                                         size="sm"
@@ -298,7 +317,8 @@ function statusColor(status: string): string {
                                         class="text-red-600 hover:text-red-700"
                                         @click="resolveRequest(req.id, 'deny')"
                                     >
-                                        <X class="mr-1 size-3" /> Deny
+                                        <X class="mr-1 size-3" />
+                                        {{ $t('competitions.user.denyRequest') }}
                                     </Button>
                                 </div>
                             </div>
@@ -310,7 +330,9 @@ function statusColor(status: string): string {
                 <div class="space-y-4">
                     <!-- Actions -->
                     <div class="rounded-xl border p-4">
-                        <h3 class="mb-3 text-sm font-semibold">Actions</h3>
+                        <h3 class="mb-3 text-sm font-semibold">
+                            {{ $t('competitions.user.actions') }}
+                        </h3>
                         <div class="space-y-2">
                             <Link
                                 v-if="team.competition"
@@ -321,7 +343,7 @@ function statusColor(status: string): string {
                                 "
                                 class="flex w-full items-center rounded-lg border px-4 py-2.5 text-sm transition hover:bg-accent"
                             >
-                                View Competition
+                                {{ $t('competitions.user.viewCompetition') }}
                             </Link>
                             <Button
                                 v-if="
@@ -334,7 +356,11 @@ function statusColor(status: string): string {
                                 :disabled="leaving"
                                 @click="leaveTeam"
                             >
-                                {{ leaving ? 'Leaving...' : 'Leave Team' }}
+                                {{
+                                    leaving
+                                        ? $t('competitions.user.leavingTeam')
+                                        : $t('competitions.user.leaveTeam')
+                                }}
                             </Button>
                         </div>
                     </div>
@@ -348,19 +374,24 @@ function statusColor(status: string): string {
                         class="rounded-xl border p-4"
                     >
                         <h3 class="mb-3 text-sm font-semibold">
-                            <Mail class="mr-1 inline size-3.5" /> Invite Player
+                            <Mail class="mr-1 inline size-3.5" />
+                            {{ $t('competitions.user.invitePlayer') }}
                         </h3>
                         <form class="space-y-3" @submit.prevent="sendInvite">
                             <div class="grid gap-1.5">
-                                <Label for="invite-email" class="text-xs"
-                                    >Email</Label
-                                >
+                                <Label for="invite-email" class="text-xs">{{
+                                    $t('common.email')
+                                }}</Label>
                                 <Input
                                     id="invite-email"
                                     v-model="inviteForm.email"
                                     type="email"
                                     required
-                                    placeholder="player@example.com"
+                                    :placeholder="
+                                        $t(
+                                            'competitions.user.playerEmailPlaceholder',
+                                        )
+                                    "
                                 />
                             </div>
                             <Button
@@ -371,8 +402,8 @@ function statusColor(status: string): string {
                             >
                                 {{
                                     inviteForm.processing
-                                        ? 'Sending...'
-                                        : 'Send Invite'
+                                        ? $t('competitions.user.sendingInvite')
+                                        : $t('competitions.user.sendInvite')
                                 }}
                             </Button>
                         </form>
@@ -384,7 +415,7 @@ function statusColor(status: string): string {
                             <p
                                 class="text-xs font-medium text-muted-foreground"
                             >
-                                Pending Invites
+                                {{ $t('competitions.admin.pendingInvites') }}
                             </p>
                             <div
                                 v-for="inv in pendingInvites"
@@ -393,13 +424,14 @@ function statusColor(status: string): string {
                             >
                                 <span>{{ inv.email }}</span>
                                 <span class="text-muted-foreground">
-                                    expires
                                     {{
-                                        new Date(
-                                            inv.expires_at,
-                                        ).toLocaleDateString(undefined, {
-                                            month: 'short',
-                                            day: 'numeric',
+                                        $t('competitions.user.expiresOn', {
+                                            date: new Date(
+                                                inv.expires_at,
+                                            ).toLocaleDateString(undefined, {
+                                                month: 'short',
+                                                day: 'numeric',
+                                            }),
                                         })
                                     }}
                                 </span>
@@ -409,26 +441,34 @@ function statusColor(status: string): string {
 
                     <!-- Team details -->
                     <div class="rounded-xl border p-4">
-                        <h3 class="mb-3 text-sm font-semibold">Details</h3>
+                        <h3 class="mb-3 text-sm font-semibold">
+                            {{ $t('competitions.user.details') }}
+                        </h3>
                         <dl class="space-y-2 text-sm">
                             <div
                                 v-if="team.captain"
                                 class="flex justify-between"
                             >
-                                <dt class="text-muted-foreground">Captain</dt>
+                                <dt class="text-muted-foreground">
+                                    {{ $t('competitions.captain') }}
+                                </dt>
                                 <dd>{{ team.captain.name }}</dd>
                             </div>
                             <div
                                 v-if="team.competition?.type"
                                 class="flex justify-between"
                             >
-                                <dt class="text-muted-foreground">Type</dt>
+                                <dt class="text-muted-foreground">
+                                    {{ $t('competitions.form.type') }}
+                                </dt>
                                 <dd class="capitalize">
                                     {{ team.competition.type }}
                                 </dd>
                             </div>
                             <div class="flex justify-between">
-                                <dt class="text-muted-foreground">Members</dt>
+                                <dt class="text-muted-foreground">
+                                    {{ $t('competitions.admin.members') }}
+                                </dt>
                                 <dd>
                                     {{ team.members.length
                                     }}<template

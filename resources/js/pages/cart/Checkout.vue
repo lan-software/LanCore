@@ -334,7 +334,11 @@ function submitCheckout() {
                                                 </TooltipTrigger>
                                                 <TooltipContent side="right">
                                                     <p>
-                                                        Erst lesen dann klicken
+                                                        {{
+                                                            $t(
+                                                                'shop.checkout.readBeforeChecking',
+                                                            )
+                                                        }}
                                                     </p>
                                                 </TooltipContent>
                                             </Tooltip>
@@ -425,7 +429,11 @@ function submitCheckout() {
                                                 </TooltipTrigger>
                                                 <TooltipContent side="right">
                                                     <p>
-                                                        Erst lesen dann klicken
+                                                        {{
+                                                            $t(
+                                                                'shop.checkout.readBeforeChecking',
+                                                            )
+                                                        }}
                                                     </p>
                                                 </TooltipContent>
                                             </Tooltip>
@@ -526,7 +534,11 @@ function submitCheckout() {
                                                 </TooltipTrigger>
                                                 <TooltipContent side="right">
                                                     <p>
-                                                        Erst lesen dann klicken
+                                                        {{
+                                                            $t(
+                                                                'shop.checkout.readBeforeChecking',
+                                                            )
+                                                        }}
                                                     </p>
                                                 </TooltipContent>
                                             </Tooltip>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { CalendarDays, MapPin } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BannerCarousel from '@/components/BannerCarousel.vue';
 import PublicTopbar from '@/components/PublicTopbar.vue';
 import {
@@ -31,12 +33,24 @@ const props = withDefaults(
     { mode: 'upcoming' },
 );
 
-const isPast = props.mode === 'past';
-const pageTitle = isPast ? 'Past Events' : 'Upcoming Events';
-const emptyTitle = isPast ? 'No past events' : 'No upcoming events';
-const emptyHint = isPast
-    ? 'Past events will appear here once they have ended.'
-    : 'Check back later for new events.';
+const { t } = useI18n();
+
+const isPast = computed(() => props.mode === 'past');
+const pageTitle = computed(() =>
+    isPast.value
+        ? t('navigation.pastEvents')
+        : t('navigation.upcomingEvents'),
+);
+const emptyTitle = computed(() =>
+    isPast.value
+        ? t('events.public.noPastEvents')
+        : t('events.public.noUpcomingEvents'),
+);
+const emptyHint = computed(() =>
+    isPast.value
+        ? t('events.public.emptyHintPast')
+        : t('events.public.emptyHintUpcoming'),
+);
 
 function formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString(undefined, {
