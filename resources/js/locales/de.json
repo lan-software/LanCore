@@ -157,6 +157,22 @@
                 "notificationHint": "Betroffene Benutzer erhalten eine E-Mail und eine In-App-Benachrichtigung mit einem Link zur Auswahl eines neuen Sitzplatzes.",
                 "cancel": "Abbrechen",
                 "confirm": "Bestätigen & Speichern"
+            },
+            "editor": {
+                "tabs": {
+                    "categories": "Kategorien"
+                },
+                "toolbar": {
+                    "save": "Speichern"
+                },
+                "properties": {
+                    "plan": {
+                        "name": "Name"
+                    },
+                    "block": {
+                        "name": "Name"
+                    }
+                }
             }
         }
     },
