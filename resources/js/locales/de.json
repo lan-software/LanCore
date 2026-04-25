@@ -711,7 +711,7 @@
         "types": {
             "newArticle": "Neuer Artikel: {title}",
             "announcement": "Ankündigung: {title}",
-            "upcomingProgramSlot": "Bevorstehender Programmpunkt",
+            "upcomingProgramSlot": "Nächster Programmpunkt",
             "profileUpdated": "Dein Profil wurde aktualisiert",
             "rolesChanged": "Deine Rollen haben sich geändert",
             "achievementUnlocked": "Erfolg freigeschaltet: {name}",
