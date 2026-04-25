@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     Calendar,
     CalendarCheck,
@@ -31,6 +31,14 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCents as formatCentsShared } from '@/lib/money';
 import { dashboard } from '@/routes';
+import { index as adminTicketsIndex } from '@/routes/admin-tickets';
+import { index as eventsIndex } from '@/routes/events';
+import { index as gamesIndex } from '@/routes/games';
+import { index as ordersIndex } from '@/routes/orders';
+import { index as programsIndex } from '@/routes/programs';
+import { index as sponsorsIndex } from '@/routes/sponsors';
+import { index as usersIndex, show as userShow } from '@/routes/users';
+import { index as venuesIndex } from '@/routes/venues';
 import type { BreadcrumbItem } from '@/types';
 
 interface DashboardStats {
@@ -141,135 +149,184 @@ function formatCents(cents: number): string {
                         {{ $t('dashboard.overview') }}
                     </h2>
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Users</CardDescription>
-                                <Users class="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div class="text-2xl font-bold">
-                                    {{ stats.counts.users }}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Events</CardDescription>
-                                <Calendar
-                                    class="size-4 text-muted-foreground"
-                                />
-                            </CardHeader>
-                            <CardContent>
-                                <div class="text-2xl font-bold">
-                                    {{ stats.counts.events }}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Programs</CardDescription>
-                                <ClipboardList
-                                    class="size-4 text-muted-foreground"
-                                />
-                            </CardHeader>
-                            <CardContent>
-                                <div class="text-2xl font-bold">
-                                    {{ stats.counts.programs }}
-                                </div>
-                                <p class="text-xs text-muted-foreground">
-                                    {{ stats.counts.time_slots }} time slots
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Venues</CardDescription>
-                                <MapPin class="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div class="text-2xl font-bold">
-                                    {{ stats.counts.venues }}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Sponsors</CardDescription>
-                                <Handshake
-                                    class="size-4 text-muted-foreground"
-                                />
-                            </CardHeader>
-                            <CardContent>
-                                <div class="text-2xl font-bold">
-                                    {{ stats.counts.sponsors }}
-                                </div>
-                                <p class="text-xs text-muted-foreground">
-                                    {{ stats.counts.sponsor_levels }} levels
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Tickets</CardDescription>
-                                <Ticket class="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div class="text-2xl font-bold">
-                                    {{ stats.counts.tickets }}
-                                </div>
-                                <p class="text-xs text-muted-foreground">
-                                    {{ stats.counts.ticket_types }} types ·
-                                    {{ stats.counts.addons }} addons
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Orders</CardDescription>
-                                <Receipt class="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div class="text-2xl font-bold">
-                                    {{ stats.counts.orders }}
-                                </div>
-                                <p class="text-xs text-muted-foreground">
-                                    {{ stats.counts.vouchers }} vouchers
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Games</CardDescription>
-                                <Gamepad2
-                                    class="size-4 text-muted-foreground"
-                                />
-                            </CardHeader>
-                            <CardContent>
-                                <div class="text-2xl font-bold">
-                                    {{ stats.counts.games }}
-                                </div>
-                                <p class="text-xs text-muted-foreground">
-                                    {{ stats.counts.game_modes }} game modes ·
-                                    {{ stats.counts.seat_plans }} seat plans
-                                </p>
-                            </CardContent>
-                        </Card>
+                        <Link
+                            :href="usersIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
+                                >
+                                    <CardDescription>Users</CardDescription>
+                                    <Users
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-2xl font-bold">
+                                        {{ stats.counts.users }}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link
+                            :href="eventsIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
+                                >
+                                    <CardDescription>Events</CardDescription>
+                                    <Calendar
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-2xl font-bold">
+                                        {{ stats.counts.events }}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link
+                            :href="programsIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
+                                >
+                                    <CardDescription>Programs</CardDescription>
+                                    <ClipboardList
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-2xl font-bold">
+                                        {{ stats.counts.programs }}
+                                    </div>
+                                    <p class="text-xs text-muted-foreground">
+                                        {{ stats.counts.time_slots }} time slots
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link
+                            :href="venuesIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
+                                >
+                                    <CardDescription>Venues</CardDescription>
+                                    <MapPin
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-2xl font-bold">
+                                        {{ stats.counts.venues }}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link
+                            :href="sponsorsIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
+                                >
+                                    <CardDescription>Sponsors</CardDescription>
+                                    <Handshake
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-2xl font-bold">
+                                        {{ stats.counts.sponsors }}
+                                    </div>
+                                    <p class="text-xs text-muted-foreground">
+                                        {{ stats.counts.sponsor_levels }} levels
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link
+                            :href="adminTicketsIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
+                                >
+                                    <CardDescription>Tickets</CardDescription>
+                                    <Ticket
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-2xl font-bold">
+                                        {{ stats.counts.tickets }}
+                                    </div>
+                                    <p class="text-xs text-muted-foreground">
+                                        {{ stats.counts.ticket_types }} types ·
+                                        {{ stats.counts.addons }} addons
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link
+                            :href="ordersIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
+                                >
+                                    <CardDescription>Orders</CardDescription>
+                                    <Receipt
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-2xl font-bold">
+                                        {{ stats.counts.orders }}
+                                    </div>
+                                    <p class="text-xs text-muted-foreground">
+                                        {{ stats.counts.vouchers }} vouchers
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link
+                            :href="gamesIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
+                                >
+                                    <CardDescription>Games</CardDescription>
+                                    <Gamepad2
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-2xl font-bold">
+                                        {{ stats.counts.games }}
+                                    </div>
+                                    <p class="text-xs text-muted-foreground">
+                                        {{ stats.counts.game_modes }} game modes
+                                        ·
+                                        {{ stats.counts.seat_plans }} seat plans
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </Link>
                     </div>
                 </div>
 
@@ -279,70 +336,90 @@ function formatCents(cents: number): string {
                         {{ $t('navigation.events') }}
                     </h2>
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Upcoming</CardDescription>
-                                <CalendarClock
-                                    class="size-4 text-muted-foreground"
-                                />
-                            </CardHeader>
-                            <CardContent>
-                                <div class="text-2xl font-bold">
-                                    {{ stats.events.upcoming }}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Past</CardDescription>
-                                <CalendarCheck
-                                    class="size-4 text-muted-foreground"
-                                />
-                            </CardHeader>
-                            <CardContent>
-                                <div class="text-2xl font-bold">
-                                    {{ stats.events.past }}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Published</CardDescription>
-                                <Calendar
-                                    class="size-4 text-muted-foreground"
-                                />
-                            </CardHeader>
-                            <CardContent>
-                                <div
-                                    class="text-2xl font-bold text-green-600 dark:text-green-400"
+                        <Link
+                            :href="eventsIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
                                 >
-                                    {{ stats.events.published }}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader
-                                class="flex flex-row items-center justify-between pb-2"
-                            >
-                                <CardDescription>Draft</CardDescription>
-                                <Calendar
-                                    class="size-4 text-muted-foreground"
-                                />
-                            </CardHeader>
-                            <CardContent>
-                                <div
-                                    class="text-2xl font-bold text-yellow-600 dark:text-yellow-400"
+                                    <CardDescription>Upcoming</CardDescription>
+                                    <CalendarClock
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-2xl font-bold">
+                                        {{ stats.events.upcoming }}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link
+                            :href="eventsIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
                                 >
-                                    {{ stats.events.draft }}
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    <CardDescription>Past</CardDescription>
+                                    <CalendarCheck
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="text-2xl font-bold">
+                                        {{ stats.events.past }}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link
+                            :href="eventsIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
+                                >
+                                    <CardDescription>Published</CardDescription>
+                                    <Calendar
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div
+                                        class="text-2xl font-bold text-green-600 dark:text-green-400"
+                                    >
+                                        {{ stats.events.published }}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link
+                            :href="eventsIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="h-full hover:bg-accent/30">
+                                <CardHeader
+                                    class="flex flex-row items-center justify-between pb-2"
+                                >
+                                    <CardDescription>Draft</CardDescription>
+                                    <Calendar
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </CardHeader>
+                                <CardContent>
+                                    <div
+                                        class="text-2xl font-bold text-yellow-600 dark:text-yellow-400"
+                                    >
+                                        {{ stats.events.draft }}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </Link>
                     </div>
                 </div>
 
@@ -353,57 +430,62 @@ function formatCents(cents: number): string {
                         <h2 class="mb-3 text-lg font-semibold">
                             {{ $t('navigation.tickets') }}
                         </h2>
-                        <Card>
-                            <CardContent class="pt-6">
-                                <div class="space-y-4">
-                                    <div
-                                        class="flex items-center justify-between"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <Ticket
-                                                class="size-4 text-green-500"
-                                            />
-                                            <span class="text-sm font-medium"
-                                                >Active</span
-                                            >
+                        <Link
+                            :href="adminTicketsIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="hover:bg-accent/30">
+                                <CardContent class="pt-6">
+                                    <div class="space-y-4">
+                                        <div
+                                            class="flex items-center justify-between"
+                                        >
+                                            <div class="flex items-center gap-2">
+                                                <Ticket
+                                                    class="size-4 text-green-500"
+                                                />
+                                                <span class="text-sm font-medium"
+                                                    >Active</span
+                                                >
+                                            </div>
+                                            <span class="text-sm font-bold">{{
+                                                stats.tickets.active
+                                            }}</span>
                                         </div>
-                                        <span class="text-sm font-bold">{{
-                                            stats.tickets.active
-                                        }}</span>
-                                    </div>
-                                    <div
-                                        class="flex items-center justify-between"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <TicketCheck
-                                                class="size-4 text-blue-500"
-                                            />
-                                            <span class="text-sm font-medium"
-                                                >Checked In</span
-                                            >
+                                        <div
+                                            class="flex items-center justify-between"
+                                        >
+                                            <div class="flex items-center gap-2">
+                                                <TicketCheck
+                                                    class="size-4 text-blue-500"
+                                                />
+                                                <span class="text-sm font-medium"
+                                                    >Checked In</span
+                                                >
+                                            </div>
+                                            <span class="text-sm font-bold">{{
+                                                stats.tickets.checked_in
+                                            }}</span>
                                         </div>
-                                        <span class="text-sm font-bold">{{
-                                            stats.tickets.checked_in
-                                        }}</span>
-                                    </div>
-                                    <div
-                                        class="flex items-center justify-between"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <Ticket
-                                                class="size-4 text-red-500"
-                                            />
-                                            <span class="text-sm font-medium"
-                                                >Cancelled</span
-                                            >
+                                        <div
+                                            class="flex items-center justify-between"
+                                        >
+                                            <div class="flex items-center gap-2">
+                                                <Ticket
+                                                    class="size-4 text-red-500"
+                                                />
+                                                <span class="text-sm font-medium"
+                                                    >Cancelled</span
+                                                >
+                                            </div>
+                                            <span class="text-sm font-bold">{{
+                                                stats.tickets.cancelled
+                                            }}</span>
                                         </div>
-                                        <span class="text-sm font-bold">{{
-                                            stats.tickets.cancelled
-                                        }}</span>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        </Link>
                     </div>
 
                     <!-- Orders Breakdown -->
@@ -411,98 +493,103 @@ function formatCents(cents: number): string {
                         <h2 class="mb-3 text-lg font-semibold">
                             {{ $t('navigation.orders') }}
                         </h2>
-                        <Card>
-                            <CardContent class="pt-6">
-                                <div class="space-y-4">
-                                    <div
-                                        class="flex items-center justify-between"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <CreditCard
-                                                class="size-4 text-yellow-500"
-                                            />
-                                            <span class="text-sm font-medium"
-                                                >Pending</span
-                                            >
-                                        </div>
-                                        <span class="text-sm font-bold">{{
-                                            stats.orders.pending
-                                        }}</span>
-                                    </div>
-                                    <div
-                                        class="flex items-center justify-between"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <CreditCard
-                                                class="size-4 text-green-500"
-                                            />
-                                            <span class="text-sm font-medium"
-                                                >Completed</span
-                                            >
-                                        </div>
-                                        <span class="text-sm font-bold">{{
-                                            stats.orders.completed
-                                        }}</span>
-                                    </div>
-                                    <div
-                                        class="flex items-center justify-between"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <CreditCard
-                                                class="size-4 text-red-500"
-                                            />
-                                            <span class="text-sm font-medium"
-                                                >Failed</span
-                                            >
-                                        </div>
-                                        <span class="text-sm font-bold">{{
-                                            stats.orders.failed
-                                        }}</span>
-                                    </div>
-                                    <div
-                                        class="flex items-center justify-between"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <CreditCard
-                                                class="size-4 text-muted-foreground"
-                                            />
-                                            <span class="text-sm font-medium"
-                                                >Refunded</span
-                                            >
-                                        </div>
-                                        <span class="text-sm font-bold">{{
-                                            stats.orders.refunded
-                                        }}</span>
-                                    </div>
-                                    <div class="border-t pt-4">
+                        <Link
+                            :href="ordersIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="hover:bg-accent/30">
+                                <CardContent class="pt-6">
+                                    <div class="space-y-4">
                                         <div
                                             class="flex items-center justify-between"
                                         >
-                                            <div
-                                                class="flex items-center gap-2"
-                                            >
-                                                <CircleDollarSign
-                                                    class="size-4 text-green-600 dark:text-green-400"
+                                            <div class="flex items-center gap-2">
+                                                <CreditCard
+                                                    class="size-4 text-yellow-500"
                                                 />
-                                                <span
-                                                    class="text-sm font-medium"
-                                                    >Total Revenue</span
+                                                <span class="text-sm font-medium"
+                                                    >Pending</span
                                                 >
                                             </div>
-                                            <span
-                                                class="text-sm font-bold text-green-600 dark:text-green-400"
-                                                >{{
-                                                    formatCents(
-                                                        stats.orders
-                                                            .total_revenue,
-                                                    )
-                                                }}</span
+                                            <span class="text-sm font-bold">{{
+                                                stats.orders.pending
+                                            }}</span>
+                                        </div>
+                                        <div
+                                            class="flex items-center justify-between"
+                                        >
+                                            <div class="flex items-center gap-2">
+                                                <CreditCard
+                                                    class="size-4 text-green-500"
+                                                />
+                                                <span class="text-sm font-medium"
+                                                    >Completed</span
+                                                >
+                                            </div>
+                                            <span class="text-sm font-bold">{{
+                                                stats.orders.completed
+                                            }}</span>
+                                        </div>
+                                        <div
+                                            class="flex items-center justify-between"
+                                        >
+                                            <div class="flex items-center gap-2">
+                                                <CreditCard
+                                                    class="size-4 text-red-500"
+                                                />
+                                                <span class="text-sm font-medium"
+                                                    >Failed</span
+                                                >
+                                            </div>
+                                            <span class="text-sm font-bold">{{
+                                                stats.orders.failed
+                                            }}</span>
+                                        </div>
+                                        <div
+                                            class="flex items-center justify-between"
+                                        >
+                                            <div class="flex items-center gap-2">
+                                                <CreditCard
+                                                    class="size-4 text-muted-foreground"
+                                                />
+                                                <span class="text-sm font-medium"
+                                                    >Refunded</span
+                                                >
+                                            </div>
+                                            <span class="text-sm font-bold">{{
+                                                stats.orders.refunded
+                                            }}</span>
+                                        </div>
+                                        <div class="border-t pt-4">
+                                            <div
+                                                class="flex items-center justify-between"
                                             >
+                                                <div
+                                                    class="flex items-center gap-2"
+                                                >
+                                                    <CircleDollarSign
+                                                        class="size-4 text-green-600 dark:text-green-400"
+                                                    />
+                                                    <span
+                                                        class="text-sm font-medium"
+                                                        >Total Revenue</span
+                                                    >
+                                                </div>
+                                                <span
+                                                    class="text-sm font-bold text-green-600 dark:text-green-400"
+                                                    >{{
+                                                        formatCents(
+                                                            stats.orders
+                                                                .total_revenue,
+                                                        )
+                                                    }}</span
+                                                >
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        </Link>
                     </div>
                 </div>
 
@@ -512,45 +599,55 @@ function formatCents(cents: number): string {
                         <h2 class="mb-3 text-lg font-semibold">
                             Role Distribution
                         </h2>
-                        <Card>
-                            <CardContent class="pt-6">
-                                <div class="space-y-4">
-                                    <div
-                                        v-for="(count, role) in stats.roles"
-                                        :key="role"
-                                        class="flex items-center justify-between"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <ShieldCheck
-                                                v-if="role === 'superadmin'"
-                                                class="size-4 text-purple-500"
-                                            />
-                                            <Shield
-                                                v-else-if="role === 'admin'"
-                                                class="size-4 text-blue-500"
-                                            />
-                                            <Palette
-                                                v-else-if="
-                                                    role === 'sponsor_manager'
-                                                "
-                                                class="size-4 text-orange-500"
-                                            />
-                                            <Users
-                                                v-else
-                                                class="size-4 text-muted-foreground"
-                                            />
-                                            <span class="text-sm font-medium">{{
-                                                roleLabels[role as string] ??
-                                                role
+                        <Link
+                            :href="usersIndex().url"
+                            class="block transition hover:opacity-90"
+                        >
+                            <Card class="hover:bg-accent/30">
+                                <CardContent class="pt-6">
+                                    <div class="space-y-4">
+                                        <div
+                                            v-for="(count, role) in stats.roles"
+                                            :key="role"
+                                            class="flex items-center justify-between"
+                                        >
+                                            <div class="flex items-center gap-2">
+                                                <ShieldCheck
+                                                    v-if="role === 'superadmin'"
+                                                    class="size-4 text-purple-500"
+                                                />
+                                                <Shield
+                                                    v-else-if="role === 'admin'"
+                                                    class="size-4 text-blue-500"
+                                                />
+                                                <Palette
+                                                    v-else-if="
+                                                        role ===
+                                                        'sponsor_manager'
+                                                    "
+                                                    class="size-4 text-orange-500"
+                                                />
+                                                <Users
+                                                    v-else
+                                                    class="size-4 text-muted-foreground"
+                                                />
+                                                <span
+                                                    class="text-sm font-medium"
+                                                    >{{
+                                                        roleLabels[
+                                                            role as string
+                                                        ] ?? role
+                                                    }}</span
+                                                >
+                                            </div>
+                                            <span class="text-sm font-bold">{{
+                                                count
                                             }}</span>
                                         </div>
-                                        <span class="text-sm font-bold">{{
-                                            count
-                                        }}</span>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        </Link>
                     </div>
 
                     <!-- Last Active Users -->
@@ -567,10 +664,11 @@ function formatCents(cents: number): string {
                                     No recent activity.
                                 </div>
                                 <div v-else class="space-y-4">
-                                    <div
+                                    <Link
                                         v-for="user in stats.lastActiveUsers"
                                         :key="user.id"
-                                        class="flex items-center justify-between"
+                                        :href="userShow(user.id).url"
+                                        class="-mx-2 flex items-center justify-between rounded px-2 py-1 transition hover:bg-accent/50"
                                     >
                                         <div class="min-w-0 flex-1">
                                             <p
@@ -594,7 +692,7 @@ function formatCents(cents: number): string {
                                                 )
                                             }}</span>
                                         </div>
-                                    </div>
+                                    </Link>
                                 </div>
                             </CardContent>
                         </Card>
