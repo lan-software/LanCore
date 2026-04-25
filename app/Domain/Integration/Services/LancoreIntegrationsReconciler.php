@@ -5,6 +5,7 @@ namespace App\Domain\Integration\Services;
 use App\Domain\Integration\Actions\SetIntegrationTokenPlaintext;
 use App\Domain\Integration\Actions\SyncIntegrationWebhooks;
 use App\Domain\Integration\Actions\UpsertIntegrationApp;
+use App\Domain\Integration\Exceptions\IntegrationConfigurationException;
 use App\Domain\Integration\Models\IntegrationApp;
 use App\Domain\Webhook\Models\Webhook;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -45,9 +46,13 @@ class LancoreIntegrationsReconciler
      * Reconcile every configured app (or a filtered subset) against the DB.
      *
      * @param  list<string>  $onlySlugs  If non-empty, limit to these slugs.
+     * @param  bool  $strict  When true, throw IntegrationConfigurationException on
+     *                        any slug whose token is null/empty. The artisan
+     *                        command opts in; boot-time reconciliation does not,
+     *                        so misconfigured envs do not bootloop Octane workers.
      * @return list<array{slug: string, created: bool, token_rotated: bool, webhooks_refreshed: int}>
      */
-    public function reconcile(array $onlySlugs = [], bool $dryRun = false): array
+    public function reconcile(array $onlySlugs = [], bool $dryRun = false, bool $strict = false): array
     {
         /** @var array<string, array<string, mixed>>|null $apps */
         $apps = $this->config->get('integrations.apps');
@@ -65,6 +70,11 @@ class LancoreIntegrationsReconciler
             }
 
             $resolved = $this->resolveDefinition($slug, $definition);
+
+            if ($strict && empty($resolved['token'])) {
+                throw IntegrationConfigurationException::missingToken($slug);
+            }
+
             $outcome = $dryRun
                 ? $this->describe($slug, $resolved)
                 : $this->applyOne($slug, $resolved);
@@ -116,8 +126,8 @@ class LancoreIntegrationsReconciler
         $callbackUrl = "{$scheme}://{$host}{$callbackPath}";
         $navUrl = $definition['nav_url'] ?? "{$scheme}://{$host}";
 
-        $announcementPath = $definition['announcement_path'] ?? '/api/webhooks/lancore/announcements';
-        $rolesPath = $definition['roles_path'] ?? '/api/webhooks/lancore/roles';
+        $announcementPath = $definition['announcement_path'] ?? '/api/webhooks/announcements';
+        $rolesPath = $definition['roles_path'] ?? '/api/webhooks/roles';
 
         return [
             'name' => $definition['name'] ?? ucfirst($slug),

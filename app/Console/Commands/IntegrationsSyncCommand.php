@@ -22,7 +22,7 @@ use Throwable;
  * @see docs/mil-std-498/SRS.md INT-F-012
  * @see docs/mil-std-498/SSDD.md §5.4.5
  */
-#[Signature('integrations:sync {--dry-run : Print the reconciliation plan without writing to the database} {--only=* : Limit reconciliation to these slugs}')]
+#[Signature('integrations:sync {--dry-run : Print the reconciliation plan without writing to the database} {--only=* : Limit reconciliation to these slugs} {--allow-missing-tokens : Permit slugs without a configured *_LANCORE_TOKEN to be seeded without auth credentials}')]
 #[Description('Reconcile config/integrations.php against the database')]
 class IntegrationsSyncCommand extends Command
 {
@@ -31,9 +31,10 @@ class IntegrationsSyncCommand extends Command
         /** @var list<string> $only */
         $only = (array) $this->option('only');
         $dryRun = (bool) $this->option('dry-run');
+        $strict = ! (bool) $this->option('allow-missing-tokens');
 
         try {
-            $summary = $reconciler->reconcile($only, $dryRun);
+            $summary = $reconciler->reconcile($only, $dryRun, $strict);
         } catch (Throwable $e) {
             $this->components->error("integrations:sync failed: {$e->getMessage()}");
 

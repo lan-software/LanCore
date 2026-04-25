@@ -78,12 +78,12 @@ function save() {
 
 function methodIcon(value: string) {
     if (value === 'stripe') {
-return CreditCard;
-}
+        return CreditCard;
+    }
 
     if (value === 'paypal') {
-return Wallet;
-}
+        return Wallet;
+    }
 
     return Banknote;
 }

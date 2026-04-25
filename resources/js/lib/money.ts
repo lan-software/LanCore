@@ -14,8 +14,8 @@ const SYMBOLS: Record<string, string> = {
 
 export function symbolForCode(code: string | null | undefined): string {
     if (!code) {
-return '€';
-}
+        return '€';
+    }
 
     return SYMBOLS[code.toUpperCase()] ?? code.toUpperCase();
 }
