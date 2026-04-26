@@ -37,7 +37,14 @@
         "loadingMore": "Mehr ladt...",
         "noResults": "Keen Resultaten funnen",
         "showMore": "Mehr wiesen",
-        "showLess": "Weniger wiesen"
+        "showLess": "Weniger wiesen",
+        "email": "E-Mail",
+        "status": "Status",
+        "created": "Anleggt",
+        "published": "Veröffentlicht",
+        "draft": "Entwurf",
+        "pending": "Wacht",
+        "checkedIn": "Incheckt"
     },
     "auth": {
         "login": {
