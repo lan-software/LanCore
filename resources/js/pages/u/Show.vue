@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { ExternalLink } from 'lucide-vue-next';
+import { defineAsyncComponent } from 'vue';
+import type { Component } from 'vue';
 import { edit as profileEdit } from '@/routes/profile';
 
 type Achievement = {
@@ -31,6 +34,35 @@ defineProps<{
     isPreview: boolean;
     isOwner: boolean;
 }>();
+
+const iconCache = new Map<string, Component>();
+
+function resolveIcon(name: string | null): Component {
+    const key = name ?? 'trophy';
+
+    if (iconCache.has(key)) {
+        return iconCache.get(key)!;
+    }
+
+    const pascalCase = key
+        .split('-')
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join('');
+
+    const asyncIcon = defineAsyncComponent({
+        loader: () =>
+            import('lucide-vue-next').then((mod) => {
+                const icon = (mod as Record<string, Component>)[pascalCase];
+
+                return icon ?? ExternalLink;
+            }),
+        loadingComponent: ExternalLink,
+    });
+
+    iconCache.set(key, asyncIcon);
+
+    return asyncIcon;
+}
 
 function rarityClass(percentage: number): string {
     if (percentage <= 5) {
@@ -126,26 +158,33 @@ return 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200';
                     {{ $t('publicProfile.noAchievements') }}
                 </div>
 
-                <ul v-else class="divide-y divide-border">
-                    <li
+                <div
+                    v-else
+                    class="grid grid-cols-2 gap-4 sm:grid-cols-3"
+                >
+                    <div
                         v-for="achievement in achievements"
                         :key="achievement.id"
-                        class="flex items-center gap-4 py-3"
+                        class="flex flex-col items-center gap-3 rounded-xl border border-border bg-background p-5 text-center shadow-sm"
                     >
                         <div
-                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                            class="flex size-14 shrink-0 items-center justify-center rounded-full"
                             :style="
                                 achievement.color
-                                    ? { backgroundColor: achievement.color, color: '#fff' }
+                                    ? { backgroundColor: achievement.color }
                                     : {}
                             "
                         >
-                            <span class="text-lg">{{
-                                achievement.icon ?? '🏆'
-                            }}</span>
+                            <component
+                                :is="resolveIcon(achievement.icon)"
+                                class="size-7 text-white"
+                            />
                         </div>
-                        <div class="min-w-0 flex-1">
-                            <p class="font-medium">{{ achievement.name }}</p>
+
+                        <div class="space-y-1">
+                            <p class="text-sm leading-tight font-semibold">
+                                {{ achievement.name }}
+                            </p>
                             <p
                                 v-if="achievement.description"
                                 class="text-xs text-muted-foreground"
@@ -153,8 +192,9 @@ return 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200';
                                 {{ achievement.description }}
                             </p>
                         </div>
+
                         <span
-                            class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                            class="mt-auto rounded-full px-2 py-0.5 text-xs font-semibold"
                             :class="rarityClass(achievement.earned_percentage)"
                         >
                             {{
@@ -163,8 +203,8 @@ return 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200';
                                 })
                             }}
                         </span>
-                    </li>
-                </ul>
+                    </div>
+                </div>
             </section>
         </div>
     </div>
