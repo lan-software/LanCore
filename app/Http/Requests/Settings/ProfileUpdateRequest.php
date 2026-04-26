@@ -24,7 +24,7 @@ class ProfileUpdateRequest extends FormRequest
             ...$this->profileRules($this->user()->id),
             'short_bio' => ['nullable', 'string', 'max:160'],
             'profile_description' => ['nullable', 'string', 'max:5000'],
-            'profile_emoji' => ['nullable', 'string', 'max:16'],
+            'profile_emoji' => ['nullable', 'string', 'max:16', 'regex:/^[\p{Extended_Pictographic}\x{200D}\x{FE0F}\x{E0020}-\x{E007F}]+$/u'],
             'avatar_source' => ['nullable', new Enum(AvatarSource::class)],
             'profile_visibility' => ['nullable', new Enum(ProfileVisibility::class)],
         ];

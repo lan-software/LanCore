@@ -67,7 +67,8 @@
         "vanilla-cookieconsent": "^3.1.0",
         "vue": "^3.5.13",
         "vue-i18n": "^9.14.5",
-        "vue-input-otp": "^0.3.2"
+        "vue-input-otp": "^0.3.2",
+        "vue3-emoji-picker": "^1.1.8"
     },
     "optionalDependencies": {
         "@rollup/rollup-linux-x64-gnu": "4.9.5",
