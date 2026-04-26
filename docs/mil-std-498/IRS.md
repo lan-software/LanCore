@@ -205,6 +205,7 @@ return [
 | IF-SSO-003 | The system shall exchange authorization codes for user data via ExchangeSsoAuthorizationCode |
 | IF-SSO-004 | The system shall redirect users to the integration's callback URL with the authorization code |
 | IF-SSO-005 | The system shall resolve authenticated users via ResolveIntegrationUser |
+| IF-SSO-006 | The user payload returned by SSO exchange and user-resolution endpoints shall conform to the `LanCoreUser` DTO defined in SRS ICLIB-F-002 (amended), comprising the following fields: `id` (int), `username` (?string; null until the user has chosen one — see CAP-USR-011), `name` (string, real name; satellite-internal use only — never publicly displayed), `email` (?string, only when scope `user:email` granted), `roles` (string[], only when scope `user:roles` granted), `locale` (?string, BCP 47), `avatar_url` (string, never null — resolved server-side per CAP-USR-013 source chain), `avatar_source` (string, one of `default`/`gravatar`/`custom`/`steam`), `profile_url` (?string, absolute URL to LanCore public profile; null when `username` is null), `created_at` (ISO 8601 string) |
 
 **Flow:**
 1. Integration redirects user to LanCore SSO authorization endpoint
@@ -234,6 +235,14 @@ return [
 | `ProfileUpdated` | User profile update |
 | `TicketPurchased` | Order fulfilled |
 | `IntegrationAccessed` | Integration API accessed |
+
+**Payload field requirements for user-related events:**
+
+| Event | Required payload fields |
+|-------|------------------------|
+| `UserRegistered` | `user.id`, `user.username` (?string), `user.email`, `user.locale`, `user.avatar_url`, `user.avatar_source`, `user.profile_url` (?string), `user.profile_visibility` (`public` / `logged_in` / `private`), `user.created_at` |
+| `UserRolesUpdated` | `user.id`, `user.username` (?string), `user.roles` (string[]) |
+| `ProfileUpdated` | `user.id`, `user.username` (?string), `user.locale`, `user.avatar_url`, `user.avatar_source`, `user.short_bio`, `user.profile_emoji`, `user.profile_visibility`, `user.profile_url` (?string), `user.profile_updated_at` (ISO 8601 string). The webhook is dispatched whenever the user changes any field consumed by these payload keys; satellites that cache user data should refresh their copy on receipt |
 
 ### 3.9 Redis Cache Interface (IF-REDIS)
 

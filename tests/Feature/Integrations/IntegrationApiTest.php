@@ -117,17 +117,18 @@ it('updates last_used_at on successful authentication', function () {
 
 it('returns user data for authenticated user', function () {
     $data = createAppWithToken(['allowed_scopes' => ['user:read']]);
-    $user = User::factory()->create(['name' => 'Test User']);
+    $user = User::factory()->create(['name' => 'Test User', 'username' => 'testuser']);
 
     $response = $this->actingAs($user)
         ->getJson('/api/integration/user/me', [
             'Authorization' => "Bearer {$data['plain_text']}",
         ])
         ->assertSuccessful()
-        ->assertJsonStructure(['data' => ['id', 'username', 'locale', 'avatar_url', 'created_at']]);
+        ->assertJsonStructure(['data' => ['id', 'username', 'name', 'locale', 'avatar_url', 'avatar_source', 'profile_url', 'created_at']]);
 
     expect($response->json('data.id'))->toBe($user->id);
-    expect($response->json('data.username'))->toBe('Test User');
+    expect($response->json('data.username'))->toBe('testuser');
+    expect($response->json('data.name'))->toBe('Test User');
     expect($response->json('data'))->not->toHaveKey('email');
     expect($response->json('data'))->not->toHaveKey('roles');
 });
@@ -188,7 +189,7 @@ it('returns 403 when user:read scope is missing', function () {
 
 it('resolves a user by id', function () {
     $data = createAppWithToken(['allowed_scopes' => ['user:read']]);
-    $user = User::factory()->create(['name' => 'Jane Doe']);
+    $user = User::factory()->create(['name' => 'Jane Doe', 'username' => 'janedoe']);
 
     $response = $this->postJson('/api/integration/user/resolve', [
         'user_id' => $user->id,
@@ -198,7 +199,8 @@ it('resolves a user by id', function () {
         ->assertSuccessful();
 
     expect($response->json('data.id'))->toBe($user->id);
-    expect($response->json('data.username'))->toBe('Jane Doe');
+    expect($response->json('data.username'))->toBe('janedoe');
+    expect($response->json('data.name'))->toBe('Jane Doe');
 });
 
 it('resolves a user by email', function () {

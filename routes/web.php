@@ -6,6 +6,8 @@ use App\Http\Controllers\CookiePreferenceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventContextController;
 use App\Http\Controllers\LegalController;
+use App\Http\Controllers\Onboarding\UsernameController;
+use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\StorageFileController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -31,7 +33,16 @@ Route::get('files/{path}', StorageFileController::class)
 
 Route::post('webhooks/paypal', PayPalWebhookController::class)->name('webhooks.paypal');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::get('u/{username}', [PublicProfileController::class, 'show'])
+    ->where('username', '[A-Za-z0-9_-]+')
+    ->name('public-profile.show');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('onboarding/username', [UsernameController::class, 'show'])->name('onboarding.username.show');
+    Route::post('onboarding/username', [UsernameController::class, 'update'])->name('onboarding.username.update');
+});
+
+Route::middleware(['auth', 'verified', 'require.username'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::post('event-context', [EventContextController::class, 'store'])->name('event-context.store');

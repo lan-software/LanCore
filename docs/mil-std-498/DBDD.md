@@ -94,6 +94,15 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | ticket_discovery_name | varchar (nullable) | Custom discovery name |
 | is_seat_visible_publicly | boolean (default true) | SET-F-009/010 — opt-out for showing the user's name on public seat plans |
 | sidebar_favorites | jsonb (nullable) | Navigation favorites |
+| username | varchar(32) (nullable, unique, case-insensitive collation) | USR-F-022 — public-facing gamer handle, distinct from `name`; null until the user picks one (force-pick on next login for users registered before USR-F-022). Indexed for `/u/{username}` route-model-binding |
+| short_bio | varchar(160) (nullable) | USR-F-024 — short bio shown on the public profile |
+| profile_description | text (nullable) | USR-F-024 — long-form description shown on the public profile |
+| profile_emoji | varchar(16) (nullable) | USR-F-024 — single emoji (or short ZWJ-joined sequence) displayed alongside the username on the public profile |
+| avatar_source | varchar(16) (NOT NULL, default `'default'`) | USR-F-024 — enum-cast: `default` / `gravatar` / `custom` / `steam` (Steam reserved for a future iteration; currently falls back to `default` on resolution) |
+| avatar_path | varchar(255) (nullable) | USR-F-024 — relative path on the public disk for custom-uploaded avatars; populated only when `avatar_source = 'custom'`. The file is normalized server-side to 1000×1000 px WebP before storage (max 5 MB ingress) |
+| banner_path | varchar(255) (nullable) | USR-F-024 — relative path on the public disk for the profile banner image; normalized server-side to 1500×500 px WebP (3:1 aspect, max 5 MB ingress) |
+| profile_visibility | varchar(16) (NOT NULL, default `'logged_in'`) | USR-F-025 — enum-cast: `public` / `logged_in` / `private`. Default applies to new signups and to users migrated from before USR-F-025. Enforced on `/u/{username}` (USR-F-023, SEC-021) |
+| profile_updated_at | timestamp (nullable) | Tracks the last public-profile field change for `ProfileUpdated` webhook diffing (IRS §3.8) |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 
@@ -773,6 +782,7 @@ Implements SET-F-006/007/008/013. Rows are hard-deleted (and `SeatAssignmentInva
 | name | varchar | Achievement name |
 | description | text (nullable) | Description |
 | icon | varchar (nullable) | Icon path |
+| earned_user_count | integer (NOT NULL, default 0) | ACH-F-008 — denormalized count of distinct users who have earned this achievement; incremented on grant via `GrantAchievement`, decremented on revocation via `achievement_user` pivot observer (clamped at 0). Combined with the cached total-user count, this yields the rarity percentage shown on the public profile. Backfill via `php artisan profiles:backfill-achievement-counts` |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 

@@ -159,6 +159,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-ACH-002 | The system shall automatically grant achievements when trigger conditions are met |
 | CAP-ACH-003 | The system shall track achievement progress and earned timestamps per user |
 | CAP-ACH-004 | The system shall notify users when achievements are earned |
+| CAP-ACH-005 | The system shall maintain a per-achievement earned-user count incremented on grant and decremented on revocation, and shall expose a derived rarity percentage (count divided by current registered-user total) on every public-facing rendering of an earned achievement |
 
 #### 3.2.10 Notifications (CAP-NTF)
 
@@ -214,12 +215,17 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-USR-002 | The system shall support role-based access with five static roles: User, Moderator, Admin, Superadmin, SponsorManager |
 | CAP-USR-003 | The system shall support two-factor authentication (TOTP) |
 | CAP-USR-004 | The system shall support password reset via email |
-| CAP-USR-005 | The system shall support user profile management (name, email, phone, address) |
+| CAP-USR-005 | The system shall support user profile management (name, email, phone, address). The fields name, email, phone, street, city, zip code, country, and locale shall not be exposed on any public-facing endpoint or page (carve-out enforced by SEC-021) |
 | CAP-USR-009 | The system shall require a complete profile (address and at least one contact method) before allowing purchases |
 | CAP-USR-006 | The system shall support ticket discovery settings (user visibility control) |
 | CAP-USR-007 | The system shall support sidebar favorites for navigation customization |
 | CAP-USR-008 | The system shall support appearance settings (theme preferences) |
 | CAP-USR-010 | The system shall store a `locale` field on the user record representing the user's preferred display language, selectable from the supported locales: `en`, `de`, `fr`, `es` |
+| CAP-USR-011 | The system shall require every user to choose a public-facing `username` (gamer handle), 3–32 characters, drawn from the gamer character set `[A-Za-z0-9_-]` with no leading or trailing punctuation, globally unique case-insensitively, distinct from the `name` (real name) field. The username shall be mandatory at signup. Users registered before this capability shipped shall be intercepted on next login by a one-time onboarding step until they choose a username; until that point the user's `username` claim shall be `null` (transitional state) |
+| CAP-USR-012 | The system shall provide a public profile page at `/u/{username}` rendering the user's username, custom emoji, short bio, long-form description, avatar, banner, and earned achievements with rarity. The page shall enforce the user's `profile_visibility` setting: `public` (accessible to anonymous visitors), `logged_in` (default; accessible to authenticated LanCore users), `private` (accessible only to the user themselves). Forbidden states shall return HTTP 404 to avoid leaking user existence |
+| CAP-USR-013 | The system shall support profile customization fields: avatar source (`default` / `gravatar` / `custom`; the value `steam` is reserved for a future Steam-linking iteration and shall fall back to `default` until that iteration ships), custom-uploaded avatar image (server-side normalized to 1000×1000 px WebP, max 5 MB ingress), banner image (server-side normalized to 1500×500 px / 3:1 WebP, max 5 MB ingress), short bio (≤ 160 characters), long-form profile description (text), and a single custom emoji |
+| CAP-USR-014 | The system shall provide a `profile_visibility` setting in the user's privacy settings page with the three modes defined in CAP-USR-012, defaulting to `logged_in` for both new signups and users migrated from before this capability shipped, and shall provide a profile preview action that renders the public profile as it would appear to an anonymous visitor regardless of the user's current visibility setting |
+| CAP-USR-015 | The system shall publish the `username` claim on every `LanCoreUser` DTO returned by SSO exchange, user resolution, and profile webhook payloads. Satellite applications consuming the DTO shall use `username` as the sole public-facing player display field and shall not display `name` (real name) or `email` publicly. When `username` is `null` (transitional state for unmigrated users), satellites shall display a generic placeholder rather than substituting the real name |
 
 #### 3.2.19 Internationalization (CAP-I18N)
 
@@ -325,6 +331,8 @@ See [IRS](IRS.md) for detailed interface requirements.
 | SEC-018 | Ticket token validity shall be bounded by a configurable TTL ending at event end plus grace period; the system shall return `expired` for tokens past their expiry, even if the nonce hash is found |
 | SEC-019 | The system shall support rotating Ed25519 signing keys via `php artisan tickets:keys:rotate`; each key pair shall carry a unique `kid` (max 16 characters); retired keys shall remain in the public JWKS for the duration of the maximum token TTL |
 | SEC-020 | The JWKS endpoint (`GET /api/entrance/signing-keys`) shall require Bearer token authentication using the existing integration middleware; it shall return all public keys in active and retired-but-unexpired states |
+| SEC-021 | Profile visibility shall be enforced server-side on the public profile route and any related rendering endpoint. The fields `name`, `email`, `phone`, `street`, `city`, `zip_code`, `country`, and `locale` shall not appear in the response body, headers, embedded JSON, or HTML fragments of any public-facing endpoint regardless of the user's `profile_visibility` setting. Visibility-mode failures (anonymous viewer requesting a `logged_in` profile, non-owner requesting a `private` profile) shall return HTTP 404 — never HTTP 403 — to avoid leaking user existence |
+| SEC-022 | User-uploaded avatar and banner images shall be normalized server-side to fixed dimensions (1000×1000 for avatars, 1500×500 for banners) and re-encoded to WebP before storage. Ingress size shall be capped at 5 MB; mime type shall be restricted to `image/jpeg`, `image/png`, and `image/webp`. Stored files shall be addressable via cacheable public URLs (avatars and banners are by definition public artifacts when viewed via the public profile); replacing an avatar or banner shall delete the previous file. Validation shall reject EXIF-bomb and decompression-bomb inputs |
 
 ### 3.7 System Environment Requirements
 
@@ -414,6 +422,14 @@ Requirements in this document trace to:
 | SSS Capability | Traces from OCD | Traces to SRS |
 |----------------|----------------|---------------|
 | CAP-USR-010 | OCD §5.1.2 (locale selection in profile) | USR-F-021 |
+| CAP-USR-011 | OCD §5.1.2 (username), OCD §7.1 glossary "Username" | USR-F-022 |
+| CAP-USR-012 | OCD §5.1.2 (public profile), OCD §7.1 glossary "Public Profile" | USR-F-023 |
+| CAP-USR-013 | OCD §5.1.2 (profile customization), OCD §7.1 glossary "Avatar Source", "Profile Banner" | USR-F-024 |
+| CAP-USR-014 | OCD §5.1.2 (profile visibility, preview) | USR-F-025, USR-F-026 |
+| CAP-USR-015 | OCD §5.2.6a (public-facing identity policy) | ICLIB-F-002 (amended), ICLIB-F-010 |
+| CAP-ACH-005 | OCD §5.2.7 (achievement rarity step), OCD §7.1 glossary "Achievement Rarity" | ACH-F-008 |
+| SEC-021 | OCD §5.1.2 (visibility carve-out), OCD §5.2.6a (public-facing identity policy) | USR-F-023, USR-F-012 (privacy carve-out amendment) |
+| SEC-022 | OCD §5.1.2 (avatar/banner customization) | USR-F-024 |
 | CAP-I18N-001..007 | OCD §5.4 (Localized Display mode), OCD §5.1.2 | I18N-F-001..007 |
 
 ---

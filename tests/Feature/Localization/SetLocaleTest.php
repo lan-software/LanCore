@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\SetLocale;
 use App\Models\User;
 
 test('set locale middleware applies the user locale', function () {
@@ -18,16 +19,24 @@ test('set locale middleware falls back when user has no locale', function () {
     expect(app()->getLocale())->toBe(config('app.fallback_locale'));
 });
 
-test('inertia response exposes locale and availableLocales in shared props', function () {
+test('inertia response exposes locale, availableLocales, and experimentalLocales in shared props', function () {
     $user = User::factory()->create(['locale' => 'fr']);
 
     $this->actingAs($user)
         ->get(route('profile.edit'))
         ->assertInertia(fn ($page) => $page
             ->where('locale', 'fr')
-            ->where('availableLocales', ['en', 'de', 'fr', 'es'])
+            ->where('availableLocales', SetLocale::AVAILABLE)
+            ->where('experimentalLocales', SetLocale::EXPERIMENTAL)
             ->etc()
         );
+});
+
+test('locale sets are partitioned correctly', function () {
+    expect(SetLocale::STABLE)->toBe(['en', 'de', 'fr', 'es'])
+        ->and(SetLocale::EXPERIMENTAL)->toBe(['sv', 'uk', 'ko', 'tlh', 'nds', 'sxu'])
+        ->and(SetLocale::AVAILABLE)->toBe([...SetLocale::STABLE, ...SetLocale::EXPERIMENTAL])
+        ->and(array_intersect(SetLocale::STABLE, SetLocale::EXPERIMENTAL))->toBe([]);
 });
 
 test('profile update accepts a valid locale', function () {

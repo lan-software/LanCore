@@ -28,6 +28,7 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
+            'username' => $this->generateUsername(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
@@ -35,7 +36,36 @@ class UserFactory extends Factory
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
+            'avatar_source' => 'default',
+            'profile_visibility' => 'logged_in',
         ];
+    }
+
+    /**
+     * Indicate that the user has not yet picked a username (transitional
+     * state for users created before USR-F-022 shipped).
+     */
+    public function withoutUsername(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'username' => null,
+        ]);
+    }
+
+    private function generateUsername(): string
+    {
+        $candidate = preg_replace('/[^A-Za-z0-9]+/', '_', fake()->userName());
+        $candidate = trim((string) $candidate, '_-');
+
+        if (strlen($candidate) < 3) {
+            $candidate = 'player_'.Str::random(4);
+        }
+
+        if (strlen($candidate) > 32) {
+            $candidate = substr($candidate, 0, 32);
+        }
+
+        return $candidate.'_'.Str::random(4);
     }
 
     /**

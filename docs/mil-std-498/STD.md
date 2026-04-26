@@ -783,6 +783,106 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | SSO exchange returns null when user has no locale preference | User with `locale = null` | POST /api/integration/sso/exchange `{code}` | Returned user payload contains `locale = null` |
 | resolveUser endpoint returns user-stored locale | User with `locale = 'fr'`, request in `en` context | GET /api/integration/user (Bearer token) | Response `locale` field = `fr`, not `en` |
 
+### 4.23 Username Tests
+
+**Files:** `tests/Feature/Profile/UsernameValidationTest.php`, `tests/Feature/Profile/UsernameUniquenessTest.php`, `tests/Feature/Profile/RegistrationUsernameTest.php`, `tests/Feature/Profile/OnboardingUsernameTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| registration requires username field | None | POST /register without `username` | 422 validation error on `username` |
+| registration accepts valid username | None | POST /register with `username = "neo_42"` and other valid fields | 201/302; `users.username` = `neo_42`; user logged in |
+| registration rejects username shorter than 3 chars | None | POST /register `username = "ab"` | 422 validation error |
+| registration rejects username longer than 32 chars | None | POST /register `username = "a"` × 33 | 422 validation error |
+| registration rejects disallowed characters | None | POST /register `username = "a b"` (space) | 422 validation error |
+| registration rejects leading/trailing punctuation | None | POST /register `username = "_neo"` or `username = "neo-"` | 422 validation error |
+| username uniqueness is case-insensitive | Existing user with `username = 'Neo'` | POST /register `username = 'NEO'` | 422 validation error |
+| onboarding middleware redirects user without username | Authenticated user with `username = null` | GET /dashboard | 302 redirect to /onboarding/username |
+| onboarding middleware skips users with username | Authenticated user with `username = 'neo_42'` | GET /dashboard | 200 OK, no redirect |
+| onboarding submission persists username | Authenticated user with `username = null` | POST /onboarding/username `{username: 'phantom'}` | 302 redirect to intended URL; `users.username` = `phantom` |
+| onboarding rejects already-taken username | Authenticated user with `username = null`, another user has `username = 'phantom'` | POST /onboarding/username `{username: 'PHANTOM'}` | 422 validation error |
+| user can change username from profile settings | Authenticated user with `username = 'neo_42'` | PATCH /settings/profile `{username: 'phantom'}` | 302; `users.username` = `phantom` |
+
+**Traces to:** USR-F-022, CAP-USR-011
+
+### 4.24 Public Profile Tests
+
+**Files:** `tests/Feature/Profile/PublicProfileVisibilityTest.php`, `tests/Feature/Profile/PublicProfileLeakageTest.php`, `tests/Feature/Profile/PublicProfileRenderTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| public profile renders for anonymous when visibility=public | User with `username='neo_42'`, `profile_visibility='public'` | GET /u/neo_42 (anonymous) | 200 OK, page contains username |
+| public profile is 404 for anonymous when visibility=logged_in | User with `username='neo_42'`, `profile_visibility='logged_in'` | GET /u/neo_42 (anonymous) | 404 |
+| public profile renders for authenticated when visibility=logged_in | User with `username='neo_42'`, `profile_visibility='logged_in'`, viewer authenticated | GET /u/neo_42 | 200 OK |
+| public profile is 404 for non-owner when visibility=private | User with `profile_visibility='private'`, viewer is a different authenticated user | GET /u/neo_42 | 404 |
+| public profile renders for owner when visibility=private | User with `profile_visibility='private'`, viewer is the same user | GET /u/neo_42 | 200 OK |
+| route is case-insensitive on username | User with `username='Neo_42'`, visibility=public | GET /u/NEO_42 | 200 OK, resolves to user |
+| profile does not leak real name | User with `name='Markus Kohn'`, `username='neo_42'`, visibility=public | GET /u/neo_42 (anonymous) | Response body does NOT contain `Markus` or `Kohn` |
+| profile does not leak email | User with `email='m@example.com'`, visibility=public | GET /u/neo_42 (anonymous) | Response body does NOT contain `m@example.com` |
+| profile does not leak phone, address, country, or locale | User with all address fields populated, visibility=public | GET /u/neo_42 | Response body does NOT contain phone, street, city, zip_code, country, locale values |
+| 404 response is identical for non-existent and forbidden profiles | Two users: nonexistent username `xxx`, and a `private` user with username `yyy` | GET /u/xxx and GET /u/yyy (anonymous) | Both return identical 404 response (no existence leak) |
+| profile renders custom emoji, short bio, description, banner, avatar | User with all customization fields populated | GET /u/neo_42 | Response contains emoji, short_bio, profile_description, avatar_url, banner_url |
+
+**Traces to:** USR-F-023, CAP-USR-012, SEC-021
+
+### 4.25 Profile Customization Tests
+
+**Files:** `tests/Feature/Profile/AvatarUploadTest.php`, `tests/Feature/Profile/BannerUploadTest.php`, `tests/Feature/Profile/AvatarSourceTest.php`, `tests/Feature/Profile/PreviewTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| avatar source default returns built-in default URL | User with `avatar_source='default'` | Read `User::avatarUrl()` | Returns built-in default URL |
+| avatar source gravatar returns gravatar URL with email hash | User with `avatar_source='gravatar'`, `email='m@example.com'` | Read `User::avatarUrl()` | Returns `https://gravatar.com/avatar/{md5(m@example.com)}?...` |
+| avatar source steam falls back to default | User with `avatar_source='steam'` (reserved) | Read `User::avatarUrl()` | Returns built-in default URL |
+| custom avatar upload normalizes to 1000×1000 WebP | Authenticated user, valid 2000×3000 JPEG file (3 MB) | POST /settings/profile/avatar | 200; stored file is exactly 1000×1000 px, format webp; `avatar_source='custom'`; `avatar_path` populated |
+| avatar upload rejects files > 5 MB | Authenticated user, 5.1 MB JPEG | POST /settings/profile/avatar | 422 validation error |
+| avatar upload rejects non-image MIME types | Authenticated user, `application/pdf` file | POST /settings/profile/avatar | 422 validation error |
+| avatar upload deletes previously stored custom file | Authenticated user with existing `avatar_path` | POST /settings/profile/avatar (new image) | Old file removed from disk; new `avatar_path` differs |
+| banner upload normalizes to 1500×500 WebP | Authenticated user, valid 1920×1280 PNG | POST /settings/profile/banner | 200; stored file is 1500×500 px, format webp |
+| banner upload rejects > 5 MB | Authenticated user, 5.1 MB PNG | POST /settings/profile/banner | 422 |
+| short bio rejects > 160 chars | Authenticated user | PATCH /settings/profile `short_bio` (161 chars) | 422 |
+| custom emoji accepts a single emoji | Authenticated user | PATCH /settings/profile `profile_emoji='🚀'` | 200; persisted |
+| profile description accepts long text | Authenticated user | PATCH /settings/profile `profile_description` (5000 chars) | 200; persisted |
+| preview endpoint renders public profile as anonymous regardless of visibility | Authenticated user with `profile_visibility='private'`, `username='neo_42'` | GET /settings/profile/preview | 200 OK; renders the public profile content (not 404) |
+| preview endpoint marks the response as a preview | Same | GET /settings/profile/preview | Response includes a "Preview" indicator/banner |
+
+**Traces to:** USR-F-024, USR-F-026, CAP-USR-013, CAP-USR-014, SEC-022
+
+### 4.26 Achievement Rarity Tests
+
+**Files:** `tests/Feature/Achievements/RarityCounterTest.php`, `tests/Feature/Achievements/RarityRenderTest.php`, `tests/Feature/Achievements/BackfillCommandTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| earned_user_count starts at zero on fresh achievement | Newly created achievement | Read `achievements.earned_user_count` | 0 |
+| grant increments earned_user_count | Achievement with `earned_user_count=0`, user A | Grant achievement to A | `earned_user_count=1` |
+| second grant to same user does not double-increment | Achievement granted to user A | Attempt grant again to A | `earned_user_count=1` (idempotent) |
+| revocation decrements earned_user_count | Achievement granted to A and B (count=2) | Revoke from A | `earned_user_count=1` |
+| revocation does not go below zero | Achievement with `earned_user_count=0` | Attempt revocation | `earned_user_count=0`, no error |
+| public profile renders achievements with rarity percentage | User with one earned achievement A; A has `earned_user_count=5`; total users = 100 | GET /u/{username} | Response contains "Earned by 5%" (or 5.0%) for A |
+| backfill command computes counts from pivot data | Database with arbitrary `achievement_user` rows, `earned_user_count` zeroed | Run `php artisan profiles:backfill-achievement-counts` | Each achievement's `earned_user_count` matches `COUNT(DISTINCT user_id)` from pivot |
+| rarity uses cached total user count | Two requests within 60 s; second request creates a new user | GET /u/{username} twice | Both rarity calculations use the same denominator (cached count) |
+
+**Traces to:** ACH-F-008, CAP-ACH-005
+
+### 4.27 Username SSO Claim Tests
+
+**Files:** `tests/Feature/Integration/UsernameClaimTest.php`, `tests/Feature/Integration/AvatarUrlClaimTest.php`, `tests/Feature/Webhooks/ProfileUpdatedPayloadTest.php`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| SSO exchange returns username field | User with `username='neo_42'` | POST /api/integration/sso/exchange `{code}` | Returned user payload contains `username='neo_42'` |
+| SSO exchange returns null username for unmigrated user | User with `username=null` | POST /api/integration/sso/exchange `{code}` | Returned user payload contains `username=null` |
+| user resolution endpoint returns username | User with `username='neo_42'` | GET /api/integration/user (Bearer token) | Response `username='neo_42'` |
+| SSO exchange returns avatar_url (custom) | User with `avatar_source='custom'`, `avatar_path` set | GET /api/integration/user | `avatar_url` is the resolved storage URL |
+| SSO exchange returns avatar_url (gravatar) | User with `avatar_source='gravatar'` | GET /api/integration/user | `avatar_url` matches Gravatar URL pattern |
+| SSO exchange returns avatar_url (default fallback) | User with `avatar_source='default'` | GET /api/integration/user | `avatar_url` is the built-in default URL (never null) |
+| SSO exchange returns profile_url when username set | User with `username='neo_42'` | GET /api/integration/user | `profile_url` ends with `/u/neo_42` |
+| SSO exchange returns profile_url=null when username unset | User with `username=null` | GET /api/integration/user | `profile_url=null` |
+| ProfileUpdated webhook payload includes username, avatar_url, profile_visibility | User updates profile (username/avatar/visibility change) | Outbound webhook to subscriber | Payload contains `username`, `avatar_url`, `avatar_source`, `profile_visibility` |
+| user.registered webhook payload includes username | New user signs up | Outbound webhook to subscriber | Payload contains `username` |
+
+**Traces to:** USR-F-022, ICLIB-F-002 (amended), ICLIB-F-010, CAP-USR-015
+
 ### 4.19 Demo Mode Tests
 
 **File:** `tests/Feature/Demo/`
@@ -828,6 +928,12 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | CAP-I18N-001..004, I18N-F-001..004 | SetLocale middleware tests (4.22.2), Inertia shared props tests (4.22.3) |
 | CAP-I18N-002, CAP-I18N-007, I18N-F-007 | ResolveIntegrationUser locale bug-fix tests (4.22.4) |
 | CAP-I18N-005 | Locale asset presence verified by CI pipeline (4.15) |
+| CAP-USR-011, USR-F-022 | Username tests (4.23) |
+| CAP-USR-012, USR-F-023, SEC-021 | Public Profile tests (4.24) |
+| CAP-USR-013, USR-F-024, SEC-022 | Profile Customization tests (4.25) |
+| CAP-USR-014, USR-F-025, USR-F-026 | Public Profile visibility (4.24), Preview tests (4.25) |
+| CAP-USR-015, ICLIB-F-002, ICLIB-F-010 | Username SSO Claim tests (4.27) |
+| CAP-ACH-005, ACH-F-008 | Achievement Rarity tests (4.26) |
 
 ---
 

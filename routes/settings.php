@@ -3,8 +3,10 @@
 use App\Domain\Notification\Http\Controllers\NotificationSettingsController;
 use App\Domain\Notification\Http\Controllers\ProgramSubscriptionController;
 use App\Http\Controllers\OrganizationSettingsController;
+use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\Settings\PrivacyController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\ProfileMediaController;
 use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Controllers\Settings\SidebarFavoriteController;
 use App\Http\Controllers\Settings\TicketDiscoveryController;
@@ -16,6 +18,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::post('settings/profile/avatar', [ProfileMediaController::class, 'uploadAvatar'])->name('profile.avatar.upload');
+    Route::delete('settings/profile/avatar', [ProfileMediaController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
+    Route::post('settings/profile/banner', [ProfileMediaController::class, 'uploadBanner'])->name('profile.banner.upload');
+    Route::delete('settings/profile/banner', [ProfileMediaController::class, 'destroyBanner'])->name('profile.banner.destroy');
+
+    Route::get('settings/profile/preview', [PublicProfileController::class, 'preview'])->name('profile.preview');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

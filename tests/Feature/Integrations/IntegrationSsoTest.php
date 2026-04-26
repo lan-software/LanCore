@@ -146,7 +146,7 @@ it('exchanges a valid authorization code for user data', function () {
         'callback_url' => 'https://shout.lan.party/auth/lancore/callback',
         'allowed_scopes' => ['user:read'],
     ]);
-    $user = User::factory()->create(['name' => 'Jane Doe']);
+    $user = User::factory()->create(['name' => 'Jane Doe', 'username' => 'janedoe']);
 
     $code = Str::random(64);
     Cache::put("sso_code:{$code}", [
@@ -161,10 +161,11 @@ it('exchanges a valid authorization code for user data', function () {
     ]);
 
     $response->assertSuccessful()
-        ->assertJsonStructure(['data' => ['id', 'username', 'locale', 'avatar_url', 'created_at']]);
+        ->assertJsonStructure(['data' => ['id', 'username', 'name', 'locale', 'avatar_url', 'avatar_source', 'profile_url', 'created_at']]);
 
     expect($response->json('data.id'))->toBe($user->id);
-    expect($response->json('data.username'))->toBe('Jane Doe');
+    expect($response->json('data.username'))->toBe('janedoe');
+    expect($response->json('data.name'))->toBe('Jane Doe');
 });
 
 it('returns user email when user:email scope is granted', function () {

@@ -24,6 +24,7 @@ class AchievementFactory extends Factory
             'color' => fake()->hexColor(),
             'icon' => fake()->randomElement(['trophy', 'star', 'medal', 'award', 'flame', 'zap', 'shield', 'crown']),
             'is_active' => true,
+            'earned_user_count' => 0,
         ];
     }
 

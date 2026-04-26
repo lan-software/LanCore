@@ -42,12 +42,34 @@ import { store } from '@/routes/register';
                 </div>
 
                 <div class="grid gap-2">
+                    <Label for="username">{{
+                        $t('auth.register.username')
+                    }}</Label>
+                    <Input
+                        id="username"
+                        type="text"
+                        required
+                        :tabindex="2"
+                        autocomplete="username"
+                        name="username"
+                        pattern="[A-Za-z0-9][A-Za-z0-9_-]{1,30}[A-Za-z0-9]"
+                        minlength="3"
+                        maxlength="32"
+                        :placeholder="$t('auth.register.usernamePlaceholder')"
+                    />
+                    <p class="text-xs text-muted-foreground">
+                        {{ $t('auth.register.usernameHint') }}
+                    </p>
+                    <InputError :message="errors.username" />
+                </div>
+
+                <div class="grid gap-2">
                     <Label for="email">{{ $t('auth.register.email') }}</Label>
                     <Input
                         id="email"
                         type="email"
                         required
-                        :tabindex="2"
+                        :tabindex="3"
                         autocomplete="email"
                         name="email"
                         :placeholder="$t('auth.register.emailPlaceholder')"
@@ -62,7 +84,7 @@ import { store } from '@/routes/register';
                     <PasswordInput
                         id="password"
                         required
-                        :tabindex="3"
+                        :tabindex="4"
                         autocomplete="new-password"
                         name="password"
                         :placeholder="$t('auth.register.passwordPlaceholder')"
@@ -77,7 +99,7 @@ import { store } from '@/routes/register';
                     <PasswordInput
                         id="password_confirmation"
                         required
-                        :tabindex="4"
+                        :tabindex="5"
                         autocomplete="new-password"
                         name="password_confirmation"
                         :placeholder="$t('auth.register.confirmPassword')"
@@ -88,7 +110,7 @@ import { store } from '@/routes/register';
                 <Button
                     type="submit"
                     class="mt-2 w-full"
-                    tabindex="5"
+                    tabindex="6"
                     :disabled="processing"
                     data-test="register-user-button"
                 >
@@ -102,7 +124,7 @@ import { store } from '@/routes/register';
                 <TextLink
                     :href="login()"
                     class="underline underline-offset-4"
-                    :tabindex="6"
+                    :tabindex="7"
                     >{{ $t('auth.register.logIn') }}</TextLink
                 >
             </div>

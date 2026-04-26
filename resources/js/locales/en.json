@@ -97,6 +97,9 @@
             "description": "Enter your information to create an account",
             "name": "Name",
             "namePlaceholder": "Full name",
+            "username": "Username",
+            "usernamePlaceholder": "yourhandle",
+            "usernameHint": "3-32 characters; letters, digits, _ and - only. Shown publicly. You can change it later.",
             "email": "Email address",
             "emailPlaceholder": "email@example.com",
             "password": "Password",
@@ -146,6 +149,29 @@
             "useRecovery": "login using a recovery code",
             "useCode": "login using an authentication code",
             "button": "Verify"
+        }
+    },
+    "onboarding": {
+        "username": {
+            "title": "Pick your username",
+            "description": "Choose a public-facing handle. Your real name stays private.",
+            "label": "Username",
+            "placeholder": "yourhandle",
+            "hint": "3-32 characters; letters, digits, _ and - only. Shown publicly across the LAN ecosystem.",
+            "submit": "Continue"
+        }
+    },
+    "publicProfile": {
+        "joinedOn": "Joined {date}",
+        "achievementsHeading": "Achievements",
+        "noAchievements": "No achievements earned yet.",
+        "earnedBy": "Earned by {percent}% of users",
+        "previewIndicator": "Preview — this is how your profile looks to anonymous visitors",
+        "editProfile": "Edit profile",
+        "profileVisibility": {
+            "public": "Visible to everyone",
+            "loggedIn": "Visible to logged-in users",
+            "private": "Only you can see this profile"
         }
     },
     "seating": {

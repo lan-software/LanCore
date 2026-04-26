@@ -278,7 +278,8 @@ The package owns **transport and protocol** concerns:
 | Concern | Component |
 |---------|-----------|
 | HTTP transport, retries, timeouts, Bearer authentication | `LanCoreClient` |
-| Typed response shapes | `LanCoreUser` DTO, entrance DTOs (`AttendeeTicket`, `CheckinResult`, `EntranceStats`, `SigningKey`) |
+| Typed response shapes | `LanCoreUser` DTO (carrying `id`, `username` (nullable until user picks), `name`, `email`, `roles`, `locale`, `avatar_url`, `avatar_source`, `profile_url`, `created_at`), entrance DTOs (`AttendeeTicket`, `CheckinResult`, `EntranceStats`, `SigningKey`) |
+| Avatar URL resolution | Server-side chain in LanCore (custom upload → Gravatar → built-in default; `steam` reserved); the resolved URL is the value of `avatar_url` on the DTO. Satellites consume the URL directly without re-resolving. The `avatar_source` enum is passed through for cache-hint and UI-affordance purposes |
 | Error taxonomy | `LanCoreException` base + `LanCoreDisabled`, `LanCoreUnavailable`, `LanCoreRequest`, `InvalidLanCoreUser` |
 | Webhook signature verification | `VerifyLanCoreWebhook` middleware (HMAC-SHA256 over request body, event header allowlist) |
 | Webhook payload parsing | One typed payload DTO per `WebhookEvent` enum case |
@@ -557,6 +558,32 @@ The `locale` field (type `?string`, BCP 47 tag) already exists in the `LanCoreUs
 - `ResolveIntegrationUser` MUST populate `locale` from `$user->locale` (the database column), not from `app()->getLocale()`.
 - Satellite `UserSyncService` implementations MUST write the received `locale` value to the satellite's `users.locale` column when processing SSO exchange responses and webhook user-sync events (`user.registered`, `user.profile_updated`, `user.roles_updated`).
 
+#### 5.7.6 `LanCoreUser` DTO Public-Facing Identity Fields
+
+The `LanCoreUser` DTO carries three public-facing identity fields that satellites consume directly without re-resolution. The system-level interface requirements are:
+
+**`username` field** (type `?string`):
+
+- `ResolveIntegrationUser` MUST populate `username` from `$user->username` (the database column). The value MAY be `null` for users registered before the username capability shipped (CAP-USR-011) and who have not yet completed the one-time onboarding step.
+- Satellite display code MUST use `username` as the sole public-facing player display field (tournament brackets, leaderboards, player cards, scoreboards, OBS overlays, etc.). Satellites MUST NOT substitute `name` (real name) or `email` for public display under any circumstance.
+- Satellites MUST render a generic placeholder (recommended: `Player #{id}`) when `username` is `null`, never the real name.
+- Webhook payloads `user.registered` and `user.profile_updated` MUST include the current `username` value so satellite caches stay coherent.
+
+**`avatar_url` field** (type `string`, never null):
+
+- `ResolveIntegrationUser` MUST populate `avatar_url` from `User::avatarUrl()`, which resolves the configured `avatar_source` chain server-side (custom upload → Gravatar → built-in default; `steam` reserved as a fallback to `default` for the current iteration).
+- The returned URL is publicly fetchable (cacheable CDN-style URL); satellites embed it directly in `<img src>` without proxy.
+- Satellites MAY display the `avatar_source` enum (passed through on the DTO) as a UI affordance (e.g., a "via Gravatar" badge), but the rendered image is always the value of `avatar_url`.
+- Webhook payloads `user.registered` and `user.profile_updated` MUST include `avatar_url` and `avatar_source` so satellites that cache user data can refresh on change.
+
+**`profile_url` field** (type `?string`):
+
+- When `username` is set, `ResolveIntegrationUser` MUST populate `profile_url` with the absolute URL of the user's LanCore public profile page (`https://{LANCORE_BASE_URL}/u/{username}`).
+- When `username` is `null`, `profile_url` MUST be `null`.
+- Satellites SHOULD link the player's display name to `profile_url` when present; satellites MUST handle the `null` case gracefully (display the placeholder without linking).
+
+The DTO field changes preserve backwards compatibility: existing satellites consuming only `name`, `email`, `roles`, and `locale` continue to function. Adoption of `username` and `avatar_url` is opt-in per satellite via `lancore-client` version bumps and per-app display refactors.
+
 ---
 
 ## 6. Requirements Traceability
@@ -576,6 +603,11 @@ The `locale` field (type `?string`, BCP 47 tag) already exists in the `LanCoreUs
 | CAP-WHK-001..004 (webhook registration, signing, delivery tracking, event types) | Section 4.1 (outbound delivery path), Section 5.4.2 (consumer-side verification + abstract controllers) |
 | CAP-ICLIB-001..005 (shared Integration Client Library) | Section 3.2 (subsystem inventory), Section 5.4 (architecture) |
 | CAP-USR-010, CAP-I18N-001..007 | Section 5.7 (Internationalization Architecture) |
+| CAP-USR-011, CAP-USR-012, CAP-USR-013, CAP-USR-014 | Section 5.4.2 (DTO typed shapes), Section 5.7.6 (`LanCoreUser` Public-Facing Identity Fields) |
+| CAP-USR-015 | Section 5.4.2 (typed shapes), Section 5.7.6 (username consumption rule) |
+| CAP-ACH-005 | Section 5.7.6 (achievements with rarity surfaced via public profile) |
+| SEC-021 | Section 5.7.6 (privacy carve-out: real name, email, address, locale never on public profile / DTO consumption rules) |
+| SEC-022 | Section 5.4.2 (avatar URL resolution), Section 3.2 (S3 storage role for avatars/banners normalized server-side) |
 
 ---
 

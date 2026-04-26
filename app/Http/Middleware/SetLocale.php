@@ -12,12 +12,27 @@ use Symfony\Component\HttpFoundation\Response;
 class SetLocale
 {
     /**
-     * Available UI locales. Must match resources/js/locales/*.json filenames
-     * and the Rule::in() set in ProfileValidationRules::localeRules().
+     * Stable, fully-translated UI locales.
      *
      * @var array<int, string>
      */
-    public const AVAILABLE = ['en', 'de', 'fr', 'es', 'sv', 'uk', 'ko', 'tlh', 'nds', 'sxu'];
+    public const STABLE = ['en', 'de', 'fr', 'es'];
+
+    /**
+     * Experimental locales — selectable but translation coverage may be incomplete.
+     *
+     * @var array<int, string>
+     */
+    public const EXPERIMENTAL = ['sv', 'uk', 'ko', 'tlh', 'nds', 'sxu'];
+
+    /**
+     * All available UI locales (stable + experimental). Must match
+     * resources/js/locales/*.json filenames and the Rule::in() set in
+     * ProfileValidationRules::localeRules().
+     *
+     * @var array<int, string>
+     */
+    public const AVAILABLE = [...self::STABLE, ...self::EXPERIMENTAL];
 
     public function handle(Request $request, Closure $next): Response
     {

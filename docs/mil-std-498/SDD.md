@@ -96,6 +96,10 @@ app/
 | LanCore as authoritative locale store | `users.locale` column on LanCore is the single source of truth for the user's display language; satellites receive the locale via `LanCoreUser` DTO and persist it locally; this avoids duplicated preference UIs across apps and ensures the user changes their language in one place |
 | `SetLocale` middleware for per-request locale application | A dedicated middleware (registered in the web group after session init) calls `app()->setLocale()` based on the authenticated user's stored locale; this keeps locale resolution out of controllers and ensures every translation call in a request cycle uses the correct locale |
 | `vue-i18n` + Weblate for frontend i18n | `vue-i18n@9+` initialized from the `locale` Inertia shared prop; JSON locale files in `resources/js/locales/`; Weblate (self-hosted, `https://weblate.sxcs.de`) reads source strings directly from these files and pushes translator commits to the `weblate` branch, which is fast-forwarded onto `main` by `.github/workflows/weblate-merge.yml` |
+| Profile customization extends CSCI-USR (no new domain) | Username, public profile, avatar/banner pipeline, and visibility settings are added inside the existing User CSCI rather than a new `Domain/Profile` module, because they are not an independent bounded context — they are facets of the User aggregate. A thin `App\Domain\Profile` namespace exists only for stateless helpers (image normalization actions, avatar URL resolution, enums); persistence remains on the `users` table |
+| Public profile route lives under `/u/{username}` | The route is a top-level path so it is short, shareable, and not nested under `/users/` (which is reserved for admin user-management screens). Route-model-binding is case-insensitive on `username`. Visibility-mode failures return HTTP 404 instead of 403 to avoid existence leakage (SEC-021) |
+| Achievement rarity stored as cached column on `achievements` | A pivot observer on the `achievement_user` relation increments `achievements.earned_user_count` on attach and decrements on detach. Reads are O(1). The denominator (total registered users) is cached for 60 s. Trade-off: revocation must always go through the observer-aware code path; bulk SQL deletes would skip it. Documented as an operational note |
+| Avatar / banner stored on the public disk, not signed | Avatars and banners are public artifacts by definition (anyone who can see the public profile can see them), so a public URL is correct. Files are normalized server-side before storage (1000×1000 WebP avatar, 1500×500 WebP banner) so the storage size and bandwidth cost are bounded regardless of input |
 
 ### 3.3 Security Design
 
@@ -443,6 +447,7 @@ show({ id: 1 })
 | 8 | VerifyCsrfToken | CSRF protection |
 | 9 | EnsureUserHasRole | Role-based route protection (alias: `role`) |
 | 10 | AuthenticateIntegration | Bearer token validation for API routes |
+| 11 | RequireUsername | After `auth`, redirects authenticated users with `username = null` to `/onboarding/username`. Allowlist: `/onboarding/username`, logout, language switch, asset and Inertia version routes, telescope/horizon admin paths. Stores intended URL in session for post-onboarding redirect. Traces to USR-F-022 |
 
 ### 5.2 Service Layer
 
@@ -547,7 +552,9 @@ Organized under `resources/js/pages/`:
 | Integrations | 3 | Index, Create, Edit |
 | Webhooks | 4 | Index, Create, Edit, Show |
 | Users | 2 | Index, Show |
-| Settings | 6 | Profile, Security, Notifications, TicketDiscovery, Achievements, Appearance |
+| Settings | 8 | Profile (extended with username, bio, description, emoji, avatar source picker, banner upload, preview button), Privacy (visibility radio + seat visibility), Security, Notifications, TicketDiscovery, Achievements, Appearance, plus settings/profile/preview as a non-page endpoint |
+| Onboarding | 1 | onboarding/Username.vue — one-time username selection screen for users registered before USR-F-022 |
+| Public Profile | 1 | u/Show.vue — public profile rendered at `/u/{username}` |
 
 #### 5.3.2 UI Component Library
 
@@ -570,6 +577,10 @@ Built on **reka-ui** (headless) + **Tailwind CSS v4**:
 | TicketCard | Ticket display with validation and status |
 | AppLogo | Renders the organization logo (or a text fallback) sourced from the `organization` Inertia shared prop |
 | MailLetterAnimation | Animated envelope illustration used in email-confirmation and verification screens |
+| Avatar | Reusable avatar component accepting a user (with `avatar_url`, `username`) and a size (sm/md/lg/xl); used in topbar, profile settings, and public profile |
+| ProfileBanner | Renders the public-profile banner image or a deterministic gradient fallback when no banner is set |
+| AchievementRarityBadge | Renders the `Earned by N%` label with color-coded thresholds (common / rare / epic / legendary) |
+| ProfileEmojiPicker | Single-grapheme emoji input; uses the platform-native emoji picker on mobile and a lightweight emoji palette on desktop |
 
 #### 5.3.3 Frontend Libraries
 
@@ -1098,6 +1109,15 @@ Each app has its own Weblate component under the `lan-software` project (`lancor
 | I18N-F-005 | `resources/js/locales/{en,de,fr,es}.json`; `vue-i18n` initialization in `resources/js/app.ts`; see §5.6.6 |
 | I18N-F-006 | `.github/workflows/pull-translations.yml`; see §5.6.7 |
 | I18N-F-007 | `app/Domain/Integration/Actions/ResolveIntegrationUser.php` line ~40: `$user->locale` replaces `app()->getLocale()`; see §5.6.4 |
+| USR-F-022 | `users` table migration (new `username` VARCHAR(32) NULL UNIQUE column with case-insensitive collation), `app/Concerns/ProfileValidationRules.php` (`usernameRules()` method), `app/Actions/Fortify/CreateNewUser.php` (persists `username`), `app/Http/Middleware/RequireUsername.php`, `app/Http/Controllers/Onboarding/UsernameController.php`, `resources/js/pages/onboarding/Username.vue`, `resources/js/pages/auth/Register.vue` (extended) |
+| USR-F-023 | `app/Http/Controllers/PublicProfileController.php`, `routes/web.php` (`/u/{username}` route with case-insensitive resolution), `app/Domain/Profile/Enums/ProfileVisibility.php`, `resources/js/pages/u/Show.vue`, public-profile DTO/resource enforcing privacy carve-out |
+| USR-F-024 | `users` table migration (new `short_bio`, `profile_description`, `profile_emoji`, `avatar_source`, `avatar_path`, `banner_path` columns), `app/Domain/Profile/Enums/AvatarSource.php`, `app/Domain/Profile/Actions/NormalizeAvatar.php`, `app/Domain/Profile/Actions/NormalizeBanner.php`, `app/Domain/Profile/Actions/ResolveAvatarUrl.php`, `app/Http/Controllers/Settings/ProfileMediaController.php`, `resources/js/pages/settings/Profile.vue` (extended), `resources/js/components/{Avatar,ProfileBanner,ProfileEmojiPicker}.vue` |
+| USR-F-025 | `users` table migration (new `profile_visibility` VARCHAR(16) NOT NULL DEFAULT `'logged_in'`), `app/Domain/Profile/Enums/ProfileVisibility.php`, `app/Http/Controllers/Settings/PrivacyController.php` (extended), `resources/js/pages/settings/Privacy.vue` (extended) |
+| USR-F-026 | `app/Http/Controllers/PublicProfileController.php` (`preview` action bypassing visibility check), `routes/web.php` (`GET /settings/profile/preview`), `resources/js/pages/u/Show.vue` (preview indicator) |
+| ACH-F-008 | `achievements` table migration (new `earned_user_count` INTEGER DEFAULT 0), `app/Domain/Achievements/Models/Achievement.php` (`earnedPercentage` accessor), `app/Domain/Achievements/Actions/GrantAchievement.php` (counter increment) plus pivot observer for revocation, `app/Console/Commands/BackfillAchievementCounts.php`, `resources/js/components/AchievementRarityBadge.vue` |
+| ICLIB-F-002 (amended), ICLIB-F-010, CAP-USR-015 | `app/Domain/Integration/Actions/ResolveIntegrationUser.php` (returns `username`, `name`, `avatar_url`, `avatar_source`, `profile_url`); `app/Domain/Webhook/` payload builders for `user.registered` and `profile.updated`; `lancore-client` package DTO updates |
+| SEC-021 | `app/Http/Controllers/PublicProfileController.php` (privacy enforcement, 404 not 403); `app/Http/Resources/PublicProfileResource.php` (whitelist of public-facing fields); test suite §4.24 |
+| SEC-022 | `app/Domain/Profile/Actions/NormalizeAvatar.php`, `app/Domain/Profile/Actions/NormalizeBanner.php`, `app/Http/Requests/UpdateProfileMediaRequest.php` (size + mime + bomb-protection validation) |
 
 ---
 

@@ -7,12 +7,14 @@ use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RecordDemoActivity;
+use App\Http\Middleware\RequireUsername;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackHttpMetrics;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -30,10 +32,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->trustProxies(
             at: env('TRUSTED_PROXIES', '*'),
-            headers: Illuminate\Http\Request::HEADER_X_FORWARDED_FOR
-                | Illuminate\Http\Request::HEADER_X_FORWARDED_HOST
-                | Illuminate\Http\Request::HEADER_X_FORWARDED_PORT
-                | Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO,
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO,
         );
 
         // Prepend globally so every request (web + API + health) gets an ID
@@ -53,6 +55,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
             'integration.auth' => AuthenticateIntegration::class,
+            'require.username' => RequireUsername::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

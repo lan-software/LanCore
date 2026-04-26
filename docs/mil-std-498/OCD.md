@@ -100,6 +100,11 @@ LanCore is a ground-up rewrite providing:
 - Purchase tickets for events
 - View and manage their own tickets
 - Manage profile and security settings (including 2FA)
+- Choose a public-facing **username** (gamer handle) distinct from their real name; the username is mandatory, unique, 3–32 characters from a constrained gamer character set, and is the identity surfaced on every public-facing display across the LAN ecosystem (tournament brackets, leaderboards, public profile)
+- Have a **public profile page** (`/u/{username}`) showing the username, custom emoji, short bio, long-form description, avatar, banner, and earned achievements (with global rarity); the page never exposes the user's real name, contact, address, country, or locale
+- Choose **profile visibility** in privacy settings (public to anonymous visitors / visible to logged-in users only / private), and a **profile picture source** (built-in default / Gravatar / custom upload normalized server-side to 1000×1000 px; a Steam-linked source is reserved for a future iteration)
+- Upload a **profile banner** (normalized server-side to a 1500×500 / 3:1 image)
+- Preview the public profile from the profile settings page exactly as an anonymous visitor would see it, regardless of the current visibility setting
 - Select preferred display language (English, German, French, Spanish) in their profile; the selected locale is stored in LanCore and propagated to all satellite apps at next SSO exchange
 - Customize notification preferences (email, web push)
 - Comment on and vote on news articles
@@ -253,6 +258,7 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 3. The package provides the SSO exchange, user resolution, webhook signature verification, and abstract webhook controllers for all eight event types; satellites supply only domain concerns (role model, user persistence, business response to events)
 4. LanEntrance additionally uses the package's opt-in `entrance()` sub-client for ticket validation and JWKS caching
 5. Package releases are versioned independently; satellites adopt new capabilities by bumping the dependency and implementing any newly-exposed hooks
+6. **Public-facing identity policy:** every satellite that renders a user's identity on a publicly visible surface (tournament brackets, public leaderboards, player cards, scoreboards, OBS overlays, etc.) **shall** consume the `LanCoreUser.username` field from the DTO. Satellites **shall not** display the `name` (real name) or `email` fields publicly under any circumstance. Satellites **shall** apply a generic placeholder (e.g. "Player #ID") when a satellite-side `LanCoreUser` payload carries `username = null` (a transitional state for users registered before the username feature shipped, until they complete the one-time username selection on next login)
 
 #### 5.2.7 Achievement Tracking
 
@@ -260,7 +266,8 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 2. System listens for qualifying events (ticket purchase, profile update, etc.)
 3. When criteria met, system grants achievement to user
 4. User receives notification of earned achievement
-5. User can view their achievements in settings
+5. System maintains a per-achievement **earned-user count** that is incremented whenever a grant fires and decremented on revocation; the count, divided by the current registered-user total, yields the **achievement rarity percentage**
+6. User can view their earned achievements in settings, and any visitor with permission to see a user's public profile sees the user's earned achievements alongside the rarity label (e.g., "Earned by 5% of users")
 
 ### 5.3 System Context
 
@@ -347,6 +354,11 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 | Nonce Hash | HMAC-SHA256 of the nonce using a server-side pepper; stored in the database for token-to-ticket lookup without exposing the nonce |
 | Pepper | A secret value (not stored in the database) used as the HMAC key when deriving the nonce hash |
 | Locale | A BCP 47 language tag (e.g., `en`, `de`, `fr`, `es`) that identifies the user's preferred display language; stored as the `locale` column on the LanCore `users` table and propagated to satellite apps via the `LanCoreUser` DTO |
+| Username | A user-chosen public-facing handle distinct from the user's real name (`name`). 3–32 characters, gamer-friendly character set (`[A-Za-z0-9]` plus `_` and `-`, never leading or trailing). Unique case-insensitively across all LanCore users. Mandatory at signup. Surfaced on the public profile and in every satellite app's public-facing display via the `LanCoreUser.username` claim. The real name is never publicly visible |
+| Public Profile | The page rendered at `/u/{username}` showing a user's username, custom emoji, short bio, long-form description, avatar, banner, and earned achievements with global rarity. Subject to the user's `profile_visibility` setting: `public` (visible to anonymous), `logged_in` (visible to authenticated LanCore users only), `private` (visible only to the user themselves). Real name, email, phone, address, country, and locale are never rendered |
+| Avatar Source | The origin of a user's profile picture: `default` (built-in identicon-style placeholder), `gravatar` (resolved from email hash), `custom` (uploaded by the user, normalized to 1000×1000 WebP). `steam` is reserved for a future Steam account-linking iteration and currently falls back to `default` |
+| Profile Banner | The optional wide image displayed at the top of the public profile, normalized server-side to 1500×500 (3:1 aspect ratio) |
+| Achievement Rarity | The percentage of registered LanCore users who have earned a given achievement, computed from a per-achievement `earned_user_count` cache divided by the current total user count; rendered alongside the achievement on the public profile (e.g., "Earned by 5% of users") |
 | i18n | Internationalization — the process of designing software so that it can be adapted to multiple languages without code changes |
 | l10n | Localization — the process of adapting an internationalized application for a specific language or region |
 | vue-i18n | The Vue.js internationalization plugin (`vue-i18n@9+`) used in the LanCore and satellite Vue frontends to translate UI strings from JSON locale files |

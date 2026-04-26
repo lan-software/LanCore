@@ -4,6 +4,7 @@ namespace App\Concerns;
 
 use App\Http\Middleware\SetLocale;
 use App\Models\User;
+use App\Rules\UniqueUsername;
 use Illuminate\Validation\Rule;
 
 trait ProfileValidationRules
@@ -17,6 +18,7 @@ trait ProfileValidationRules
     {
         return [
             'name' => $this->nameRules(),
+            'username' => $this->usernameRules($userId),
             'email' => $this->emailRules($userId),
             'phone' => ['nullable', 'string', 'max:50'],
             'street' => ['nullable', 'string', 'max:255'],
@@ -25,6 +27,32 @@ trait ProfileValidationRules
             'country' => ['nullable', 'string', 'size:2'],
             'locale' => $this->localeRules(),
         ];
+    }
+
+    /**
+     * Get the validation rules used to validate the public-facing username.
+     *
+     * When $userId is null (signup), username is required. When $userId
+     * is set (profile update), `sometimes` lets the caller omit the field
+     * entirely while still validating any value sent.
+     *
+     * @see docs/mil-std-498/SRS.md USR-F-022
+     *
+     * @return array<int, \Illuminate\Contracts\Validation\Rule|array<mixed>|string>
+     */
+    protected function usernameRules(?int $userId = null): array
+    {
+        $rules = [
+            'string',
+            'min:3',
+            'max:32',
+            'regex:/^[A-Za-z0-9][A-Za-z0-9_-]{1,30}[A-Za-z0-9]$/',
+            new UniqueUsername($userId),
+        ];
+
+        array_unshift($rules, $userId === null ? 'required' : 'sometimes');
+
+        return $rules;
     }
 
     /**

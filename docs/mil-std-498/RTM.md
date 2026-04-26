@@ -316,8 +316,9 @@ No gaps identified.
 | ACH-F-005 | AchievementPolicy | `Domain/Achievements/Policies/AchievementPolicy.php` | `Achievements/AchievementCrudTest.php` | Covered |
 | ACH-F-006 | AchievementEarnedNotification with achievement details | `Notifications/AchievementEarnedNotification.php` | `Achievements/AchievementGrantingTest.php` (7 tests) | Covered |
 | ACH-F-007 | Achievement notification display in frontend | `components/NotificationBell.vue`, `pages/notifications/Index.vue`, `pages/notifications/Archive.vue` | `Achievements/AchievementGrantingTest.php` | Covered |
+| ACH-F-008 | Achievement rarity (cached `earned_user_count` + derived percentage) surfaced on public profile | `achievements.earned_user_count` migration; `Domain/Achievements/Models/Achievement.php` (`earnedPercentage`); `Domain/Achievements/Actions/GrantAchievement.php` (counter); `achievement_user` pivot observer; `BackfillAchievementCounts` command; `components/AchievementRarityBadge.vue` | `Feature/Achievements/RarityCounterTest.php`, `RarityRenderTest.php`, `BackfillCommandTest.php` (STD §4.26) | **Gap** — to be implemented |
 
-No gaps identified.
+No gaps identified except ACH-F-008 (in-progress feature).
 
 ---
 
@@ -460,6 +461,12 @@ No gaps identified.
 | USR-F-018 | Permissions shared via Inertia shared props | `App/Http/Middleware/HandleInertiaRequests.php` | `Policies/RoleBasedPolicyAccessTest.php` | Covered |
 | USR-F-019 | `usePermissions()` Vue composable | `resources/js/composables/usePermissions.ts` | — | **Gap** |
 | USR-F-020 | Permission-based sidebar navigation rendering | `resources/js/components/AppSidebar.vue` | — | **Gap** |
+| USR-F-021 | Locale column on `users`; profile selector validates against `[en, de, fr, es]` | `users.locale` migration; `ProfileValidationRules::localeRules`; `Settings/Profile.vue` | `Feature/I18n/LocaleSettingsTest.php` | Covered |
+| USR-F-022 | Public-facing `username` (3–32, gamer charset, unique CI); mandatory at signup; force-pick middleware for existing users | `users.username` migration; `ProfileValidationRules::usernameRules`; `CreateNewUser`; `RequireUsername` middleware; `Onboarding\UsernameController`; `pages/onboarding/Username.vue`; `pages/auth/Register.vue` | `Feature/Profile/UsernameValidationTest.php`, `UsernameUniquenessTest.php`, `RegistrationUsernameTest.php`, `OnboardingUsernameTest.php` (STD §4.23) | **Gap** — to be implemented |
+| USR-F-023 | Public profile page at `/u/{username}` with privacy modes; no real name/email/phone/address/locale leakage; 404 for hidden | `PublicProfileController`; `routes/web.php`; `ProfileVisibility` enum; `pages/u/Show.vue`; `PublicProfileResource` | `Feature/Profile/PublicProfileVisibilityTest.php`, `PublicProfileLeakageTest.php`, `PublicProfileRenderTest.php` (STD §4.24) | **Gap** — to be implemented |
+| USR-F-024 | Profile customization fields + avatar/banner image pipeline | `users.short_bio/profile_description/profile_emoji/avatar_source/avatar_path/banner_path`; `AvatarSource` enum; `NormalizeAvatar`/`NormalizeBanner`/`ResolveAvatarUrl`; `ProfileMediaController`; `pages/settings/Profile.vue`; `Avatar.vue`/`ProfileBanner.vue`/`ProfileEmojiPicker.vue` | `Feature/Profile/AvatarUploadTest.php`, `BannerUploadTest.php`, `AvatarSourceTest.php` (STD §4.25) | **Gap** — to be implemented |
+| USR-F-025 | `profile_visibility` setting in privacy page; default `logged_in` | `users.profile_visibility`; `PrivacyController` (extended); `pages/settings/Privacy.vue` (extended); `ProfileVisibility` enum | covered by STD §4.24 visibility tests | **Gap** — to be implemented |
+| USR-F-026 | Profile preview action that bypasses visibility | `PublicProfileController::preview`; `routes/web.php` (`GET /settings/profile/preview`); `pages/u/Show.vue` (preview indicator) | `Feature/Profile/PreviewTest.php` (STD §4.25) | **Gap** — to be implemented |
 
 ### User Management Gaps — Proposed Tests
 
@@ -536,6 +543,14 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | ENV-DEP-014 | [SSDD §3.1.1.3](SSDD.md#3113-migration-ownership), `docker/entrypoint.sh` | Inspection |
 | ENV-DEP-015 | Dockerfile `HEALTHCHECK` directive, Laravel `/up` endpoint | `docker inspect` |
 | ENV-DEP-016 | [SSDD §3.1.1.2](SSDD.md#3112-runtime-roles), `docker/supervisor/supervisord-web.conf` (`%(ENV_OCTANE_WORKERS)s`) | Inspection |
+| CAP-USR-011 | USR-F-022 | **Pending** — see STD §4.23 |
+| CAP-USR-012 | USR-F-023 | **Pending** — see STD §4.24 |
+| CAP-USR-013 | USR-F-024 | **Pending** — see STD §4.25 |
+| CAP-USR-014 | USR-F-025, USR-F-026 | **Pending** — see STD §4.24, §4.25 |
+| CAP-USR-015 | ICLIB-F-002 (amended), ICLIB-F-010 | **Pending** — see STD §4.27 |
+| CAP-ACH-005 | ACH-F-008 | **Pending** — see STD §4.26 |
+| SEC-021 | USR-F-012 (privacy carve-out), USR-F-023 | **Pending** — covered via STD §4.24 leakage tests |
+| SEC-022 | USR-F-024 | **Pending** — covered via STD §4.25 upload tests |
 
 ---
 
