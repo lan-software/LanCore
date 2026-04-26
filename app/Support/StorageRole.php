@@ -36,9 +36,12 @@ class StorageRole
     /**
      * Return a URL for a file on the public disk.
      *
-     * Local disks and S3 buckets with anonymous access return a direct URL.
-     * Private S3 buckets (no anonymous access) are proxied through the
-     * `storage.file` route so callers never have to think about disk driver.
+     * S3 buckets with anonymous access return a direct CDN-friendly URL.
+     * Everything else (local disks, S3 without anonymous read) is proxied
+     * through the `storage.file` route (`StorageFileController`) so callers
+     * never have to think about disk driver — and so local public files do
+     * not collide with Laravel's auto-registered signed `/storage/{path}`
+     * route that the `local` disk registers when `serve: true` is set.
      */
     public static function publicUrl(string $path): string
     {
@@ -46,7 +49,7 @@ class StorageRole
         $driver = (string) config("filesystems.disks.{$disk}.driver", '');
         $anonymousAccess = (bool) config("filesystems.disks.{$disk}.anonymous_bucket_access", false);
 
-        if ($driver === 'local' || ($driver === 's3' && $anonymousAccess)) {
+        if ($driver === 's3' && $anonymousAccess) {
             return self::public()->url($path);
         }
 

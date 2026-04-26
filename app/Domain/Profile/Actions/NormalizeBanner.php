@@ -3,8 +3,8 @@
 namespace App\Domain\Profile\Actions;
 
 use App\Models\User;
+use App\Support\StorageRole;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\ImageManager;
@@ -33,11 +33,12 @@ class NormalizeBanner
         $encoded = $image->encodeUsingFileExtension('webp', quality: self::QUALITY);
 
         $path = sprintf('banners/%d_%s.webp', $user->getKey(), Str::random(8));
-        Storage::disk('public')->put($path, (string) $encoded);
+        $disk = StorageRole::public();
+        $disk->put($path, (string) $encoded);
 
         $previous = $user->banner_path;
         if ($previous !== null && $previous !== $path) {
-            Storage::disk('public')->delete($previous);
+            $disk->delete($previous);
         }
 
         return $path;

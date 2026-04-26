@@ -71,34 +71,35 @@ return 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200';
                 class="h-64 w-full bg-gradient-to-br from-fuchsia-500 via-violet-500 to-cyan-500"
             />
 
-            <div class="mx-auto -mt-16 max-w-4xl px-4">
-                <div class="flex items-end gap-4">
+            <div class="mx-auto max-w-4xl px-4">
+                <div class="-mt-16 flex items-end justify-between gap-4">
                     <img
                         :src="profile.avatar_url"
                         :alt="profile.username ?? ''"
-                        class="h-32 w-32 rounded-2xl border-4 border-background object-cover shadow-lg"
+                        class="relative z-10 h-32 w-32 rounded-2xl border-4 border-background object-cover shadow-lg"
                     />
-                    <div class="flex-1 pb-2">
-                        <h1 class="flex items-center gap-2 text-3xl font-bold">
-                            <span v-if="profile.profile_emoji">{{
-                                profile.profile_emoji
-                            }}</span>
-                            <span>{{ profile.username }}</span>
-                        </h1>
-                        <p
-                            v-if="profile.short_bio"
-                            class="mt-1 text-sm text-muted-foreground"
-                        >
-                            {{ profile.short_bio }}
-                        </p>
-                    </div>
                     <Link
                         v-if="isOwner && !isPreview"
                         :href="profileEdit().url"
-                        class="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium hover:bg-muted"
+                        class="mb-2 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium hover:bg-muted"
                     >
                         {{ $t('publicProfile.editProfile') }}
                     </Link>
+                </div>
+
+                <div class="mt-4">
+                    <h1 class="flex items-center gap-2 text-3xl font-bold">
+                        <span v-if="profile.profile_emoji">{{
+                            profile.profile_emoji
+                        }}</span>
+                        <span>{{ profile.username }}</span>
+                    </h1>
+                    <p
+                        v-if="profile.short_bio"
+                        class="mt-1 text-sm text-muted-foreground"
+                    >
+                        {{ profile.short_bio }}
+                    </p>
                 </div>
             </div>
         </div>

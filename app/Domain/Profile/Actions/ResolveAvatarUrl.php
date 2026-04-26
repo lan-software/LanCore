@@ -4,7 +4,7 @@ namespace App\Domain\Profile\Actions;
 
 use App\Domain\Profile\Enums\AvatarSource;
 use App\Models\User;
-use Illuminate\Support\Facades\Storage;
+use App\Support\StorageRole;
 use Illuminate\Support\Facades\URL;
 
 /**
@@ -28,7 +28,7 @@ class ResolveAvatarUrl
 
         return match ($source) {
             AvatarSource::Custom => $user->avatar_path !== null
-                ? Storage::disk('public')->url($user->avatar_path)
+                ? StorageRole::publicUrl($user->avatar_path)
                 : $this->defaultUrl(),
             AvatarSource::Gravatar => $this->gravatarUrl($user),
             AvatarSource::Steam, AvatarSource::Default => $this->defaultUrl(),

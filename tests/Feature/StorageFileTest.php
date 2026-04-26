@@ -20,12 +20,15 @@ it('returns 404 when the requested file is not on the public disk', function () 
         ->assertNotFound();
 });
 
-it('publicUrl returns a direct url for local public disks', function () {
+it('publicUrl proxies through the storage.file route for local public disks', function () {
     Config::set('filesystems.public_disk', 'public');
 
     $url = StorageRole::publicUrl('events/banners/test.jpg');
 
-    expect($url)->toBe(Storage::disk('public')->url('events/banners/test.jpg'));
+    // Local public disks must NOT use disk()->url() because that produces
+    // /storage/{path} which collides with the local disk's auto-registered
+    // signed URL route (serve: true) and returns 403 for unsigned requests.
+    expect($url)->toBe(route('storage.file', ['path' => 'events/banners/test.jpg']));
 });
 
 it('publicUrl returns a direct url for s3 public buckets with anonymous access', function () {

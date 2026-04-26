@@ -8,9 +8,9 @@ use App\Domain\Profile\Actions\NormalizeBanner;
 use App\Domain\Profile\Enums\AvatarSource;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileMediaRequest;
+use App\Support\StorageRole;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * Handles avatar and banner uploads. Multipart upload endpoints are kept
@@ -48,7 +48,7 @@ class ProfileMediaController extends Controller
         $user = $request->user();
 
         if ($user->avatar_path !== null) {
-            Storage::disk('public')->delete($user->avatar_path);
+            StorageRole::public()->delete($user->avatar_path);
         }
 
         $user->forceFill([
@@ -82,7 +82,7 @@ class ProfileMediaController extends Controller
         $user = $request->user();
 
         if ($user->banner_path !== null) {
-            Storage::disk('public')->delete($user->banner_path);
+            StorageRole::public()->delete($user->banner_path);
         }
 
         $user->forceFill([
