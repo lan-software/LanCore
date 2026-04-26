@@ -78,11 +78,15 @@ it('keeps the production config defaults aligned with the canonical satellite pa
     foreach ($config['apps'] as $slug => $definition) {
         $rolesPathArg = $definition['roles_path'] ?? null;
         $announcementPathArg = $definition['announcement_path'] ?? null;
+        $callbackPathArg = $definition['callback_path'] ?? null;
 
         expect($rolesPathArg)
             ->toBe('/api/webhooks/roles', "config/integrations.php apps.{$slug}.roles_path default must match satellite route registration");
 
         expect($announcementPathArg)
             ->toBe('/api/webhooks/announcements', "config/integrations.php apps.{$slug}.announcement_path default must match satellite route registration");
+
+        expect($callbackPathArg)
+            ->toBe('/auth/callback', "config/integrations.php apps.{$slug}.callback_path default must match satellite SSO route registration");
     }
 });
