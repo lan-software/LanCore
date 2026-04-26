@@ -110,7 +110,9 @@ function deleteAchievement() {
                             id="name"
                             v-model="form.name"
                             required
-                            :placeholder="$t('achievements.form.namePlaceholder')"
+                            :placeholder="
+                                $t('achievements.form.namePlaceholder')
+                            "
                         />
                         <InputError :message="form.errors.name" />
                     </div>

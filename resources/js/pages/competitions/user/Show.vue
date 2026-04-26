@@ -55,7 +55,9 @@ function leaveTeam() {
         authUserId != null && props.userTeam.captain_user_id === authUserId;
     const msg = isCaptain
         ? t('competitions.user.leaveCaptainConfirm')
-        : t('competitions.user.leaveTeamConfirm', { name: props.userTeam.name });
+        : t('competitions.user.leaveTeamConfirm', {
+              name: props.userTeam.name,
+          });
 
     if (!window.confirm(msg)) {
         return;
@@ -236,7 +238,9 @@ function requestJoin(teamId: number) {
                                     v-model="createTeamForm.name"
                                     required
                                     :placeholder="
-                                        $t('competitions.user.teamNamePlaceholder')
+                                        $t(
+                                            'competitions.user.teamNamePlaceholder',
+                                        )
                                     "
                                 />
                             </div>
@@ -317,8 +321,12 @@ function requestJoin(teamId: number) {
                                 >
                                     {{
                                         requestingTeamId === team.id
-                                            ? $t('competitions.user.sendingRequest')
-                                            : $t('competitions.user.requestToJoin')
+                                            ? $t(
+                                                  'competitions.user.sendingRequest',
+                                              )
+                                            : $t(
+                                                  'competitions.user.requestToJoin',
+                                              )
                                     }}
                                 </Button>
                                 <MailLetterAnimation

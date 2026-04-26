@@ -321,8 +321,8 @@ function formatCents(cents: number): string {
                                     </div>
                                     <p class="text-xs text-muted-foreground">
                                         {{ stats.counts.game_modes }} game modes
-                                        ·
-                                        {{ stats.counts.seat_plans }} seat plans
+                                        · {{ stats.counts.seat_plans }} seat
+                                        plans
                                     </p>
                                 </CardContent>
                             </Card>
@@ -440,11 +440,14 @@ function formatCents(cents: number): string {
                                         <div
                                             class="flex items-center justify-between"
                                         >
-                                            <div class="flex items-center gap-2">
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
                                                 <Ticket
                                                     class="size-4 text-green-500"
                                                 />
-                                                <span class="text-sm font-medium"
+                                                <span
+                                                    class="text-sm font-medium"
                                                     >Active</span
                                                 >
                                             </div>
@@ -455,11 +458,14 @@ function formatCents(cents: number): string {
                                         <div
                                             class="flex items-center justify-between"
                                         >
-                                            <div class="flex items-center gap-2">
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
                                                 <TicketCheck
                                                     class="size-4 text-blue-500"
                                                 />
-                                                <span class="text-sm font-medium"
+                                                <span
+                                                    class="text-sm font-medium"
                                                     >Checked In</span
                                                 >
                                             </div>
@@ -470,11 +476,14 @@ function formatCents(cents: number): string {
                                         <div
                                             class="flex items-center justify-between"
                                         >
-                                            <div class="flex items-center gap-2">
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
                                                 <Ticket
                                                     class="size-4 text-red-500"
                                                 />
-                                                <span class="text-sm font-medium"
+                                                <span
+                                                    class="text-sm font-medium"
                                                     >Cancelled</span
                                                 >
                                             </div>
@@ -503,11 +512,14 @@ function formatCents(cents: number): string {
                                         <div
                                             class="flex items-center justify-between"
                                         >
-                                            <div class="flex items-center gap-2">
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
                                                 <CreditCard
                                                     class="size-4 text-yellow-500"
                                                 />
-                                                <span class="text-sm font-medium"
+                                                <span
+                                                    class="text-sm font-medium"
                                                     >Pending</span
                                                 >
                                             </div>
@@ -518,11 +530,14 @@ function formatCents(cents: number): string {
                                         <div
                                             class="flex items-center justify-between"
                                         >
-                                            <div class="flex items-center gap-2">
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
                                                 <CreditCard
                                                     class="size-4 text-green-500"
                                                 />
-                                                <span class="text-sm font-medium"
+                                                <span
+                                                    class="text-sm font-medium"
                                                     >Completed</span
                                                 >
                                             </div>
@@ -533,11 +548,14 @@ function formatCents(cents: number): string {
                                         <div
                                             class="flex items-center justify-between"
                                         >
-                                            <div class="flex items-center gap-2">
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
                                                 <CreditCard
                                                     class="size-4 text-red-500"
                                                 />
-                                                <span class="text-sm font-medium"
+                                                <span
+                                                    class="text-sm font-medium"
                                                     >Failed</span
                                                 >
                                             </div>
@@ -548,11 +566,14 @@ function formatCents(cents: number): string {
                                         <div
                                             class="flex items-center justify-between"
                                         >
-                                            <div class="flex items-center gap-2">
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
                                                 <CreditCard
                                                     class="size-4 text-muted-foreground"
                                                 />
-                                                <span class="text-sm font-medium"
+                                                <span
+                                                    class="text-sm font-medium"
                                                     >Refunded</span
                                                 >
                                             </div>
@@ -611,7 +632,9 @@ function formatCents(cents: number): string {
                                             :key="role"
                                             class="flex items-center justify-between"
                                         >
-                                            <div class="flex items-center gap-2">
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
                                                 <ShieldCheck
                                                     v-if="role === 'superadmin'"
                                                     class="size-4 text-purple-500"

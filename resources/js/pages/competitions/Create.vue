@@ -58,7 +58,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <Heading
                         variant="small"
                         :title="$t('competitions.form.detailsHeading')"
-                        :description="$t('competitions.form.detailsDescription')"
+                        :description="
+                            $t('competitions.form.detailsDescription')
+                        "
                     />
 
                     <div class="grid gap-2">
@@ -67,7 +69,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                             id="name"
                             name="name"
                             required
-                            :placeholder="$t('competitions.form.namePlaceholder')"
+                            :placeholder="
+                                $t('competitions.form.namePlaceholder')
+                            "
                         />
                         <InputError :message="errors.name" />
                     </div>
@@ -137,9 +141,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 </option>
                                 <option value="round_robin">
                                     {{
-                                        $t(
-                                            'competitions.stageTypes.roundRobin',
-                                        )
+                                        $t('competitions.stageTypes.roundRobin')
                                     }}
                                 </option>
                                 <option value="swiss">
@@ -147,9 +149,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 </option>
                                 <option value="group_stage">
                                     {{
-                                        $t(
-                                            'competitions.stageTypes.groupStage',
-                                        )
+                                        $t('competitions.stageTypes.groupStage')
                                     }}
                                 </option>
                             </select>

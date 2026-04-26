@@ -47,8 +47,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Status lifecycle
 const allStatuses = computed(() => [
     { key: 'draft', label: t('competitions.lifecycle.draft') },
-    { key: 'registration_open', label: t('competitions.lifecycle.registrationOpen') },
-    { key: 'registration_closed', label: t('competitions.lifecycle.registrationClosed') },
+    {
+        key: 'registration_open',
+        label: t('competitions.lifecycle.registrationOpen'),
+    },
+    {
+        key: 'registration_closed',
+        label: t('competitions.lifecycle.registrationClosed'),
+    },
     { key: 'running', label: t('competitions.lifecycle.running') },
     { key: 'finished', label: t('competitions.lifecycle.finished') },
     { key: 'archived', label: t('competitions.lifecycle.archived') },
@@ -101,7 +107,10 @@ const transitionForm = useForm({ status: transition.value?.target ?? '' });
 const transitioning = ref(false);
 
 function submitTransition() {
-    if (transition.value?.confirm && !window.confirm(transition.value.confirm)) {
+    if (
+        transition.value?.confirm &&
+        !window.confirm(transition.value.confirm)
+    ) {
         return;
     }
 
@@ -255,8 +264,6 @@ function statusColor(status: string): string {
                             v-if="i < allStatuses.length - 1"
                             class="mb-5 size-4 shrink-0 text-muted-foreground/40"
                         />
-
-
                     </template>
                 </div>
             </div>
@@ -276,8 +283,12 @@ function statusColor(status: string): string {
                             :title="competition.name"
                             :description="
                                 canEditDetails
-                                    ? $t('competitions.form.editDescriptionEditable')
-                                    : $t('competitions.form.editDescriptionLocked')
+                                    ? $t(
+                                          'competitions.form.editDescriptionEditable',
+                                      )
+                                    : $t(
+                                          'competitions.form.editDescriptionLocked',
+                                      )
                             "
                         />
 
@@ -483,7 +494,9 @@ function statusColor(status: string): string {
                                 {{
                                     competition.status === 'running'
                                         ? $t('competitions.transition.willEnd')
-                                        : $t('competitions.transition.cannotUndo')
+                                        : $t(
+                                              'competitions.transition.cannotUndo',
+                                          )
                                 }}
                             </p>
                         </div>
@@ -543,7 +556,9 @@ function statusColor(status: string): string {
                                         $t('competitions.captainNamed', {
                                             name:
                                                 team.captain?.name ??
-                                                $t('competitions.sidebar.captainNone'),
+                                                $t(
+                                                    'competitions.sidebar.captainNone',
+                                                ),
                                         })
                                     }}
                                 </div>
@@ -594,7 +609,9 @@ function statusColor(status: string): string {
                                     >
                                         <ExternalLink class="size-3" />
                                         {{
-                                            $t('competitions.sidebar.bracketView')
+                                            $t(
+                                                'competitions.sidebar.bracketView',
+                                            )
                                         }}
                                     </a>
                                 </div>

@@ -45,6 +45,7 @@ use App\Support\StorageRole;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Http\File;
 use Throwable;
 
 #[Signature('db:seed-demo')]
@@ -286,12 +287,13 @@ class SeedDemoCommand extends Command
 
     private function copyDemoImageToStorage(string $sourcePath, string $directory): string
     {
-        $contents = (string) file_get_contents($sourcePath);
-        $targetPath = $directory.'/'.basename($sourcePath);
-
-        StorageRole::public()->put($targetPath, $contents);
-
-        return $targetPath;
+        // putFileAs (not put) so the file's MIME type and the disk's visibility
+        // config are honored — required for S3-backed public disks to serve PNGs.
+        return (string) StorageRole::public()->putFileAs(
+            $directory,
+            new File($sourcePath),
+            basename($sourcePath),
+        );
     }
 
     private function seedGames(): bool

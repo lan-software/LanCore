@@ -129,7 +129,6 @@ function dismissAnnouncement(announcementId: number) {
         { preserveScroll: true },
     );
 }
-
 </script>
 
 <template>

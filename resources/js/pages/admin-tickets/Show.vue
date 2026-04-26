@@ -106,13 +106,17 @@ const statusVariant: Record<
                     ticket.ticket_type?.name ??
                     $t('adminTickets.ticketNumber', { id: ticket.id })
                 "
-                :description="$t('adminTickets.ticketNumber', { id: ticket.id })"
+                :description="
+                    $t('adminTickets.ticketNumber', { id: ticket.id })
+                "
             />
 
             <!-- Ticket Details -->
             <Card>
                 <CardHeader>
-                    <CardTitle>{{ $t('adminTickets.details.title') }}</CardTitle>
+                    <CardTitle>{{
+                        $t('adminTickets.details.title')
+                    }}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -251,8 +255,8 @@ const statusVariant: Record<
                             >
                                 {{
                                     $t('adminTickets.ticketType.category', {
-                                        name: ticket.ticket_type
-                                            .ticket_category.name,
+                                        name: ticket.ticket_type.ticket_category
+                                            .name,
                                     })
                                 }}
                             </p>

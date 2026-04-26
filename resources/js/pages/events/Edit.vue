@@ -231,9 +231,7 @@ function unpublishEvent() {
                     <Heading
                         variant="small"
                         :title="$t('events.form.scheduleHeading')"
-                        :description="
-                            $t('events.form.scheduleEditDescription')
-                        "
+                        :description="$t('events.form.scheduleEditDescription')"
                     />
 
                     <div class="grid grid-cols-2 gap-4">

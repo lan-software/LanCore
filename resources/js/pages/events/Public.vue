@@ -37,9 +37,7 @@ const { t } = useI18n();
 
 const isPast = computed(() => props.mode === 'past');
 const pageTitle = computed(() =>
-    isPast.value
-        ? t('navigation.pastEvents')
-        : t('navigation.upcomingEvents'),
+    isPast.value ? t('navigation.pastEvents') : t('navigation.upcomingEvents'),
 );
 const emptyTitle = computed(() =>
     isPast.value

@@ -272,7 +272,9 @@ function pickerUrl(userId: number): string {
                             name="manager_email"
                             type="email"
                             :default-value="ticket.manager?.email ?? ''"
-                            :placeholder="$t('ticketCard.managerEmailPlaceholder')"
+                            :placeholder="
+                                $t('ticketCard.managerEmailPlaceholder')
+                            "
                             class="h-8 text-sm"
                         />
                         <Button

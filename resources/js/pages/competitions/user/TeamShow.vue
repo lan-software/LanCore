@@ -309,7 +309,11 @@ function statusColor(status: string): string {
                                         "
                                     >
                                         <Check class="mr-1 size-3" />
-                                        {{ $t('competitions.user.approveRequest') }}
+                                        {{
+                                            $t(
+                                                'competitions.user.approveRequest',
+                                            )
+                                        }}
                                     </Button>
                                     <Button
                                         size="sm"
@@ -318,7 +322,9 @@ function statusColor(status: string): string {
                                         @click="resolveRequest(req.id, 'deny')"
                                     >
                                         <X class="mr-1 size-3" />
-                                        {{ $t('competitions.user.denyRequest') }}
+                                        {{
+                                            $t('competitions.user.denyRequest')
+                                        }}
                                     </Button>
                                 </div>
                             </div>

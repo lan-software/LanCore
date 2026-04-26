@@ -13,8 +13,10 @@ use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\TicketCategory;
 use App\Domain\Ticketing\Models\TicketType;
 use App\Domain\Venue\Models\Venue;
+use App\Domain\Venue\Models\VenueImage;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\StorageRole;
 
 it('seeds demo data successfully', function () {
     $this->artisan('db:seed-demo')
@@ -52,4 +54,26 @@ it('also runs the default database seeder', function () {
         ->assertSuccessful();
 
     expect(Role::count())->toBe(5);
+});
+
+it('uploads venue and sponsor demo images to the public disk with image MIME types', function () {
+    $this->artisan('db:seed-demo')->assertSuccessful();
+
+    $disk = StorageRole::public();
+
+    $venueImagePaths = VenueImage::query()->pluck('path')->all();
+    expect($venueImagePaths)->not->toBeEmpty();
+
+    foreach ($venueImagePaths as $path) {
+        expect($disk->exists($path))->toBeTrue("Expected venue image to exist at {$path}");
+        expect($disk->mimeType($path))->toStartWith('image/');
+    }
+
+    $sponsorLogos = Sponsor::query()->whereNotNull('logo')->pluck('logo')->all();
+    expect($sponsorLogos)->not->toBeEmpty();
+
+    foreach ($sponsorLogos as $path) {
+        expect($disk->exists($path))->toBeTrue("Expected sponsor logo to exist at {$path}");
+        expect($disk->mimeType($path))->toStartWith('image/');
+    }
 });

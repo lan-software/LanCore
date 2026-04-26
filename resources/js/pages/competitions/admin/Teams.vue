@@ -40,7 +40,10 @@ const props = defineProps<{
 const breadcrumbs: BreadcrumbItem[] = [
     { title: t('common.administration'), href: adminTeamsRoute().url },
     { title: t('competitions.admin.competition'), href: adminTeamsRoute().url },
-    { title: t('competitions.admin.teamsHeading'), href: adminTeamsRoute().url },
+    {
+        title: t('competitions.admin.teamsHeading'),
+        href: adminTeamsRoute().url,
+    },
 ];
 
 const search = ref(props.filters.search);
@@ -95,7 +98,9 @@ function statusColor(status: string): string {
                     />
                     <Input
                         v-model="search"
-                        :placeholder="$t('competitions.admin.searchPlaceholder')"
+                        :placeholder="
+                            $t('competitions.admin.searchPlaceholder')
+                        "
                         class="pl-9"
                     />
                 </div>

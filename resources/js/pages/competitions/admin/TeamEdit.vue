@@ -63,7 +63,10 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: t('common.administration'), href: adminTeamsRoute().url },
-    { title: t('competitions.admin.teamsHeading'), href: adminTeamsRoute().url },
+    {
+        title: t('competitions.admin.teamsHeading'),
+        href: adminTeamsRoute().url,
+    },
     {
         title: props.team.name,
         href: AdminTeamController.edit({ team: props.team.id }).url,
@@ -179,7 +182,9 @@ function statusColor(status: string): string {
 
                         <div class="grid grid-cols-2 gap-4">
                             <div class="grid gap-2">
-                                <Label for="name">{{ $t('common.name') }}</Label>
+                                <Label for="name">{{
+                                    $t('common.name')
+                                }}</Label>
                                 <Input
                                     id="name"
                                     name="name"
