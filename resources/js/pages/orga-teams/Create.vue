@@ -4,7 +4,6 @@ import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -12,6 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index as orgaTeamsRoute, store } from '@/routes/orga-teams';
 import type { BreadcrumbItem } from '@/types';
@@ -68,7 +68,10 @@ function slugify(value: string): string {
                         @input="form.slug = form.slug || slugify(form.name)"
                         required
                     />
-                    <p v-if="form.errors.name" class="mt-1 text-sm text-destructive">
+                    <p
+                        v-if="form.errors.name"
+                        class="mt-1 text-sm text-destructive"
+                    >
                         {{ form.errors.name }}
                     </p>
                 </div>
@@ -76,7 +79,10 @@ function slugify(value: string): string {
                 <div>
                     <Label for="slug">Slug</Label>
                     <Input id="slug" v-model="form.slug" required />
-                    <p v-if="form.errors.slug" class="mt-1 text-sm text-destructive">
+                    <p
+                        v-if="form.errors.slug"
+                        class="mt-1 text-sm text-destructive"
+                    >
                         {{ form.errors.slug }}
                     </p>
                 </div>
@@ -111,7 +117,8 @@ function slugify(value: string): string {
                                 :key="u.id"
                                 :value="String(u.id)"
                             >
-                                {{ u.name }}<span v-if="u.username">
+                                {{ u.name
+                                }}<span v-if="u.username">
                                     (@{{ u.username }})</span
                                 >
                             </SelectItem>

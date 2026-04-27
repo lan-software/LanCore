@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-} from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { show as profileShow } from '@/routes/public-profile';
 
 type Person = {
@@ -48,7 +44,10 @@ function initials(p: Person): string {
         class="group flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-muted/50"
     >
         <Avatar :class="sizeClasses.avatar">
-            <AvatarImage :src="person.avatar_url" :alt="person.username ?? ''" />
+            <AvatarImage
+                :src="person.avatar_url"
+                :alt="person.username ?? ''"
+            />
             <AvatarFallback>{{ initials(person) }}</AvatarFallback>
         </Avatar>
         <div class="min-w-0 flex-1">
@@ -57,7 +56,7 @@ function initials(p: Person): string {
                     person.profile_emoji
                 }}</span>
                 <span v-if="person.username">@{{ person.username }}</span>
-                <span v-else class="italic text-muted-foreground"
+                <span v-else class="text-muted-foreground italic"
                     >Player #{{ person.id }}</span
                 >
             </div>

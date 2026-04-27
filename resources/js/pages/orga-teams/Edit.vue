@@ -7,7 +7,6 @@ import ProfileEmojiPicker from '@/components/ProfileEmojiPicker.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -15,17 +14,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
-import {
-    destroy as orgaTeamDestroy,
-    index as orgaTeamsRoute,
-    update as orgaTeamUpdate,
-} from '@/routes/orga-teams';
 import {
     destroy as subTeamDestroy,
     update as subTeamUpdate,
 } from '@/routes/orga-sub-teams';
 import { sync as subTeamMembersSync } from '@/routes/orga-sub-teams/members';
+import {
+    destroy as orgaTeamDestroy,
+    index as orgaTeamsRoute,
+    update as orgaTeamUpdate,
+} from '@/routes/orga-teams';
 import { store as subTeamStore } from '@/routes/orga-teams/sub-teams';
 import type { BreadcrumbItem } from '@/types';
 
@@ -98,6 +98,7 @@ function deleteTeam() {
     ) {
         return;
     }
+
     router.delete(orgaTeamDestroy(props.orgaTeam.id).url);
 }
 
@@ -105,7 +106,9 @@ function toggleDeputy(userId: number) {
     if (userId === teamForm.organizer_user_id) {
         return;
     }
+
     const idx = teamForm.deputy_user_ids.indexOf(userId);
+
     if (idx >= 0) {
         teamForm.deputy_user_ids.splice(idx, 1);
     } else {
@@ -121,14 +124,16 @@ const newSubTeam = useForm({
 });
 
 function createSubTeam() {
-    newSubTeam.transform((data) => ({
-        ...data,
-        emoji: data.emoji || null,
-        color: data.color || null,
-    })).post(subTeamStore(props.orgaTeam.id).url, {
-        preserveScroll: true,
-        onSuccess: () => newSubTeam.reset(),
-    });
+    newSubTeam
+        .transform((data) => ({
+            ...data,
+            emoji: data.emoji || null,
+            color: data.color || null,
+        }))
+        .post(subTeamStore(props.orgaTeam.id).url, {
+            preserveScroll: true,
+            onSuccess: () => newSubTeam.reset(),
+        });
 }
 
 // --- per sub-team edit ---
@@ -157,6 +162,7 @@ function deleteSubTeam(sub: SubTeam) {
     if (!confirm(`Delete sub-team "${sub.name}"?`)) {
         return;
     }
+
     router.delete(subTeamDestroy(sub.id).url, { preserveScroll: true });
 }
 
@@ -173,10 +179,15 @@ function syncMembers(sub: SubTeam) {
     );
 }
 
-function addMembership(sub: SubTeam, userId: number, role: 'deputy' | 'member') {
+function addMembership(
+    sub: SubTeam,
+    userId: number,
+    role: 'deputy' | 'member',
+) {
     if (sub.memberships.some((m) => m.user_id === userId)) {
         return;
     }
+
     sub.memberships.push({
         id: 0,
         user_id: userId,
@@ -188,6 +199,7 @@ function addMembership(sub: SubTeam, userId: number, role: 'deputy' | 'member') 
 
 function removeMembership(sub: SubTeam, userId: number) {
     const idx = sub.memberships.findIndex((m) => m.user_id === userId);
+
     if (idx >= 0) {
         sub.memberships.splice(idx, 1);
     }
@@ -195,15 +207,21 @@ function removeMembership(sub: SubTeam, userId: number) {
 
 const usersById = computed(() => {
     const map = new Map<number, UserOption>();
+
     for (const u of props.users) {
         map.set(u.id, u);
     }
+
     return map;
 });
 
 function userLabel(id: number): string {
     const u = usersById.value.get(id);
-    if (!u) return `#${id}`;
+
+    if (!u) {
+        return `#${id}`;
+    }
+
     return u.username ? `@${u.username}` : u.name;
 }
 </script>
@@ -399,7 +417,10 @@ function userLabel(id: number): string {
                         </span>
                     </button>
 
-                    <div v-if="expanded === sub.id" class="space-y-4 border-t p-4">
+                    <div
+                        v-if="expanded === sub.id"
+                        class="space-y-4 border-t p-4"
+                    >
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <Label>Name</Label>
@@ -417,9 +438,7 @@ function userLabel(id: number): string {
                                 <ProfileEmojiPicker
                                     :name="`sub_team_emoji_${sub.id}`"
                                     :model-value="sub.emoji"
-                                    @update:model-value="
-                                        (v) => (sub.emoji = v)
-                                    "
+                                    @update:model-value="(v) => (sub.emoji = v)"
                                 />
                             </div>
                             <div>
@@ -457,7 +476,8 @@ function userLabel(id: number): string {
                                         :key="u.id"
                                         :value="String(u.id)"
                                     >
-                                        {{ u.name }}<span v-if="u.username">
+                                        {{ u.name
+                                        }}<span v-if="u.username">
                                             (@{{ u.username }})</span
                                         >
                                     </SelectItem>
@@ -491,7 +511,10 @@ function userLabel(id: number): string {
                                 </span>
                                 <Select
                                     :model-value="m.role"
-                                    @update:model-value="(v) => (m.role = v as 'deputy' | 'member')"
+                                    @update:model-value="
+                                        (v) =>
+                                            (m.role = v as 'deputy' | 'member')
+                                    "
                                 >
                                     <SelectTrigger class="w-40">
                                         <SelectValue />
@@ -558,10 +581,7 @@ function userLabel(id: number): string {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <Button
-                                    type="button"
-                                    @click="syncMembers(sub)"
-                                >
+                                <Button type="button" @click="syncMembers(sub)">
                                     Save members
                                 </Button>
                             </div>

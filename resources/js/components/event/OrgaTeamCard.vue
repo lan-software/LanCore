@@ -2,11 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import { Users } from 'lucide-vue-next';
 import { computed } from 'vue';
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-} from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { show as orgaTeamShow } from '@/routes/events/orga-team';
 
 type Person = {
@@ -51,7 +47,9 @@ function initials(p: Person): string {
         <p class="mb-4 text-sm font-medium">{{ orgaTeam.name }}</p>
 
         <div v-if="orgaTeam.organizer" class="mb-3">
-            <p class="mb-1 text-[10px] tracking-wider text-muted-foreground uppercase">
+            <p
+                class="mb-1 text-[10px] tracking-wider text-muted-foreground uppercase"
+            >
                 {{ organizerLabel ?? 'Organizer' }}
             </p>
             <div class="flex items-center gap-2">
@@ -66,9 +64,11 @@ function initials(p: Person): string {
                 </Avatar>
                 <div class="min-w-0">
                     <p class="truncate text-sm">
-                        <span v-if="orgaTeam.organizer.profile_emoji" class="mr-1">{{
-                            orgaTeam.organizer.profile_emoji
-                        }}</span>
+                        <span
+                            v-if="orgaTeam.organizer.profile_emoji"
+                            class="mr-1"
+                            >{{ orgaTeam.organizer.profile_emoji }}</span
+                        >
                         <span v-if="orgaTeam.organizer.username">
                             @{{ orgaTeam.organizer.username }}
                         </span>

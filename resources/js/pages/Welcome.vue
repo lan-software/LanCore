@@ -145,7 +145,8 @@ function dismissAnnouncement(announcementId: number) {
                 <div
                     :class="[
                         'mx-auto px-6 py-12',
-                        $page.props.auth.user && (nextEvent as Event & { orga_team: unknown }).orga_team
+                        $page.props.auth.user &&
+                        (nextEvent as Event & { orga_team: unknown }).orga_team
                             ? 'max-w-7xl lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-8'
                             : 'max-w-5xl',
                     ]"
@@ -640,7 +641,7 @@ function dismissAnnouncement(announcementId: number) {
                             $page.props.auth.user &&
                             (nextEvent as Event & { orga_team: any }).orga_team
                         "
-                        class="order-2 mt-8 flex flex-col gap-6 lg:mt-0 lg:sticky lg:top-6 lg:self-start"
+                        class="order-2 mt-8 flex flex-col gap-6 lg:sticky lg:top-6 lg:mt-0 lg:self-start"
                     >
                         <OrgaTeamCard
                             :event-id="nextEvent.id"

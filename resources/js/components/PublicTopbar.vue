@@ -75,10 +75,7 @@ function resolveIcon(name: string | null): Component {
             <div
                 class="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6"
             >
-                <Link
-                    href="/"
-                    class="flex w-44 shrink-0 items-center sm:w-56"
-                >
+                <Link href="/" class="flex w-44 shrink-0 items-center sm:w-56">
                     <AppLogo />
                 </Link>
                 <div class="flex items-center gap-2">
@@ -175,10 +172,7 @@ function resolveIcon(name: string | null): Component {
         <div
             class="mx-auto hidden max-w-5xl items-center justify-between gap-4 px-6 py-4 lg:flex"
         >
-            <Link
-                href="/"
-                class="flex w-56 shrink-0 items-center"
-            >
+            <Link href="/" class="flex w-56 shrink-0 items-center">
                 <AppLogo />
             </Link>
             <nav class="flex min-w-0 items-center gap-4">

@@ -44,11 +44,10 @@ defineProps<{
     <div class="flex flex-col items-stretch gap-10">
         <!-- Organizer + Deputies -->
         <section class="space-y-4">
-            <h2 class="text-2xl font-bold tracking-tight">{{ orgaTeam.name }}</h2>
-            <p
-                v-if="orgaTeam.description"
-                class="text-muted-foreground"
-            >
+            <h2 class="text-2xl font-bold tracking-tight">
+                {{ orgaTeam.name }}
+            </h2>
+            <p v-if="orgaTeam.description" class="text-muted-foreground">
                 {{ orgaTeam.description }}
             </p>
 

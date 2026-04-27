@@ -4,8 +4,8 @@ import { ArrowLeft } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppFooter from '@/components/AppFooter.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
-import PublicTopbar from '@/components/PublicTopbar.vue';
 import OrgChart from '@/components/orga-team/OrgChart.vue';
+import PublicTopbar from '@/components/PublicTopbar.vue';
 import EventLayout from '@/layouts/event/EventLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
@@ -38,7 +38,12 @@ type OrgaTeam = {
 };
 
 const props = defineProps<{
-    event: { id: number; name: string; start_date: string | null; end_date: string | null };
+    event: {
+        id: number;
+        name: string;
+        start_date: string | null;
+        end_date: string | null;
+    };
     orgaTeam: OrgaTeam;
 }>();
 
