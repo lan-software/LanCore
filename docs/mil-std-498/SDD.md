@@ -61,6 +61,7 @@ app/
 │   ├── Program/
 │   ├── Seating/
 │   ├── Sponsoring/
+│   ├── OrgaTeam/                # Reusable staff-team composition + public OrgChart
 │   ├── News/
 │   ├── Announcement/
 │   ├── Achievements/
@@ -181,6 +182,7 @@ Private key files reside at `storage/keys/ticket_signing/{kid}.key` with mode 06
 | ManageSponsors | | | | X | X |
 | ManageSponsorLevels | | | | X | X |
 | ManageAssignedSponsors | | | X | | X |
+| ManageOrgaTeams | | | | X | X |
 | ManageIntegrations | | | | X | X |
 | ManageWebhooks | | | | X | X |
 | ManageUsers | | | | X | X |
@@ -223,7 +225,7 @@ Private key files reside at `storage/keys/ticket_signing/{kid}.key` with mode 06
 └─────────────────────────────────────────────────────────┘
 ```
 
-### 4.2 Domain Modules (17)
+### 4.2 Domain Modules (18)
 
 Each domain module follows a consistent internal structure:
 
@@ -247,6 +249,7 @@ Each domain module follows a consistent internal structure:
 | Program | 2 | 6 | 2 | 1 | 1 |
 | Seating | 2 | 5 | 3 | 0 | 0 |
 | Sponsoring | 2 | 6 | 4 | 0 | 0 |
+| OrgaTeam | 3 | 10 | 4 | 0 | 0 |
 | News | 3 | 3 | 5 | 2 | 2 |
 | Announcement | 1 | 3 | 3 | 2 | 2 |
 | Achievements | 2 | 4 | 1 | 0 | 1 |
@@ -545,6 +548,7 @@ Organized under `resources/js/pages/`:
 | Seating Picker | 1 | Picker (end-user seat selection) |
 | Sponsors | 4 | Index, Create, Edit, Audit |
 | Sponsor Levels | 4 | Index, Create, Edit, Audit |
+| Orga Teams | 4 | Index, Create, Edit, Public (event-scoped OrgChart) |
 | News | 5 | Index, Create, Edit, Show, Audit |
 | News Comments | 2 | Index, Audit |
 | Announcements | 4 | Index, Create, Edit, Public |
@@ -607,6 +611,47 @@ Built on **reka-ui** (headless) + **Tailwind CSS v4**:
 On both branches the controller redirects to `my-competitions.show` and sets a flash `success` message appropriate to the branch (standard leave vs. team disbanded).
 
 Non-members are rejected at the policy layer (`CompetitionTeamPolicy::leave()` → 403) before the action is reached.
+
+### 5.3a' Design Notes — Orga-Team Domain
+
+**Module shape (`app/Domain/OrgaTeam/`)**
+
+| Class | Responsibility |
+|---|---|
+| `Models/OrgaTeam` | Aggregate root: name, slug, description, organizer (BelongsTo User), deputies (BelongsToMany via `orga_team_deputies` ordered by `sort_order`), subTeams (HasMany ordered by `sort_order`), events (HasMany Event via `orga_team_id`) |
+| `Models/OrgaSubTeam` | name, optional description/emoji/accent color, sort_order, optional leader (BelongsTo User), memberships (HasMany), `users()` BelongsToMany through `orga_sub_team_memberships` |
+| `Models/OrgaSubTeamMembership` | Pivot model with `role` cast to `SubTeamRole` enum (`Deputy`, `Member`), `sort_order` |
+| `Enums/SubTeamRole` | `Deputy`, `Member` (translated `label()`) |
+| `Enums/Permission` | `ManageOrgaTeams` only (registered with the central permission system) |
+| `Actions/CreateOrgaTeam`, `UpdateOrgaTeam`, `DeleteOrgaTeam` | Team CRUD wrapped in `DB::transaction` |
+| `Actions/SyncOrgaTeamDeputies` | Idempotent set-replace of deputies, preserves input order via `sort_order` |
+| `Actions/CreateOrgaSubTeam`, `UpdateOrgaSubTeam`, `DeleteOrgaSubTeam` | Sub-team CRUD; cascade on team delete |
+| `Actions/SyncOrgaSubTeamMemberships` | Upsert/prune `(user_id, role)` tuples; enforces unique `(orga_sub_team_id, user_id)` and rejects the team Organizer as a Sub-Team member |
+| `Actions/AssignOrgaTeamToEvent` | Sets `events.orga_team_id` (or null to unassign) |
+| `Actions/ResolveWelcomeEvent` | Returns next Published event with `start_date >= today` ordered ascending; null when none. Lives in OrgaTeam because it is the first consumer; lift into Event domain when a second consumer appears |
+| `Policies/OrgaTeamPolicy`, `OrgaSubTeamPolicy` | All write paths gated on `Permission::ManageOrgaTeams`; public OrgChart rendering is policy-free |
+| `Http/Controllers/OrgaTeamController` | Admin CRUD; `edit` page eager-loads sub-teams + memberships for single-page management |
+| `Http/Controllers/OrgaSubTeamController` | Nested under team; includes `syncMembers` write-action |
+| `Http/Controllers/EventOrgaTeamController` | Per-event assign/unassign; isolated from `EventController` |
+| `Http/Controllers/PublicOrgaTeamController` | `show(Event $event)` — Inertia OrgChart page; 404 when `$event->orga_team_id` is null |
+
+**Frontend (`resources/js/`)**
+
+| Path | Responsibility |
+|---|---|
+| `layouts/event/EventLayout.vue` | Event-bound layout wrapping `AppLayout`; CSS Grid `[minmax(0,1fr)_280px]` on `lg:`, single column with `right` slot stacked below `default` on smaller viewports. Reusable for any future event-scoped page |
+| `components/event/RightContentArea.vue` | Slot-based vertical stack inside the `right` grid cell; pure layout |
+| `components/event/OrgaTeamCard.vue` | Compact preview: organizer + first 2 deputies + sub-team count + link to public OrgChart via Wayfinder route |
+| `components/orga-team/OrgChart.vue`, `SubTeamGroup.vue`, `PersonCard.vue` | Custom Tailwind tree (no external library); PersonCard wraps `<Link>` to `/u/{username}` |
+| `pages/orga-teams/Index.vue` / `Create.vue` / `Edit.vue` / `Public.vue` | Admin CRUD + public OrgChart page (the public page also uses `EventLayout`) |
+
+**Invariants**
+
+- A user MUST appear at most once per Sub-Team (DB unique on `(orga_sub_team_id, user_id)`).
+- A team's Organizer MUST NOT also appear as a top-level Deputy (validated in `StoreOrgaTeamRequest`/`UpdateOrgaTeamRequest`).
+- A Sub-Team's Leader MUST differ from the team Organizer (validated in `StoreOrgaSubTeamRequest`/`UpdateOrgaSubTeamRequest`).
+- An Event references at most one OrgaTeam; deleting the OrgaTeam sets `events.orga_team_id` to null (no cascade-delete of the event).
+- Membership grants no permissions; only `Permission::ManageOrgaTeams` governs editing.
 
 ### 5.3b Design Notes — Event Context Controller
 

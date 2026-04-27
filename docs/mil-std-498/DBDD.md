@@ -148,6 +148,7 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | seat_capacity | integer (nullable) | Total seat capacity |
 | banner_images | jsonb (nullable) | Array of banner image data |
 | primary_program_id | bigint FK (nullable) | References programs.id |
+| orga_team_id | bigint FK (nullable) | References orga_teams.id; ON DELETE SET NULL — at most one Orga-Team per event (OT-F-005) |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 
@@ -506,6 +507,60 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 - **program_sponsor** — (program_id, sponsor_id)
 - **sponsor_time_slot** — (sponsor_id, time_slot_id)
 - **sponsor_user** — (sponsor_id, user_id)
+
+### 4.6a Orga-Team
+
+#### 4.6a.1 orga_teams
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| name | varchar | Team name (e.g., "SXLAN Crew") |
+| slug | varchar (unique) | URL-friendly identifier |
+| description | text (nullable) | Optional team description |
+| organizer_user_id | bigint FK | References users.id — the *Veranstalter* (Organizer) |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+#### 4.6a.2 orga_team_deputies (pivot)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| orga_team_id | bigint FK | References orga_teams.id (cascade delete) |
+| user_id | bigint FK | References users.id — *Stellvertreter* of the team |
+| sort_order | integer | Display order within the deputy list |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+| | UNIQUE (orga_team_id, user_id) | A user appears at most once as deputy per team |
+
+#### 4.6a.3 orga_sub_teams
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| orga_team_id | bigint FK | References orga_teams.id (cascade delete) |
+| name | varchar | Sub-team name (e.g., "Tech", "Marketing") |
+| description | text (nullable) | Optional description |
+| emoji | varchar (nullable) | Optional single-grapheme emoji for visual identity |
+| color | varchar (nullable) | Optional accent color (`#rrggbb`) |
+| sort_order | integer | Display order within the parent team |
+| leader_user_id | bigint FK (nullable) | References users.id — Sub-Team Leader |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+#### 4.6a.4 orga_sub_team_memberships (pivot)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint PK | Primary key |
+| orga_sub_team_id | bigint FK | References orga_sub_teams.id (cascade delete) |
+| user_id | bigint FK | References users.id |
+| role | varchar | SubTeamRole enum (`deputy`, `member`) — Fallback Leader vs regular Member |
+| sort_order | integer | Display order within the role bucket |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+| | UNIQUE (orga_sub_team_id, user_id) | A user holds at most one role per Sub-Team; same user may belong to multiple Sub-Teams |
 
 ### 4.7 Games
 

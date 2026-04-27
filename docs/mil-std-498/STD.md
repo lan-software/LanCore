@@ -403,6 +403,26 @@ This ensures complete isolation between test cases.
 | allows admins to update a sponsor level | Admin, level exists | PATCH /sponsor-levels/{id} | 302, level updated |
 | allows admins to delete a sponsor level | Admin, level exists | DELETE /sponsor-levels/{id} | 302, level deleted |
 
+### 4.10a Orga-Team Tests
+
+**File:** `tests/Feature/OrgaTeam/`
+
+| Test | Preconditions | Input | Expected Result |
+|------|--------------|-------|-----------------|
+| admin can create an orga-team with organizer + deputies | Admin | POST /orga-teams {name, slug, organizer_user_id, deputy_user_ids} | 302, team + deputies persisted |
+| admin can update an orga-team | Admin, team exists | PATCH /orga-teams/{id} | 302, attributes updated |
+| admin can delete an orga-team | Admin, team exists | DELETE /orga-teams/{id} | 302, team and sub-teams cascade-deleted |
+| non-admin cannot manage orga-teams | Regular user | GET/POST/PATCH/DELETE /orga-teams | 403 Forbidden |
+| sub-team CRUD nested under team | Admin, team exists | POST/PATCH/DELETE /orga-teams/{team}/sub-teams | 302, sub-team mutated |
+| sub-team membership sync upserts and prunes | Admin, sub-team exists | PATCH /orga-teams/{team}/sub-teams/{sub}/members [{user_id, role}, …] | Memberships replaced; uniqueness preserved |
+| organizer cannot also be top-level deputy | Admin | POST /orga-teams with overlapping ids | 422 validation error |
+| event can be assigned an orga-team | Admin, team + event exist | PATCH /events/{event}/orga-team {orga_team_id} | events.orga_team_id set |
+| public OrgChart visible when team assigned | Anonymous | GET /events/{event}/orga-team | 200 with OrgChart props |
+| public OrgChart 404s when no team assigned | Anonymous | GET /events/{event}/orga-team (no team) | 404 |
+| Welcome RightContentArea hidden when no upcoming event | Logged-in user | GET / | OrgaTeamCard absent from props |
+| Welcome RightContentArea renders when next upcoming event has a team | Logged-in user | GET / | OrgaTeamCard included in props |
+| ResolveWelcomeEvent picks earliest published upcoming event | Multiple events seeded | unit | Returns the next published event after today, null otherwise |
+
 ### 4.11 Seating Tests
 
 **File:** `tests/Feature/Seating/`

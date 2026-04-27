@@ -266,6 +266,25 @@ No gaps identified.
 
 ---
 
+## 7a. Orga-Team Domain (CSCI-OT)
+
+| Req ID | Requirement | Source | Test File(s) | Status |
+|--------|-------------|--------|--------------|--------|
+| OT-F-001 | Orga-Team CRUD with name/slug/description/organizer | `Domain/OrgaTeam/Actions/CreateOrgaTeam.php`, `UpdateOrgaTeam.php`, `DeleteOrgaTeam.php` | `OrgaTeam/ManageOrgaTeamTest.php` | Covered |
+| OT-F-002 | Top-level deputies via `orga_team_deputies` pivot, ordered, organizer excluded | `Domain/OrgaTeam/Actions/SyncOrgaTeamDeputies.php` | `OrgaTeam/ManageOrgaTeamTest.php` | Covered |
+| OT-F-003 | Sub-Teams with name/desc/emoji/color/sort_order/leader | `Domain/OrgaTeam/Actions/CreateOrgaSubTeam.php`, `UpdateOrgaSubTeam.php`, `DeleteOrgaSubTeam.php` | `OrgaTeam/ManageSubTeamTest.php` | Covered |
+| OT-F-004 | Sub-Team memberships with `role` enum, unique per (sub_team,user) | `Domain/OrgaTeam/Actions/SyncOrgaSubTeamMemberships.php` | `OrgaTeam/MembershipSyncTest.php` | Covered |
+| OT-F-005 | `events.orga_team_id` nullable FK with ON DELETE SET NULL | `Domain/OrgaTeam/Actions/AssignOrgaTeamToEvent.php` | `OrgaTeam/AssignTeamToEventTest.php` | Covered |
+| OT-F-006 | OrgaTeamPolicy + OrgaSubTeamPolicy gated on ManageOrgaTeams | `Domain/OrgaTeam/Policies/` | `OrgaTeam/AccessTest.php` | Covered |
+| OT-F-007 | Public route GET /events/{event}/orga-team returns OrgChart or 404 | `Domain/OrgaTeam/Http/Controllers/PublicOrgaTeamController.php` | `OrgaTeam/PublicOrgaTeamTest.php` | Covered |
+| OT-F-008 | ResolveWelcomeEvent picks next published upcoming event | `Domain/OrgaTeam/Actions/ResolveWelcomeEvent.php` | `OrgaTeam/ResolveWelcomeEventTest.php` | Covered |
+| OT-F-009 | EventLayout + RightContentArea with mobile stacking | `resources/js/layouts/event/EventLayout.vue`, `resources/js/components/event/RightContentArea.vue` | `OrgaTeam/ResolveWelcomeEventTest.php` | Covered |
+| OT-F-010 | Membership confers no permissions; only ManageOrgaTeams governs editing | `Domain/OrgaTeam/Enums/Permission.php`, Policies | `OrgaTeam/AccessTest.php` | Covered |
+
+No gaps identified.
+
+---
+
 ## 8. News Domain (CSCI-NWS)
 
 | Req ID | Requirement | Source | Test File(s) | Status |

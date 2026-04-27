@@ -6,6 +6,7 @@ use App\Concerns\HasModelCache;
 use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Competition\Models\Competition;
 use App\Domain\Event\Enums\EventStatus;
+use App\Domain\OrgaTeam\Models\OrgaTeam;
 use App\Domain\Program\Models\Program;
 use App\Domain\Seating\Models\SeatPlan;
 use App\Domain\Shop\Models\Order;
@@ -30,7 +31,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @see docs/mil-std-498/SSS.md CAP-EVT-001, CAP-EVT-002, CAP-EVT-005
  * @see docs/mil-std-498/SRS.md EVT-F-002, EVT-F-004, EVT-F-010
  */
-#[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_images', 'status', 'venue_id', 'primary_program_id', 'seat_capacity'])]
+#[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_images', 'status', 'venue_id', 'primary_program_id', 'seat_capacity', 'orga_team_id'])]
 class Event extends Model implements AuditableContract
 {
     use Auditable;
@@ -75,6 +76,11 @@ class Event extends Model implements AuditableContract
     public function sponsors(): BelongsToMany
     {
         return $this->belongsToMany(Sponsor::class)->withTimestamps();
+    }
+
+    public function orgaTeam(): BelongsTo
+    {
+        return $this->belongsTo(OrgaTeam::class);
     }
 
     public function ticketTypes(): HasMany

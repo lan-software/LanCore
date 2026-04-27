@@ -71,11 +71,14 @@ function resolveIcon(name: string | null): Component {
 
 <template>
     <header class="border-b">
-        <Collapsible v-model:open="mobileMenuOpen" class="md:hidden">
+        <Collapsible v-model:open="mobileMenuOpen" class="lg:hidden">
             <div
                 class="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6"
             >
-                <Link href="/" class="flex items-center">
+                <Link
+                    href="/"
+                    class="flex w-44 shrink-0 items-center sm:w-56"
+                >
                     <AppLogo />
                 </Link>
                 <div class="flex items-center gap-2">
@@ -170,29 +173,32 @@ function resolveIcon(name: string | null): Component {
         </Collapsible>
 
         <div
-            class="mx-auto hidden max-w-5xl items-center justify-between px-6 py-4 md:flex"
+            class="mx-auto hidden max-w-5xl items-center justify-between gap-4 px-6 py-4 lg:flex"
         >
-            <Link href="/" class="flex items-center">
+            <Link
+                href="/"
+                class="flex w-56 shrink-0 items-center"
+            >
                 <AppLogo />
             </Link>
-            <nav class="flex items-center gap-4">
+            <nav class="flex min-w-0 items-center gap-4">
                 <Link
                     href="/upcoming-events"
-                    class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                    class="flex items-center gap-1.5 text-sm whitespace-nowrap text-muted-foreground hover:text-foreground"
                 >
                     <Calendar class="size-4" />
                     {{ $t('navigation.upcomingEvents') }}
                 </Link>
                 <Link
                     href="/past-events"
-                    class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                    class="flex items-center gap-1.5 text-sm whitespace-nowrap text-muted-foreground hover:text-foreground"
                 >
                     <Clock class="size-4" />
                     {{ $t('navigation.pastEvents') }}
                 </Link>
                 <Link
                     :href="shopIndex().url"
-                    class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                    class="flex items-center gap-1.5 text-sm whitespace-nowrap text-muted-foreground hover:text-foreground"
                 >
                     <ShoppingCart class="size-4" />
                     {{ $t('navigation.shop') }}
@@ -201,7 +207,7 @@ function resolveIcon(name: string | null): Component {
                     <DropdownMenuTrigger as-child>
                         <button
                             type="button"
-                            class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                            class="flex items-center gap-1.5 text-sm whitespace-nowrap text-muted-foreground hover:text-foreground"
                             data-test="topbar-apps-button"
                         >
                             <LayoutGrid class="size-4" />
@@ -242,7 +248,7 @@ function resolveIcon(name: string | null): Component {
                 <Link
                     v-if="$page.props.auth.user"
                     :href="dashboard()"
-                    class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                    class="rounded-md bg-primary px-4 py-2 text-sm font-medium whitespace-nowrap text-primary-foreground hover:bg-primary/90"
                 >
                     {{ $t('common.dashboard') }}
                 </Link>
@@ -250,14 +256,14 @@ function resolveIcon(name: string | null): Component {
                 <template v-else>
                     <Link
                         :href="login()"
-                        class="text-sm text-muted-foreground hover:text-foreground"
+                        class="text-sm whitespace-nowrap text-muted-foreground hover:text-foreground"
                     >
                         {{ $t('auth.login.button') }}
                     </Link>
                     <Link
                         v-if="canRegister"
                         :href="register()"
-                        class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                        class="rounded-md bg-primary px-4 py-2 text-sm font-medium whitespace-nowrap text-primary-foreground hover:bg-primary/90"
                     >
                         {{ $t('navigation.register') }}
                     </Link>

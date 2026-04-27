@@ -269,6 +269,16 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 5. System maintains a per-achievement **earned-user count** that is incremented whenever a grant fires and decremented on revocation; the count, divided by the current registered-user total, yields the **achievement rarity percentage**
 6. User can view their earned achievements in settings, and any visitor with permission to see a user's public profile sees the user's earned achievements alongside the rarity label (e.g., "Earned by 5% of users")
 
+#### 5.2.8 Showing the Orga-Team to Attendees
+
+1. Admin opens the Orga-Teams admin section and creates a reusable Orga-Team (e.g., "SXLAN Crew") composed of one *Veranstalter* (top-level Organizer), N *Stellvertreter* (Deputies), and N Sub-Teams (e.g., Tech, Marketing, Tournaments, General)
+2. For each Sub-Team, admin assigns one optional Leader, N optional Fallback Leaders (Deputies), and N regular Members; all members must be registered LanCore users; a single user may belong to multiple Sub-Teams
+3. Admin assigns the Orga-Team to one or more events. An event has at most one Orga-Team; multiple events may share the same team. When no team is assigned to an event, the public Orga-Team display is suppressed for that event
+4. While logged in, attendees see a compact OrgaTeamCard inside the new event-bound RightContentArea on event-scoped pages (Welcome resolves the next upcoming Published event)
+5. The OrgaTeamCard links to a dedicated public OrgChart page (`/events/{event}/orga-team`) showing the full hierarchy as a tree: Organizer + Deputies at the top, each Sub-Team as a coloured/emoji-tagged group below with its Leader, Fallback Leaders, and Members
+6. Each person card on the OrgChart links to the user's public profile (`/u/{username}`)
+7. Membership is purely informational and confers no system permissions; only `ManageOrgaTeams` (admin) governs editing the team
+
 ### 5.3 System Context
 
 ```

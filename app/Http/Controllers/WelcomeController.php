@@ -7,6 +7,7 @@ use App\Domain\Competition\Enums\CompetitionStatus;
 use App\Domain\Competition\Models\Competition;
 use App\Domain\Event\Models\Event;
 use App\Domain\News\Models\NewsArticle;
+use App\Domain\OrgaTeam\Http\Resources\OrgaTeamResource;
 use App\Domain\Program\Enums\ProgramVisibility;
 use App\Domain\Seating\Http\Resources\SeatPlanResource;
 use App\Domain\Seating\Models\SeatAssignment;
@@ -30,6 +31,10 @@ class WelcomeController extends Controller
                 'programs.timeSlots' => fn ($q) => $q->where('visibility', ProgramVisibility::Public)->orderBy('starts_at'),
                 'programs.timeSlots.sponsors',
                 'sponsors.sponsorLevel',
+                'orgaTeam.organizer',
+                'orgaTeam.deputies',
+                'orgaTeam.subTeams.leader',
+                'orgaTeam.subTeams.memberships.user',
                 'seatPlans.blocks.seats',
                 'seatPlans.blocks.labels',
                 'seatPlans.blocks.categoryRestrictions',
@@ -67,6 +72,9 @@ class WelcomeController extends Controller
             }
 
             $nextEventData['taken_seats'] = $this->getTakenSeats($nextEvent, $request);
+            $nextEventData['orga_team'] = $nextEvent->orgaTeam
+                ? OrgaTeamResource::make($nextEvent->orgaTeam)->resolve()
+                : null;
         }
 
         return Inertia::render('Welcome', [

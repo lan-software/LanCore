@@ -32,6 +32,7 @@ import {
     TicketCheck,
     Trophy,
     Users,
+    UsersRound,
     Webhook,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -84,6 +85,7 @@ import { index as programsIndex } from '@/routes/programs';
 import { index as purchaseRequirementsIndex } from '@/routes/purchase-requirements';
 import { index as seatPlansIndex } from '@/routes/seat-plans';
 import { index as shopSettingsIndex } from '@/routes/shop-settings';
+import { index as orgaTeamsIndex } from '@/routes/orga-teams';
 import { index as sponsorLevelsIndex } from '@/routes/sponsor-levels';
 import { index as sponsorsIndex } from '@/routes/sponsors';
 import { index as ticketAddonsIndex } from '@/routes/ticket-addons';
@@ -271,6 +273,15 @@ const allPinnableItems = computed<NavItem[]>(() => {
                 icon: Palette,
             },
         );
+    }
+
+    if (can(Permission.ManageOrgaTeams)) {
+        items.push({
+            id: 'orga-teams',
+            title: 'Orga-Teams',
+            href: orgaTeamsIndex(),
+            icon: UsersRound,
+        });
     }
 
     if (
@@ -627,13 +638,18 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Event Domain -->
-            <SidebarGroup v-if="can(Permission.ManageEvents)">
+            <SidebarGroup
+                v-if="
+                    can(Permission.ManageEvents) ||
+                    can(Permission.ManageOrgaTeams)
+                "
+            >
                 <SidebarGroupLabel>{{
                     $t('navigation.groups.event')
                 }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
-                        <SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManageEvents)">
                             <SidebarMenuButton as-child>
                                 <Link :href="eventsIndex()">
                                     <Calendar />
@@ -651,7 +667,7 @@ function toggleFavorite(itemId: string): void {
                                 <Pin v-else class="size-4" />
                             </SidebarMenuAction>
                         </SidebarMenuItem>
-                        <SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManageEvents)">
                             <SidebarMenuButton as-child>
                                 <Link :href="eventsDashboard()">
                                     <Gauge />
@@ -666,6 +682,24 @@ function toggleFavorite(itemId: string): void {
                             >
                                 <PinOff
                                     v-if="isFavorited('event-dashboard')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManageOrgaTeams)">
+                            <SidebarMenuButton as-child>
+                                <Link :href="orgaTeamsIndex()">
+                                    <UsersRound />
+                                    <span>Orga-Teams</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('orga-teams')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('orga-teams')"
                                     class="size-4"
                                 />
                                 <Pin v-else class="size-4" />

@@ -132,6 +132,18 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-SPO-003 | The system shall support sponsor assignment to events, programs, and time slots |
 | CAP-SPO-004 | The system shall support sponsor manager user assignments |
 
+#### 3.2.6a Orga-Team (CAP-OT)
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-OT-001 | The system shall support reusable Orga-Teams composed of name, slug, optional description, one Organizer, and zero or more Deputies |
+| CAP-OT-002 | The system shall support Sub-Teams nested under an Orga-Team, each with name, optional description, optional emoji, optional accent color, sort order, optional Leader, zero or more Fallback Leaders, and zero or more Members |
+| CAP-OT-003 | The system shall allow assignment of at most one Orga-Team to an Event; the same Orga-Team may be assigned to multiple Events |
+| CAP-OT-004 | The system shall render a public OrgChart of the Orga-Team for any Event that has one assigned, and shall return 404 when an Event has no Orga-Team assigned |
+| CAP-OT-005 | The system shall expose an event-bound RightContentArea to logged-in users on event-scoped pages, surfacing the OrgaTeamCard and other event-bound secondary content |
+| CAP-OT-006 | The system shall require all Orga-Team members to be registered LanCore users; person cards in the OrgChart shall link to the corresponding public profile |
+| CAP-OT-007 | The system shall confine all Orga-Team management to holders of the `ManageOrgaTeams` permission; membership itself shall confer no other permissions |
+
 #### 3.2.7 News (CAP-NWS)
 
 | Req ID | Requirement |
@@ -431,6 +443,7 @@ Requirements in this document trace to:
 | SEC-021 | OCD §5.1.2 (visibility carve-out), OCD §5.2.6a (public-facing identity policy) | USR-F-023, USR-F-012 (privacy carve-out amendment) |
 | SEC-022 | OCD §5.1.2 (avatar/banner customization) | USR-F-024 |
 | CAP-I18N-001..007 | OCD §5.4 (Localized Display mode), OCD §5.1.2 | I18N-F-001..007 |
+| CAP-OT-001..007 | OCD §5.2.8 (Showing the Orga-Team to Attendees) | OT-F-001..010 |
 
 ---
 

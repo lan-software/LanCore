@@ -13,6 +13,7 @@ import {
 import { computed } from 'vue';
 import AppFooter from '@/components/AppFooter.vue';
 import BannerCarousel from '@/components/BannerCarousel.vue';
+import OrgaTeamCard from '@/components/event/OrgaTeamCard.vue';
 import PublicTopbar from '@/components/PublicTopbar.vue';
 import SeatMapCanvas from '@/components/SeatMapCanvas.vue';
 import { Badge } from '@/components/ui/badge';
@@ -141,9 +142,16 @@ function dismissAnnouncement(announcementId: number) {
         <main class="flex-1">
             <!-- Next Upcoming Event -->
             <template v-if="nextEvent">
-                <div class="mx-auto max-w-5xl px-6 py-12">
+                <div
+                    :class="[
+                        'mx-auto px-6 py-12',
+                        $page.props.auth.user && (nextEvent as Event & { orga_team: unknown }).orga_team
+                            ? 'max-w-7xl lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-8'
+                            : 'max-w-5xl',
+                    ]"
+                >
                     <!-- Event Hero -->
-                    <div class="space-y-6">
+                    <div class="order-1 min-w-0 space-y-6">
                         <div>
                             <p
                                 class="text-sm font-medium tracking-wider text-muted-foreground uppercase"
@@ -625,6 +633,23 @@ function dismissAnnouncement(announcementId: number) {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Right Content Area (Orga-Team etc.) -->
+                    <aside
+                        v-if="
+                            $page.props.auth.user &&
+                            (nextEvent as Event & { orga_team: any }).orga_team
+                        "
+                        class="order-2 mt-8 flex flex-col gap-6 lg:mt-0 lg:sticky lg:top-6 lg:self-start"
+                    >
+                        <OrgaTeamCard
+                            :event-id="nextEvent.id"
+                            :orga-team="
+                                (nextEvent as Event & { orga_team: any })
+                                    .orga_team
+                            "
+                        />
+                    </aside>
                 </div>
             </template>
 

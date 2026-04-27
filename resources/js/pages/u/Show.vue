@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { CalendarDays, ExternalLink, MapPin } from 'lucide-vue-next';
-import { defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
+import AppFooter from '@/components/AppFooter.vue';
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import PublicTopbar from '@/components/PublicTopbar.vue';
 import { edit as profileEdit } from '@/routes/profile';
+import type { BreadcrumbItem } from '@/types';
 
 type Achievement = {
     id: number;
@@ -37,7 +41,7 @@ type ProfilePayload = {
     created_at: string | null;
 };
 
-defineProps<{
+const props = defineProps<{
     profile: ProfilePayload;
     achievements: Achievement[];
     upcomingEvents: EventHistoryItem[];
@@ -45,6 +49,11 @@ defineProps<{
     isPreview: boolean;
     isOwner: boolean;
 }>();
+
+const breadcrumbs = computed<BreadcrumbItem[]>(() => [
+    { title: 'Home', href: '/' },
+    { title: props.profile.username ?? 'Profile', href: '#' },
+]);
 
 function formatEventDateRange(
     start: string | null,
@@ -125,13 +134,22 @@ function rarityClass(percentage: number): string {
 <template>
     <Head :title="profile.username ?? 'Profile'" />
 
-    <div class="min-h-screen bg-background pb-12">
-        <div
-            v-if="isPreview"
-            class="bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-900"
-        >
-            {{ $t('publicProfile.previewIndicator') }}
+    <div class="flex min-h-screen flex-col bg-background text-foreground">
+        <PublicTopbar />
+
+        <div class="border-b bg-muted/30">
+            <div class="mx-auto max-w-5xl px-4 py-2 sm:px-6">
+                <Breadcrumbs :breadcrumbs="breadcrumbs" />
+            </div>
         </div>
+
+        <main class="flex-1 pb-12">
+            <div
+                v-if="isPreview"
+                class="bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-900"
+            >
+                {{ $t('publicProfile.previewIndicator') }}
+            </div>
 
         <div class="relative">
             <div
@@ -370,5 +388,8 @@ function rarityClass(percentage: number): string {
                 </div>
             </section>
         </div>
+        </main>
+
+        <AppFooter />
     </div>
 </template>

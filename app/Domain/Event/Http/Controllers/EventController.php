@@ -11,6 +11,7 @@ use App\Domain\Event\Http\Requests\EventIndexRequest;
 use App\Domain\Event\Http\Requests\StoreEventRequest;
 use App\Domain\Event\Http\Requests\UpdateEventRequest;
 use App\Domain\Event\Models\Event;
+use App\Domain\OrgaTeam\Models\OrgaTeam;
 use App\Domain\Venue\Models\Venue;
 use App\Http\Controllers\Controller;
 use App\Support\StorageRole;
@@ -103,6 +104,9 @@ class EventController extends Controller
         return Inertia::render('events/Edit', [
             'event' => $eventData,
             'venues' => Venue::dropdownOptions(),
+            'orgaTeams' => OrgaTeam::query()
+                ->orderBy('name')
+                ->get(['id', 'name']),
         ]);
     }
 

@@ -199,6 +199,21 @@ vendor/bin/sail npm run types:check
 | TKT-003 | Ticket validation ID generation | Unit |
 | TKT-004 | User discoverability logic | Unit |
 
+#### 4.3.5a Orga-Team Tests (TGRP-OT)
+
+Covers OT-F-001..010.
+
+| Test ID | Description | Type |
+|---------|-------------|------|
+| OT-001 | Orga-Team CRUD by admin | Feature |
+| OT-002 | Sub-Team CRUD nested under team | Feature |
+| OT-003 | Sub-Team membership sync (upsert/prune, role enum) | Feature |
+| OT-004 | Event ↔ Orga-Team assignment / unassignment | Feature |
+| OT-005 | Public OrgChart visible / 404 when unassigned | Feature |
+| OT-006 | Permission gating (ManageOrgaTeams) | Feature |
+| OT-007 | Welcome RightContentArea visibility logic | Feature |
+| OT-008 | ResolveWelcomeEvent date selection | Unit |
+
 #### 4.3.6 Dashboard Tests (TGRP-DSH)
 
 | Test ID | Description | Type |

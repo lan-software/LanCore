@@ -206,6 +206,25 @@ The LanCore CSCI shall support the following operational states:
 | SPO-F-004 | The software shall enforce SponsorPolicy and SponsorLevelPolicy |
 | SPO-F-005 | The software shall maintain audit trails for sponsors and sponsor levels |
 
+#### 3.2.6a Orga-Team Domain (CSCI-OT)
+
+**Models:** OrgaTeam, OrgaSubTeam, OrgaSubTeamMembership
+**Controllers:** OrgaTeamController, OrgaSubTeamController, EventOrgaTeamController, PublicOrgaTeamController
+**Actions:** CreateOrgaTeam, UpdateOrgaTeam, DeleteOrgaTeam, SyncOrgaTeamDeputies, CreateOrgaSubTeam, UpdateOrgaSubTeam, DeleteOrgaSubTeam, SyncOrgaSubTeamMemberships, AssignOrgaTeamToEvent, ResolveWelcomeEvent
+
+| Req ID | Requirement |
+|--------|------------|
+| OT-F-001 | The software shall persist Orga-Teams with: name, slug (unique), optional description, organizer_user_id (FK → users) |
+| OT-F-002 | The software shall persist N Deputies per Orga-Team via the `orga_team_deputies` pivot, ordered by `sort_order`, with the Organizer excluded from the deputy set |
+| OT-F-003 | The software shall persist Sub-Teams under an Orga-Team with: name, optional description, optional emoji, optional accent color (hex `#rrggbb`), `sort_order`, optional `leader_user_id` |
+| OT-F-004 | The software shall persist Sub-Team memberships via `orga_sub_team_memberships` keyed `(orga_sub_team_id, user_id)` UNIQUE, carrying a `role` enum (`Deputy`, `Member`) and `sort_order`; a user may belong to multiple Sub-Teams |
+| OT-F-005 | The software shall add a nullable `events.orga_team_id` FK with `ON DELETE SET NULL`; an event has at most one Orga-Team assigned |
+| OT-F-006 | The software shall enforce `OrgaTeamPolicy` and `OrgaSubTeamPolicy`, gating all write paths on `Permission::ManageOrgaTeams` |
+| OT-F-007 | The software shall expose a public route `GET /events/{event}/orga-team` that returns the OrgChart Inertia page when the event has an Orga-Team assigned and 404 otherwise |
+| OT-F-008 | The software shall expose a `ResolveWelcomeEvent` action returning the next Published event with `start_date >= today` ordered by `start_date` ascending, or null when none exists |
+| OT-F-009 | The software shall provide an `EventLayout` Inertia/Vue layout exposing a right content slot for event-bound widgets; on viewports below `lg`, the right slot shall stack below the main content |
+| OT-F-010 | The software shall confine Orga-Team membership to permission-neutral display data; membership shall not grant any system permissions |
+
 #### 3.2.7 News Domain (CSCI-NWS)
 
 **Models:** NewsArticle, NewsComment, NewsCommentVote
@@ -601,6 +620,7 @@ Additional CSCI-level requirements:
 | CAP-SET-005 | SET-F-011 |
 | CAP-SET-006 | SET-F-012, SET-F-013, SET-F-014 |
 | CAP-SPO-* | SPO-F-* |
+| CAP-OT-001..007 | OT-F-001..010 |
 | CAP-NWS-* | NWS-F-* |
 | CAP-ANN-* | ANN-F-* |
 | CAP-ACH-* | ACH-F-* |

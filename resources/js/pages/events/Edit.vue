@@ -36,7 +36,21 @@ const { t } = useI18n();
 const props = defineProps<{
     event: Event;
     venues: { id: number; name: string }[];
+    orgaTeams: { id: number; name: string }[];
 }>();
+
+const orgaTeamSelection = ref<number | null>(
+    (props.event as Event & { orga_team_id: number | null }).orga_team_id ??
+        null,
+);
+
+function saveOrgaTeam() {
+    router.patch(
+        `/events/${props.event.id}/orga-team`,
+        { orga_team_id: orgaTeamSelection.value },
+        { preserveScroll: true },
+    );
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: t('common.administration'), href: eventsRoute().url },
@@ -463,6 +477,50 @@ function unpublishEvent() {
                     </p>
                 </div>
             </Form>
+
+            <!-- Orga-Team assignment -->
+            <div class="space-y-3 border-t pt-6">
+                <div>
+                    <h3 class="text-sm font-medium">Orga-Team</h3>
+                    <p class="text-sm text-muted-foreground">
+                        Pick the staff team shown publicly for this event. Leave
+                        unset to hide the team section.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <Select
+                        :model-value="
+                            orgaTeamSelection === null
+                                ? '__none__'
+                                : String(orgaTeamSelection)
+                        "
+                        @update:model-value="
+                            (v) =>
+                                (orgaTeamSelection =
+                                    v === '__none__' || !v ? null : Number(v))
+                        "
+                    >
+                        <SelectTrigger class="max-w-sm">
+                            <SelectValue placeholder="No team assigned" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="__none__">
+                                No team assigned
+                            </SelectItem>
+                            <SelectItem
+                                v-for="team in orgaTeams"
+                                :key="team.id"
+                                :value="String(team.id)"
+                            >
+                                {{ team.name }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Button type="button" @click="saveOrgaTeam">
+                        Save assignment
+                    </Button>
+                </div>
+            </div>
 
             <!-- Delete section -->
             <div class="border-t pt-6">
