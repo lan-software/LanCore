@@ -49,17 +49,21 @@ What started as a three-day tech demo quickly evolved into a comprehensive event
 | Ticketing | Ticket types, categories, add-ons, assignment, and transfer | Done |
 | Shop & Checkout | Shopping cart, vouchers, purchase conditions, acknowledgements | Done |
 | Stripe Payments | Stripe Checkout with webhook-based fulfillment via Laravel Cashier | Done |
-| Seating Plans | Canvas-based seat plan editor with drag-and-drop assignment | Done |
+| Paypal payments | Paypal Checkout with integration of /blendbyte/laravel-paypal | Done |
+| Seating Plans | Canvas-based seat plan + editor with easy assignment for admins and users | Done |
 | Programs & Scheduling | Time slots, speaker assignment, subscriber notifications | Done |
 | Announcements & News | Rich-text articles, comments, voting, and push notifications | Done |
 | Sponsor Integration | Sponsor profiles, tiers, and event association | Done |
-| Notifications | Web Push, email, and in-app notifications with user preferences | In Testing |
+| Orga-Team | Organisator can create Teams with subteams | Done |
+| User Profiles | User can create an manage their profile | Done |
+| Notifications | Web Push, email, and in-app notifications with user preferences | Done |
 | User Authentication | Registration, 2FA (TOTP), password reset, role-based access | Done |
 | Profile Management | Address, contact info, and profile completeness enforcement | Done |
 | Achievement System | Event-driven achievements with configurable triggers | Done |
 | Integration API | REST API with SSO, webhooks, and third-party app connectivity | Done |
 | Responsive UI | Mobile and desktop-friendly interface with dark mode | Done |
-| Tournament Management | Brackets and match management | Planned |
+| Tournament Management | Brackets and match management | In Testing |
+| Fully GDPR Compliant | Respects the rights of all users by following the GDPR Laws | In development |
 | Game Server Management | Pelican Panel integration | Planned |
 
 ---
