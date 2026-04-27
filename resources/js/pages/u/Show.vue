@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ExternalLink } from 'lucide-vue-next';
+import { CalendarDays, ExternalLink, MapPin } from 'lucide-vue-next';
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import { edit as profileEdit } from '@/routes/profile';
@@ -14,6 +14,15 @@ type Achievement = {
     earned_at: string | null;
     earned_user_count: number;
     earned_percentage: number;
+};
+
+type EventHistoryItem = {
+    id: number;
+    name: string;
+    start_date: string | null;
+    end_date: string | null;
+    venue_name: string | null;
+    public_url: string | null;
 };
 
 type ProfilePayload = {
@@ -31,9 +40,38 @@ type ProfilePayload = {
 defineProps<{
     profile: ProfilePayload;
     achievements: Achievement[];
+    upcomingEvents: EventHistoryItem[];
+    eventHistory: EventHistoryItem[];
     isPreview: boolean;
     isOwner: boolean;
 }>();
+
+function formatEventDateRange(start: string | null, end: string | null): string {
+    if (!start) {
+        return '';
+    }
+
+    const startDate = new Date(start);
+    const endDate = end ? new Date(end) : null;
+
+    const sameDay =
+        endDate !== null &&
+        startDate.getFullYear() === endDate.getFullYear() &&
+        startDate.getMonth() === endDate.getMonth() &&
+        startDate.getDate() === endDate.getDate();
+
+    const opts: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    };
+
+    if (endDate === null || sameDay) {
+        return startDate.toLocaleDateString(undefined, opts);
+    }
+
+    return `${startDate.toLocaleDateString(undefined, opts)} – ${endDate.toLocaleDateString(undefined, opts)}`;
+}
 
 const iconCache = new Map<string, Component>();
 
@@ -144,6 +182,113 @@ function rarityClass(percentage: number): string {
                 <p class="text-sm leading-relaxed whitespace-pre-line">
                     {{ profile.profile_description }}
                 </p>
+            </section>
+
+            <section class="rounded-xl border border-border bg-card p-6">
+                <h2 class="mb-4 flex items-center gap-2 text-lg font-semibold">
+                    <span
+                        class="inline-block size-2 shrink-0 rounded-full bg-emerald-500"
+                        aria-hidden="true"
+                    />
+                    {{ $t('publicProfile.upcomingEventsHeading') }}
+                </h2>
+
+                <div
+                    v-if="upcomingEvents.length === 0"
+                    class="text-sm text-muted-foreground"
+                >
+                    {{ $t('publicProfile.noUpcomingEvents') }}
+                </div>
+
+                <ul v-else class="divide-y divide-border">
+                    <li
+                        v-for="event in upcomingEvents"
+                        :key="event.id"
+                        class="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                    >
+                        <div class="min-w-0 flex-1">
+                            <component
+                                :is="event.public_url ? 'a' : 'div'"
+                                :href="event.public_url ?? undefined"
+                                class="flex flex-wrap items-center gap-1.5 text-sm font-medium"
+                                :class="event.public_url ? 'hover:underline' : ''"
+                            >
+                                <span class="truncate">{{ event.name }}</span>
+                                <span
+                                    class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200"
+                                >
+                                    {{ $t('publicProfile.attendingBadge') }}
+                                </span>
+                                <ExternalLink
+                                    v-if="event.public_url"
+                                    class="size-3.5 shrink-0 text-muted-foreground"
+                                />
+                            </component>
+                            <p
+                                v-if="event.venue_name"
+                                class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground"
+                            >
+                                <MapPin class="size-3" />
+                                <span class="truncate">{{ event.venue_name }}</span>
+                            </p>
+                        </div>
+                        <p
+                            class="flex shrink-0 items-center gap-1 text-xs text-muted-foreground"
+                        >
+                            <CalendarDays class="size-3" />
+                            {{ formatEventDateRange(event.start_date, event.end_date) }}
+                        </p>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="rounded-xl border border-border bg-card p-6">
+                <h2 class="mb-4 text-lg font-semibold">
+                    {{ $t('publicProfile.eventHistoryHeading') }}
+                </h2>
+
+                <div
+                    v-if="eventHistory.length === 0"
+                    class="text-sm text-muted-foreground"
+                >
+                    {{ $t('publicProfile.noEventHistory') }}
+                </div>
+
+                <ul v-else class="divide-y divide-border">
+                    <li
+                        v-for="event in eventHistory"
+                        :key="event.id"
+                        class="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                    >
+                        <div class="min-w-0 flex-1">
+                            <component
+                                :is="event.public_url ? 'a' : 'div'"
+                                :href="event.public_url ?? undefined"
+                                class="flex items-center gap-1.5 text-sm font-medium"
+                                :class="event.public_url ? 'hover:underline' : ''"
+                            >
+                                <span class="truncate">{{ event.name }}</span>
+                                <ExternalLink
+                                    v-if="event.public_url"
+                                    class="size-3.5 shrink-0 text-muted-foreground"
+                                />
+                            </component>
+                            <p
+                                v-if="event.venue_name"
+                                class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground"
+                            >
+                                <MapPin class="size-3" />
+                                <span class="truncate">{{ event.venue_name }}</span>
+                            </p>
+                        </div>
+                        <p
+                            class="flex shrink-0 items-center gap-1 text-xs text-muted-foreground"
+                        >
+                            <CalendarDays class="size-3" />
+                            {{ formatEventDateRange(event.start_date, event.end_date) }}
+                        </p>
+                    </li>
+                </ul>
             </section>
 
             <section class="rounded-xl border border-border bg-card p-6">

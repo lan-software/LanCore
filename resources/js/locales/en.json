@@ -166,6 +166,11 @@
         "achievementsHeading": "Achievements",
         "noAchievements": "No achievements earned yet.",
         "earnedBy": "Earned by {percent}% of users",
+        "eventHistoryHeading": "Event History",
+        "noEventHistory": "No past events yet.",
+        "upcomingEventsHeading": "Upcoming Events",
+        "noUpcomingEvents": "Not registered for any upcoming events.",
+        "attendingBadge": "Going",
         "previewIndicator": "Preview — this is how your profile looks to anonymous visitors",
         "editProfile": "Edit profile",
         "profileVisibility": {

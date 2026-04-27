@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Event\Enums\EventStatus;
+use App\Domain\Event\Models\Event;
 use App\Domain\Profile\Enums\ProfileVisibility;
 use App\Http\Resources\PublicProfileResource;
 use App\Models\User;
@@ -32,6 +34,8 @@ class PublicProfileController extends Controller
         return Inertia::render('u/Show', [
             'profile' => (new PublicProfileResource($user))->resolve($request),
             'achievements' => $this->achievementsPayload($user),
+            'upcomingEvents' => $this->upcomingEventsPayload($user),
+            'eventHistory' => $this->eventHistoryPayload($user),
             'isPreview' => false,
             'isOwner' => $request->user()?->getKey() === $user->getKey(),
         ]);
@@ -48,6 +52,8 @@ class PublicProfileController extends Controller
         return Inertia::render('u/Show', [
             'profile' => (new PublicProfileResource($user))->resolve($request),
             'achievements' => $this->achievementsPayload($user),
+            'upcomingEvents' => $this->upcomingEventsPayload($user),
+            'eventHistory' => $this->eventHistoryPayload($user),
             'isPreview' => true,
             'isOwner' => true,
         ]);
@@ -97,5 +103,64 @@ class PublicProfileController extends Controller
                 ];
             })
             ->all();
+    }
+
+    /**
+     * Past events the user participated in (ticket owner/manager/assignee,
+     * order, or competition team membership). Capped at 100 entries; the
+     * link is only emitted for Published events so visitors don't land
+     * on 404s for drafted/archived events.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function eventHistoryPayload(User $user): array
+    {
+        return Event::query()
+            ->forUser($user)
+            ->past()
+            ->with('venue:id,name')
+            ->orderByDesc('start_date')
+            ->limit(100)
+            ->get()
+            ->map(fn (Event $event): array => $this->eventListItem($event))
+            ->all();
+    }
+
+    /**
+     * Upcoming events the user is registered for. Restricted to Published
+     * events so visitors don't see drafted/internal events the profile
+     * owner happens to hold a ticket for. Sorted earliest-first.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function upcomingEventsPayload(User $user): array
+    {
+        return Event::query()
+            ->forUser($user)
+            ->upcoming()
+            ->published()
+            ->with('venue:id,name')
+            ->orderBy('start_date')
+            ->limit(50)
+            ->get()
+            ->map(fn (Event $event): array => $this->eventListItem($event))
+            ->all();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function eventListItem(Event $event): array
+    {
+        return [
+            'id' => $event->id,
+            'name' => $event->name,
+            'start_date' => $event->start_date?->toIso8601String(),
+            'end_date' => $event->end_date?->toIso8601String(),
+            'venue_name' => $event->venue?->name,
+            'public_url' => $event->status === EventStatus::Published
+                ? route('events.public.show', ['event' => $event->id])
+                : null,
+        ];
     }
 }
