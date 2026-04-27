@@ -46,7 +46,10 @@ defineProps<{
     isOwner: boolean;
 }>();
 
-function formatEventDateRange(start: string | null, end: string | null): string {
+function formatEventDateRange(
+    start: string | null,
+    end: string | null,
+): string {
     if (!start) {
         return '';
     }
@@ -211,7 +214,9 @@ function rarityClass(percentage: number): string {
                                 :is="event.public_url ? 'a' : 'div'"
                                 :href="event.public_url ?? undefined"
                                 class="flex flex-wrap items-center gap-1.5 text-sm font-medium"
-                                :class="event.public_url ? 'hover:underline' : ''"
+                                :class="
+                                    event.public_url ? 'hover:underline' : ''
+                                "
                             >
                                 <span class="truncate">{{ event.name }}</span>
                                 <span
@@ -229,14 +234,21 @@ function rarityClass(percentage: number): string {
                                 class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground"
                             >
                                 <MapPin class="size-3" />
-                                <span class="truncate">{{ event.venue_name }}</span>
+                                <span class="truncate">{{
+                                    event.venue_name
+                                }}</span>
                             </p>
                         </div>
                         <p
                             class="flex shrink-0 items-center gap-1 text-xs text-muted-foreground"
                         >
                             <CalendarDays class="size-3" />
-                            {{ formatEventDateRange(event.start_date, event.end_date) }}
+                            {{
+                                formatEventDateRange(
+                                    event.start_date,
+                                    event.end_date,
+                                )
+                            }}
                         </p>
                     </li>
                 </ul>
@@ -265,7 +277,9 @@ function rarityClass(percentage: number): string {
                                 :is="event.public_url ? 'a' : 'div'"
                                 :href="event.public_url ?? undefined"
                                 class="flex items-center gap-1.5 text-sm font-medium"
-                                :class="event.public_url ? 'hover:underline' : ''"
+                                :class="
+                                    event.public_url ? 'hover:underline' : ''
+                                "
                             >
                                 <span class="truncate">{{ event.name }}</span>
                                 <ExternalLink
@@ -278,14 +292,21 @@ function rarityClass(percentage: number): string {
                                 class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground"
                             >
                                 <MapPin class="size-3" />
-                                <span class="truncate">{{ event.venue_name }}</span>
+                                <span class="truncate">{{
+                                    event.venue_name
+                                }}</span>
                             </p>
                         </div>
                         <p
                             class="flex shrink-0 items-center gap-1 text-xs text-muted-foreground"
                         >
                             <CalendarDays class="size-3" />
-                            {{ formatEventDateRange(event.start_date, event.end_date) }}
+                            {{
+                                formatEventDateRange(
+                                    event.start_date,
+                                    event.end_date,
+                                )
+                            }}
                         </p>
                     </li>
                 </ul>
