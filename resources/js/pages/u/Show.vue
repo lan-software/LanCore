@@ -66,16 +66,16 @@ function resolveIcon(name: string | null): Component {
 
 function rarityClass(percentage: number): string {
     if (percentage <= 5) {
-return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200';
-}
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200';
+    }
 
     if (percentage <= 20) {
-return 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/40 dark:text-fuchsia-200';
-}
+        return 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/40 dark:text-fuchsia-200';
+    }
 
     if (percentage <= 50) {
-return 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200';
-}
+        return 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200';
+    }
 
     return 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
 }
@@ -141,7 +141,7 @@ return 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200';
                 v-if="profile.profile_description"
                 class="rounded-xl border border-border bg-card p-6"
             >
-                <p class="whitespace-pre-line text-sm leading-relaxed">
+                <p class="text-sm leading-relaxed whitespace-pre-line">
                     {{ profile.profile_description }}
                 </p>
             </section>
@@ -158,10 +158,7 @@ return 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200';
                     {{ $t('publicProfile.noAchievements') }}
                 </div>
 
-                <div
-                    v-else
-                    class="grid grid-cols-2 gap-4 sm:grid-cols-3"
-                >
+                <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3">
                     <div
                         v-for="achievement in achievements"
                         :key="achievement.id"

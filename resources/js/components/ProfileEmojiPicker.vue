@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import EmojiPicker from 'vue3-emoji-picker';
-import type {EmojiExt} from 'vue3-emoji-picker';
+import type { EmojiExt } from 'vue3-emoji-picker';
 import 'vue3-emoji-picker/css';
 
 const props = defineProps<{
@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
         <div class="flex items-center gap-2">
             <button
                 type="button"
-                class="flex h-10 w-16 items-center justify-center rounded-md border border-input bg-background text-2xl shadow-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                class="flex h-10 w-16 items-center justify-center rounded-md border border-input bg-background text-2xl shadow-xs transition-colors hover:bg-muted focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
                 :aria-expanded="isOpen"
                 :aria-label="$t('settings.profile.profileEmoji')"
                 @click="toggle"
@@ -87,7 +87,7 @@ onBeforeUnmount(() => {
 
         <div
             v-if="isOpen"
-            class="absolute left-0 top-12 z-50 rounded-md border border-border bg-card shadow-lg"
+            class="absolute top-12 left-0 z-50 rounded-md border border-border bg-card shadow-lg"
         >
             <EmojiPicker
                 :native="true"

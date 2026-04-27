@@ -66,7 +66,7 @@ it('redirects to profile when user has incomplete profile', function () {
             'event_id' => $event->id,
         ])
         ->assertRedirect(route('profile.edit'))
-        ->assertSessionHasErrors('profile');
+        ->assertSessionHas('profileAlert', __('shop.cart.profile_incomplete'));
 });
 
 it('can add a ticket type to the cart', function () {

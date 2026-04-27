@@ -4,6 +4,7 @@ use App\Enums\RoleName;
 use App\Models\OrganizationSetting;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\StorageRole;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -40,7 +41,7 @@ it('shares the organization Inertia prop with a logoUrl when a logo is uploaded'
         ->assertInertia(
             fn ($page) => $page
                 ->where('organization.name', 'Acme LAN')
-                ->where('organization.logoUrl', Storage::url('organization/logo.png'))
+                ->where('organization.logoUrl', StorageRole::publicUrl('organization/logo.png'))
         );
 });
 

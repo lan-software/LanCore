@@ -137,8 +137,7 @@ function uploadAvatar(event: Event): void {
             forceFormData: true,
             preserveScroll: true,
             onError: (errors) => {
-                mediaError.value =
-                    (errors.image as string | undefined) ?? null;
+                mediaError.value = (errors.image as string | undefined) ?? null;
             },
             onFinish: () => {
                 uploadingAvatar.value = false;
@@ -171,8 +170,7 @@ function uploadBanner(event: Event): void {
             forceFormData: true,
             preserveScroll: true,
             onError: (errors) => {
-                mediaError.value =
-                    (errors.image as string | undefined) ?? null;
+                mediaError.value = (errors.image as string | undefined) ?? null;
             },
             onFinish: () => {
                 uploadingBanner.value = false;
@@ -229,7 +227,7 @@ function removeBanner(): void {
                         />
 
                         <div
-                            class="absolute right-3 top-3 flex items-center gap-2"
+                            class="absolute top-3 right-3 flex items-center gap-2"
                         >
                             <Button
                                 type="button"
@@ -266,8 +264,8 @@ function removeBanner(): void {
                         />
                     </div>
 
-                    <div class="flex items-end gap-4 px-6 pb-6">
-                        <div class="-mt-12">
+                    <div class="relative flex items-end gap-4 px-6 pb-6">
+                        <div class="relative z-10 -mt-12">
                             <img
                                 :src="props.profile.avatar_url"
                                 alt=""
@@ -348,9 +346,7 @@ function removeBanner(): void {
                     </div>
 
                     <div class="grid gap-2">
-                        <Label>{{
-                            $t('settings.profile.profileEmoji')
-                        }}</Label>
+                        <Label>{{ $t('settings.profile.profileEmoji') }}</Label>
                         <ProfileEmojiPicker
                             v-model="emoji"
                             name="profile_emoji"

@@ -71,9 +71,7 @@ function submit(): void {
                     <fieldset class="space-y-4">
                         <legend class="text-sm font-semibold">
                             {{
-                                $t(
-                                    'settings.privacy.profileVisibilityHeading',
-                                )
+                                $t('settings.privacy.profileVisibilityHeading')
                             }}
                         </legend>
                         <p class="text-sm text-muted-foreground">
@@ -107,16 +105,12 @@ function submit(): void {
                             </label>
                         </div>
 
-                        <InputError
-                            :message="form.errors.profile_visibility"
-                        />
+                        <InputError :message="form.errors.profile_visibility" />
                     </fieldset>
 
                     <fieldset class="space-y-4">
                         <legend class="text-sm font-semibold">
-                            {{
-                                $t('settings.privacy.seatVisibilityHeading')
-                            }}
+                            {{ $t('settings.privacy.seatVisibilityHeading') }}
                         </legend>
 
                         <div class="flex items-center gap-3">

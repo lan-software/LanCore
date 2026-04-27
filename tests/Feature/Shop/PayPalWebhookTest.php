@@ -21,13 +21,14 @@ use Srmklive\PayPal\Services\PayPal as PayPalClient;
  * PayPal client stub that short-circuits `verifyWebHookLocally` so tests
  * don't need to fetch PayPal's live signing cert. Toggle $valid to simulate
  * a tampered / malformed webhook payload.
+ *
+ * The parent constructor is intentionally skipped because it eagerly validates
+ * `paypal.client_id` / `client_secret` from config, which CI does not provide.
+ * The controller only calls `verifyWebHookLocally`, so no parent state is needed.
  */
 class StubPayPalClient extends PayPalClient
 {
-    public function __construct(public bool $valid = true)
-    {
-        parent::__construct();
-    }
+    public function __construct(public bool $valid = true) {}
 
     /**
      * @param  array<string, string>  $headers
