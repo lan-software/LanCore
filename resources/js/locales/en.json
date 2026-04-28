@@ -442,7 +442,19 @@
             "profileVisibilityPublic": "Public — anyone, even visitors who are not logged in",
             "profileVisibilityLoggedIn": "Logged-in users only",
             "profileVisibilityPrivate": "Private — only you can see your profile",
-            "seatVisibilityHeading": "Seat plan visibility"
+            "seatVisibilityHeading": "Seat plan visibility",
+            "consent": {
+                "heading": "Consent",
+                "description": "These are the platform policies you have actively accepted. Withdraw any consent at any time (GDPR Art. 7(3)).",
+                "empty": "You currently hold no active consents.",
+                "withdraw": "Withdraw",
+                "withdraw_dialog": {
+                    "title": "Withdraw consent for {name}?",
+                    "description": "This is irreversible from your side: the platform admins will be notified, and if the policy is required for using the service, you will be redirected to the re-acceptance page on your next request. Optionally tell us why.",
+                    "reason_label": "Reason (optional)",
+                    "confirm": "Withdraw consent"
+                }
+            }
         },
         "achievements": {
             "title": "Achievements"
@@ -952,11 +964,144 @@
             "additional": "Additional information",
             "empty": "Imprint content has not been configured yet."
         },
-        "privacy": {
-            "link": "Privacy",
-            "title": "Privacy policy",
-            "empty": "The privacy policy has not been published yet.",
-            "contactFallback": "For privacy inquiries, contact:"
+        "index": {
+            "link": "Legal",
+            "title": "Legal documents",
+            "lead": "These documents govern your use of this platform. Each policy links to its current version.",
+            "empty": "No policies have been published yet."
+        }
+    },
+    "policies": {
+        "show": {
+            "from_operator": "From the operator"
+        },
+        "required": {
+            "title": "Action required",
+            "description": "Please review and accept the following policy updates to continue.",
+            "version_label": "v{version} ({locale})",
+            "from_operator": "From the operator:",
+            "accept": "Accept",
+            "accept_all": "Accept all",
+            "intended_url_hint": "You'll be returned to your previous page after accepting."
+        },
+        "admin": {
+            "index": {
+                "title": "Policies",
+                "description": "Manage the platform's terms, privacy, and other consent policies",
+                "manage_types": "Manage types",
+                "new_policy": "New policy",
+                "col_name": "Name",
+                "col_type": "Type",
+                "col_current_version": "Current version",
+                "col_required": "Required at registration",
+                "col_status": "Status",
+                "no_published_version": "No published version",
+                "required_badge": "Required",
+                "optional": "Optional",
+                "archived": "Archived",
+                "active": "Active",
+                "no_policies": "No policies yet. Create one to get started.",
+                "no_types_yet_lead": "No policy types yet. You need at least one type before you can create a policy.",
+                "add_first_type": "Add the first type",
+                "policy_types_heading": "Policy types",
+                "edit_types": "Edit"
+            },
+            "create": {
+                "title": "New policy",
+                "description": "Create a new policy. You can publish its first version on the next page.",
+                "back": "← Back to Policies",
+                "name": "Name",
+                "key": "Key (slug)",
+                "key_placeholder": "e.g. tos, privacy, code-of-conduct",
+                "type": "Type",
+                "type_placeholder": "Select a policy type",
+                "policy_description": "Description",
+                "required_label": "Required at registration",
+                "sort_order": "Sort order",
+                "submit": "Create policy",
+                "submitting": "Creating…"
+            },
+            "edit": {
+                "title": "Edit {name}",
+                "description": "Edit metadata. Content is managed by publishing new versions.",
+                "back": "← Back to policy",
+                "name": "Name",
+                "key": "Key (slug)",
+                "type": "Type",
+                "policy_description": "Description",
+                "required_label": "Required at registration",
+                "sort_order": "Sort order",
+                "save": "Save",
+                "saving": "Saving…",
+                "archive": "Archive",
+                "archive_confirm": "Archive this policy? It will no longer apply to new acceptances or registration. This action does not cascade-delete versions."
+            },
+            "show": {
+                "edit_metadata": "Edit metadata",
+                "publish_new_version": "Publish new version",
+                "key_label": "Key",
+                "required_for_registration_badge": "Required at registration",
+                "archived_badge": "Archived",
+                "col_version": "Version",
+                "col_locale": "Locale",
+                "col_type": "Type",
+                "col_published": "Published",
+                "col_by": "By",
+                "col_pdf": "PDF",
+                "requires_acceptance_badge": "Requires acceptance",
+                "non_editorial_badge": "Non-editorial",
+                "editorial_badge": "Editorial",
+                "no_versions_yet": "No versions yet. Publish the first one to make this policy effective.",
+                "audit_log_heading": "Audit log",
+                "audit_log_empty": "No audit entries yet.",
+                "audit_event_created": "created",
+                "audit_event_updated": "updated",
+                "audit_event_restored": "restored",
+                "audit_event_deleted": "deleted",
+                "audit_actor_unknown": "system",
+                "diff_heading": "Changes from v{from} → v{to}",
+                "diff_empty": "No textual changes."
+            },
+            "version_create": {
+                "title": "Publish new version of {name}",
+                "description": "Markdown is rendered into a PDF snapshot at publish time.",
+                "back": "← Back to {name}",
+                "content": "Content (Markdown)",
+                "locale": "Locale (optional — defaults to app locale)",
+                "locale_placeholder": "e.g. de or en",
+                "effective_at": "Effective at (optional — defaults to now)",
+                "is_non_editorial": "This is a non-editorial change",
+                "is_non_editorial_help": "Tick this only when the change affects user rights. It will email all {count} prior acceptors and force re-acceptance on next login.",
+                "public_statement": "Public statement (included in the email)",
+                "public_statement_placeholder": "Explain why the policy is changing and what it means for the user's rights.",
+                "publish": "Publish",
+                "publishing": "Publishing…",
+                "confirm": {
+                    "step1_title": "About to publish a non-editorial version",
+                    "step1_body": "Publishing will email all {count} prior acceptors with the new policy as a PDF attachment, and require every active user to re-accept this policy on next login. Editorial fixes (typos, formatting) should NOT use this checkbox.",
+                    "step1_continue": "Continue",
+                    "step2_title": "Final confirmation",
+                    "step2_body": "{count} emails will be queued immediately. This cannot be undone.",
+                    "step2_button": "Send {count} emails and publish",
+                    "step2_button_disabled": "Wait {seconds}s…"
+                }
+            },
+            "types": {
+                "title": "Manage policy types",
+                "description": "Policy types group policies by purpose (Terms of Service, Privacy, Code of Conduct, …). Every policy belongs to one type. Types in use cannot be deleted.",
+                "existing": "Existing types",
+                "no_types": "No types yet. Create the first one below.",
+                "add_heading": "Add a new type",
+                "key": "Key",
+                "key_placeholder": "e.g. tos, privacy",
+                "label": "Label",
+                "label_placeholder": "Terms of Service",
+                "description_optional": "Description (optional)",
+                "add": "Add type",
+                "save": "Save",
+                "cancel": "Cancel",
+                "delete_confirm": "Delete policy type \"{label}\"? This will fail if any policy still references it."
+            }
         }
     },
     "help": {

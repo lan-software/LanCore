@@ -47,12 +47,12 @@ function acceptOne(versionId: number): void {
 </script>
 
 <template>
-    <Head title="Required policies" />
+    <Head :title="$t('policies.required.title')" />
 
     <div class="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6">
         <Heading
-            title="Action required"
-            description="Please review and accept the following policy updates to continue."
+            :title="$t('policies.required.title')"
+            :description="$t('policies.required.description')"
         />
 
         <div class="space-y-4">
@@ -75,10 +75,15 @@ function acceptOne(versionId: number): void {
                         </div>
                     </div>
                     <span class="text-xs text-muted-foreground">
-                        v{{
-                            policy.required_acceptance_version.version_number
+                        {{
+                            $t('policies.required.version_label', {
+                                version:
+                                    policy.required_acceptance_version
+                                        .version_number,
+                                locale: policy.required_acceptance_version
+                                    .locale,
+                            })
                         }}
-                        ({{ policy.required_acceptance_version.locale }})
                     </span>
                 </button>
 
@@ -89,7 +94,9 @@ function acceptOne(versionId: number): void {
                         "
                         class="mb-4 rounded border-l-4 border-blue-400 bg-blue-50 p-3 text-sm dark:bg-blue-950/30"
                     >
-                        <strong>From the operator:</strong>
+                        <strong>
+                            {{ $t('policies.required.from_operator') }}
+                        </strong>
                         {{
                             policy.required_acceptance_version.public_statement
                         }}
@@ -105,7 +112,7 @@ function acceptOne(versionId: number): void {
                                 acceptOne(policy.required_acceptance_version.id)
                             "
                         >
-                            Accept
+                            {{ $t('policies.required.accept') }}
                         </Button>
                     </div>
                 </div>
@@ -114,12 +121,12 @@ function acceptOne(versionId: number): void {
 
         <div v-if="policies.length > 1" class="flex justify-end">
             <Button :disabled="form.processing" @click="acceptAll">
-                Accept all
+                {{ $t('policies.required.accept_all') }}
             </Button>
         </div>
 
         <p v-if="intendedUrl" class="text-center text-xs text-muted-foreground">
-            You'll be returned to your previous page after accepting.
+            {{ $t('policies.required.intended_url_hint') }}
         </p>
     </div>
 </template>

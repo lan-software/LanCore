@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -70,13 +71,20 @@ function confirm(): void {
     emit('confirmed');
 }
 
+const { t } = useI18n();
+
 const buttonDisabled = computed(() => countdown.value > 0);
 const buttonLabel = computed(() => {
     if (countdown.value > 0) {
-        return `Send ${props.priorAcceptorCount} emails and publish (${countdown.value}s)`;
+        return t(
+            'policies.admin.version_create.confirm.step2_button_disabled',
+            { seconds: countdown.value },
+        );
     }
 
-    return `Send ${props.priorAcceptorCount} emails and publish`;
+    return t('policies.admin.version_create.confirm.step2_button', {
+        count: props.priorAcceptorCount,
+    });
 });
 
 onUnmounted(cleanup);
@@ -87,47 +95,58 @@ onUnmounted(cleanup);
         <DialogContent>
             <template v-if="step === 1">
                 <DialogHeader>
-                    <DialogTitle
-                        >Non-editorial change — review impact</DialogTitle
-                    >
+                    <DialogTitle>
+                        {{
+                            $t(
+                                'policies.admin.version_create.confirm.step1_title',
+                            )
+                        }}
+                    </DialogTitle>
                     <DialogDescription>
-                        Publishing this version as a non-editorial change has
-                        platform-wide consequences.
+                        {{
+                            $t(
+                                'policies.admin.version_create.confirm.step1_body',
+                                { count: priorAcceptorCount },
+                            )
+                        }}
                     </DialogDescription>
                 </DialogHeader>
-                <ul class="list-disc space-y-2 pl-5 text-sm">
-                    <li>
-                        Email
-                        <strong>{{ priorAcceptorCount }}</strong>
-                        users who previously accepted this policy, with the new
-                        policy attached as a PDF.
-                    </li>
-                    <li>
-                        Require every active user to re-accept the policy on
-                        their next login.
-                    </li>
-                </ul>
-                <p class="mt-4 text-sm text-muted-foreground">
-                    Editorial fixes (typos, formatting, link updates) should
-                    leave the "non-editorial change" checkbox unchecked.
-                </p>
                 <DialogFooter>
-                    <Button variant="outline" @click="cancel">Cancel</Button>
-                    <Button @click="goToStep2">Continue</Button>
+                    <Button variant="outline" @click="cancel">
+                        {{ $t('common.cancel') }}
+                    </Button>
+                    <Button @click="goToStep2">
+                        {{
+                            $t(
+                                'policies.admin.version_create.confirm.step1_continue',
+                            )
+                        }}
+                    </Button>
                 </DialogFooter>
             </template>
 
             <template v-else>
                 <DialogHeader>
-                    <DialogTitle>Final confirmation</DialogTitle>
+                    <DialogTitle>
+                        {{
+                            $t(
+                                'policies.admin.version_create.confirm.step2_title',
+                            )
+                        }}
+                    </DialogTitle>
                     <DialogDescription>
-                        <strong>{{ priorAcceptorCount }}</strong>
-                        emails will be queued immediately. This cannot be
-                        undone.
+                        {{
+                            $t(
+                                'policies.admin.version_create.confirm.step2_body',
+                                { count: priorAcceptorCount },
+                            )
+                        }}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button variant="outline" @click="cancel">Cancel</Button>
+                    <Button variant="outline" @click="cancel">
+                        {{ $t('common.cancel') }}
+                    </Button>
                     <Button
                         :disabled="buttonDisabled"
                         variant="destructive"

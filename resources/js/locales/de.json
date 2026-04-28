@@ -280,7 +280,25 @@
             "srHeading": "Datenschutzeinstellungen",
             "description": "Steuere, wie dein Name auf öffentlichen Sitzplänen erscheint.",
             "seatVisibleLabel": "Meinen Namen auf öffentlichen Sitzplänen anzeigen",
-            "seatVisibleHelp": "Wenn deaktiviert, erscheint dein Sitzplatz weiterhin auf öffentlichen Sitzplänen, jedoch ohne deinen Namen. Andere Teilnehmer mit einem Ticket für dieselbe Veranstaltung sehen deinen Namen auf dem Sitzplan immer, unabhängig von dieser Einstellung."
+            "seatVisibleHelp": "Wenn deaktiviert, erscheint dein Sitzplatz weiterhin auf öffentlichen Sitzplänen, jedoch ohne deinen Namen. Andere Teilnehmer mit einem Ticket für dieselbe Veranstaltung sehen deinen Namen auf dem Sitzplan immer, unabhängig von dieser Einstellung.",
+            "profileVisibilityHeading": "Profil-Sichtbarkeit",
+            "profileVisibilityDescription": "Lege fest, wer dein öffentliches Profil sehen darf.",
+            "profileVisibilityPublic": "Öffentlich — alle, auch nicht angemeldete Besucher",
+            "profileVisibilityLoggedIn": "Nur angemeldete Nutzer",
+            "profileVisibilityPrivate": "Privat — nur du selbst siehst dein Profil",
+            "seatVisibilityHeading": "Sitzplan-Sichtbarkeit",
+            "consent": {
+                "heading": "Einwilligungen",
+                "description": "Dies sind die Plattform-Richtlinien, denen du aktiv zugestimmt hast. Du kannst jede Einwilligung jederzeit widerrufen (DSGVO Art. 7 Abs. 3).",
+                "empty": "Du hast derzeit keine aktiven Einwilligungen.",
+                "withdraw": "Widerrufen",
+                "withdraw_dialog": {
+                    "title": "Einwilligung zu {name} widerrufen?",
+                    "description": "Dieser Schritt ist auf deiner Seite nicht rückgängig zu machen: Die Plattform-Admins werden benachrichtigt, und falls die Richtlinie für die Nutzung erforderlich ist, wirst du beim nächsten Aufruf zur erneuten Zustimmung aufgefordert. Optional kannst du einen Grund angeben.",
+                    "reason_label": "Grund (optional)",
+                    "confirm": "Einwilligung widerrufen"
+                }
+            }
         },
         "achievements": {
             "title": "Trophäen"
@@ -789,11 +807,144 @@
             "additional": "Weitere Angaben",
             "empty": "Das Impressum wurde noch nicht konfiguriert."
         },
-        "privacy": {
-            "link": "Datenschutz",
-            "title": "Datenschutzerklärung",
-            "empty": "Die Datenschutzerklärung wurde noch nicht veröffentlicht.",
-            "contactFallback": "Bei Datenschutzanfragen wenden Sie sich an:"
+        "index": {
+            "link": "Rechtliches",
+            "title": "Rechtliche Dokumente",
+            "lead": "Diese Dokumente regeln deine Nutzung der Plattform. Jede Richtlinie verlinkt auf ihre aktuelle Version.",
+            "empty": "Es wurden noch keine Richtlinien veröffentlicht."
+        }
+    },
+    "policies": {
+        "show": {
+            "from_operator": "Mitteilung des Betreibers"
+        },
+        "required": {
+            "title": "Aktion erforderlich",
+            "description": "Bitte prüfe und akzeptiere die folgenden Richtlinien-Aktualisierungen, um fortzufahren.",
+            "version_label": "v{version} ({locale})",
+            "from_operator": "Mitteilung des Betreibers:",
+            "accept": "Akzeptieren",
+            "accept_all": "Alle akzeptieren",
+            "intended_url_hint": "Du wirst nach dem Akzeptieren auf deine vorherige Seite zurückgeleitet."
+        },
+        "admin": {
+            "index": {
+                "title": "Richtlinien",
+                "description": "Verwalte AGB, Datenschutz und weitere Einwilligungs-Richtlinien der Plattform",
+                "manage_types": "Typen verwalten",
+                "new_policy": "Neue Richtlinie",
+                "col_name": "Name",
+                "col_type": "Typ",
+                "col_current_version": "Aktuelle Version",
+                "col_required": "Pflicht bei Registrierung",
+                "col_status": "Status",
+                "no_published_version": "Keine veröffentlichte Version",
+                "required_badge": "Pflicht",
+                "optional": "Optional",
+                "archived": "Archiviert",
+                "active": "Aktiv",
+                "no_policies": "Noch keine Richtlinien. Lege eine an, um zu beginnen.",
+                "no_types_yet_lead": "Noch keine Richtlinien-Typen. Mindestens ein Typ ist nötig, bevor du eine Richtlinie anlegen kannst.",
+                "add_first_type": "Ersten Typ anlegen",
+                "policy_types_heading": "Richtlinien-Typen",
+                "edit_types": "Bearbeiten"
+            },
+            "create": {
+                "title": "Neue Richtlinie",
+                "description": "Lege eine neue Richtlinie an. Du kannst die erste Version auf der nächsten Seite veröffentlichen.",
+                "back": "← Zurück zu Richtlinien",
+                "name": "Name",
+                "key": "Schlüssel (Slug)",
+                "key_placeholder": "z. B. tos, privacy, code-of-conduct",
+                "type": "Typ",
+                "type_placeholder": "Richtlinien-Typ wählen",
+                "policy_description": "Beschreibung",
+                "required_label": "Pflicht bei Registrierung",
+                "sort_order": "Sortierung",
+                "submit": "Richtlinie anlegen",
+                "submitting": "Wird angelegt…"
+            },
+            "edit": {
+                "title": "{name} bearbeiten",
+                "description": "Metadaten bearbeiten. Inhalte werden über das Veröffentlichen neuer Versionen verwaltet.",
+                "back": "← Zurück zur Richtlinie",
+                "name": "Name",
+                "key": "Schlüssel (Slug)",
+                "type": "Typ",
+                "policy_description": "Beschreibung",
+                "required_label": "Pflicht bei Registrierung",
+                "sort_order": "Sortierung",
+                "save": "Speichern",
+                "saving": "Wird gespeichert…",
+                "archive": "Archivieren",
+                "archive_confirm": "Diese Richtlinie archivieren? Sie wird nicht mehr für neue Akzeptanzen oder die Registrierung gelten. Versionen werden dabei nicht gelöscht."
+            },
+            "show": {
+                "edit_metadata": "Metadaten bearbeiten",
+                "publish_new_version": "Neue Version veröffentlichen",
+                "key_label": "Schlüssel",
+                "required_for_registration_badge": "Pflicht bei Registrierung",
+                "archived_badge": "Archiviert",
+                "col_version": "Version",
+                "col_locale": "Sprache",
+                "col_type": "Typ",
+                "col_published": "Veröffentlicht",
+                "col_by": "Von",
+                "col_pdf": "PDF",
+                "requires_acceptance_badge": "Erfordert Akzeptanz",
+                "non_editorial_badge": "Inhaltlich",
+                "editorial_badge": "Redaktionell",
+                "no_versions_yet": "Noch keine Versionen. Veröffentliche die erste, um diese Richtlinie wirksam zu machen.",
+                "audit_log_heading": "Audit-Protokoll",
+                "audit_log_empty": "Noch keine Einträge.",
+                "audit_event_created": "angelegt",
+                "audit_event_updated": "aktualisiert",
+                "audit_event_restored": "wiederhergestellt",
+                "audit_event_deleted": "gelöscht",
+                "audit_actor_unknown": "System",
+                "diff_heading": "Änderungen von v{from} → v{to}",
+                "diff_empty": "Keine Textänderungen."
+            },
+            "version_create": {
+                "title": "Neue Version von {name} veröffentlichen",
+                "description": "Markdown wird zum Zeitpunkt der Veröffentlichung als PDF-Schnappschuss gerendert.",
+                "back": "← Zurück zu {name}",
+                "content": "Inhalt (Markdown)",
+                "locale": "Sprache (optional — Standard: App-Sprache)",
+                "locale_placeholder": "z. B. de oder en",
+                "effective_at": "Gültig ab (optional — Standard: jetzt)",
+                "is_non_editorial": "Dies ist eine inhaltliche Änderung",
+                "is_non_editorial_help": "Aktiviere dies nur, wenn die Änderung Nutzerrechte berührt. Es werden alle {count} bisherigen Akzeptierenden per E-Mail informiert und beim nächsten Login zur erneuten Zustimmung verpflichtet.",
+                "public_statement": "Mitteilung an die Nutzer (in der E-Mail enthalten)",
+                "public_statement_placeholder": "Erläutere, warum die Richtlinie geändert wird und was das für die Nutzer bedeutet.",
+                "publish": "Veröffentlichen",
+                "publishing": "Wird veröffentlicht…",
+                "confirm": {
+                    "step1_title": "Inhaltliche Version wird veröffentlicht",
+                    "step1_body": "Beim Veröffentlichen werden alle {count} bisherigen Akzeptierenden per E-Mail mit der neuen Richtlinie als PDF-Anhang benachrichtigt, und jeder aktive Nutzer muss diese Richtlinie beim nächsten Login erneut akzeptieren. Redaktionelle Korrekturen (Tippfehler, Formatierung) sollten dieses Häkchen NICHT verwenden.",
+                    "step1_continue": "Weiter",
+                    "step2_title": "Letzte Bestätigung",
+                    "step2_body": "{count} E-Mails werden sofort in die Warteschlange gestellt. Dieser Schritt kann nicht rückgängig gemacht werden.",
+                    "step2_button": "{count} E-Mails senden und veröffentlichen",
+                    "step2_button_disabled": "Bitte {seconds} s warten…"
+                }
+            },
+            "types": {
+                "title": "Richtlinien-Typen verwalten",
+                "description": "Richtlinien-Typen gruppieren Richtlinien nach Zweck (AGB, Datenschutz, Verhaltenskodex, …). Jede Richtlinie gehört zu genau einem Typ. In Verwendung befindliche Typen können nicht gelöscht werden.",
+                "existing": "Vorhandene Typen",
+                "no_types": "Noch keine Typen. Lege unten den ersten an.",
+                "add_heading": "Neuen Typ anlegen",
+                "key": "Schlüssel",
+                "key_placeholder": "z. B. tos, privacy",
+                "label": "Bezeichnung",
+                "label_placeholder": "AGB",
+                "description_optional": "Beschreibung (optional)",
+                "add": "Typ hinzufügen",
+                "save": "Speichern",
+                "cancel": "Abbrechen",
+                "delete_confirm": "Richtlinien-Typ \"{label}\" löschen? Schlägt fehl, falls noch Richtlinien diesen Typ verwenden."
+            }
         }
     },
     "help": {

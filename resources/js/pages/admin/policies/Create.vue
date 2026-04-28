@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -21,14 +22,19 @@ defineProps<{
     policyTypes: { id: number; label: string; key: string }[];
 }>();
 
+const { t } = useI18n();
+
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Policies', href: '/admin/policies' },
-    { title: 'New policy', href: '/admin/policies/create' },
+    { title: t('policies.admin.index.title'), href: '/admin/policies' },
+    {
+        title: t('policies.admin.create.title'),
+        href: '/admin/policies/create',
+    },
 ];
 </script>
 
 <template>
-    <Head title="New policy" />
+    <Head :title="$t('policies.admin.create.title')" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
@@ -37,13 +43,13 @@ const breadcrumbs: BreadcrumbItem[] = [
                     href="/admin/policies"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
-                    &larr; Back to Policies
+                    {{ $t('policies.admin.create.back') }}
                 </Link>
             </div>
 
             <Heading
-                title="New policy"
-                description="Create a new policy. You can publish its first version on the next page."
+                :title="$t('policies.admin.create.title')"
+                :description="$t('policies.admin.create.description')"
             />
 
             <Form
@@ -53,27 +59,39 @@ const breadcrumbs: BreadcrumbItem[] = [
                 v-slot="{ errors, processing }"
             >
                 <div class="grid gap-2">
-                    <Label for="name">Name</Label>
+                    <Label for="name">
+                        {{ $t('policies.admin.create.name') }}
+                    </Label>
                     <Input id="name" name="name" required />
                     <InputError :message="errors.name" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="key">Key (slug)</Label>
+                    <Label for="key">
+                        {{ $t('policies.admin.create.key') }}
+                    </Label>
                     <Input
                         id="key"
                         name="key"
                         required
-                        placeholder="e.g. tos, privacy, code-of-conduct"
+                        :placeholder="
+                            $t('policies.admin.create.key_placeholder')
+                        "
                     />
                     <InputError :message="errors.key" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="policy_type_id">Type</Label>
+                    <Label for="policy_type_id">
+                        {{ $t('policies.admin.create.type') }}
+                    </Label>
                     <Select name="policy_type_id">
                         <SelectTrigger>
-                            <SelectValue placeholder="Select a policy type" />
+                            <SelectValue
+                                :placeholder="
+                                    $t('policies.admin.create.type_placeholder')
+                                "
+                            />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem
@@ -89,7 +107,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="description">Description</Label>
+                    <Label for="description">
+                        {{ $t('policies.admin.create.policy_description') }}
+                    </Label>
                     <Textarea id="description" name="description" rows="3" />
                     <InputError :message="errors.description" />
                 </div>
@@ -104,13 +124,15 @@ const breadcrumbs: BreadcrumbItem[] = [
                         for="is_required_for_registration"
                         class="cursor-pointer"
                     >
-                        Required at registration
+                        {{ $t('policies.admin.create.required_label') }}
                     </Label>
                 </div>
                 <InputError :message="errors.is_required_for_registration" />
 
                 <div class="grid gap-2">
-                    <Label for="sort_order">Sort order</Label>
+                    <Label for="sort_order">
+                        {{ $t('policies.admin.create.sort_order') }}
+                    </Label>
                     <Input
                         id="sort_order"
                         name="sort_order"
@@ -123,7 +145,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                 <div class="flex items-center gap-4">
                     <Button type="submit" :disabled="processing">
-                        {{ processing ? 'Creating…' : 'Create policy' }}
+                        {{
+                            processing
+                                ? $t('policies.admin.create.submitting')
+                                : $t('policies.admin.create.submit')
+                        }}
                     </Button>
                 </div>
             </Form>

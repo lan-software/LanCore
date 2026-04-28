@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link, router } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -30,25 +31,29 @@ const props = defineProps<{
     policyTypes: { id: number; label: string; key: string }[];
 }>();
 
+const { t } = useI18n();
+
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Policies', href: '/admin/policies' },
-    { title: props.policy.name, href: `/admin/policies/${props.policy.id}` },
-    { title: 'Edit', href: `/admin/policies/${props.policy.id}/edit` },
+    { title: t('policies.admin.index.title'), href: '/admin/policies' },
+    {
+        title: props.policy.name,
+        href: `/admin/policies/${props.policy.id}`,
+    },
+    {
+        title: t('common.edit'),
+        href: `/admin/policies/${props.policy.id}/edit`,
+    },
 ];
 
 function archive(): void {
-    if (
-        confirm(
-            'Archive this policy? It will no longer apply to new acceptances or registration. This action does not cascade-delete versions.',
-        )
-    ) {
+    if (confirm(t('policies.admin.edit.archive_confirm'))) {
         router.post(`/admin/policies/${props.policy.id}/archive`);
     }
 }
 </script>
 
 <template>
-    <Head :title="`Edit ${policy.name}`" />
+    <Head :title="$t('policies.admin.edit.title', { name: policy.name })" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
@@ -57,13 +62,13 @@ function archive(): void {
                     :href="`/admin/policies/${policy.id}`"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
-                    &larr; Back to policy
+                    {{ $t('policies.admin.edit.back') }}
                 </Link>
             </div>
 
             <Heading
-                :title="`Edit ${policy.name}`"
-                description="Edit metadata. Content is managed by publishing new versions."
+                :title="$t('policies.admin.edit.title', { name: policy.name })"
+                :description="$t('policies.admin.edit.description')"
             />
 
             <Form
@@ -73,7 +78,9 @@ function archive(): void {
                 v-slot="{ errors, processing }"
             >
                 <div class="grid gap-2">
-                    <Label for="name">Name</Label>
+                    <Label for="name">{{
+                        $t('policies.admin.edit.name')
+                    }}</Label>
                     <Input
                         id="name"
                         name="name"
@@ -84,7 +91,7 @@ function archive(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="key">Key (slug)</Label>
+                    <Label for="key">{{ $t('policies.admin.edit.key') }}</Label>
                     <Input
                         id="key"
                         name="key"
@@ -95,7 +102,9 @@ function archive(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="policy_type_id">Type</Label>
+                    <Label for="policy_type_id">
+                        {{ $t('policies.admin.edit.type') }}
+                    </Label>
                     <Select
                         name="policy_type_id"
                         :default-value="String(policy.policy_type_id)"
@@ -117,7 +126,9 @@ function archive(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="description">Description</Label>
+                    <Label for="description">
+                        {{ $t('policies.admin.edit.policy_description') }}
+                    </Label>
                     <Textarea
                         id="description"
                         name="description"
@@ -138,13 +149,15 @@ function archive(): void {
                         for="is_required_for_registration"
                         class="cursor-pointer"
                     >
-                        Required at registration
+                        {{ $t('policies.admin.edit.required_label') }}
                     </Label>
                 </div>
                 <InputError :message="errors.is_required_for_registration" />
 
                 <div class="grid gap-2">
-                    <Label for="sort_order">Sort order</Label>
+                    <Label for="sort_order">
+                        {{ $t('policies.admin.edit.sort_order') }}
+                    </Label>
                     <Input
                         id="sort_order"
                         name="sort_order"
@@ -157,14 +170,18 @@ function archive(): void {
 
                 <div class="flex items-center gap-4">
                     <Button type="submit" :disabled="processing">
-                        {{ processing ? 'Saving…' : 'Save' }}
+                        {{
+                            processing
+                                ? $t('policies.admin.edit.saving')
+                                : $t('policies.admin.edit.save')
+                        }}
                     </Button>
                     <Button
                         type="button"
                         variant="destructive"
                         @click="archive"
                     >
-                        Archive
+                        {{ $t('policies.admin.edit.archive') }}
                     </Button>
                 </div>
             </Form>

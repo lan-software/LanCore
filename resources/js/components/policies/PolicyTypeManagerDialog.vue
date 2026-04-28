@@ -2,6 +2,7 @@
 import { router } from '@inertiajs/vue3';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -30,6 +31,8 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'update:open', value: boolean): void;
 }>();
+
+const { t } = useI18n();
 
 const editing = ref<PolicyType | null>(null);
 const newType = ref({ key: '', label: '', description: '' });
@@ -74,7 +77,7 @@ function saveEdit(): void {
 function deleteType(type: PolicyType): void {
     if (
         !confirm(
-            `Delete policy type "${type.label}"? This will fail if any policy still references it.`,
+            t('policies.admin.types.delete_confirm', { label: type.label }),
         )
     ) {
         return;
@@ -116,22 +119,24 @@ function close(): void {
     <Dialog :open="props.open" @update:open="(v) => !v && close()">
         <DialogContent class="max-w-2xl">
             <DialogHeader>
-                <DialogTitle>Manage policy types</DialogTitle>
+                <DialogTitle>{{
+                    $t('policies.admin.types.title')
+                }}</DialogTitle>
                 <DialogDescription>
-                    Policy types group policies by purpose (Terms of Service,
-                    Privacy, Code of Conduct, …). Every policy belongs to one
-                    type. Types in use cannot be deleted.
+                    {{ $t('policies.admin.types.description') }}
                 </DialogDescription>
             </DialogHeader>
 
             <div class="space-y-4">
                 <div class="space-y-2">
-                    <h4 class="text-sm font-semibold">Existing types</h4>
+                    <h4 class="text-sm font-semibold">
+                        {{ $t('policies.admin.types.existing') }}
+                    </h4>
                     <p
                         v-if="props.policyTypes.length === 0"
                         class="text-sm text-muted-foreground italic"
                     >
-                        No types yet. Create the first one below.
+                        {{ $t('policies.admin.types.no_types') }}
                     </p>
                     <ul v-else class="divide-y rounded-md border">
                         <li
@@ -146,7 +151,7 @@ function close(): void {
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <Label :for="`edit-key-${type.id}`">
-                                            Key
+                                            {{ $t('policies.admin.types.key') }}
                                         </Label>
                                         <Input
                                             :id="`edit-key-${type.id}`"
@@ -156,7 +161,9 @@ function close(): void {
                                     </div>
                                     <div>
                                         <Label :for="`edit-label-${type.id}`">
-                                            Label
+                                            {{
+                                                $t('policies.admin.types.label')
+                                            }}
                                         </Label>
                                         <Input
                                             :id="`edit-label-${type.id}`"
@@ -167,7 +174,11 @@ function close(): void {
                                 </div>
                                 <div>
                                     <Label :for="`edit-desc-${type.id}`">
-                                        Description
+                                        {{
+                                            $t(
+                                                'policies.admin.types.description_optional',
+                                            )
+                                        }}
                                     </Label>
                                     <Textarea
                                         :id="`edit-desc-${type.id}`"
@@ -182,7 +193,7 @@ function close(): void {
                                         :disabled="submitting"
                                         @click="saveEdit"
                                     >
-                                        Save
+                                        {{ $t('policies.admin.types.save') }}
                                     </Button>
                                     <Button
                                         type="button"
@@ -191,7 +202,7 @@ function close(): void {
                                         :disabled="submitting"
                                         @click="cancelEdit"
                                     >
-                                        Cancel
+                                        {{ $t('policies.admin.types.cancel') }}
                                     </Button>
                                 </div>
                             </div>
@@ -239,14 +250,20 @@ function close(): void {
                 </div>
 
                 <div class="space-y-2 rounded-md border bg-muted/40 p-4">
-                    <h4 class="text-sm font-semibold">Add a new type</h4>
+                    <h4 class="text-sm font-semibold">
+                        {{ $t('policies.admin.types.add_heading') }}
+                    </h4>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <Label for="new-type-key">Key</Label>
+                            <Label for="new-type-key">
+                                {{ $t('policies.admin.types.key') }}
+                            </Label>
                             <Input
                                 id="new-type-key"
                                 v-model="newType.key"
-                                placeholder="e.g. tos, privacy"
+                                :placeholder="
+                                    $t('policies.admin.types.key_placeholder')
+                                "
                                 required
                             />
                             <p
@@ -257,11 +274,15 @@ function close(): void {
                             </p>
                         </div>
                         <div>
-                            <Label for="new-type-label">Label</Label>
+                            <Label for="new-type-label">
+                                {{ $t('policies.admin.types.label') }}
+                            </Label>
                             <Input
                                 id="new-type-label"
                                 v-model="newType.label"
-                                placeholder="Terms of Service"
+                                :placeholder="
+                                    $t('policies.admin.types.label_placeholder')
+                                "
                                 required
                             />
                             <p
@@ -274,7 +295,9 @@ function close(): void {
                     </div>
                     <div>
                         <Label for="new-type-description">
-                            Description (optional)
+                            {{
+                                $t('policies.admin.types.description_optional')
+                            }}
                         </Label>
                         <Textarea
                             id="new-type-description"
@@ -287,14 +310,14 @@ function close(): void {
                         :disabled="submitting || !newType.key || !newType.label"
                         @click="createType"
                     >
-                        Add type
+                        {{ $t('policies.admin.types.add') }}
                     </Button>
                 </div>
             </div>
 
             <DialogFooter>
                 <Button type="button" variant="outline" @click="close">
-                    Close
+                    {{ $t('common.close') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

@@ -2,6 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Plus, Tags } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Heading from '@/components/Heading.vue';
 import PolicyTypeManagerDialog from '@/components/policies/PolicyTypeManagerDialog.vue';
 import { Badge } from '@/components/ui/badge';
@@ -45,23 +46,25 @@ const props = defineProps<{
     policyTypes: PolicyTypeRow[];
 }>();
 
+const { t } = useI18n();
+
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Administration', href: '/admin/policies' },
-    { title: 'Policies', href: '/admin/policies' },
+    { title: t('navigation.admin'), href: '/admin/policies' },
+    { title: t('policies.admin.index.title'), href: '/admin/policies' },
 ];
 
 const typesDialogOpen = ref(false);
 </script>
 
 <template>
-    <Head title="Policies" />
+    <Head :title="$t('policies.admin.index.title')" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="flex items-center justify-between">
                 <Heading
-                    title="Policies"
-                    description="Manage the platform's terms, privacy, and other consent policies"
+                    :title="$t('policies.admin.index.title')"
+                    :description="$t('policies.admin.index.description')"
                 />
                 <div class="flex gap-2">
                     <Button
@@ -70,12 +73,12 @@ const typesDialogOpen = ref(false);
                         @click="typesDialogOpen = true"
                     >
                         <Tags class="size-4" />
-                        Manage types
+                        {{ $t('policies.admin.index.manage_types') }}
                     </Button>
                     <Link href="/admin/policies/create">
                         <Button>
                             <Plus class="size-4" />
-                            New policy
+                            {{ $t('policies.admin.index.new_policy') }}
                         </Button>
                     </Link>
                 </div>
@@ -85,11 +88,25 @@ const typesDialogOpen = ref(false);
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Current version</TableHead>
-                            <TableHead>Required at registration</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>
+                                {{ $t('policies.admin.index.col_name') }}
+                            </TableHead>
+                            <TableHead>
+                                {{ $t('policies.admin.index.col_type') }}
+                            </TableHead>
+                            <TableHead>
+                                {{
+                                    $t(
+                                        'policies.admin.index.col_current_version',
+                                    )
+                                }}
+                            </TableHead>
+                            <TableHead>
+                                {{ $t('policies.admin.index.col_required') }}
+                            </TableHead>
+                            <TableHead>
+                                {{ $t('policies.admin.index.col_status') }}
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -125,26 +142,38 @@ const typesDialogOpen = ref(false);
                                         ({{ policy.current_version.locale }})
                                     </span>
                                 </span>
-                                <span v-else class="text-muted-foreground"
-                                    >No published version</span
-                                >
+                                <span v-else class="text-muted-foreground">
+                                    {{
+                                        $t(
+                                            'policies.admin.index.no_published_version',
+                                        )
+                                    }}
+                                </span>
                             </TableCell>
                             <TableCell>
                                 <Badge
                                     v-if="policy.is_required_for_registration"
-                                    >Required</Badge
                                 >
-                                <span v-else class="text-muted-foreground"
-                                    >Optional</span
-                                >
+                                    {{
+                                        $t(
+                                            'policies.admin.index.required_badge',
+                                        )
+                                    }}
+                                </Badge>
+                                <span v-else class="text-muted-foreground">
+                                    {{ $t('policies.admin.index.optional') }}
+                                </span>
                             </TableCell>
                             <TableCell>
                                 <Badge
                                     v-if="policy.archived_at"
                                     variant="secondary"
-                                    >Archived</Badge
                                 >
-                                <Badge v-else variant="default">Active</Badge>
+                                    {{ $t('policies.admin.index.archived') }}
+                                </Badge>
+                                <Badge v-else variant="default">
+                                    {{ $t('policies.admin.index.active') }}
+                                </Badge>
                             </TableCell>
                         </TableRow>
                         <TableRow v-if="policies.length === 0">
@@ -152,7 +181,7 @@ const typesDialogOpen = ref(false);
                                 :colspan="5"
                                 class="py-8 text-center text-muted-foreground"
                             >
-                                No policies yet. Create one to get started.
+                                {{ $t('policies.admin.index.no_policies') }}
                             </TableCell>
                         </TableRow>
                     </TableBody>
@@ -164,8 +193,7 @@ const typesDialogOpen = ref(false);
                 class="rounded-md border border-dashed bg-muted/40 p-6 text-center"
             >
                 <p class="text-sm text-muted-foreground">
-                    No policy types yet. You need at least one type before you
-                    can create a policy.
+                    {{ $t('policies.admin.index.no_types_yet_lead') }}
                 </p>
                 <Button
                     type="button"
@@ -174,20 +202,22 @@ const typesDialogOpen = ref(false);
                     @click="typesDialogOpen = true"
                 >
                     <Tags class="size-4" />
-                    Add the first type
+                    {{ $t('policies.admin.index.add_first_type') }}
                 </Button>
             </div>
 
             <div v-else class="rounded-md border bg-muted/40 p-4">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-medium">Policy types</h3>
+                    <h3 class="text-sm font-medium">
+                        {{ $t('policies.admin.index.policy_types_heading') }}
+                    </h3>
                     <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         @click="typesDialogOpen = true"
                     >
-                        Edit
+                        {{ $t('policies.admin.index.edit_types') }}
                     </Button>
                 </div>
                 <div class="mt-2 flex flex-wrap gap-2">

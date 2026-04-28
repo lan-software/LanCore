@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import NonEditorialChangeConfirmDialog from '@/components/policies/NonEditorialChangeConfirmDialog.vue';
@@ -22,6 +23,8 @@ const props = defineProps<{
     priorAcceptorCount: number;
 }>();
 
+const { t } = useI18n();
+
 const form = useForm({
     content: '',
     is_non_editorial_change: false as boolean,
@@ -33,10 +36,12 @@ const form = useForm({
 const dialogOpen = ref(false);
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Policies', href: '/admin/policies' },
+    { title: t('policies.admin.index.title'), href: '/admin/policies' },
     { title: props.policy.name, href: `/admin/policies/${props.policy.id}` },
     {
-        title: 'Publish version',
+        title: t('policies.admin.version_create.title', {
+            name: props.policy.name,
+        }),
         href: `/admin/policies/${props.policy.id}/versions/create`,
     },
 ];
@@ -57,7 +62,11 @@ function submitNow(): void {
 </script>
 
 <template>
-    <Head :title="`Publish new version — ${policy.name}`" />
+    <Head
+        :title="
+            $t('policies.admin.version_create.title', { name: policy.name })
+        "
+    />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full max-w-3xl flex-1 flex-col gap-8 p-4">
@@ -66,18 +75,28 @@ function submitNow(): void {
                     :href="`/admin/policies/${policy.id}`"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
-                    &larr; Back to {{ policy.name }}
+                    {{
+                        $t('policies.admin.version_create.back', {
+                            name: policy.name,
+                        })
+                    }}
                 </Link>
             </div>
 
             <Heading
-                :title="`Publish new version of ${policy.name}`"
-                description="Markdown is rendered into a PDF snapshot at publish time."
+                :title="
+                    $t('policies.admin.version_create.title', {
+                        name: policy.name,
+                    })
+                "
+                :description="$t('policies.admin.version_create.description')"
             />
 
             <form class="space-y-4" @submit.prevent="onSubmit">
                 <div class="grid gap-2">
-                    <Label for="content">Content (Markdown)</Label>
+                    <Label for="content">
+                        {{ $t('policies.admin.version_create.content') }}
+                    </Label>
                     <Textarea
                         id="content"
                         v-model="form.content"
@@ -89,22 +108,26 @@ function submitNow(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="locale"
-                        >Locale (optional — defaults to app locale)</Label
-                    >
+                    <Label for="locale">
+                        {{ $t('policies.admin.version_create.locale') }}
+                    </Label>
                     <Input
                         id="locale"
                         v-model="form.locale"
-                        placeholder="e.g. de or en"
+                        :placeholder="
+                            $t(
+                                'policies.admin.version_create.locale_placeholder',
+                            )
+                        "
                         maxlength="10"
                     />
                     <InputError :message="form.errors.locale" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="effective_at"
-                        >Effective at (optional — defaults to now)</Label
-                    >
+                    <Label for="effective_at">
+                        {{ $t('policies.admin.version_create.effective_at') }}
+                    </Label>
                     <Input
                         id="effective_at"
                         v-model="form.effective_at"
@@ -125,33 +148,49 @@ function submitNow(): void {
                             for="is_non_editorial_change"
                             class="cursor-pointer font-medium"
                         >
-                            This is a non-editorial change
+                            {{
+                                $t(
+                                    'policies.admin.version_create.is_non_editorial',
+                                )
+                            }}
                         </Label>
                     </div>
                     <p class="mt-2 text-xs text-muted-foreground">
-                        Tick this only when the change affects user rights. It
-                        will email all
-                        <strong>{{ priorAcceptorCount }}</strong>
-                        prior acceptors and force re-acceptance on next login.
+                        {{
+                            $t(
+                                'policies.admin.version_create.is_non_editorial_help',
+                                { count: priorAcceptorCount },
+                            )
+                        }}
                     </p>
                 </div>
 
                 <div v-if="form.is_non_editorial_change" class="grid gap-2">
                     <Label for="public_statement">
-                        Public statement (included in the email)
+                        {{
+                            $t('policies.admin.version_create.public_statement')
+                        }}
                     </Label>
                     <Textarea
                         id="public_statement"
                         v-model="form.public_statement"
                         rows="4"
-                        placeholder="Explain why the policy is changing and what it means for the user's rights."
+                        :placeholder="
+                            $t(
+                                'policies.admin.version_create.public_statement_placeholder',
+                            )
+                        "
                     />
                     <InputError :message="form.errors.public_statement" />
                 </div>
 
                 <div class="flex items-center gap-4">
                     <Button type="submit" :disabled="form.processing">
-                        {{ form.processing ? 'Publishing…' : 'Publish' }}
+                        {{
+                            form.processing
+                                ? $t('policies.admin.version_create.publishing')
+                                : $t('policies.admin.version_create.publish')
+                        }}
                     </Button>
                 </div>
             </form>
