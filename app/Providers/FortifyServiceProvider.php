@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Domain\Policy\Models\Policy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -84,11 +85,47 @@ class FortifyServiceProvider extends ServiceProvider
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(fn () => Inertia::render('auth/Register'));
+        Fortify::registerView(fn () => Inertia::render('auth/Register', [
+            'requiredPolicies' => $this->resolveRequiredRegistrationPolicies(),
+        ]));
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/TwoFactorChallenge'));
 
         Fortify::confirmPasswordView(fn () => Inertia::render('auth/ConfirmPassword'));
+    }
+
+    /**
+     * Build the policy props consumed by the Register page so users see one
+     * checkbox per currently-required, currently-effective policy version.
+     *
+     * @return array<int, array<string, mixed>>
+     *
+     * @see docs/mil-std-498/SSS.md CAP-POL-004
+     */
+    private function resolveRequiredRegistrationPolicies(): array
+    {
+        return Policy::query()
+            ->active()
+            ->requiredForRegistration()
+            ->with('currentVersion', 'type')
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (Policy $policy) => [
+                'id' => $policy->id,
+                'key' => $policy->key,
+                'name' => $policy->name,
+                'description' => $policy->description,
+                'type' => $policy->type ? ['key' => $policy->type->key, 'label' => $policy->type->label] : null,
+                'current_version' => $policy->currentVersion ? [
+                    'id' => $policy->currentVersion->id,
+                    'version_number' => $policy->currentVersion->version_number,
+                    'locale' => $policy->currentVersion->locale,
+                    'effective_at' => $policy->currentVersion->effective_at,
+                ] : null,
+            ])
+            ->filter(fn (array $p) => $p['current_version'] !== null)
+            ->values()
+            ->all();
     }
 
     /**

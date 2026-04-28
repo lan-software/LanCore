@@ -39,7 +39,6 @@ const form = reactive({
     legal_notice: props.settings.legal_notice ?? '',
     impressum_responsible: props.settings.impressum_responsible ?? '',
     impressum_content: props.settings.impressum_content ?? '',
-    privacy_content: props.settings.privacy_content ?? '',
 });
 
 const saving = ref(false);
@@ -295,27 +294,6 @@ function removeLogo() {
                                 placeholder="Liability disclaimers, dispute resolution notices, copyright statements, etc."
                             />
                         </div>
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <div class="text-sm font-semibold">
-                        Privacy policy (/datenschutz, /privacy)
-                    </div>
-                    <p class="text-xs text-muted-foreground">
-                        Content published at <code>/datenschutz</code> and
-                        <code>/privacy</code>. Leave empty to hide the privacy
-                        link from the footer.
-                    </p>
-
-                    <div class="grid gap-2">
-                        <Label for="privacy_content">Privacy policy text</Label>
-                        <Textarea
-                            id="privacy_content"
-                            v-model="form.privacy_content"
-                            rows="16"
-                            placeholder="Full privacy policy including GDPR disclosures (Art. 13), data controller, processing purposes, retention, cookies..."
-                        />
                     </div>
                 </div>
 

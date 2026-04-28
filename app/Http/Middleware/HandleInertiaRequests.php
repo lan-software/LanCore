@@ -85,7 +85,6 @@ class HandleInertiaRequests extends Middleware
                     'logoUrl' => $logoPath ? StorageRole::publicUrl($logoPath) : null,
                     'name' => OrganizationSetting::get('name'),
                     'hasImpressum' => (bool) OrganizationSetting::get('impressum_content'),
-                    'hasPrivacy' => (bool) OrganizationSetting::get('privacy_content'),
                 ];
             }),
             'appVersion' => fn () => AppVersion::summary(),

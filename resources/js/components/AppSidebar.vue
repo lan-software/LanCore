@@ -6,6 +6,7 @@ import {
     Cog,
     CreditCard,
     FileCheck,
+    FileText,
     Gamepad2,
     Gauge,
     Gift,
@@ -472,19 +473,29 @@ function toggleFavorite(itemId: string): void {
             <NavFavorites :all-items="allPinnableItems" />
 
             <!-- Platform Settings -->
-            <SidebarGroup v-if="canAny(Permission.ManageUsers)">
+            <SidebarGroup
+                v-if="canAny(Permission.ManageUsers, Permission.ManagePolicies)"
+            >
                 <SidebarGroupLabel>{{
                     $t('navigation.groups.platform')
                 }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
-                        <SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManageUsers)">
                             <SidebarMenuButton as-child>
                                 <Link :href="organizationSettingsIndex()">
                                     <Cog />
                                     <span>{{
                                         $t('navigation.organization')
                                     }}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManagePolicies)">
+                            <SidebarMenuButton as-child>
+                                <Link href="/admin/policies">
+                                    <FileText />
+                                    <span>{{ $t('navigation.policies') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Policy\Providers\GdprServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\FortifyServiceProvider;
 use App\Providers\HorizonServiceProvider;
@@ -12,6 +13,7 @@ use Laravel\Telescope\TelescopeApplicationServiceProvider;
 return array_values(array_filter([
     AppServiceProvider::class,
     FortifyServiceProvider::class,
+    GdprServiceProvider::class,
     class_exists(HorizonApplicationServiceProvider::class)
         ? HorizonServiceProvider::class
         : null,

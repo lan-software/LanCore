@@ -12,4 +12,5 @@ enum Permission: string implements PermissionEnum
     case ManageUsers = 'manage_users';
     case SyncUserRoles = 'sync_user_roles';
     case DeleteUsers = 'delete_users';
+    case ExportUserPersonalData = 'export_user_personal_data';
 }

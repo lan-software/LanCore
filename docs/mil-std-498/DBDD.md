@@ -1068,6 +1068,77 @@ Standard Laravel Cashier tables for subscription management with metered billing
 
 **Indexes:** `(orchestration_job_id, timestamp)` for chat log queries.
 
+### 4.18 Platform Policies
+
+#### 4.18.1 `policy_types`
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | bigint PK | |
+| key | varchar(64) UNIQUE | machine slug, e.g. `tos` |
+| label | varchar(128) | human label |
+| description | text NULLABLE | |
+| created_at, updated_at | timestamp | |
+
+#### 4.18.2 `policies`
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | bigint PK | |
+| policy_type_id | bigint FK → policy_types.id (RESTRICT) | type binding |
+| key | varchar(64) UNIQUE | machine slug |
+| name | varchar(128) | |
+| description | text NULLABLE | |
+| is_required_for_registration | boolean default false | |
+| sort_order | smallint unsigned default 0 | |
+| archived_at | timestamp NULLABLE | |
+| required_acceptance_version_id | bigint FK → policy_versions.id (NULL ON DELETE) NULLABLE | added by separate migration #4 to break the cycle |
+| created_at, updated_at | timestamp | |
+
+**Indexes:** `(is_required_for_registration, archived_at)`.
+
+#### 4.18.3 `policy_versions`
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | bigint PK | |
+| policy_id | bigint FK → policies.id (RESTRICT) | |
+| version_number | int unsigned | per `(policy_id, locale)` |
+| locale | varchar(10) | defaults to `config('app.locale')` at insert |
+| content | longtext | markdown source |
+| public_statement | text NULLABLE | included in mass-email body for non-editorial publishes |
+| is_non_editorial_change | boolean default false | gate driver |
+| pdf_path | varchar(255) NULLABLE | private disk path |
+| effective_at | timestamp | |
+| published_at | timestamp | |
+| published_by_user_id | bigint FK → users.id (NULL ON DELETE) NULLABLE | |
+| created_at, updated_at | timestamp | |
+
+**Indexes:** UNIQUE `(policy_id, locale, version_number)`, `(published_at)`.
+
+#### 4.18.4 `policy_acceptances`
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | bigint PK | |
+| user_id | bigint FK → users.id (CASCADE) | |
+| policy_version_id | bigint FK → policy_versions.id (RESTRICT) | |
+| accepted_at | timestamp | |
+| locale | varchar(10) | locale presented at acceptance |
+| ip_address | varchar(45) NULLABLE | |
+| user_agent | varchar(512) NULLABLE | |
+| source | varchar(32) | enum-shaped: `registration`, `re_acceptance_gate`, `settings`, `checkout`, `manual_admin` |
+| withdrawn_at | timestamp NULLABLE | Article 7(3) withdrawal timestamp |
+| withdrawn_reason | text NULLABLE | |
+| withdrawn_ip | varchar(45) NULLABLE | |
+| withdrawn_user_agent | varchar(512) NULLABLE | |
+| created_at, updated_at | timestamp | |
+
+**Indexes:** UNIQUE `(user_id, policy_version_id)`, `(user_id, withdrawn_at)`.
+
+> The `audits` table (laravel-auditing) is reused for the Policy audit
+> trail; no new audit-specific tables.
+
 ---
 
 ## 5. Entity Relationship Summary

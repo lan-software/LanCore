@@ -285,6 +285,31 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-ICLIB-004 | The package shall provide a webhook verification middleware implementing HMAC-SHA256 signature verification using a single environment secret (`LANCORE_WEBHOOK_SECRET`), rejecting any request whose signature or event header does not match |
 | CAP-ICLIB-005 | The package shall provide an opt-in `entrance()` sub-client for LanEntrance consumers, offering ticket validation, check-in confirmation, attendee search, entrance statistics, and JWKS fetching with configurable TTL-based caching; the sub-client shall not be loaded by satellites that do not enable it |
 
+#### 3.2.X Platform Policies and User Consent
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-POL-001 | The system shall provide a platform-wide Policy domain in which platform admins create policy types (TOS, Privacy, EULA, …) and policies referencing those types, with policies marked optionally as `is_required_for_registration` |
+| CAP-POL-002 | Each policy shall have a linear, immutable version history; publishing a new version renders a PDF snapshot stored on the private storage role and stamps the publisher, locale, content, and effective date |
+| CAP-POL-003 | The system shall distinguish editorial publishes (typo / formatting only — silent) from non-editorial publishes (rights-affecting — drives re-acceptance) via a single boolean flag captured at publish time |
+| CAP-POL-004 | The system shall record per-user acceptances in a single `policy_acceptances` table, capturing locale, IP, user-agent, and source (`registration`, `re_acceptance_gate`, `settings`, `checkout`, `manual_admin`) |
+| CAP-POL-005 | When a non-editorial version is published, the system shall queue one mail per distinct prior acceptor with the new PDF attached and the operator's `public_statement` rendered inline |
+| CAP-POL-006 | After a non-editorial publish, the system shall force every active user to re-accept the policy on next login via a `RequirePolicyAcceptance` middleware redirect to `/policies/required`, stashing the user's intended URL |
+| CAP-POL-007 | The system shall let logged-in users withdraw consent (GDPR Article 7(3)) for any policy from `/settings/privacy`, recording `withdrawn_at` + reason + IP + user-agent on the existing acceptance row |
+| CAP-POL-008 | Withdrawal shall trigger a notification (mail + database channels) to every user holding `ManagePolicies`, excluding the withdrawing user |
+| CAP-POL-009 | All Policy CRUD, version publish, acceptance, and withdrawal events shall emit audit log rows via `owen-it/laravel-auditing` and be readable from the Policy admin UI |
+
+#### 3.2.Y GDPR Article 15 Operator Workflow
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-GDPR-001 | The system shall provide an artisan command `gdpr:export-user` that produces a single ZIP archive containing every record held about a single subject user, written to `storage/app/gdpr-exports/` |
+| CAP-GDPR-002 | The export shall obfuscate every other-user identifier appearing in the subject's records via deterministic per-export pseudonyms (`user_a`, `user_b`, …), with no reverse mapping persisted on disk or in the export |
+| CAP-GDPR-003 | The export shall optionally apply AES-256 encryption to every ZIP entry when an operator-supplied password is provided |
+| CAP-GDPR-004 | The export shall include a copy of the PDF of every policy version the user has accepted, alongside their acceptance/withdrawal records |
+
+> **Scope note**: `CAP-SHP-006` (checkout-condition acknowledgement) remains scoped to shop checkout and is distinct from `CAP-POL-*`. The two flows do not share storage or middleware.
+
 ### 3.3 System External Interface Requirements
 
 #### 3.3.1 External Interfaces

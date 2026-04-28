@@ -2,7 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { showCookiePreferences } from '@/lib/cookieConsent';
-import { impressum, privacy } from '@/routes/legal';
+import { impressum, index as legalIndex } from '@/routes/legal';
 
 type AppVersion = {
     version: string;
@@ -53,8 +53,8 @@ const versionLabel = computed(() => {
                 <Link :href="impressum().url" class="hover:text-foreground">
                     {{ $t('legal.impressum.link') }}
                 </Link>
-                <Link :href="privacy().url" class="hover:text-foreground">
-                    {{ $t('legal.privacy.link') }}
+                <Link :href="legalIndex().url" class="hover:text-foreground">
+                    {{ $t('legal.index.link') }}
                 </Link>
                 <button
                     type="button"

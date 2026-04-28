@@ -584,6 +584,82 @@ The `LanCoreUser` DTO carries three public-facing identity fields that satellite
 
 The DTO field changes preserve backwards compatibility: existing satellites consuming only `name`, `email`, `roles`, and `locale` continue to function. Adoption of `username` and `avatar_url` is opt-in per satellite via `lancore-client` version bumps and per-app display refactors.
 
+### 5.8 Policy Domain Architecture
+
+The Policy domain (`app/Domain/Policy/`) follows the project's standard
+domain layout (Models, Actions, Events, Listeners, Jobs, Notifications,
+Http/{Controllers,Requests}, Enums, Policies, Providers).
+
+Data shape (see DBDD §X for column-level detail):
+
+```
+policy_types ──< policies ──< policy_versions ──< policy_acceptances >── users
+                    │
+                    └─ required_acceptance_version_id ──> policy_versions(id)
+```
+
+Editorial vs. non-editorial gate semantics are encoded entirely in
+`policies.required_acceptance_version_id`:
+
+- editorial publish: pointer unchanged, listener short-circuits, no email
+  fan-out, no gate redirect for prior acceptors
+- non-editorial publish: pointer set to the new version → gate middleware
+  detects a "gap" for every active user who accepted any earlier version
+
+PDF artefacts are rendered with `barryvdh/laravel-dompdf` at publish time
+and stored on the private storage role at `policy-versions/{id}.pdf`. The
+same artefact is attached to mass-emails and bundled in the GDPR export.
+
+### 5.9 Request Pipeline — RequirePolicyAcceptance Middleware
+
+The middleware sits in the global `web` stack, **after** `RequireUsername`,
+and is also exposed as alias `require.policies` for symmetric per-route
+opt-out cases. Decision flow:
+
+```
+RequirePolicyAcceptance::handle()
+  user === null               → next()
+  request matches allowlist   → next()
+  hasGap(user) === false      → next()
+  is GET && !expectsJson      → stash url.intended
+  redirect → /policies/required
+```
+
+`hasGap()` resolves to: there exists a Policy with `archived_at IS NULL`
+AND `required_acceptance_version_id IS NOT NULL` for which no active
+`policy_acceptances` row exists for `(user_id, policy_version_id =
+required_acceptance_version_id, withdrawn_at IS NULL)`.
+
+The allowlist mirrors `RequireUsername` and additionally exempts the
+`/policies/*`, `/legal/*`, `/policies/required*`, and
+`/settings/consent/*` namespaces.
+
+### 5.10 GDPR Export Pipeline
+
+The pipeline is an open-set fan-out over `GdprDataSource` implementations
+registered by `GdprServiceProvider::SOURCES`. Adding a new domain to the
+export is a one-line edit.
+
+```
+ExportUserDataCommand
+   ↓ resolves User by email
+   ↓ instantiates GdprExportContext (per-export pseudonym map)
+GenerateGdprExport
+   ↓ for each registered GdprDataSource:
+   ↓   write {key}.json (pretty, JSON_UNESCAPED_UNICODE)
+   ↓   copy any GdprBinaryAttachment files to {key}/{filename}
+   ↓ write manifest.json (sources, pseudonym table, app_version, timestamp)
+   ↓ write README.txt (DE+EN literal copy)
+   ↓ ZIP via php-zip; per-entry AES-256 if --password
+   ↓ move from .tmp to storage/app/gdpr-exports/{id}-{ts}.zip
+   ↓ rrmdir tmp
+returns GdprExportResult
+```
+
+The pseudonym map is **never persisted**: it lives only as a member of the
+`GdprExportContext` instance for the duration of the command run. The
+manifest emits pseudonym → hint label, never pseudonym → real id.
+
 ---
 
 ## 6. Requirements Traceability

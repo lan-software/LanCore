@@ -10,6 +10,8 @@ use App\Domain\Event\Models\Event;
 use App\Domain\Notification\Models\NotificationPreference;
 use App\Domain\Notification\Models\ProgramNotificationSubscription;
 use App\Domain\Notification\Models\PushSubscription;
+use App\Domain\Policy\Models\PolicyAcceptance;
+use App\Domain\Policy\Models\PolicyVersion;
 use App\Domain\Profile\Actions\ResolveAvatarUrl;
 use App\Domain\Profile\Enums\AvatarSource;
 use App\Domain\Profile\Enums\ProfileVisibility;
@@ -208,6 +210,18 @@ class User extends Authenticatable
     public function dismissedAnnouncements(): BelongsToMany
     {
         return $this->belongsToMany(Announcement::class, 'announcement_dismissals')->withTimestamps();
+    }
+
+    public function policyAcceptances(): HasMany
+    {
+        return $this->hasMany(PolicyAcceptance::class);
+    }
+
+    public function acceptedPolicyVersions(): BelongsToMany
+    {
+        return $this->belongsToMany(PolicyVersion::class, 'policy_acceptances')
+            ->withPivot('accepted_at', 'locale', 'source', 'withdrawn_at')
+            ->withTimestamps();
     }
 
     public function isDiscoverableBy(User $searcher): bool

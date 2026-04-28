@@ -18,10 +18,9 @@ Route::get('upcoming-events', [PublicEventController::class, 'index'])->name('ev
 Route::get('past-events', [PublicEventController::class, 'past'])->name('events.public.past');
 Route::get('events/{event}/public', [PublicEventController::class, 'show'])->name('events.public.show');
 
+Route::get('legal', [LegalController::class, 'index'])->name('legal.index');
 Route::get('impressum', [LegalController::class, 'impressum'])->name('legal.impressum');
 Route::get('imprint', [LegalController::class, 'impressum'])->name('legal.imprint');
-Route::get('datenschutz', [LegalController::class, 'privacy'])->name('legal.datenschutz');
-Route::get('privacy', [LegalController::class, 'privacy'])->name('legal.privacy');
 
 Route::post('cookie-preferences', [CookiePreferenceController::class, 'update'])
     ->middleware('auth')
@@ -67,6 +66,7 @@ require __DIR__.'/news.php';
 require __DIR__.'/announcements.php';
 require __DIR__.'/achievements.php';
 require __DIR__.'/notifications.php';
+require __DIR__.'/policies.php';
 require __DIR__.'/webhooks.php';
 require __DIR__.'/integrations.php';
 require __DIR__.'/orchestration.php';

@@ -497,6 +497,44 @@ This CSCI is consumed by all Lan\* satellite applications (LanBrackets, LanEntra
 | ICLIB-F-009 | The package shall expose a `LanCoreClient::fake()` factory for use in satellite test suites that registers `Http::fake()` responses and returns an assertion API sufficient to verify outbound request shape without a live LanCore instance |
 | ICLIB-F-010 | Satellite applications consuming the `LanCoreUser` DTO via `exchangeCode()`, `resolveUserById()`, `resolveUserByEmail()`, `currentUser()`, or webhook payload deserialization SHALL use `username` as the sole public-facing player display field on every public-facing surface (tournament brackets, leaderboards, player cards, scoreboards, OBS overlays, public team rosters, etc.). Satellites SHALL NOT display `name` (real name) or `email` publicly. When `username` is `null` (transitional state for users registered before USR-F-022), satellites SHALL render a generic placeholder of the form `Player #{id}` rather than substituting the real name. Satellites MAY use `name` and `email` for purely internal-facing operator screens (admin lists, audit logs) where access is restricted to authorized staff |
 
+#### 3.2.X Platform Policies (Policy domain)
+
+| Req ID | Requirement |
+|--------|------------|
+| POL-F-001 | The system shall expose `GET /admin/policies` as a paginated index of every policy, gated by `Permission::ManagePolicies` |
+| POL-F-002 | The system shall provide create / edit / archive UI for policies and inline create / update / delete UI for policy types from the admin Policies index |
+| POL-F-003 | Policies shall reference one `policy_type_id` (restrictOnDelete); deleting a `PolicyType` while any `Policy` references it shall fail with `PolicyTypeInUseException` |
+| POL-F-004 | The system shall expose `GET /admin/policies/{policy}` showing the policy version history and an audit-log feed sourced from `audits` |
+| POL-F-005 | The system shall expose `GET /admin/policies/{policy}/versions/create` and `POST /admin/policies/{policy}/versions` to publish a new version (markdown content, optional locale, optional effective_at, `is_non_editorial_change`, optional `public_statement`) |
+| POL-F-006 | The system shall reject submission of `POST /admin/policies/{policy}/versions` with `is_non_editorial_change=true` and an empty `public_statement` (422) |
+| POL-F-007 | `PublishPolicyVersion` shall lock the parent policy `for update`, compute the next `version_number` per `(policy_id, locale)`, render a PDF via dompdf, store it on the private storage role at `policy-versions/{id}.pdf`, and dispatch `PolicyVersionPublished($version, $isNonEditorial, $silent = !$isNonEditorial)` |
+| POL-F-008 | An editorial publish shall NOT update `policies.required_acceptance_version_id`; a non-editorial publish SHALL update it to the new version's id |
+| POL-F-009 | `RegisterController` (Fortify `CreateNewUser`) shall validate that the registration request includes `accepted_policy_version_ids[]` covering every currently-required version (`Policy::active()->requiredForRegistration()->currentVersion`); missing acceptances → 422 |
+| POL-F-010 | On successful registration, the system shall create one `policy_acceptances` row per accepted version with `source='registration'`, recording locale, IP, user-agent |
+| POL-F-011 | The `RequirePolicyAcceptance` middleware shall, for any authenticated user, redirect to `/policies/required` (stashing intended URL) when there exists a `Policy` with `archived_at IS NULL AND required_acceptance_version_id IS NOT NULL` for which the user holds no active `policy_acceptances` row |
+| POL-F-012 | `RecordPolicyAcceptance` shall upsert on `(user_id, policy_version_id)`; if the existing row is withdrawn, the action shall clear `withdrawn_at`, `withdrawn_reason`, `withdrawn_ip`, `withdrawn_user_agent` and refresh `accepted_at`/locale |
+| POL-F-013 | `WithdrawPolicyConsent` shall locate the user's most recent active acceptance for the given policy and stamp `withdrawn_at`, `withdrawn_reason`, `withdrawn_ip`, `withdrawn_user_agent`; absence of an active acceptance shall raise `NoActivePolicyAcceptanceException` |
+| POL-F-014 | `NotifyPlatformAdminsOfWithdrawal` shall dispatch `UserWithdrewConsentNotification` (mail + database) to every user holding `Permission::ManagePolicies` excluding the withdrawing user |
+| POL-F-015 | `DispatchPolicyVersionEmails` shall, for each non-editorial publish, resolve distinct prior `policy_acceptances.user_id` for the same policy via `chunkById(500)` and dispatch one `SendPolicyVersionPublishedEmailJob` per recipient |
+| POL-F-016 | `PolicyVersionPublishedNotification` shall attach the stored PDF, render `public_statement` inline, and use the recipient's `User->locale` when set |
+| POL-F-017 | All Policy CRUD, version publish, acceptance, and withdrawal events shall produce audit rows via `owen-it/laravel-auditing` |
+| POL-F-018 | The non-editorial publish UI shall present a two-step confirmation modal (`NonEditorialChangeConfirmDialog.vue`) with a 5-second delayed-enable button labelled "Send {N} emails and publish" |
+
+#### 3.2.Y GDPR Article 15 Export
+
+| Req ID | Requirement |
+|--------|------------|
+| GDPR-F-001 | The system shall provide an artisan command `gdpr:export-user {email?} {--password=} {--include-soft-deleted} {--output-dir=}` |
+| GDPR-F-002 | The command shall run an interactive Laravel-Prompts wizard when invoked without `--no-interaction`, prompting for email (if not given), optional password, and a confirmation step |
+| GDPR-F-003 | When `--password=...` is given, every entry in the resulting ZIP shall be AES-256 encrypted via `ZipArchive::setEncryptionName($name, ZipArchive::EM_AES_256, $password)` |
+| GDPR-F-004 | The command shall accept `--include-soft-deleted` to include users whose primary `users` row has been soft-deleted (no-op while User does not use SoftDeletes) |
+| GDPR-F-005 | Other-user identifiers appearing in the subject's records shall be replaced with deterministic per-export pseudonyms (`user_a`, `user_b`, …) via `GdprExportContext::obfuscateUser()`; the `pseudonymTable()` returned in the manifest shall map pseudonym → hint label only, never pseudonym → real id |
+| GDPR-F-006 | The exported ZIP shall include a copy of the PDF of every policy version the subject has accepted, copied verbatim into `policy_acceptances/{policy-key}-v{n}.pdf` |
+| GDPR-F-007 | The exported ZIP shall include `manifest.json` containing the export timestamp, `app_version`, the list of registered data sources with record counts, and the pseudonym table |
+| GDPR-F-008 | The exported ZIP shall be written to `storage/app/gdpr-exports/{user-id}-{Y-m-d_His}.zip`; the path shall be printed to the operator on success |
+
+> Settings extension: the existing `SET-F-009`/`SET-F-010` requirements remain in scope. New `SET-F-011`: from `/settings/privacy`, the system shall list the user's active acceptances and provide a per-policy "Withdraw consent" action that POSTs to `/settings/consent/{policy}/withdraw` with an optional `reason`. Existing `SHP-F-010`/`SHP-F-011` remain scoped to checkout-condition acknowledgement and are explicitly distinct from the Policy domain.
+
 ### 3.3 CSCI External Interface Requirements
 
 See [IRS](IRS.md) for detailed external interface requirements.

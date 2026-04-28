@@ -37,7 +37,6 @@ class OrganizationSettingsController extends Controller
             'legal_notice' => ['nullable', 'string', 'max:2000'],
             'impressum_responsible' => ['nullable', 'string', 'max:500'],
             'impressum_content' => ['nullable', 'string', 'max:20000'],
-            'privacy_content' => ['nullable', 'string', 'max:50000'],
         ]);
 
         foreach ($validated as $key => $value) {

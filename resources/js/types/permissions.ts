@@ -5,6 +5,7 @@ export const Permission = {
     ManageUsers: 'manage_users',
     SyncUserRoles: 'sync_user_roles',
     DeleteUsers: 'delete_users',
+    ExportUserPersonalData: 'export_user_personal_data',
 
     // Audit (app/Enums/AuditPermission.php)
     ViewAuditLogs: 'view_audit_logs',
@@ -50,6 +51,9 @@ export const Permission = {
 
     // Orga-Team (app/Domain/OrgaTeam/Enums/Permission.php)
     ManageOrgaTeams: 'manage_orga_teams',
+
+    // Policy (app/Domain/Policy/Enums/Permission.php)
+    ManagePolicies: 'manage_policies',
 
     // Ticketing (app/Domain/Ticketing/Enums/Permission.php)
     ManageTicketing: 'manage_ticketing',

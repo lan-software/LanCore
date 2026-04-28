@@ -914,6 +914,34 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | Stripe test-mode keys prevent real charges | Demo mode active, live Stripe card used | POST `/cart/checkout` with a real card number | Stripe sandbox rejects or ignores charge; no financial transaction occurs |
 | admin can exit demo mode | Superadmin, demo mode active | Artisan `app:demo --disable` or equivalent env toggle | Application returns to Normal mode, demo data remains until manually purged |
 
+### 4.28 Platform Policies Tests
+
+| Test Case | Pre-conditions | Test Steps | Expected Results |
+|-----------|---------------|-----------|-----------------|
+| admin CRUD on policies | Admin with ManagePolicies | GET/POST/PUT/POST archive on `admin/policies/*` | rows created/updated/archived; non-admin gets 403 |
+| policy type delete refused while in use | type referenced by ≥1 policy | DELETE `admin/policies/types/{id}` | `PolicyTypeInUseException`, 422 / back |
+| editorial publish does not change pointer | published version v1 + active acceptances | publish v2 with `is_non_editorial_change=false` | `policies.required_acceptance_version_id` unchanged; no Email queued |
+| non-editorial publish updates pointer + queues mails | same | publish v2 with `is_non_editorial_change=true` | pointer set; one job per distinct prior acceptor |
+| RecordPolicyAcceptance idempotent across withdrawal | acceptance with `withdrawn_at` set | re-execute action | row reused; withdrawn_* columns cleared |
+| WithdrawPolicyConsent stamps columns | active acceptance | execute with reason | withdrawn_at set, ConsentWithdrawn dispatched |
+| RequirePolicyAcceptance redirects on gap | non-editorial publish since user's acceptance | GET `/dashboard` | redirect to `/policies/required` with intended URL |
+| RequirePolicyAcceptance allows when no gap | user accepted current required version | GET `/dashboard` | 200 |
+| Registration without required acceptances fails | required-for-registration policy + version | POST `/register` without `accepted_policy_version_ids` | 422 |
+| Registration creates acceptance row | with required IDs | POST `/register` | user created; row with `source=registration` exists |
+| Withdrawal notifies admins | non-admin withdraws consent; 2 ManagePolicies admins | POST withdraw | each admin gets mail + database notification; withdrawer does not |
+| PolicyVersionPublishedNotification attaches PDF | stored PDF on private disk | render `toMail()` | rawAttachments not empty; locale matches recipient |
+
+### 4.29 GDPR Export Tests
+
+| Test Case | Pre-conditions | Test Steps | Expected Results |
+|-----------|---------------|-----------|-----------------|
+| ExportUserDataCommand produces ZIP | user exists | `artisan gdpr:export-user user@example.com` (no-interaction) | file exists at `{output-dir}/{id}-*.zip`; manifest.json + README.txt + per-source JSON entries present |
+| `--password` AES-encrypts every entry | password supplied | run command with `--password=secret` | every ZipArchive entry has non-zero `encryption_method` |
+| GdprExportContext deterministic per run | n/a | obfuscate alice, bob, alice again | `user_a`, `user_b`, `user_a` (stable within run) |
+| GdprExportContext manifest has no reverse map | n/a | obfuscateUser then read pseudonymTable | values are hint labels, never numeric ids |
+| Subject is never pseudonymised | n/a | obfuscateUser(subject) | returns literal `subject` |
+| User-not-found returns FAILURE | no matching email | run command for unknown email | exit code 1 |
+
 ---
 
 ## 5. Requirements Traceability

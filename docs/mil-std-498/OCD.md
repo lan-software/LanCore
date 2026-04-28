@@ -320,6 +320,25 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 | Demo Purposes | System pre-loaded with synthetic event, ticket, and user data to showcase platform capabilities to prospective organizers or stakeholders; payments are processed through the real payment provider configured in test mode, so no real financial transactions occur |
 | Localized Display | Each authenticated user's UI is rendered in their chosen locale (English, German, French, or Spanish). LanCore is the authoritative store of the `User.locale` field; satellite apps receive the locale via the SSO exchange DTO and apply it per-request via a `SetLocale` middleware. Locale strings are sourced from Laravel `lang/` directories and the Vue front-end via `vue-i18n`; translation assets are managed in the self-hosted Weblate instance at `https://weblate.sxcs.de` and merged into each app repository via the `weblate` branch and a fast-forward workflow |
 
+### 5.5 Platform Policies and User Consent
+
+LanCore captures, versions, and audits user consent for platform-wide policies (Terms of Service, Privacy Policy, EULA, …) as a first-class domain feature.
+
+**Operational scenarios:**
+
+- *Platform admin manages policies.* From `/admin/policies` an admin creates policy types, then policies referencing those types. Each policy carries metadata (`name`, `description`, `is_required_for_registration`, `sort_order`) but no content; content lives in versions.
+- *Publishing a version.* The admin opens a policy and clicks "Publish new version". Inputs: markdown content, locale (defaults to app locale), effective date, and a single `is_non_editorial_change` flag. Editorial publishes (typo / formatting fixes) are **silent** — they do not email anyone and do not force re-acceptance. Non-editorial publishes (rights-affecting) trigger a two-step confirmation modal (5-second delayed-enable) showing the count of prior acceptors who will receive an email; on confirmation, the system queues one email per prior acceptor and updates the policy's `required_acceptance_version_id` pointer, which causes the gate middleware to redirect every active user to `/policies/required` on their next request.
+- *User accepts at registration.* The Fortify register form lists every `is_required_for_registration` policy as a checkbox; submission without all required acceptances 422s.
+- *User accepts after a non-editorial publish.* On the next request after publish, `RequirePolicyAcceptance` middleware stashes the intended URL and redirects to `/policies/required`, where the user reviews + accepts each unaccepted required policy.
+- *User withdraws consent (GDPR Art. 7(3)).* From `/settings/privacy` the user expands "Consent" and clicks "Withdraw" on a previously accepted policy. The acceptance row is preserved (audit trail) — `withdrawn_at` + reason + IP + user-agent are stamped. Every user holding `ManagePolicies` receives a mail + database notification.
+- *Public read.* `/legal` lists every non-archived policy. `/policies/{key}` renders the latest version of a policy.
+
+**Legacy migration.** The old per-organization `OrganizationSetting->privacy_content` field, rendered at `/privacy` and `/datenschutz` in earlier releases, is removed in this release. The legacy routes are gone; the field is left in the DB un-touched and un-rendered. Operators must re-author privacy content as a new Policy in the admin UI.
+
+### 5.6 GDPR Article 15 Operator Workflow
+
+A platform operator (acting on a Subject Access Request) runs `vendor/bin/sail artisan gdpr:export-user user@example.com`. Laravel-Prompts walks them through optional AES-256 password protection. The command writes a single ZIP at `storage/app/gdpr-exports/{user-id}-{Y-m-d_His}.zip` containing JSON dumps of every record about the subject across every domain (Profile, Policy acceptances, Sessions, Audits, Shop, Ticketing, Competition, News, Notification, OrgaTeam, Sponsoring, Achievements), plus a copy of the PDF of every accepted policy version, plus a `manifest.json` and `README.txt`. Identifiers of other users that appear inside the subject's records (teammates, comment authors, ticket co-users, etc.) are obfuscated as `user_a`, `user_b`, … per export run; no reverse map is included. **Article 17 (erasure) is out of scope.**
+
 ---
 
 ## 6. Operational and Organizational Impacts

@@ -55,6 +55,14 @@ use App\Domain\OrgaTeam\Models\OrgaSubTeam;
 use App\Domain\OrgaTeam\Models\OrgaTeam;
 use App\Domain\OrgaTeam\Policies\OrgaSubTeamPolicy;
 use App\Domain\OrgaTeam\Policies\OrgaTeamPolicy;
+use App\Domain\Policy\Models\Policy;
+use App\Domain\Policy\Models\PolicyAcceptance;
+use App\Domain\Policy\Models\PolicyType;
+use App\Domain\Policy\Models\PolicyVersion;
+use App\Domain\Policy\Policies\PolicyAcceptancePolicy;
+use App\Domain\Policy\Policies\PolicyPolicy;
+use App\Domain\Policy\Policies\PolicyTypePolicy;
+use App\Domain\Policy\Policies\PolicyVersionPolicy;
 use App\Domain\Program\Events\ProgramTimeSlotApproaching;
 use App\Domain\Program\Listeners\SendProgramTimeSlotNotification;
 use App\Domain\Program\Models\Program;
@@ -250,6 +258,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Webhook::class, WebhookPolicy::class);
         Gate::policy(GameServer::class, GameServerPolicy::class);
         Gate::policy(OrchestrationJob::class, OrchestrationJobPolicy::class);
+        Gate::policy(Policy::class, PolicyPolicy::class);
+        Gate::policy(PolicyType::class, PolicyTypePolicy::class);
+        Gate::policy(PolicyVersion::class, PolicyVersionPolicy::class);
+        Gate::policy(PolicyAcceptance::class, PolicyAcceptancePolicy::class);
     }
 
     /**

@@ -762,6 +762,59 @@ Implements SET-F-015. Auth: `SeatPlanPolicy::update`.
 
 Files are written through `StorageRole::public()` under `seat-plans/{plan_id}/…`. Responses are `302` Inertia redirects with a `status=seat-plan-background-uploaded|…` flash.
 
+### 3.18 Platform Policies — HTTP
+
+**Public:**
+
+| Verb | Path | Name | Purpose |
+|------|------|------|---------|
+| GET | `/legal` | `legal.index` | List of every non-archived policy |
+| GET | `/policies/{policy:key}` | `policies.show` | Read-only single policy view |
+
+**Auth (no gate):**
+
+| Verb | Path | Name | Purpose |
+|------|------|------|---------|
+| GET | `/policies/required` | `policies.required.show` | Re-acceptance gate landing |
+| POST | `/policies/required/accept` | `policies.required.accept` | Accept one or many; payload `policy_version_ids[]` |
+| POST | `/settings/consent/{policy}/withdraw` | `settings.consent.withdraw` | Withdraw consent; optional `reason` |
+
+**Admin (`auth + verified + require.username + can:manage_policies`)** — all under `admin/policies/`:
+
+| Verb | Path | Name |
+|------|------|------|
+| GET | `/admin/policies` | `admin.policies.index` |
+| GET | `/admin/policies/create` | `admin.policies.create` |
+| POST | `/admin/policies` | `admin.policies.store` |
+| GET | `/admin/policies/{policy}` | `admin.policies.show` |
+| GET | `/admin/policies/{policy}/edit` | `admin.policies.edit` |
+| PUT | `/admin/policies/{policy}` | `admin.policies.update` |
+| POST | `/admin/policies/{policy}/archive` | `admin.policies.archive` |
+| GET | `/admin/policies/{policy}/versions/create` | `admin.policies.versions.create` |
+| POST | `/admin/policies/{policy}/versions` | `admin.policies.versions.store` |
+| POST | `/admin/policies/types` | `admin.policies.types.store` |
+| PUT | `/admin/policies/types/{policyType}` | `admin.policies.types.update` |
+| DELETE | `/admin/policies/types/{policyType}` | `admin.policies.types.destroy` |
+
+**Removed in this release:** `GET /privacy` (`legal.privacy`) and `GET /datenschutz` (`legal.datenschutz`). External links break — accepted risk.
+
+### 3.19 GDPR Article 15 Export — Artisan
+
+```
+gdpr:export-user {email?} {--password=} {--include-soft-deleted} {--output-dir=}
+```
+
+| Flag | Type | Default | Effect |
+|------|------|---------|--------|
+| `email` (positional) | string | — | If omitted, prompted interactively |
+| `--password=` | string | none | If set, every ZIP entry is AES-256 encrypted |
+| `--include-soft-deleted` | flag | false | Include soft-deleted users (no-op until User uses SoftDeletes) |
+| `--output-dir=` | string | `storage_path('app/gdpr-exports')` | Override output directory (used by tests) |
+
+**Exit codes:** `0` SUCCESS (export complete or operator-aborted), `1` FAILURE (user not found or unrecoverable error).
+
+Output path: `<output-dir>/{user-id}-{Y-m-d_His}.zip`. The path is printed to stdout on success.
+
 ---
 
 ## 4. Requirements Traceability

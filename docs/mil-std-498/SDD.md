@@ -1112,6 +1112,95 @@ jobs:
 
 Each app has its own Weblate component under the `lan-software` project (`lancore`, `lanbrackets`, `lanshout`, `lanentrance`, `lanhelp`). The former `shared` namespace (carried over from the previous TMS plan) is not present — it was defined but never consumed by any application and has been deliberately dropped.
 
+### 5.7 Policy Domain Implementation
+
+Path map (concrete files):
+
+- Domain root: `app/Domain/Policy/`
+- Models:
+  - `Models/PolicyType.php`, `Models/Policy.php`, `Models/PolicyVersion.php`, `Models/PolicyAcceptance.php` — all `Auditable`, all use the project's `#[Fillable([...])]` attribute convention
+- Enums: `Enums/Permission.php` (`ManagePolicies`), `Enums/PolicyAcceptanceSource.php` (5 cases)
+- Actions (one method each, named `execute()`):
+  - `Actions/PolicyTypes/{Create,Update,Delete}PolicyType.php`
+  - `Actions/Policies/{Create,Update,Archive}Policy.php`
+  - `Actions/Versions/PublishPolicyVersion.php` (DB transaction, `lockForUpdate()`, dompdf render, private storage write, event dispatch)
+  - `Actions/RecordPolicyAcceptance.php` (idempotent upsert, clears withdrawal columns)
+  - `Actions/WithdrawPolicyConsent.php` (stamps withdrawn_* columns, dispatches event)
+- Events: `Events/PolicyVersionPublished.php`, `Events/PolicyAccepted.php`, `Events/ConsentWithdrawn.php`
+- Listeners (auto-discovered, `ShouldQueue`):
+  - `Listeners/DispatchPolicyVersionEmails.php` — handles `PolicyVersionPublished` where `!silent && isNonEditorial`; resolves distinct prior `user_id`s via `chunkById(500)`; dispatches `SendPolicyVersionPublishedEmailJob` per recipient
+  - `Listeners/NotifyPlatformAdminsOfWithdrawal.php` — handles `ConsentWithdrawn`; resolves users with `Permission::ManagePolicies`; sends `UserWithdrewConsentNotification`
+- Jobs: `Jobs/SendPolicyVersionPublishedEmailJob.php` (`ShouldQueue`)
+- Notifications:
+  - `Notifications/PolicyVersionPublishedNotification.php` (`ShouldQueue`, `via=mail`, attaches stored PDF, locale-aware, `public_statement` rendered inline via `MailMessage::line()`)
+  - `Notifications/UserWithdrewConsentNotification.php` (`ShouldQueue`, `via=mail+database`)
+- Http:
+  - `Http/Controllers/PolicyController.php` (admin CRUD)
+  - `Http/Controllers/PolicyTypeController.php` (admin store/update/destroy)
+  - `Http/Controllers/PolicyVersionController.php` (publish UI)
+  - `Http/Controllers/RequiredPoliciesController.php` (gate landing + accept POST)
+  - `Http/Controllers/PublicPolicyController.php` (public single-policy show)
+  - `Http/Controllers/ConsentWithdrawalController.php` (settings withdrawal POST)
+- Policies (Gate): `Policies/{Policy,PolicyType,PolicyVersion,PolicyAcceptance}Policy.php`, registered in `App\Providers\AppServiceProvider`
+
+Routing: `routes/policies.php` is required from `routes/web.php`. Public,
+auth-only-without-gate, and admin-gated route groups are scoped within the
+file. `RequirePolicyAcceptance` is registered as alias `require.policies`
+in `bootstrap/app.php` and appended to the global `web` stack.
+
+Frontend (`resources/js/`):
+
+- `pages/admin/policies/{Index,Create,Edit,Show}.vue`
+- `pages/admin/policies/versions/Create.vue`
+- `pages/policies/{Required,Show}.vue`
+- `pages/legal/Index.vue`
+- `pages/auth/Register.vue` extended with required-policy checkboxes
+- `pages/settings/Privacy.vue` extended with consent-withdrawal section
+- `components/policies/NonEditorialChangeConfirmDialog.vue` — two-step
+  modal with 5-second delayed-enable button
+- `components/AppSidebar.vue` — Platform group entry "Policies" gated on
+  `canManagePolicies()`
+
+### 5.8 GDPR Export Implementation
+
+- `app/Domain/Policy/Gdpr/Contracts/GdprDataSource.php` — interface
+- `app/Domain/Policy/Gdpr/{GdprDataSourceResult,GdprBinaryAttachment,GdprExportContext,GdprDataSourceRegistry,GdprExportResult}.php`
+- `app/Domain/Policy/Providers/GdprServiceProvider.php` — single chokepoint registering all sources via a `SOURCES` class constant
+- Per-domain sources (12):
+  - `app/Domain/Profile/Gdpr/ProfileDataSource.php`
+  - `app/Domain/Policy/Gdpr/PolicyDataSource.php` (records + binary PDFs)
+  - `app/Gdpr/SessionsDataSource.php`
+  - `app/Gdpr/AuditDataSource.php`
+  - `app/Domain/Shop/Gdpr/ShopDataSource.php`
+  - `app/Domain/Ticketing/Gdpr/TicketingDataSource.php`
+  - `app/Domain/Competition/Gdpr/CompetitionDataSource.php`
+  - `app/Domain/News/Gdpr/NewsDataSource.php`
+  - `app/Domain/Notification/Gdpr/NotificationDataSource.php` (push endpoint partially redacted)
+  - `app/Domain/OrgaTeam/Gdpr/OrgaTeamDataSource.php`
+  - `app/Domain/Sponsoring/Gdpr/SponsoringDataSource.php`
+  - `app/Domain/Achievements/Gdpr/AchievementsDataSource.php`
+- `app/Domain/Policy/Actions/Gdpr/GenerateGdprExport.php` — orchestrator
+- `app/Console/Commands/Gdpr/ExportUserDataCommand.php` — Laravel Prompts CLI
+- ZIP encryption uses `ZipArchive::EM_AES_256` per entry; manifest carries
+  `pseudonym → hint` rows but no reverse mapping.
+
+### 5.9 RequirePolicyAcceptance Middleware
+
+`app/Http/Middleware/RequirePolicyAcceptance.php` mirrors
+`RequireUsername` exactly. Path constants:
+
+- ALLOWLIST_PATTERNS includes the standard auth/onboarding endpoints plus
+  `policies/required`, `policies/required/*`, `policies/*`, `legal`,
+  `legal/*`, `settings/consent/*`.
+- Redirect target: `policies.required.show` route.
+- Intended-URL stash: only on `GET` && !`expectsJson()`.
+
+Removal of legacy `/privacy` and `/datenschutz` is part of this release —
+`App\Http\Controllers\LegalController::privacy()` is removed and
+`resources/js/pages/legal/Privacy.vue` is deleted. The
+`OrganizationSetting->privacy_content` column is left in the DB,
+unrendered.
+
 ---
 
 ## 6. Requirements Traceability

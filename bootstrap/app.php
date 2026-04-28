@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RecordDemoActivity;
+use App\Http\Middleware\RequirePolicyAcceptance;
 use App\Http\Middleware\RequireUsername;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackHttpMetrics;
@@ -50,12 +51,14 @@ return Application::configure(basePath: dirname(__DIR__))
             RecordDemoActivity::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            RequirePolicyAcceptance::class,
         ]);
 
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
             'integration.auth' => AuthenticateIntegration::class,
             'require.username' => RequireUsername::class,
+            'require.policies' => RequirePolicyAcceptance::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

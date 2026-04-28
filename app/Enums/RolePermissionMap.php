@@ -12,6 +12,7 @@ use App\Domain\Integration\Enums\Permission as IntegrationPermission;
 use App\Domain\News\Enums\Permission as NewsPermission;
 use App\Domain\Orchestration\Enums\Permission as OrchestrationPermission;
 use App\Domain\OrgaTeam\Enums\Permission as OrgaTeamPermission;
+use App\Domain\Policy\Enums\Permission as PolicyPermission;
 use App\Domain\Program\Enums\Permission as ProgramPermission;
 use App\Domain\Seating\Enums\Permission as SeatingPermission;
 use App\Domain\Shop\Enums\Permission as ShopPermission;
@@ -69,6 +70,8 @@ final class RolePermissionMap
                 OrchestrationPermission::ManageGameServers,
                 OrchestrationPermission::ViewOrchestration,
                 Permission::ManageUsers,
+                Permission::ExportUserPersonalData,
+                PolicyPermission::ManagePolicies,
                 AuditPermission::ViewAuditLogs,
             ],
 
@@ -98,6 +101,7 @@ final class RolePermissionMap
             ...ShopPermission::cases(),
             ...SponsoringPermission::cases(),
             ...OrgaTeamPermission::cases(),
+            ...PolicyPermission::cases(),
             ...TicketingPermission::cases(),
             ...VenuePermission::cases(),
             ...WebhookPermission::cases(),

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Domain\Notification\Events\ProfileUpdated;
+use App\Domain\Policy\Models\PolicyAcceptance;
 use App\Domain\Profile\Enums\ProfileVisibility;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -20,10 +21,33 @@ class PrivacyController extends Controller
     {
         $user = $request->user();
 
+        $acceptances = PolicyAcceptance::query()
+            ->where('user_id', $user->id)
+            ->whereNull('withdrawn_at')
+            ->with('version.policy:id,key,name,archived_at')
+            ->orderByDesc('accepted_at')
+            ->get()
+            ->filter(fn (PolicyAcceptance $a) => $a->version?->policy && $a->version->policy->archived_at === null)
+            ->values()
+            ->map(fn (PolicyAcceptance $a) => [
+                'id' => $a->id,
+                'policy' => [
+                    'key' => $a->version->policy->key,
+                    'name' => $a->version->policy->name,
+                ],
+                'version' => [
+                    'version_number' => $a->version->version_number,
+                    'locale' => $a->version->locale,
+                ],
+                'accepted_at' => $a->accepted_at?->toIso8601String(),
+                'source' => $a->source?->value,
+            ]);
+
         return Inertia::render('settings/Privacy', [
             'isSeatVisiblePublicly' => (bool) $user->is_seat_visible_publicly,
             'profileVisibility' => ($user->profile_visibility instanceof ProfileVisibility ? $user->profile_visibility : ProfileVisibility::LoggedIn)->value,
             'profileVisibilities' => array_map(fn (ProfileVisibility $v) => $v->value, ProfileVisibility::cases()),
+            'consentAcceptances' => $acceptances,
         ]);
     }
 

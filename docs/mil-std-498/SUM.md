@@ -239,6 +239,48 @@ Group tickets allow a single ticket to grant access to multiple users:
 2. Click the star icon next to any page to add it to your favorites
 3. Favorites appear at the top of the sidebar for quick access
 
+### 5.10 Accepting Platform Policies
+
+When the operator publishes terms of service, a privacy policy, or another
+binding document, you will see it as a checkbox during registration and
+again — automatically — whenever the operator publishes a non-editorial
+update to a policy you previously accepted.
+
+**At registration:** every required policy is shown with an inline link
+to its full text. You must tick each box before submitting the form.
+
+**After a non-editorial update:** the next time you load any page after
+the update, you are sent to **Action required**. Each policy expands to
+show the full new text plus a short statement from the operator
+explaining what changed. Click **Accept** for each policy (or
+**Accept all** at the bottom) to continue. You will land back on the page
+you originally requested.
+
+A read-only listing of every active policy is always available at
+`/legal`. Each entry links to the latest version.
+
+**Note:** As of this release, the legacy `/privacy` and `/datenschutz`
+URLs no longer exist; the privacy policy is now served as a regular
+policy under `/policies/{key}` and listed in `/legal`. External links
+that pointed to the old paths will break and need to be updated.
+
+### 5.11 Withdrawing Consent (GDPR Article 7(3))
+
+If you wish to revoke a previously given consent, open
+**Settings → Privacy → Consent**. Each policy you have accepted is
+listed; click **Withdraw** next to it. You will be asked to enter an
+optional reason. After confirmation, your acceptance row is preserved
+(audit trail) but marked as withdrawn, and the platform admins are
+notified by email and an in-app notification.
+
+If the policy you withdrew from is required for using the platform, you
+will be redirected to **Action required** on your next request and asked
+to either re-accept or cease use.
+
+> **Checkout-condition acknowledgements** in the Shop section are a
+> separate, transactional confirmation mechanism (not platform consent)
+> and remain unaffected by this section.
+
 ---
 
 ## 6. Administrator Guide

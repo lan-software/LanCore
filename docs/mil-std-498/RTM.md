@@ -617,3 +617,44 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 9. **USR-F-011** — Stripe customer (payment infrastructure)
 10. **USR-F-019** — usePermissions composable (frontend unit test)
 11. **USR-F-020** — Permission-based sidebar rendering (frontend component test)
+
+---
+
+## 21. Platform Policies (CSCI-POL)
+
+| Req ID | Domain | Source CAP | Design § | Code path | Test file |
+|--------|--------|------------|----------|-----------|-----------|
+| POL-F-001 | Policy | CAP-POL-001 | SDD §5.7 | `app/Domain/Policy/Http/Controllers/PolicyController.php` | `tests/Feature/Domain/Policy/Http/Controllers/PolicyControllerTest.php` |
+| POL-F-002 | Policy | CAP-POL-001 | SDD §5.7 | `PolicyController`, `PolicyTypeController` | `PolicyControllerTest.php`, `PolicyTypeControllerTest.php` |
+| POL-F-003 | Policy | CAP-POL-001 | SDD §5.7 | `Actions/PolicyTypes/DeletePolicyType` (throws `PolicyTypeInUseException`) | `PolicyTypeControllerTest.php` |
+| POL-F-004 | Policy | CAP-POL-009 | SDD §5.7 | `PolicyController::show` | `PolicyControllerTest.php` |
+| POL-F-005 | Policy | CAP-POL-002 | SDD §5.7 | `PolicyVersionController` | `PolicyVersionControllerTest.php` |
+| POL-F-006 | Policy | CAP-POL-003 | SDD §5.7 | `Http/Requests/StorePolicyVersionRequest` | `PolicyVersionControllerTest.php` |
+| POL-F-007 | Policy | CAP-POL-002 | SDD §5.7 | `Actions/Versions/PublishPolicyVersion` | `tests/Feature/Domain/Policy/Actions/PublishPolicyVersionTest.php` |
+| POL-F-008 | Policy | CAP-POL-003 | SDD §5.7 | `PublishPolicyVersion` (pointer update branch) | `PublishPolicyVersionTest.php` |
+| POL-F-009 | Policy | CAP-POL-004 | SDD §5.7 | `app/Actions/Fortify/CreateNewUser.php` | `tests/Feature/Auth/RegistrationConsentTest.php` |
+| POL-F-010 | Policy | CAP-POL-004 | SDD §5.7 | `Actions/RecordPolicyAcceptance` | `tests/Feature/Domain/Policy/Actions/RecordPolicyAcceptanceTest.php` |
+| POL-F-011 | Policy | CAP-POL-006 | SDD §5.9 | `app/Http/Middleware/RequirePolicyAcceptance.php` | `tests/Feature/Http/Middleware/RequirePolicyAcceptanceTest.php` |
+| POL-F-012 | Policy | CAP-POL-004 | SDD §5.7 | `RecordPolicyAcceptance` (re-acceptance branch) | `RecordPolicyAcceptanceTest.php` |
+| POL-F-013 | Policy | CAP-POL-007 | SDD §5.7 | `Actions/WithdrawPolicyConsent` | `tests/Feature/Domain/Policy/Actions/WithdrawPolicyConsentTest.php` |
+| POL-F-014 | Policy | CAP-POL-008 | SDD §5.7 | `Listeners/NotifyPlatformAdminsOfWithdrawal` | `tests/Feature/Domain/Policy/Listeners/NotifyPlatformAdminsOfWithdrawalTest.php` |
+| POL-F-015 | Policy | CAP-POL-005 | SDD §5.7 | `Listeners/DispatchPolicyVersionEmails` | `tests/Feature/Domain/Policy/Listeners/DispatchPolicyVersionEmailsTest.php` |
+| POL-F-016 | Policy | CAP-POL-005 | SDD §5.7 | `Notifications/PolicyVersionPublishedNotification` | `tests/Feature/Domain/Policy/Notifications/PolicyVersionPublishedNotificationTest.php` |
+| POL-F-017 | Policy | CAP-POL-009 | SDD §5.7 | `Auditable` trait on all 4 models | `PolicyControllerTest.php` (audit assertions) |
+| POL-F-018 | Policy | CAP-POL-005 | SDD §5.7 | `resources/js/components/policies/NonEditorialChangeConfirmDialog.vue` | `tests/e2e/admin/policies-publish-flow.spec.ts` |
+| SET-F-011 | Settings | CAP-POL-007 | SDD §5.7 | `Http/Controllers/ConsentWithdrawalController` | `tests/Feature/Domain/Policy/Http/Controllers/ConsentWithdrawalControllerTest.php` |
+
+---
+
+## 22. GDPR Article 15 Export (CSCI-GDPR)
+
+| Req ID | Domain | Source CAP | Design § | Code path | Test file |
+|--------|--------|------------|----------|-----------|-----------|
+| GDPR-F-001 | Policy | CAP-GDPR-001 | SDD §5.8 | `app/Console/Commands/Gdpr/ExportUserDataCommand.php` | `tests/Feature/Console/Commands/Gdpr/ExportUserDataCommandTest.php` |
+| GDPR-F-002 | Policy | CAP-GDPR-001 | SDD §5.8 | `ExportUserDataCommand::handle` (Laravel Prompts) | manual smoke (interactive) |
+| GDPR-F-003 | Policy | CAP-GDPR-003 | SDD §5.8 | `Actions/Gdpr/GenerateGdprExport::buildZip` | `ExportUserDataCommandTest.php` |
+| GDPR-F-004 | Policy | CAP-GDPR-001 | SDD §5.8 | `ExportUserDataCommand` (`--include-soft-deleted`) | manual smoke |
+| GDPR-F-005 | Policy | CAP-GDPR-002 | SDD §5.10 | `Gdpr/GdprExportContext` | `tests/Unit/Domain/Policy/Gdpr/GdprExportContextTest.php` |
+| GDPR-F-006 | Policy | CAP-GDPR-004 | SDD §5.8 | `Gdpr/PolicyDataSource::for` (binary attachments) | `ExportUserDataCommandTest.php` |
+| GDPR-F-007 | Policy | CAP-GDPR-001 | SDD §5.8 | `GenerateGdprExport::execute` (manifest) | `ExportUserDataCommandTest.php` |
+| GDPR-F-008 | Policy | CAP-GDPR-001 | SDD §5.8 | `GenerateGdprExport::execute` (output path) | `ExportUserDataCommandTest.php` |
