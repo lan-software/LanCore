@@ -1,8 +1,9 @@
 <?php
 
 use App\Domain\Policy\Actions\PublishPolicyVersion;
-use App\Domain\Policy\Events\PolicyVersionPublished;
+use App\Domain\Policy\Events\PolicyPublished;
 use App\Domain\Policy\Models\Policy;
+use App\Domain\Policy\Models\PolicyLocaleDraft;
 use App\Domain\Policy\Models\PolicyVersion;
 use App\Models\User;
 use App\Support\StorageRole;
@@ -13,118 +14,119 @@ beforeEach(function (): void {
     Storage::fake(StorageRole::privateDiskName());
 });
 
-it('creates the first version with version_number=1 per locale', function (): void {
-    $policy = Policy::factory()->create();
-    $publisher = User::factory()->create();
+function publishWithDrafts(Policy $policy, array $drafts, bool $isNonEditorial = false, ?string $statement = null): array
+{
+    foreach ($drafts as $locale => $content) {
+        PolicyLocaleDraft::factory()->for($policy)->create([
+            'locale' => $locale,
+            'content' => $content,
+        ]);
+    }
 
-    $version = app(PublishPolicyVersion::class)->execute(
+    return app(PublishPolicyVersion::class)->execute(
         policy: $policy,
-        content: '# Hello',
-        isNonEditorial: false,
-        publicStatement: null,
-        publishedBy: $publisher,
-        locale: 'en',
+        isNonEditorial: $isNonEditorial,
+        publicStatement: $statement,
+        publishedBy: User::factory()->create(),
     );
+}
 
-    expect($version->version_number)->toBe(1)
-        ->and($version->locale)->toBe('en')
-        ->and($version->is_non_editorial_change)->toBeFalse()
-        ->and($version->published_by_user_id)->toBe($publisher->id);
-});
-
-it('increments version_number per (policy, locale)', function (): void {
+it('creates the first version with version_number=1 across every locale draft', function (): void {
     $policy = Policy::factory()->create();
-    $publisher = User::factory()->create();
-    $action = app(PublishPolicyVersion::class);
+    $rows = publishWithDrafts($policy, ['en' => '# Hello', 'de' => '# Hallo']);
 
-    $action->execute($policy, '# v1', false, null, $publisher, 'en');
-    $action->execute($policy, '# v2', false, null, $publisher, 'en');
-    $de = $action->execute($policy, '# de-v1', false, null, $publisher, 'de');
-
-    expect(PolicyVersion::where('policy_id', $policy->id)->where('locale', 'en')->count())->toBe(2)
-        ->and(PolicyVersion::where('policy_id', $policy->id)->where('locale', 'en')->orderByDesc('version_number')->first()->version_number)->toBe(2)
-        ->and($de->version_number)->toBe(1);
+    expect(count($rows))->toBe(2);
+    expect(array_unique(array_map(fn ($r) => $r->version_number, $rows)))->toBe([1]);
+    expect(collect($rows)->pluck('locale')->sort()->values()->all())->toBe(['de', 'en']);
 });
 
-it('renders and stores a PDF for the published version', function (): void {
+it('increments version_number across the policy, not per locale', function (): void {
     $policy = Policy::factory()->create();
     $publisher = User::factory()->create();
 
-    $version = app(PublishPolicyVersion::class)->execute(
-        $policy,
-        '# Some content',
-        false,
-        null,
-        $publisher,
-    );
+    PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'en', 'content' => '# v1']);
+    app(PublishPolicyVersion::class)->execute($policy, false, null, $publisher);
 
-    expect($version->pdf_path)->toBe("policy-versions/{$version->id}.pdf");
-    Storage::disk(StorageRole::privateDiskName())->assertExists($version->pdf_path);
+    $policy->drafts()->where('locale', 'en')->update(['content' => '# v2']);
+    PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'de', 'content' => '# de v2']);
+    app(PublishPolicyVersion::class)->execute($policy, false, null, $publisher);
+
+    $en = PolicyVersion::where('policy_id', $policy->id)->where('locale', 'en')->pluck('version_number')->all();
+    $de = PolicyVersion::where('policy_id', $policy->id)->where('locale', 'de')->pluck('version_number')->all();
+
+    expect($en)->toBe([1, 2]);
+    expect($de)->toBe([2]);
 });
 
-it('does NOT update required_acceptance_version_id on editorial publishes', function (): void {
+it('renders and stores a PDF for every locale of the publish', function (): void {
     $policy = Policy::factory()->create();
-    $publisher = User::factory()->create();
+    $rows = publishWithDrafts($policy, ['en' => '# en', 'de' => '# de']);
 
-    $version = app(PublishPolicyVersion::class)->execute(
-        $policy,
-        '# Editorial fix',
-        false,
-        null,
-        $publisher,
-    );
-
-    expect($policy->fresh()->required_acceptance_version_id)->toBeNull();
+    foreach ($rows as $version) {
+        expect($version->pdf_path)->toBe("policy-versions/{$version->id}.pdf");
+        Storage::disk(StorageRole::privateDiskName())->assertExists($version->pdf_path);
+    }
 });
 
-it('updates required_acceptance_version_id on non-editorial publishes', function (): void {
+it('does NOT update required_acceptance_version_number on editorial publishes', function (): void {
     $policy = Policy::factory()->create();
-    $publisher = User::factory()->create();
+    publishWithDrafts($policy, ['en' => '# Editorial fix']);
 
-    $version = app(PublishPolicyVersion::class)->execute(
-        $policy,
-        '# Material change',
-        true,
-        'We have updated our data sharing terms.',
-        $publisher,
-    );
+    expect($policy->fresh()->required_acceptance_version_number)->toBeNull();
+});
 
-    expect($policy->fresh()->required_acceptance_version_id)->toBe($version->id)
-        ->and($version->is_non_editorial_change)->toBeTrue()
-        ->and($version->public_statement)->toBe('We have updated our data sharing terms.');
+it('updates required_acceptance_version_number on non-editorial publishes', function (): void {
+    $policy = Policy::factory()->create();
+    $rows = publishWithDrafts($policy, ['en' => '# major', 'de' => '# major'], isNonEditorial: true, statement: 'major change');
+
+    expect($policy->fresh()->required_acceptance_version_number)->toBe(1);
+    foreach ($rows as $version) {
+        expect($version->is_non_editorial_change)->toBeTrue();
+        expect($version->public_statement)->toBe('major change');
+    }
 });
 
 it('drops public_statement on editorial publishes even if provided', function (): void {
     $policy = Policy::factory()->create();
-    $publisher = User::factory()->create();
+    $rows = publishWithDrafts($policy, ['en' => '# Typo fix'], isNonEditorial: false, statement: 'should not persist');
 
-    $version = app(PublishPolicyVersion::class)->execute(
-        $policy,
-        '# Typo fix',
-        false,
-        'should not persist',
-        $publisher,
-    );
-
-    expect($version->public_statement)->toBeNull();
+    expect($rows[0]->public_statement)->toBeNull();
 });
 
-it('dispatches PolicyVersionPublished with silent=true for editorial', function (): void {
-    Event::fake([PolicyVersionPublished::class]);
+it('rejects publish when policy has no drafts', function (): void {
     $policy = Policy::factory()->create();
     $publisher = User::factory()->create();
 
-    app(PublishPolicyVersion::class)->execute($policy, '# x', false, null, $publisher);
-
-    Event::assertDispatched(PolicyVersionPublished::class, fn ($event) => $event->silent === true && $event->isNonEditorial === false);
+    expect(fn () => app(PublishPolicyVersion::class)->execute($policy, false, null, $publisher))
+        ->toThrow(RuntimeException::class, 'no locale drafts');
 });
 
-it('dispatches PolicyVersionPublished with silent=false for non-editorial', function (): void {
-    Event::fake([PolicyVersionPublished::class]);
+it('rejects publish when any draft is empty', function (): void {
     $policy = Policy::factory()->create();
     $publisher = User::factory()->create();
+    PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'en', 'content' => '# present']);
+    PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'de', 'content' => '']);
 
-    app(PublishPolicyVersion::class)->execute($policy, '# x', true, 'why', $publisher);
+    expect(fn () => app(PublishPolicyVersion::class)->execute($policy, false, null, $publisher))
+        ->toThrow(RuntimeException::class, 'draft for locale [de] is empty');
 
-    Event::assertDispatched(PolicyVersionPublished::class, fn ($event) => $event->silent === false && $event->isNonEditorial === true);
+    expect(PolicyVersion::where('policy_id', $policy->id)->count())->toBe(0);
+});
+
+it('dispatches PolicyPublished with silent=true for editorial', function (): void {
+    Event::fake([PolicyPublished::class]);
+    $policy = Policy::factory()->create();
+    publishWithDrafts($policy, ['en' => '# x']);
+
+    Event::assertDispatched(PolicyPublished::class, fn ($event) => $event->silent === true && $event->isNonEditorial === false);
+    Event::assertDispatchedTimes(PolicyPublished::class, 1);
+});
+
+it('dispatches PolicyPublished with silent=false for non-editorial', function (): void {
+    Event::fake([PolicyPublished::class]);
+    $policy = Policy::factory()->create();
+    publishWithDrafts($policy, ['en' => '# x', 'de' => '# x'], isNonEditorial: true, statement: 'why');
+
+    Event::assertDispatched(PolicyPublished::class, fn ($event) => $event->silent === false && $event->isNonEditorial === true && $event->versionNumber === 1);
+    Event::assertDispatchedTimes(PolicyPublished::class, 1);
 });

@@ -104,25 +104,31 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function resolveRequiredRegistrationPolicies(): array
     {
+        $locale = (string) app()->getLocale();
+
         return Policy::query()
             ->active()
             ->requiredForRegistration()
-            ->with('currentVersion', 'type')
+            ->with('type')
             ->orderBy('sort_order')
             ->get()
-            ->map(fn (Policy $policy) => [
-                'id' => $policy->id,
-                'key' => $policy->key,
-                'name' => $policy->name,
-                'description' => $policy->description,
-                'type' => $policy->type ? ['key' => $policy->type->key, 'label' => $policy->type->label] : null,
-                'current_version' => $policy->currentVersion ? [
-                    'id' => $policy->currentVersion->id,
-                    'version_number' => $policy->currentVersion->version_number,
-                    'locale' => $policy->currentVersion->locale,
-                    'effective_at' => $policy->currentVersion->effective_at,
-                ] : null,
-            ])
+            ->map(function (Policy $policy) use ($locale): array {
+                $version = $policy->currentVersionFor($locale);
+
+                return [
+                    'id' => $policy->id,
+                    'key' => $policy->key,
+                    'name' => $policy->name,
+                    'description' => $policy->description,
+                    'type' => $policy->type ? ['key' => $policy->type->key, 'label' => $policy->type->label] : null,
+                    'current_version' => $version ? [
+                        'id' => $version->id,
+                        'version_number' => $version->version_number,
+                        'locale' => $version->locale,
+                        'effective_at' => $version->effective_at,
+                    ] : null,
+                ];
+            })
             ->filter(fn (array $p) => $p['current_version'] !== null)
             ->values()
             ->all();

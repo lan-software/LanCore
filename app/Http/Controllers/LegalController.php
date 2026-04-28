@@ -11,22 +11,27 @@ class LegalController extends Controller
 {
     public function index(): Response
     {
+        $locale = (string) app()->getLocale();
+
         $policies = Policy::query()
             ->active()
-            ->with('currentVersion:id,policy_id,version_number,locale,published_at')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get(['id', 'key', 'name', 'description'])
-            ->map(fn (Policy $policy) => [
-                'key' => $policy->key,
-                'name' => $policy->name,
-                'description' => $policy->description,
-                'current_version' => $policy->currentVersion ? [
-                    'version_number' => $policy->currentVersion->version_number,
-                    'locale' => $policy->currentVersion->locale,
-                    'published_at' => $policy->currentVersion->published_at?->toIso8601String(),
-                ] : null,
-            ]);
+            ->map(function (Policy $policy) use ($locale): array {
+                $version = $policy->currentVersionFor($locale);
+
+                return [
+                    'key' => $policy->key,
+                    'name' => $policy->name,
+                    'description' => $policy->description,
+                    'current_version' => $version ? [
+                        'version_number' => $version->version_number,
+                        'locale' => $version->locale,
+                        'published_at' => $version->published_at?->toIso8601String(),
+                    ] : null,
+                ];
+            });
 
         return Inertia::render('legal/Index', [
             'policies' => $policies,

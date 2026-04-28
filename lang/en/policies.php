@@ -11,6 +11,21 @@ return [
         'type_in_use' => 'This policy type is still referenced by one or more policies and cannot be deleted.',
         'version_published' => 'Version published.',
     ],
+    'versions' => [
+        'flash' => [
+            'published' => 'Version published.',
+        ],
+    ],
+    'drafts' => [
+        'flash' => [
+            'added' => 'Locale draft added.',
+            'saved' => 'Draft saved.',
+            'removed' => 'Locale draft removed.',
+        ],
+        'errors' => [
+            'cannot_remove_last_locale' => 'A policy must have at least one locale draft.',
+        ],
+    ],
     'consent' => [
         'withdraw' => [
             'success' => 'Your consent has been withdrawn.',

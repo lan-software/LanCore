@@ -16,7 +16,7 @@ it('lets through users with no required policies', function (): void {
 it('redirects users with a missing acceptance to the gate', function (): void {
     $policy = Policy::factory()->create();
     $version = PolicyVersion::factory()->for($policy)->create();
-    $policy->update(['required_acceptance_version_id' => $version->id]);
+    $policy->update(['required_acceptance_version_number' => $version->version_number]);
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -27,7 +27,7 @@ it('redirects users with a missing acceptance to the gate', function (): void {
 it('lets through users who have actively accepted the required version', function (): void {
     $policy = Policy::factory()->create();
     $version = PolicyVersion::factory()->for($policy)->create();
-    $policy->update(['required_acceptance_version_id' => $version->id]);
+    $policy->update(['required_acceptance_version_number' => $version->version_number]);
     $user = User::factory()->create();
     PolicyAcceptance::factory()->create([
         'user_id' => $user->id,
@@ -43,7 +43,7 @@ it('lets through users who have actively accepted the required version', functio
 it('redirects users whose acceptance was withdrawn', function (): void {
     $policy = Policy::factory()->create();
     $version = PolicyVersion::factory()->for($policy)->create();
-    $policy->update(['required_acceptance_version_id' => $version->id]);
+    $policy->update(['required_acceptance_version_number' => $version->version_number]);
     $user = User::factory()->create();
     PolicyAcceptance::factory()->withdrawn('changed mind')->create([
         'user_id' => $user->id,
@@ -58,7 +58,7 @@ it('redirects users whose acceptance was withdrawn', function (): void {
 it('does not redirect requests for allowlisted paths', function (): void {
     $policy = Policy::factory()->create();
     $version = PolicyVersion::factory()->for($policy)->create();
-    $policy->update(['required_acceptance_version_id' => $version->id]);
+    $policy->update(['required_acceptance_version_number' => $version->version_number]);
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -69,7 +69,7 @@ it('does not redirect requests for allowlisted paths', function (): void {
 it('stashes the intended URL on a GET redirect', function (): void {
     $policy = Policy::factory()->create();
     $version = PolicyVersion::factory()->for($policy)->create();
-    $policy->update(['required_acceptance_version_id' => $version->id]);
+    $policy->update(['required_acceptance_version_number' => $version->version_number]);
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -82,7 +82,7 @@ it('stashes the intended URL on a GET redirect', function (): void {
 it('archived policies do not contribute to the gap', function (): void {
     $policy = Policy::factory()->archived()->create();
     $version = PolicyVersion::factory()->for($policy)->create();
-    $policy->update(['required_acceptance_version_id' => $version->id]);
+    $policy->update(['required_acceptance_version_number' => $version->version_number]);
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -93,7 +93,7 @@ it('archived policies do not contribute to the gap', function (): void {
 it('editorial publish does not create a gap (pointer unchanged)', function (): void {
     $policy = Policy::factory()->create();
     $v1 = PolicyVersion::factory()->for($policy)->create(['version_number' => 1]);
-    $policy->update(['required_acceptance_version_id' => $v1->id]);
+    $policy->update(['required_acceptance_version_number' => $v1->version_number]);
     $user = User::factory()->create();
     PolicyAcceptance::factory()->create([
         'user_id' => $user->id,

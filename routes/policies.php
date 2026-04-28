@@ -2,6 +2,7 @@
 
 use App\Domain\Policy\Http\Controllers\ConsentWithdrawalController;
 use App\Domain\Policy\Http\Controllers\PolicyController;
+use App\Domain\Policy\Http\Controllers\PolicyDraftController;
 use App\Domain\Policy\Http\Controllers\PolicyTypeController;
 use App\Domain\Policy\Http\Controllers\PolicyVersionController;
 use App\Domain\Policy\Http\Controllers\PublicPolicyController;
@@ -9,16 +10,12 @@ use App\Domain\Policy\Http\Controllers\RequiredPoliciesController;
 use Illuminate\Support\Facades\Route;
 
 /*
- * Public read-only policy view. Bound on `key` for stable URLs across
- * version bumps. Allowlisted by RequirePolicyAcceptance.
- */
-Route::get('/policies/{policy:key}', [PublicPolicyController::class, 'show'])
-    ->name('policies.show');
-
-/*
  * Re-acceptance gate. Reachable to authenticated users without other
  * gating — the gate route IS the gap-resolver, so RequirePolicyAcceptance
  * allowlists it.
+ *
+ * Declared before the `/policies/{policy:key}` catch-all so the literal
+ * `/policies/required` segment wins over key-based model binding.
  */
 Route::middleware(['auth'])->group(function (): void {
     Route::get('/policies/required', [RequiredPoliciesController::class, 'show'])
@@ -29,6 +26,13 @@ Route::middleware(['auth'])->group(function (): void {
     Route::post('/settings/consent/{policy}/withdraw', [ConsentWithdrawalController::class, 'store'])
         ->name('settings.consent.withdraw');
 });
+
+/*
+ * Public read-only policy view. Bound on `key` for stable URLs across
+ * version bumps. Allowlisted by RequirePolicyAcceptance.
+ */
+Route::get('/policies/{policy:key}', [PublicPolicyController::class, 'show'])
+    ->name('policies.show');
 
 /*
  * Admin routes for the Policy feature domain.
@@ -50,6 +54,10 @@ Route::middleware(['auth', 'verified', 'require.username'])
 
         Route::get('/{policy}/versions/create', [PolicyVersionController::class, 'create'])->name('versions.create');
         Route::post('/{policy}/versions', [PolicyVersionController::class, 'store'])->name('versions.store');
+
+        Route::post('/{policy}/drafts', [PolicyDraftController::class, 'store'])->name('drafts.store');
+        Route::put('/{policy}/drafts/{locale}', [PolicyDraftController::class, 'update'])->name('drafts.update');
+        Route::delete('/{policy}/drafts/{locale}', [PolicyDraftController::class, 'destroy'])->name('drafts.destroy');
 
         Route::post('/types', [PolicyTypeController::class, 'store'])->name('types.store');
         Route::put('/types/{policyType}', [PolicyTypeController::class, 'update'])->name('types.update');

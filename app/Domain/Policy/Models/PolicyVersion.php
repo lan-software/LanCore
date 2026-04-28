@@ -5,6 +5,7 @@ namespace App\Domain\Policy\Models;
 use App\Models\User;
 use Database\Factories\PolicyVersionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -59,5 +60,16 @@ class PolicyVersion extends Model implements AuditableContract
     public function acceptances(): HasMany
     {
         return $this->hasMany(PolicyAcceptance::class);
+    }
+
+    /**
+     * Restrict to all locale rows that share this row's (policy_id, version_number) — i.e.,
+     * everything published together in one atomic multi-locale publish.
+     */
+    public function scopePublishGroup(Builder $query): Builder
+    {
+        return $query
+            ->where('policy_id', $this->policy_id)
+            ->where('version_number', $this->version_number);
     }
 }

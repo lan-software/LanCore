@@ -13,9 +13,10 @@ class PublicPolicyController extends Controller
     {
         abort_if($policy->archived_at !== null, 404);
 
-        $policy->load(['currentVersion', 'type:id,key,label']);
+        $policy->load(['type:id,key,label']);
 
-        $version = $policy->currentVersion;
+        $locale = (string) app()->getLocale();
+        $version = $policy->currentVersionFor($locale);
         abort_if($version === null, 404);
 
         return Inertia::render('policies/Show', [

@@ -33,10 +33,34 @@ class PolicyController extends Controller
     {
         $this->authorize('viewAny', Policy::class);
 
-        $policies = Policy::with(['type', 'currentVersion'])
+        $locale = (string) app()->getLocale();
+
+        $policies = Policy::with('type')
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(function (Policy $policy) use ($locale): array {
+                $version = $policy->currentVersionFor($locale);
+
+                return [
+                    'id' => $policy->id,
+                    'key' => $policy->key,
+                    'name' => $policy->name,
+                    'description' => $policy->description,
+                    'is_required_for_registration' => $policy->is_required_for_registration,
+                    'archived_at' => $policy->archived_at,
+                    'type' => $policy->type ? [
+                        'id' => $policy->type->id,
+                        'key' => $policy->type->key,
+                        'label' => $policy->type->label,
+                    ] : null,
+                    'current_version' => $version ? [
+                        'id' => $version->id,
+                        'version_number' => $version->version_number,
+                        'locale' => $version->locale,
+                    ] : null,
+                ];
+            });
 
         return Inertia::render('admin/policies/Index', [
             'policies' => $policies,
@@ -69,13 +93,58 @@ class PolicyController extends Controller
 
         $policy->load([
             'type',
-            'requiredAcceptanceVersion',
-            'versions' => fn ($q) => $q->orderByDesc('version_number'),
+            'versions' => fn ($q) => $q->orderByDesc('version_number')->orderBy('locale'),
             'versions.publishedBy',
+            'drafts' => fn ($q) => $q->orderBy('locale'),
+            'drafts.updatedBy',
         ]);
 
+        $priorAcceptorCount = (int) PolicyVersion::query()
+            ->where('policy_id', $policy->id)
+            ->withCount(['acceptances' => fn ($q) => $q->whereNull('withdrawn_at')])
+            ->get()
+            ->sum('acceptances_count');
+
         return Inertia::render('admin/policies/Show', [
-            'policy' => $policy,
+            'policy' => [
+                'id' => $policy->id,
+                'key' => $policy->key,
+                'name' => $policy->name,
+                'description' => $policy->description,
+                'is_required_for_registration' => $policy->is_required_for_registration,
+                'archived_at' => $policy->archived_at,
+                'required_acceptance_version_number' => $policy->required_acceptance_version_number,
+                'type' => $policy->type ? [
+                    'id' => $policy->type->id,
+                    'key' => $policy->type->key,
+                    'label' => $policy->type->label,
+                ] : null,
+                'versions' => $policy->versions->map(fn ($version) => [
+                    'id' => $version->id,
+                    'version_number' => $version->version_number,
+                    'locale' => $version->locale,
+                    'is_non_editorial_change' => $version->is_non_editorial_change,
+                    'public_statement' => $version->public_statement,
+                    'effective_at' => $version->effective_at,
+                    'published_at' => $version->published_at,
+                    'pdf_path' => $version->pdf_path,
+                    'published_by' => $version->publishedBy ? [
+                        'id' => $version->publishedBy->id,
+                        'name' => $version->publishedBy->name,
+                    ] : null,
+                ])->values(),
+                'drafts' => $policy->drafts->map(fn ($draft) => [
+                    'locale' => $draft->locale,
+                    'content' => (string) $draft->content,
+                    'updated_at' => $draft->updated_at,
+                    'updated_by' => $draft->updatedBy ? [
+                        'id' => $draft->updatedBy->id,
+                        'name' => $draft->updatedBy->name,
+                    ] : null,
+                ])->values(),
+                'next_version_number' => ($policy->latestVersionNumber() ?? 0) + 1,
+            ],
+            'priorAcceptorCount' => $priorAcceptorCount,
             'audits' => $this->auditsFor($policy),
             'diffs' => $this->diffsFor($policy),
         ]);

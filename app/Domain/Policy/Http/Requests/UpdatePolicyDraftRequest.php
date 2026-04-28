@@ -4,7 +4,7 @@ namespace App\Domain\Policy\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StorePolicyVersionRequest extends FormRequest
+class UpdatePolicyDraftRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -17,9 +17,7 @@ class StorePolicyVersionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'is_non_editorial_change' => ['sometimes', 'boolean'],
-            'public_statement' => ['nullable', 'required_if:is_non_editorial_change,true,1', 'string'],
-            'effective_at' => ['nullable', 'date'],
+            'content' => ['present', 'nullable', 'string'],
         ];
     }
 }

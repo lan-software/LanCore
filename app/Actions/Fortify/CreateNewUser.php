@@ -63,12 +63,13 @@ class CreateNewUser implements CreatesNewUsers
      */
     private function resolveRequiredVersions(): array
     {
+        $locale = (string) app()->getLocale();
+
         return Policy::query()
             ->active()
             ->requiredForRegistration()
-            ->with('currentVersion')
             ->get()
-            ->map(fn (Policy $policy) => $policy->currentVersion)
+            ->map(fn (Policy $policy) => $policy->currentVersionFor($locale))
             ->filter()
             ->values()
             ->all();

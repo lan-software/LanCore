@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -20,7 +19,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
     'description',
     'is_required_for_registration',
     'sort_order',
-    'required_acceptance_version_id',
+    'required_acceptance_version_number',
     'archived_at',
 ])]
 class Policy extends Model implements AuditableContract
@@ -42,6 +41,7 @@ class Policy extends Model implements AuditableContract
         return [
             'is_required_for_registration' => 'boolean',
             'archived_at' => 'datetime',
+            'required_acceptance_version_number' => 'integer',
         ];
     }
 
@@ -55,17 +55,50 @@ class Policy extends Model implements AuditableContract
         return $this->hasMany(PolicyVersion::class);
     }
 
-    public function requiredAcceptanceVersion(): BelongsTo
+    public function drafts(): HasMany
     {
-        return $this->belongsTo(PolicyVersion::class, 'required_acceptance_version_id');
+        return $this->hasMany(PolicyLocaleDraft::class);
     }
 
-    public function currentVersion(): HasOne
+    public function latestVersionNumber(): ?int
     {
-        return $this->hasOne(PolicyVersion::class)->ofMany(
-            ['version_number' => 'max'],
-            fn (Builder $query) => $query->where('published_at', '<=', now()),
-        );
+        $value = $this->versions()->max('version_number');
+
+        return $value === null ? null : (int) $value;
+    }
+
+    /**
+     * Resolve the PolicyVersion to display for the requested locale.
+     *
+     * Picks the locale row of the latest published version_number, falling back
+     * — within that same version_number — to the row with the smallest id when
+     * the requested locale has no row.
+     */
+    public function currentVersionFor(string $locale): ?PolicyVersion
+    {
+        $versionNumber = $this->latestVersionNumber();
+
+        if ($versionNumber === null) {
+            return null;
+        }
+
+        return $this->versionForLocale($versionNumber, $locale);
+    }
+
+    public function versionForLocale(int $versionNumber, string $locale): ?PolicyVersion
+    {
+        $rows = PolicyVersion::query()
+            ->where('policy_id', $this->id)
+            ->where('version_number', $versionNumber)
+            ->where('published_at', '<=', now())
+            ->orderBy('id')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return null;
+        }
+
+        return $rows->firstWhere('locale', $locale) ?? $rows->first();
     }
 
     public function scopeActive(Builder $query): Builder

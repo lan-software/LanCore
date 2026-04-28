@@ -11,6 +11,21 @@ return [
         'type_in_use' => 'Dieser Richtlinien-Typ wird noch von mindestens einer Richtlinie verwendet und kann nicht gelöscht werden.',
         'version_published' => 'Version veröffentlicht.',
     ],
+    'versions' => [
+        'flash' => [
+            'published' => 'Version veröffentlicht.',
+        ],
+    ],
+    'drafts' => [
+        'flash' => [
+            'added' => 'Locale-Entwurf hinzugefügt.',
+            'saved' => 'Entwurf gespeichert.',
+            'removed' => 'Locale-Entwurf entfernt.',
+        ],
+        'errors' => [
+            'cannot_remove_last_locale' => 'Eine Richtlinie muss mindestens einen Sprach-Entwurf haben.',
+        ],
+    ],
     'consent' => [
         'withdraw' => [
             'success' => 'Deine Einwilligung wurde widerrufen.',

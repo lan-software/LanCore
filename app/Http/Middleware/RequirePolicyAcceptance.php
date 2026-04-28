@@ -11,11 +11,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Redirects authenticated users to the re-acceptance gate when a non-editorial
- * publish has changed `policies.required_acceptance_version_id` to a version
- * the user has not actively accepted.
+ * publish has bumped `policies.required_acceptance_version_number` to a version
+ * the user has not actively accepted in any locale.
  *
- * Editorial publishes leave `required_acceptance_version_id` untouched, so they
- * never trigger this middleware.
+ * Editorial publishes leave `required_acceptance_version_number` untouched, so
+ * they never trigger this middleware.
  *
  * @see app/Http/Middleware/RequireUsername.php template this mirrors.
  * @see docs/mil-std-498/SSS.md CAP-POL-005
@@ -79,22 +79,32 @@ class RequirePolicyAcceptance
 
     private function hasGap(User $user): bool
     {
-        $requiredVersionIds = Policy::query()
+        $required = Policy::query()
             ->active()
-            ->whereNotNull('required_acceptance_version_id')
-            ->pluck('required_acceptance_version_id')
-            ->all();
+            ->whereNotNull('required_acceptance_version_number')
+            ->get(['id', 'required_acceptance_version_number']);
 
-        if ($requiredVersionIds === []) {
+        if ($required->isEmpty()) {
             return false;
         }
 
-        $acceptedCount = PolicyAcceptance::query()
-            ->where('user_id', $user->id)
-            ->whereIn('policy_version_id', $requiredVersionIds)
-            ->whereNull('withdrawn_at')
-            ->count();
+        foreach ($required as $policy) {
+            $satisfied = PolicyAcceptance::query()
+                ->where('user_id', $user->id)
+                ->whereNull('withdrawn_at')
+                ->whereHas(
+                    'version',
+                    fn ($q) => $q
+                        ->where('policy_id', $policy->id)
+                        ->where('version_number', $policy->required_acceptance_version_number),
+                )
+                ->exists();
 
-        return $acceptedCount < count($requiredVersionIds);
+            if (! $satisfied) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
