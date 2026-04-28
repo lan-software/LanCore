@@ -7,7 +7,10 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 beforeEach(function (): void {
-    Role::query()->updateOrCreate(['name' => RoleName::User->value]);
+    Role::query()->updateOrCreate(
+        ['name' => RoleName::User->value],
+        ['label' => 'User'],
+    );
 
     $this->outputDir = storage_path('app/gdpr-exports/test-'.Str::uuid()->toString());
     File::ensureDirectoryExists($this->outputDir);

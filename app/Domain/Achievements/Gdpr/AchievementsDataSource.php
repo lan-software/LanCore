@@ -33,7 +33,6 @@ class AchievementsDataSource implements GdprDataSource
             ->get([
                 'achievement_user.achievement_id',
                 'achievements.name',
-                'achievements.key',
                 'achievement_user.earned_at',
                 'achievement_user.created_at',
             ])
