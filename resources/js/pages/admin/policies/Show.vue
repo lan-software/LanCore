@@ -112,6 +112,7 @@ watch(
                 editorContent[draft.locale] = draft.content;
             }
         }
+
         for (const locale of Object.keys(editorContent)) {
             if (!drafts.some((d) => d.locale === locale)) {
                 delete editorContent[locale];
@@ -123,6 +124,7 @@ watch(
 
 function isDirty(locale: string): boolean {
     const draft = props.policy.drafts.find((d) => d.locale === locale);
+
     if (!draft) {
         return false;
     }
@@ -147,6 +149,7 @@ function saveDraft(locale: string): void {
 
 function discardDraft(locale: string): void {
     const draft = props.policy.drafts.find((d) => d.locale === locale);
+
     if (draft) {
         editorContent[locale] = draft.content;
     }
@@ -162,6 +165,7 @@ function addLocale(): void {
     if (!newLocale.value) {
         return;
     }
+
     router.post(
         `/admin/policies/${props.policy.id}/drafts`,
         { locale: newLocale.value },
@@ -195,6 +199,7 @@ function attemptPublish(): void {
 
     if (publishForm.is_non_editorial_change) {
         dialogOpen.value = true;
+
         return;
     }
 
@@ -341,7 +346,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                                     @click="discardDraft(draft.locale)"
                                 >
                                     <RotateCcw class="size-4" />
-                                    {{ $t('policies.admin.show.draft_discard') }}
+                                    {{
+                                        $t('policies.admin.show.draft_discard')
+                                    }}
                                 </Button>
                                 <Button
                                     size="sm"
