@@ -4,6 +4,7 @@ use App\Domain\Notification\Http\Controllers\NotificationSettingsController;
 use App\Domain\Notification\Http\Controllers\ProgramSubscriptionController;
 use App\Http\Controllers\OrganizationSettingsController;
 use App\Http\Controllers\PublicProfileController;
+use App\Http\Controllers\Settings\LinkedAccountsController;
 use App\Http\Controllers\Settings\PrivacyController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\ProfileMediaController;
@@ -50,6 +51,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('settings/privacy', [PrivacyController::class, 'update'])->name('privacy.update');
 
     Route::post('settings/sidebar-favorites/toggle', [SidebarFavoriteController::class, 'toggle'])->name('sidebar-favorites.toggle');
+
+    Route::get('settings/linked-accounts', [LinkedAccountsController::class, 'edit'])->name('settings.linked-accounts.edit');
 
     Route::get('settings/achievements', UserAchievementsController::class)->name('user-achievements.index');
 

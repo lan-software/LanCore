@@ -145,6 +145,30 @@
             "useRecovery": "se connecter avec un code de récupération",
             "useCode": "se connecter avec un code d'authentification",
             "button": "Vérifier"
+        },
+        "divider": {
+            "or": "Or"
+        },
+        "steam": {
+            "signInWith": "Sign in with Steam",
+            "signUpWith": "Sign up with Steam",
+            "linkAccount": "Link Steam account",
+            "unlinkAccount": "Unlink Steam account",
+            "unlinkRequiresPassword": "Set a password before unlinking Steam — you'd be locked out otherwise.",
+            "completeProfile": {
+                "title": "Complete your profile",
+                "intro": "Steam doesn't share your email, so we need a few extra details before we can create your account.",
+                "emailHint": "We'll send a verification link to confirm it's yours.",
+                "policiesHeading": "Please review and accept",
+                "button": "Create account",
+                "unknownSteamUser": "Steam user",
+                "readPolicy": "Read the full policy (opens in a new tab)"
+            },
+            "errors": {
+                "alreadyLinked": "This Steam account is already linked to another LanCore account.",
+                "steamApiUnreachable": "We couldn't reach Steam. Please try again.",
+                "pendingExpired": "Your Steam session expired. Please sign in with Steam again."
+            }
         }
     },
     "settings": {
@@ -229,6 +253,18 @@
                 "confirmCode": "Code d'authentification",
                 "confirm": "Confirmer",
                 "cancel": "Annuler"
+            }
+        },
+        "linkedAccounts": {
+            "title": "Linked accounts",
+            "description": "Connect external services to LanCore for easier sign-in.",
+            "steam": {
+                "heading": "Steam",
+                "linkedDescription": "Linked to Steam ID {id}.",
+                "notLinkedDescription": "Sign in faster by linking your Steam account.",
+                "viewProfile": "View profile",
+                "linkedFlash": "Steam account linked successfully.",
+                "unlinkedFlash": "Steam account unlinked."
             }
         }
     },

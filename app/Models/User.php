@@ -44,6 +44,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
     'sidebar_favorites', 'cookie_preferences',
     'username', 'short_bio', 'profile_description', 'profile_emoji',
     'avatar_source', 'avatar_path', 'banner_path', 'profile_visibility', 'profile_updated_at',
+    'steam_id_64', 'steam_linked_at',
 ])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
@@ -82,7 +83,25 @@ class User extends Authenticatable
             'avatar_source' => AvatarSource::class,
             'profile_visibility' => ProfileVisibility::class,
             'profile_updated_at' => 'datetime',
+            'steam_linked_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Whether this user has linked a Steam account.
+     */
+    public function hasSteam(): bool
+    {
+        return $this->steam_id_64 !== null;
+    }
+
+    /**
+     * Whether this user has a usable password set. Steam-only signups have
+     * `password = null` until they go through forgot-password to set one.
+     */
+    public function hasUsablePassword(): bool
+    {
+        return $this->password !== null && $this->password !== '';
     }
 
     /**

@@ -19,11 +19,13 @@
         "laravel/octane": "^2.17",
         "laravel/prompts": "^0.3.16",
         "laravel/pulse": "^1.7",
+        "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
         "league/flysystem-aws-s3-v3": "^3.32",
         "minishlink/web-push": "^10.0",
         "owen-it/laravel-auditing": "^14.0",
+        "socialiteproviders/steam": "^4.3",
         "spatie/laravel-prometheus": "^1.5",
         "srmklive/paypal": "^3.1"
     },

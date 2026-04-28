@@ -2,6 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { edit as editLinkedAccounts } from '@/actions/App/Http/Controllers/Settings/LinkedAccountsController';
 import UserAchievementsController from '@/actions/App/Http/Controllers/Settings/UserAchievementsController';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,10 @@ const sidebarNavItems = computed<NavItem[]>(() => [
     {
         title: t('settings.security.title'),
         href: editSecurity(),
+    },
+    {
+        title: t('settings.linkedAccounts.title'),
+        href: editLinkedAccounts(),
     },
     {
         title: t('settings.appearance.title'),

@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Auth\Steam\Http\Controllers\SteamAuthController;
+use App\Domain\Auth\Steam\Http\Controllers\SteamLinkController;
 use App\Domain\Event\Http\Controllers\PublicEventController;
 use App\Domain\Shop\Http\Controllers\PayPalWebhookController;
 use App\Http\Controllers\CookiePreferenceController;
@@ -39,6 +41,19 @@ Route::get('u/{username}', [PublicProfileController::class, 'show'])
 Route::middleware(['auth'])->group(function () {
     Route::get('onboarding/username', [UsernameController::class, 'show'])->name('onboarding.username.show');
     Route::post('onboarding/username', [UsernameController::class, 'update'])->name('onboarding.username.update');
+});
+
+Route::middleware(['throttle:login'])->group(function () {
+    Route::get('auth/steam/redirect', [SteamAuthController::class, 'redirect'])->name('auth.steam.redirect');
+    Route::get('auth/steam/callback', [SteamAuthController::class, 'callback'])->name('auth.steam.callback');
+});
+
+Route::get('auth/steam/complete', [SteamAuthController::class, 'showComplete'])->name('auth.steam.complete.show');
+Route::post('auth/steam/complete', [SteamAuthController::class, 'complete'])->name('auth.steam.complete');
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('auth/steam/link', [SteamLinkController::class, 'link'])->name('auth.steam.link');
+    Route::post('auth/steam/unlink', [SteamLinkController::class, 'unlink'])->name('auth.steam.unlink');
 });
 
 Route::middleware(['auth', 'verified', 'require.username'])->group(function () {

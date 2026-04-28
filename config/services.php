@@ -47,4 +47,22 @@ return [
         'src' => env('PLAUSIBLE_SRC', 'https://plausible.io/js/script.js'),
     ],
 
+    /*
+    | Steam OpenID 2.0 (via socialiteproviders/steam). The package piggybacks on
+    | Socialite's OAuth2 abstract provider, so it requires `client_id` and
+    | `client_secret` keys to exist — it stores the Steam Web API key in
+    | `client_secret`. `client_id` is unused by Steam's OpenID flow.
+    | `allowed_hosts` is matched against the `openid.return_to` host on callback;
+    | leave empty to disable the check (recommended only locally).
+    */
+    'steam' => [
+        'client_id' => null,
+        'client_secret' => env('STEAM_API_KEY'),
+        'redirect' => env('STEAM_REDIRECT_URI'),
+        'allowed_hosts' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('STEAM_ALLOWED_HOSTS', '')),
+        ))),
+    ],
+
 ];

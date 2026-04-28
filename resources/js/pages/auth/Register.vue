@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import SteamIcon from '@/components/icons/SteamIcon.vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import TextLink from '@/components/TextLink.vue';
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { login } from '@/routes';
+import { redirect as steamRedirect } from '@/routes/auth/steam';
 import { store } from '@/routes/register';
 </script>
 
@@ -116,6 +118,30 @@ import { store } from '@/routes/register';
                 >
                     <Spinner v-if="processing" />
                     {{ $t('auth.register.button') }}
+                </Button>
+
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <span class="w-full border-t border-border"></span>
+                    </div>
+                    <div class="relative flex justify-center text-xs uppercase">
+                        <span class="bg-background px-2 text-muted-foreground">
+                            {{ $t('auth.divider.or') }}
+                        </span>
+                    </div>
+                </div>
+
+                <Button
+                    type="button"
+                    variant="outline"
+                    class="w-full"
+                    as-child
+                    data-test="steam-signup-button"
+                >
+                    <a :href="steamRedirect().url">
+                        <SteamIcon :size="16" />
+                        {{ $t('auth.steam.signUpWith') }}
+                    </a>
                 </Button>
             </div>
 

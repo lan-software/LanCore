@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Auth\Steam\Providers\SteamSocialiteServiceProvider;
 use App\Domain\Policy\Providers\GdprServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\FortifyServiceProvider;
@@ -19,6 +20,7 @@ return array_values(array_filter([
         : null,
     IntegrationServiceProvider::class,
     PrometheusServiceProvider::class,
+    SteamSocialiteServiceProvider::class,
     class_exists(TelescopeApplicationServiceProvider::class)
         ? TelescopeServiceProvider::class
         : null,
