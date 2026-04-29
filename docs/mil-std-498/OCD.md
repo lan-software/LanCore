@@ -94,6 +94,7 @@ LanCore is a ground-up rewrite providing:
 - Browse published events and news
 - View public announcements
 - Register an account
+- Save a published event to a personal calendar (Google / Apple / Outlook) by downloading an iCalendar file from the public event page, so the date and venue are not lost between learning about the event and registering
 
 #### 5.1.2 Registered User (Authenticated)
 

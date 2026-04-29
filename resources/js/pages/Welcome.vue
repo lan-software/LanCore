@@ -2,6 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Calendar,
+    CalendarPlus,
     Clock,
     MapPin,
     Newspaper,
@@ -18,6 +19,8 @@ import PublicTopbar from '@/components/PublicTopbar.vue';
 import SeatedUserHoverCard from '@/components/seating/SeatedUserHoverCard.vue';
 import SeatMapCanvas from '@/components/SeatMapCanvas.vue';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ical as eventIcal } from '@/routes/events/public';
 import { show as myCompetitionShow } from '@/routes/my-competitions';
 import { show as profileShow } from '@/routes/public-profile';
 import type { Event, NewsArticle, Announcement } from '@/types/domain';
@@ -355,6 +358,19 @@ function dismissAnnouncement(announcementId: number) {
                                     </template>
                                 </div>
                             </div>
+                        </div>
+
+                        <div>
+                            <Button
+                                as="a"
+                                :href="eventIcal(nextEvent.id).url"
+                                download
+                                variant="outline"
+                                size="sm"
+                            >
+                                <CalendarPlus class="size-4" />
+                                Add to Calendar
+                            </Button>
                         </div>
 
                         <!-- Description -->

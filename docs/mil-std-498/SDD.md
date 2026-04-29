@@ -1208,6 +1208,7 @@ unrendered.
 | SRS Requirement | Design Component |
 |----------------|-----------------|
 | EVT-F-* | app/Domain/Event/ |
+| EVT-F-012 | app/Domain/Event/Actions/BuildEventIcal.php (renders RFC 5545 body via `spatie/icalendar-generator`), app/Domain/Event/Http/Controllers/PublicEventController.php (`ical` action; 404 unless `EventStatus::Published`), routes/web.php (`events.public.ical`), resources/js/pages/Welcome.vue ("Add to Calendar" button using Wayfinder route function `@/routes/events/public/ical`) |
 | TKT-F-001..016 | app/Domain/Ticketing/ |
 | TKT-F-017..023 | app/Domain/Ticketing/Security/TicketTokenService.php, app/Domain/Ticketing/Security/TicketKeyRing.php, app/Console/Commands/RotateTicketSigningKeyCommand.php, app/Domain/Ticketing/Http/Controllers/AdminTicketController.php (rotateToken action), app/Domain/Ticketing/Actions/UpdateTicketAssignments.php |
 | TKT-F-024 | app/Domain/Ticketing/Http/Controllers/TicketController.php (rotateTokenUser action), routes/ticketing.php (`tickets.rotate-token` with `throttle:10,1`) |

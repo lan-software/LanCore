@@ -2,18 +2,21 @@
 
 namespace App\Domain\Event\Http\Controllers;
 
+use App\Domain\Event\Actions\BuildEventIcal;
 use App\Domain\Event\Enums\EventStatus;
 use App\Domain\Event\Models\Event;
 use App\Domain\Program\Enums\ProgramVisibility;
 use App\Http\Controllers\Controller;
 use App\Support\StorageRole;
+use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use Laravel\Fortify\Features;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * @see docs/mil-std-498/SRS.md EVT-F-009
+ * @see docs/mil-std-498/SRS.md EVT-F-009, EVT-F-012
  */
 class PublicEventController extends Controller
 {
@@ -117,6 +120,25 @@ class PublicEventController extends Controller
             'announcements' => [],
             'dismissedAnnouncementIds' => [],
             'openCompetitions' => [],
+        ]);
+    }
+
+    /**
+     * @see docs/mil-std-498/SSS.md CAP-EVT-007
+     * @see docs/mil-std-498/SRS.md EVT-F-012
+     */
+    public function ical(Event $event, BuildEventIcal $buildIcal): HttpResponse
+    {
+        if ($event->status !== EventStatus::Published) {
+            throw new NotFoundHttpException;
+        }
+
+        $body = $buildIcal->execute($event);
+        $filename = (Str::slug($event->name) ?: 'event').'.ics';
+
+        return response($body, 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
         ]);
     }
 }

@@ -63,6 +63,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-EVT-004 | The system shall emit `EventPublished` events and dispatch webhooks on publication |
 | CAP-EVT-005 | The system shall support seat capacity configuration per event |
 | CAP-EVT-006 | The system shall maintain audit trails for event modifications |
+| CAP-EVT-007 | The system shall allow attendees to download a published event as an iCalendar (RFC 5545) file from the public event page so it can be imported into Google / Apple / Outlook calendars |
 
 #### 3.2.2 Ticketing (CAP-TKT)
 

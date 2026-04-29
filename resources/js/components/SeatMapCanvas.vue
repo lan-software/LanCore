@@ -358,6 +358,7 @@ async function initSeatmap(): Promise<void> {
     // SeatClickEvent shape (id, salable, isSelected/select/unSelect methods).
     wireSeatClicks(blocks);
     wireSeatHovers();
+    suppressTooltipForTakenSeats();
 
     emit('ready');
 }
@@ -562,13 +563,6 @@ function wireSeatHovers(): void {
 
         currentSeatId = seat.id;
 
-        // Suppress the library's built-in tooltip on taken/blocked seats —
-        // we render our own richer hover card on top via SeatedUserHoverCard,
-        // and the library's "🚫 <title>" pill is redundant noise. The flag
-        // is read by the CSS rule at the bottom of this file.
-        const isNotSalable = seat.node.classList.contains('not-salable');
-        root.classList.toggle('seatmap-hide-tooltip', isNotSalable);
-
         const circle = seat.node.querySelector<SVGElement>(
             '.seat-circle,.seat-rect,.seat-path',
         );
@@ -595,10 +589,75 @@ function wireSeatHovers(): void {
 
         if (currentSeatId === fromSeat.id) {
             currentSeatId = null;
-            root.classList.remove('seatmap-hide-tooltip');
             emit('seat-hover-leave');
         }
     });
+}
+
+/**
+ * Suppress the library's built-in seat tooltip on non-salable (taken /
+ * category-blocked) seats. We render our own richer SeatedUserHoverCard,
+ * so the library's "🚫 <title>" pill is redundant noise.
+ *
+ * The library exposes its tooltip instance at `seatmapInstance.svg.tooltip`.
+ * On every mousemove the library calls `tooltip.update()`, which positions
+ * and shows the pill. We wrap that method so it bails out (and hides the
+ * pill) whenever the currently-hovered seat reports `isSalable() === false`.
+ *
+ * Wrapping is safer than per-seat DOM patching:
+ * - All zoom levels (the tooltip only fires once zoomed in) go through this
+ *   single method.
+ * - The wrapper is reapplied after every `replaceData` re-init below, so it
+ *   stays in place across data changes.
+ */
+function suppressTooltipForTakenSeats(): void {
+    if (!seatmapInstance) {
+        return;
+    }
+
+    const svg = (
+        seatmapInstance as unknown as {
+            svg?: {
+                tooltip?: {
+                    update?: () => unknown;
+                    activeSeat?: { isSalable?: () => boolean } | null;
+                    node?: { style?: (k: string, v: string) => unknown };
+                };
+            };
+        }
+    ).svg;
+    const tooltip = svg?.tooltip;
+
+    if (!tooltip || typeof tooltip.update !== 'function') {
+        return;
+    }
+
+    const wrapped = tooltip as typeof tooltip & {
+        __seatmapPatched?: boolean;
+    };
+
+    if (wrapped.__seatmapPatched) {
+        return;
+    }
+
+    const originalUpdate = tooltip.update.bind(tooltip);
+
+    tooltip.update = function patchedUpdate(): unknown {
+        const active = tooltip.activeSeat;
+
+        if (active && active.isSalable && active.isSalable() === false) {
+            // Hide whatever was previously rendered, then no-op for this frame.
+            tooltip.node?.style?.('visibility', 'hidden');
+
+            return tooltip;
+        }
+
+        tooltip.node?.style?.('visibility', 'visible');
+
+        return originalUpdate();
+    };
+
+    wrapped.__seatmapPatched = true;
 }
 
 defineExpose({
@@ -837,17 +896,6 @@ html.dark .seatmap-container .seatmap-svg .stage .blocks .block .info .title {
 
 .seatmap-container .seatmap-svg .stage .blocks .block .seats .seat {
     cursor: pointer;
-}
-
-/*
- * Hide the library's built-in seat tooltip while the cursor is over a
- * not-salable seat. The wrapper toggles `seatmap-hide-tooltip` on this
- * container element from the hover delegation above. We render our own
- * richer hover card (SeatedUserHoverCard) for taken seats, so the
- * library's "🚫 <initials>" pill is redundant noise.
- */
-.seatmap-container.seatmap-hide-tooltip .seatmap-svg .tooltip {
-    visibility: hidden;
 }
 
 /*

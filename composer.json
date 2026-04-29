@@ -26,6 +26,7 @@
         "minishlink/web-push": "^10.0",
         "owen-it/laravel-auditing": "^14.0",
         "socialiteproviders/steam": "^4.3",
+        "spatie/icalendar-generator": "^3.3",
         "spatie/laravel-prometheus": "^1.5",
         "srmklive/paypal": "^3.1"
     },

@@ -944,6 +944,20 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 
 ---
 
+### 4.30 Event Calendar Export Tests
+
+**File:** `tests/Feature/Events/PublicEventIcalTest.php`
+
+| Test Case | Pre-conditions | Test Steps | Expected Results |
+|-----------|---------------|-----------|-----------------|
+| EVT-T-012a returns RFC 5545 calendar for a published event | Published event with venue + address | `GET /events/{event}/calendar.ics` | 200, `Content-Type: text/calendar; charset=utf-8`, `Content-Disposition: attachment; filename="…ics"`, body contains `BEGIN:VCALENDAR`/`VERSION:2.0`/`BEGIN:VEVENT`/`SUMMARY:`/`DTSTART:`/`DTEND:`/`LOCATION:`/`END:VEVENT`/`END:VCALENDAR` |
+| EVT-T-012b 404 for draft events | Draft event | `GET /events/{event}/calendar.ics` | 404 |
+| EVT-T-012c 404 for unknown event id | No event exists for id | `GET /events/9999/calendar.ics` | 404 |
+| EVT-T-012d escapes RFC 5545 special chars | Published event with name `Foo, Bar; Baz` and a multi-line description | `GET /events/{event}/calendar.ics` | Body contains escaped sequences (`\,`, `\;`, `\n`) per RFC 5545 §3.3.11 |
+| EVT-T-012e omits LOCATION when no venue | Published event without venue | `GET /events/{event}/calendar.ics` | 200, body has no `LOCATION:` line |
+
+---
+
 ## 5. Requirements Traceability
 
 | SRS Requirement | Test Cases |
@@ -982,6 +996,7 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | CAP-USR-014, USR-F-025, USR-F-026 | Public Profile visibility (4.24), Preview tests (4.25) |
 | CAP-USR-015, ICLIB-F-002, ICLIB-F-010 | Username SSO Claim tests (4.27) |
 | CAP-ACH-005, ACH-F-008 | Achievement Rarity tests (4.26) |
+| CAP-EVT-007, EVT-F-012 | Event calendar export tests (4.30) |
 
 ---
 

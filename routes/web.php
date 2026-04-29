@@ -19,6 +19,7 @@ Route::get('/', WelcomeController::class)->name('home');
 Route::get('upcoming-events', [PublicEventController::class, 'index'])->name('events.public');
 Route::get('past-events', [PublicEventController::class, 'past'])->name('events.public.past');
 Route::get('events/{event}/public', [PublicEventController::class, 'show'])->name('events.public.show');
+Route::get('events/{event}/calendar.ics', [PublicEventController::class, 'ical'])->name('events.public.ical');
 
 Route::get('legal', [LegalController::class, 'index'])->name('legal.index');
 Route::get('impressum', [LegalController::class, 'impressum'])->name('legal.impressum');
