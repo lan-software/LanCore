@@ -10,15 +10,16 @@ import {
     X,
     Trophy,
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import AppFooter from '@/components/AppFooter.vue';
 import BannerCarousel from '@/components/BannerCarousel.vue';
 import OrgaTeamCard from '@/components/event/OrgaTeamCard.vue';
 import PublicTopbar from '@/components/PublicTopbar.vue';
+import SeatedUserHoverCard from '@/components/seating/SeatedUserHoverCard.vue';
 import SeatMapCanvas from '@/components/SeatMapCanvas.vue';
 import { Badge } from '@/components/ui/badge';
-import { getInitials } from '@/composables/useInitials';
 import { show as myCompetitionShow } from '@/routes/my-competitions';
+import { show as profileShow } from '@/routes/public-profile';
 import type { Event, NewsArticle, Announcement } from '@/types/domain';
 
 const props = withDefaults(
@@ -55,6 +56,30 @@ const props = withDefaults(
     },
 );
 
+type SeatPlanTakenSeat = NonNullable<Event['taken_seats']>[number];
+
+const hoveredTaken = ref<SeatPlanTakenSeat | null>(null);
+const hoverAnchor = ref<DOMRect | null>(null);
+
+/**
+ * Lookup of taken seats on the rendered plan, keyed by stringified seat id.
+ * The Welcome page only renders `seat_plans[0]`, so a plan-id key isn't
+ * necessary — the seatPlanData computation already filters by it.
+ */
+const takenLookup = computed<Map<string, SeatPlanTakenSeat>>(() => {
+    const plan = props.nextEvent?.seat_plans?.[0];
+
+    if (!plan) {
+        return new Map();
+    }
+
+    const taken = (props.nextEvent?.taken_seats ?? []).filter(
+        (t) => t.seat_plan_id === plan.id,
+    );
+
+    return new Map(taken.map((t) => [String(t.seat_id), t]));
+});
+
 const seatPlanData = computed(() => {
     const plan = props.nextEvent?.seat_plans?.[0];
 
@@ -86,13 +111,7 @@ const seatPlanData = computed(() => {
                     return seat;
                 }
 
-                return {
-                    ...seat,
-                    salable: false,
-                    title: occupant.name
-                        ? getInitials(occupant.name)
-                        : (seat.title ?? ''),
-                };
+                return { ...seat, salable: false };
             }),
         })),
     };
@@ -121,6 +140,34 @@ function formatDateTime(dateString: string): string {
         hour: '2-digit',
         minute: '2-digit',
     });
+}
+
+function onSeatHoverEnter(payload: { id: string; rect: DOMRect }): void {
+    const taken = takenLookup.value.get(String(payload.id));
+
+    if (!taken?.username) {
+        hoveredTaken.value = null;
+        hoverAnchor.value = null;
+
+        return;
+    }
+
+    hoveredTaken.value = taken;
+    hoverAnchor.value = payload.rect;
+}
+
+function onSeatHoverLeave(): void {
+    hoveredTaken.value = null;
+    hoverAnchor.value = null;
+}
+
+function onSeatClick(payload: unknown): void {
+    const seat = payload as { id: string | number };
+    const taken = takenLookup.value.get(String(seat.id));
+
+    if (taken?.username) {
+        router.visit(profileShow({ username: taken.username }).url);
+    }
 }
 
 function dismissAnnouncement(announcementId: number) {
@@ -533,6 +580,9 @@ function dismissAnnouncement(announcementId: number) {
                                             },
                                         },
                                     }"
+                                    @seat-click="onSeatClick"
+                                    @seat-hover-enter="onSeatHoverEnter"
+                                    @seat-hover-leave="onSeatHoverLeave"
                                 />
                             </div>
                         </div>
@@ -746,5 +796,17 @@ function dismissAnnouncement(announcementId: number) {
         </section>
 
         <AppFooter />
+
+        <SeatedUserHoverCard
+            v-if="hoveredTaken && hoveredTaken.username && hoverAnchor"
+            :seated-user="{
+                username: hoveredTaken.username,
+                profile_emoji: hoveredTaken.profile_emoji,
+                short_bio: hoveredTaken.short_bio,
+                avatar_url: hoveredTaken.avatar_url ?? '',
+                banner_url: hoveredTaken.banner_url,
+            }"
+            :anchor-rect="hoverAnchor"
+        />
     </div>
 </template>

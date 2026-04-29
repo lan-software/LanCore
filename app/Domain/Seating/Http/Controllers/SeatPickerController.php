@@ -50,7 +50,8 @@ class SeatPickerController extends Controller
             ->get();
 
         $taken = $assignments->map(function (SeatAssignment $assignment) use ($viewer, $event): array {
-            $isVisible = $assignment->user->isSeatNameVisibleTo($viewer, $event);
+            $user = $assignment->user;
+            $isVisible = $user->isSeatNameVisibleTo($viewer, $event);
 
             return [
                 'id' => $assignment->id,
@@ -58,7 +59,12 @@ class SeatPickerController extends Controller
                 'seat_id' => $assignment->seat_plan_seat_id,
                 'ticket_id' => $assignment->ticket_id,
                 'user_id' => $assignment->user_id,
-                'name' => $isVisible ? $assignment->user->name : null,
+                'name' => $isVisible ? $user->name : null,
+                'username' => $isVisible ? $user->username : null,
+                'profile_emoji' => $isVisible ? $user->profile_emoji : null,
+                'short_bio' => $isVisible ? $user->short_bio : null,
+                'avatar_url' => $isVisible ? $user->avatarUrl() : null,
+                'banner_url' => $isVisible ? $user->bannerUrl() : null,
             ];
         })->values()->all();
 

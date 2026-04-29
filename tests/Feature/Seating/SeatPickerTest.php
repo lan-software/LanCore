@@ -206,7 +206,12 @@ it('flashes a seat_id validation error into the session when the seat is already
 
 it('returns the picker page with my tickets and visible-name overlay', function (): void {
     $owner = User::factory()->create();
-    $other = User::factory()->create(['is_seat_visible_publicly' => true]);
+    $other = User::factory()->create([
+        'is_seat_visible_publicly' => true,
+        'username' => 'occupant_visible',
+        'profile_emoji' => '🎮',
+        'short_bio' => 'Plays a lot of CS.',
+    ]);
     $otherTicket = Ticket::factory()->create([
         'event_id' => $this->event->id,
         'ticket_type_id' => $this->ticketType->id,
@@ -233,6 +238,48 @@ it('returns the picker page with my tickets and visible-name overlay', function 
             ->where('event.id', $this->event->id)
             ->has('myTickets', 1)
             ->has('taken', 1)
-            ->where('taken.0.name', $other->name),
+            ->where('taken.0.name', $other->name)
+            ->where('taken.0.username', 'occupant_visible')
+            ->where('taken.0.profile_emoji', '🎮')
+            ->where('taken.0.short_bio', 'Plays a lot of CS.')
+            ->has('taken.0.avatar_url')
+            ->etc(),
+        );
+});
+
+it('redacts profile fields when the seated user is hidden from the viewer', function (): void {
+    $viewer = User::factory()->create();
+    $hidden = User::factory()->create([
+        'is_seat_visible_publicly' => false,
+        'username' => 'occupant_hidden',
+        'profile_emoji' => '🎯',
+        'short_bio' => 'Hidden bio.',
+    ]);
+    $hiddenTicket = Ticket::factory()->create([
+        'event_id' => $this->event->id,
+        'ticket_type_id' => $this->ticketType->id,
+        'owner_id' => $hidden->id,
+    ]);
+    SeatAssignment::factory()->create([
+        'ticket_id' => $hiddenTicket->id,
+        'user_id' => $hidden->id,
+        'seat_plan_id' => $this->plan->id,
+        'seat_plan_seat_id' => $this->seatA1->id,
+    ]);
+
+    // Viewer holds no ticket for the event, so they fall outside the
+    // attendee-visibility carve-out in User::isSeatNameVisibleTo.
+    $this->actingAs($viewer)
+        ->get("/events/{$this->event->id}/seats")
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('seating/Picker')
+            ->has('taken', 1)
+            ->where('taken.0.name', null)
+            ->where('taken.0.username', null)
+            ->where('taken.0.profile_emoji', null)
+            ->where('taken.0.short_bio', null)
+            ->where('taken.0.avatar_url', null)
+            ->where('taken.0.banner_url', null),
         );
 });

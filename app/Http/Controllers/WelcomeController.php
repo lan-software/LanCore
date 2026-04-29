@@ -163,12 +163,18 @@ class WelcomeController extends Controller
             ->with('user')
             ->get()
             ->map(function (SeatAssignment $assignment) use ($viewer, $event): array {
-                $isVisible = $assignment->user->isSeatNameVisibleTo($viewer, $event);
+                $user = $assignment->user;
+                $isVisible = $user->isSeatNameVisibleTo($viewer, $event);
 
                 return [
                     'seat_plan_id' => $assignment->seat_plan_id,
                     'seat_id' => $assignment->seat_plan_seat_id,
-                    'name' => $isVisible ? $assignment->user->name : null,
+                    'name' => $isVisible ? $user->name : null,
+                    'username' => $isVisible ? $user->username : null,
+                    'profile_emoji' => $isVisible ? $user->profile_emoji : null,
+                    'short_bio' => $isVisible ? $user->short_bio : null,
+                    'avatar_url' => $isVisible ? $user->avatarUrl() : null,
+                    'banner_url' => $isVisible ? $user->bannerUrl() : null,
                 ];
             })
             ->values()

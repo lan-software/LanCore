@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { Armchair, ChevronLeft, Maximize, Target } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -8,6 +8,7 @@ import {
     store as assignAction,
 } from '@/actions/App/Domain/Seating/Http/Controllers/SeatPickerController';
 import Heading from '@/components/Heading.vue';
+import SeatedUserHoverCard from '@/components/seating/SeatedUserHoverCard.vue';
 import SeatMapCanvas from '@/components/SeatMapCanvas.vue';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { getInitials } from '@/composables/useInitials';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { picker as pickerRoute } from '@/routes/events/seats';
+import { show as profileShow } from '@/routes/public-profile';
 import type { BreadcrumbItem } from '@/types';
 import type { SeatPlanBlock, SeatPlanData, SeatPlanSeat } from '@/types/domain';
 
@@ -53,6 +55,11 @@ interface TakenSeat {
     ticket_id: number;
     user_id: number;
     name: string | null;
+    username: string | null;
+    profile_emoji: string | null;
+    short_bio: string | null;
+    avatar_url: string | null;
+    banner_url: string | null;
 }
 
 /**
@@ -95,6 +102,8 @@ const selectedSeat = ref<{
 } | null>(null);
 const clickHint = ref<string | null>(null);
 const canvasRef = ref<InstanceType<typeof SeatMapCanvas> | null>(null);
+const hoveredTaken = ref<TakenSeat | null>(null);
+const hoverAnchor = ref<DOMRect | null>(null);
 // Track the seat object the user most recently highlighted on the canvas so we
 // can un-select it when they pick a different one (library allows multi-select
 // by default; we only want single).
@@ -236,13 +245,7 @@ const decoratedPlanData = computed<SeatPlanData | null>(() => {
                         Number(seat.id);
 
                 if (taken && !isOwnAssignment) {
-                    return {
-                        ...seat,
-                        salable: false,
-                        title: taken.name
-                            ? getInitials(taken.name)
-                            : (seat.title ?? ''),
-                    };
+                    return { ...seat, salable: false };
                 }
 
                 if (blockBlockedByCategory && !isOwnAssignment) {
@@ -278,6 +281,31 @@ function flashHint(message: string): void {
     }, 4000);
 }
 
+function onSeatHoverEnter(payload: { id: string; rect: DOMRect }): void {
+    if (!activePlan.value) {
+        return;
+    }
+
+    const taken = takenByPlanAndSeat.value.get(
+        `${activePlan.value.id}::${Number(payload.id)}`,
+    );
+
+    if (!taken?.username) {
+        hoveredTaken.value = null;
+        hoverAnchor.value = null;
+
+        return;
+    }
+
+    hoveredTaken.value = taken;
+    hoverAnchor.value = payload.rect;
+}
+
+function onSeatHoverLeave(): void {
+    hoveredTaken.value = null;
+    hoverAnchor.value = null;
+}
+
 function clearHighlight(): void {
     highlightedSeat?.unSelect?.();
     highlightedSeat = null;
@@ -311,6 +339,20 @@ function onSeatClick(payload: unknown): void {
     // Guard: must have a plan on screen.
     if (!activePlan.value) {
         console.warn('[Picker] click rejected: no activePlan');
+
+        return;
+    }
+
+    // If this seat is taken AND we're allowed to see the occupant's profile,
+    // navigate there instead of running the pick flow. Hidden occupants fall
+    // through to the existing salable=false branch and render the "seat
+    // taken" hint as before.
+    const takenAtClick = takenByPlanAndSeat.value.get(
+        `${activePlan.value.id}::${Number(seat.id)}`,
+    );
+
+    if (takenAtClick?.username) {
+        router.visit(profileShow({ username: takenAtClick.username }).url);
 
         return;
     }
@@ -635,6 +677,8 @@ function zoomToMySeat(): void {
                                 },
                             }"
                             @seat-click="onSeatClick"
+                            @seat-hover-enter="onSeatHoverEnter"
+                            @seat-hover-leave="onSeatHoverLeave"
                             @ready="onCanvasReady"
                         />
                     </div>
@@ -837,5 +881,17 @@ function zoomToMySeat(): void {
                 </aside>
             </div>
         </div>
+
+        <SeatedUserHoverCard
+            v-if="hoveredTaken && hoveredTaken.username && hoverAnchor"
+            :seated-user="{
+                username: hoveredTaken.username,
+                profile_emoji: hoveredTaken.profile_emoji,
+                short_bio: hoveredTaken.short_bio,
+                avatar_url: hoveredTaken.avatar_url ?? '',
+                banner_url: hoveredTaken.banner_url,
+            }"
+            :anchor-rect="hoverAnchor"
+        />
     </AppLayout>
 </template>

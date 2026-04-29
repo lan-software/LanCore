@@ -46,6 +46,18 @@ const props = withDefaults(
 const emit = defineEmits<{
     'seat-click': [seat: unknown];
     /**
+     * Fires when the cursor enters a seat element. Payload carries the
+     * library seat id and the seat node's screen-space rect so the parent
+     * can position a floating preview without re-querying the SVG. Emits
+     * once per transition into a new seat, not on every mousemove.
+     */
+    'seat-hover-enter': [payload: { id: string; rect: DOMRect }];
+    /**
+     * Fires when the cursor leaves a seat (or moves between seats — paired
+     * with a fresh `seat-hover-enter`).
+     */
+    'seat-hover-leave': [];
+    /**
      * Fires after each successful init of the underlying canvas. The parent
      * can use this as the cue to re-apply any visual selection it tracks,
      * because our `watch(() => props.data)` re-builds the SVG from scratch on
@@ -345,6 +357,7 @@ async function initSeatmap(): Promise<void> {
     // the container and synthesize a payload that matches the library's public
     // SeatClickEvent shape (id, salable, isSelected/select/unSelect methods).
     wireSeatClicks(blocks);
+    wireSeatHovers();
 
     emit('ready');
 }
@@ -495,6 +508,96 @@ function wireSeatClicks(blocks: SeatPlanBlock[]): void {
         };
 
         emit('seat-click', synthetic);
+    });
+}
+
+/**
+ * Mirror of `wireSeatClicks` for hover. Library v2.7.1 doesn't expose hover
+ * events either, so we delegate `mouseover` / `mouseout` on the container.
+ * We track the currently-hovered seat id so we only emit on transitions
+ * (not on every pixel of cursor movement inside the same seat) and so we
+ * can pair `enter` events with a `leave` when the cursor exits the seat.
+ */
+function wireSeatHovers(): void {
+    if (!containerRef.value) {
+        return;
+    }
+
+    const root = containerRef.value;
+    let currentSeatId: string | null = null;
+
+    function resolveSeat(target: EventTarget | null): {
+        node: SVGGElement;
+        id: string;
+    } | null {
+        if (!(target instanceof Element)) {
+            return null;
+        }
+
+        const node = target.closest<SVGGElement>('g.seat');
+
+        if (!node || !root.contains(node)) {
+            return null;
+        }
+
+        const id = node.getAttribute('id');
+
+        if (!id) {
+            return null;
+        }
+
+        return { node, id };
+    }
+
+    root.addEventListener('mouseover', (event: MouseEvent) => {
+        const seat = resolveSeat(event.target);
+
+        if (!seat) {
+            return;
+        }
+
+        if (seat.id === currentSeatId) {
+            return;
+        }
+
+        currentSeatId = seat.id;
+
+        // Suppress the library's built-in tooltip on taken/blocked seats —
+        // we render our own richer hover card on top via SeatedUserHoverCard,
+        // and the library's "🚫 <title>" pill is redundant noise. The flag
+        // is read by the CSS rule at the bottom of this file.
+        const isNotSalable = seat.node.classList.contains('not-salable');
+        root.classList.toggle('seatmap-hide-tooltip', isNotSalable);
+
+        const circle = seat.node.querySelector<SVGElement>(
+            '.seat-circle,.seat-rect,.seat-path',
+        );
+        const rect = (circle ?? seat.node).getBoundingClientRect();
+
+        emit('seat-hover-enter', { id: seat.id, rect });
+    });
+
+    root.addEventListener('mouseout', (event: MouseEvent) => {
+        const fromSeat = resolveSeat(event.target);
+
+        if (!fromSeat) {
+            return;
+        }
+
+        // `mouseout` also fires when the cursor moves between child SVG
+        // nodes inside the same seat. Use `relatedTarget` to detect whether
+        // we're still inside the same seat — if so, don't fire `leave`.
+        const stillInside = resolveSeat(event.relatedTarget);
+
+        if (stillInside && stillInside.id === fromSeat.id) {
+            return;
+        }
+
+        if (currentSeatId === fromSeat.id) {
+            currentSeatId = null;
+            root.classList.remove('seatmap-hide-tooltip');
+            emit('seat-hover-leave');
+        }
     });
 }
 
@@ -734,6 +837,17 @@ html.dark .seatmap-container .seatmap-svg .stage .blocks .block .info .title {
 
 .seatmap-container .seatmap-svg .stage .blocks .block .seats .seat {
     cursor: pointer;
+}
+
+/*
+ * Hide the library's built-in seat tooltip while the cursor is over a
+ * not-salable seat. The wrapper toggles `seatmap-hide-tooltip` on this
+ * container element from the hover delegation above. We render our own
+ * richer hover card (SeatedUserHoverCard) for taken seats, so the
+ * library's "🚫 <initials>" pill is redundant noise.
+ */
+.seatmap-container.seatmap-hide-tooltip .seatmap-svg .tooltip {
+    visibility: hidden;
 }
 
 /*

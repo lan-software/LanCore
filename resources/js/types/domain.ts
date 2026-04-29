@@ -158,6 +158,11 @@ export type Event = {
         seat_plan_id: number;
         seat_id: string;
         name: string | null;
+        username: string | null;
+        profile_emoji: string | null;
+        short_bio: string | null;
+        avatar_url: string | null;
+        banner_url: string | null;
     }[];
     created_at: string;
     updated_at: string;
