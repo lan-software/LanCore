@@ -66,11 +66,7 @@ const submit = () => {
                     </p>
                 </div>
 
-                <form
-                    v-else
-                    class="space-y-4"
-                    @submit.prevent="submit"
-                >
+                <form v-else class="space-y-4" @submit.prevent="submit">
                     <p class="text-sm text-muted-foreground">
                         Confirm your password to schedule deletion. We'll send a
                         confirmation email; clicking the link in that email

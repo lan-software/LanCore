@@ -47,8 +47,8 @@ const cancel = () =>
 
 const forceDelete = () => {
     if (!props.deletionRequest.user) {
-return;
-}
+        return;
+    }
 
     forceForm.post(
         `/admin/data-lifecycle/users/${props.deletionRequest.user.id}/force-delete`,
@@ -140,8 +140,8 @@ return;
                     Force-delete user data
                 </h3>
                 <p class="mt-1 text-xs text-red-900">
-                    Bypass retention windows and permanently remove the user
-                    row plus all force-deletable data. This requires the
+                    Bypass retention windows and permanently remove the user row
+                    plus all force-deletable data. This requires the
                     ForceDeleteUserData permission and is fully audited.
                 </p>
                 <form
@@ -161,8 +161,7 @@ return;
 
                     <div class="grid gap-1">
                         <Label for="confirmation"
-                            >Type
-                            "I UNDERSTAND THIS IS IRREVERSIBLE" to
+                            >Type "I UNDERSTAND THIS IS IRREVERSIBLE" to
                             confirm</Label
                         >
                         <input

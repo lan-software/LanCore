@@ -20,8 +20,8 @@ const cancelForm = useForm({});
 
 const cancel = () => {
     if (!props.deletionRequest) {
-return;
-}
+        return;
+    }
 
     cancelForm.delete(`/account/delete/${props.deletionRequest.id}`, {
         preserveScroll: true,
@@ -53,14 +53,15 @@ return;
                     class="rounded border border-orange-300 bg-orange-50 p-4 text-sm text-orange-900"
                 >
                     Scheduled for permanent anonymization on
-                    <strong>{{ deletionRequest.scheduled_for }}</strong>.
+                    <strong>{{ deletionRequest.scheduled_for }}</strong
+                    >.
                 </div>
 
                 <div class="flex flex-col items-start gap-2">
                     <p class="text-sm text-muted-foreground">
                         While the request is pending you remain logged in but
-                        the account is read-only. You can still download a
-                        GDPR Article 15 export of your data.
+                        the account is read-only. You can still download a GDPR
+                        Article 15 export of your data.
                     </p>
 
                     <Button

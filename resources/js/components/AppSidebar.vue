@@ -552,7 +552,8 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link
                                     :href="
-                                        dataLifecycleRoutes.deletionRequests.index().url
+                                        dataLifecycleRoutes.deletionRequests.index()
+                                            .url
                                     "
                                 >
                                     <Trash2 />
@@ -570,11 +571,14 @@ function toggleFavorite(itemId: string): void {
                                 <Pin v-else class="size-4" />
                             </SidebarMenuAction>
                         </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can('manage_retention_policies')">
+                        <SidebarMenuItem
+                            v-if="can('manage_retention_policies')"
+                        >
                             <SidebarMenuButton as-child>
                                 <Link
                                     :href="
-                                        dataLifecycleRoutes.retentionPolicies.index().url
+                                        dataLifecycleRoutes.retentionPolicies.index()
+                                            .url
                                     "
                                 >
                                     <Timer />
@@ -596,7 +600,8 @@ function toggleFavorite(itemId: string): void {
                             <SidebarMenuButton as-child>
                                 <Link
                                     :href="
-                                        dataLifecycleRoutes.anonymizationLog.index().url
+                                        dataLifecycleRoutes.anonymizationLog.index()
+                                            .url
                                     "
                                 >
                                     <History />

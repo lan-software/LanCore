@@ -369,7 +369,14 @@ const ticketStatusVariant: Record<
             </Card>
 
             <!-- Account lifecycle status -->
-            <div v-if="user.pending_deletion_at || user.anonymized_at || user.deleted_at" class="space-y-1">
+            <div
+                v-if="
+                    user.pending_deletion_at ||
+                    user.anonymized_at ||
+                    user.deleted_at
+                "
+                class="space-y-1"
+            >
                 <Badge
                     v-if="user.anonymized_at"
                     variant="destructive"
@@ -496,14 +503,10 @@ const ticketStatusVariant: Record<
                         target="_blank"
                         class="space-y-3 rounded border p-4"
                     >
-                        <input
-                            type="hidden"
-                            name="_token"
-                            :value="csrfToken"
-                        />
+                        <input type="hidden" name="_token" :value="csrfToken" />
                         <p class="text-sm">
-                            Generates a ZIP of every record held about this
-                            user and downloads it. Optional AES-256
+                            Generates a ZIP of every record held about this user
+                            and downloads it. Optional AES-256
                             password-protection.
                         </p>
                         <div class="grid gap-1">
@@ -548,8 +551,8 @@ const ticketStatusVariant: Record<
                             <strong>Irreversible.</strong> Bypasses retention
                             windows and permanently removes the user row plus
                             all force-deletable data. Use only for legal
-                            requests (court order, regulator demand). The
-                            reason is recorded in the audit trail.
+                            requests (court order, regulator demand). The reason
+                            is recorded in the audit trail.
                         </p>
                         <div class="grid gap-1">
                             <Label for="fd-reason">Reason (audited)</Label>
@@ -614,10 +617,7 @@ const ticketStatusVariant: Record<
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow
-                                v-for="r in deletionRequests"
-                                :key="r.id"
-                            >
+                            <TableRow v-for="r in deletionRequests" :key="r.id">
                                 <TableCell class="font-mono text-xs"
                                     >#{{ r.id }}</TableCell
                                 >

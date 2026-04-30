@@ -76,8 +76,7 @@ const save = (policy: Policy) => {
                 >
                     <div class="grid gap-1">
                         <label class="text-xs"
-                            >Retention days (0 = anonymize on
-                            deletion)</label
+                            >Retention days (0 = anonymize on deletion)</label
                         >
                         <input
                             v-model.number="formFor(p.id).retention_days"
