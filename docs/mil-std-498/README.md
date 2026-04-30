@@ -85,6 +85,10 @@ MIL-STD-498 defines 22 Data Item Descriptions (DIDs) that standardize the record
 
 ---
 
+## Recent Additions
+
+- **2026-04-30** — Data Lifecycle / GDPR Article 17 feature domain. New requirement IDs `CAP-DL-001..008`, `SEC-DL-001..002`, `DL-F-001..018`. Touches OCD §5.7, SSS §3.2.Z, SRS §3.2.Z, IRS §5.X, SSDD §5.11, SDD §5.9, IDD §3.20, DBDD §5.X, STD §4.31, RTM §23. Article 17 scope statement in OCD §5.6 was lifted (formerly "out of scope"). Implementation domain: `app/Domain/DataLifecycle/`.
+
 ## Status Legend
 
 - **Populated** — Document sections filled with current LanCore project data

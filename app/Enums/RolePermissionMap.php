@@ -6,6 +6,7 @@ use App\Contracts\PermissionEnum;
 use App\Domain\Achievements\Enums\Permission as AchievementPermission;
 use App\Domain\Announcement\Enums\Permission as AnnouncementPermission;
 use App\Domain\Competition\Enums\Permission as CompetitionPermission;
+use App\Domain\DataLifecycle\Enums\Permission as DataLifecyclePermission;
 use App\Domain\Event\Enums\Permission as EventPermission;
 use App\Domain\Games\Enums\Permission as GamePermission;
 use App\Domain\Integration\Enums\Permission as IntegrationPermission;
@@ -73,6 +74,9 @@ final class RolePermissionMap
                 Permission::ExportUserPersonalData,
                 PolicyPermission::ManagePolicies,
                 AuditPermission::ViewAuditLogs,
+                DataLifecyclePermission::RequestUserDeletion,
+                DataLifecyclePermission::ManageRetentionPolicies,
+                DataLifecyclePermission::ViewDeletionRequests,
             ],
 
             RoleName::Superadmin => self::all(),
@@ -92,6 +96,7 @@ final class RolePermissionMap
             ...CompetitionPermission::cases(),
             ...AchievementPermission::cases(),
             ...AnnouncementPermission::cases(),
+            ...DataLifecyclePermission::cases(),
             ...EventPermission::cases(),
             ...GamePermission::cases(),
             ...IntegrationPermission::cases(),

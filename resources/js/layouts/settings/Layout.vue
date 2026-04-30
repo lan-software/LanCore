@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
+import { show as deleteAccountShow } from '@/routes/data-lifecycle/account';
 import { edit as editNotifications } from '@/routes/notifications';
 import { edit as editPrivacy } from '@/routes/privacy';
 import { edit as editProfile } from '@/routes/profile';
@@ -51,6 +52,10 @@ const sidebarNavItems = computed<NavItem[]>(() => [
     {
         title: t('settings.achievements.title'),
         href: UserAchievementsController.url(),
+    },
+    {
+        title: 'Delete account',
+        href: deleteAccountShow(),
     },
 ]);
 

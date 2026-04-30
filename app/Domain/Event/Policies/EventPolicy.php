@@ -8,8 +8,8 @@ use App\Enums\AuditPermission;
 use App\Models\User;
 
 /**
- * @see docs/mil-std-498/SSS.md SEC-007
- * @see docs/mil-std-498/SRS.md EVT-F-003
+ * @see docs/mil-std-498/SSS.md SEC-007, CAP-DL-008
+ * @see docs/mil-std-498/SRS.md EVT-F-003, DL-F-018
  */
 class EventPolicy
 {
@@ -36,6 +36,22 @@ class EventPolicy
     public function delete(User $user, Event $event): bool
     {
         return $user->hasPermission(Permission::ManageEvents);
+    }
+
+    public function restore(User $user, Event $event): bool
+    {
+        return $user->hasPermission(Permission::ManageEvents);
+    }
+
+    /**
+     * Hard-deletion of events is permanently forbidden to preserve attendance,
+     * accounting, and competition history.
+     *
+     * @see docs/mil-std-498/SSS.md CAP-DL-008
+     */
+    public function forceDelete(User $user, Event $event): bool
+    {
+        return false;
     }
 
     public function publish(User $user, Event $event): bool

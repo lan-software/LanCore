@@ -337,6 +337,21 @@ return [
 | CAP-TKT-013 | IF-VALIDATE |
 | SEC-019, SEC-020 | IF-JWKS |
 | SEC-014..018 | IF-VALIDATE |
+| CAP-DL-007, CAP-DL-004..005 | IF-DL-001, IF-DL-002, IF-DL-003 |
+
+---
+
+### 5.X Data Lifecycle Internal Interfaces
+
+These are internal (in-process) interfaces. The Data Lifecycle domain does not expose any external interfaces in this iteration; satellite-app integration via `lancore-client` is explicitly out of scope.
+
+| Interface ID | Contract | Path | Notes |
+|--------------|----------|------|-------|
+| IF-DL-001 | `EmailHasher::hash(string $email): string` | `app/Domain/DataLifecycle/Services/EmailHasher.php` | HMAC-SHA256 over lower-cased, trimmed email. Salt is HKDF-derived from APP_KEY with versioned context `data-lifecycle-email-v1`. Returns 64-char hex. |
+| IF-DL-002 | `DomainAnonymizer::dataClass(): RetentionDataClass; anonymize(User, AnonymizationMode): AnonymizationResult` | `app/Domain/DataLifecycle/Anonymizers/Contracts/DomainAnonymizer.php` | Implementations are registered into `DomainAnonymizerRegistry` at boot in `DataLifecycleServiceProvider`. Implementations MUST be idempotent. |
+| IF-DL-003 | `RetentionEvaluator::dataClass(): RetentionDataClass; evaluate(User): RetentionVerdict` | `app/Domain/DataLifecycle/RetentionEvaluators/Contracts/RetentionEvaluator.php` | Implementations are registered into `RetentionEvaluatorRegistry` at boot. Verdicts inform `PurgeExpiredData`. |
+
+> **Out of scope** (deferred): exposing the Data Lifecycle deletion API to satellite apps via `lancore-client` / Integration API. Captured for a follow-up iteration.
 
 ---
 

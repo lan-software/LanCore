@@ -12,6 +12,7 @@ import {
     Gift,
     Grid2x2,
     Handshake,
+    History,
     LayoutGrid,
     MapPin,
     Megaphone,
@@ -31,6 +32,8 @@ import {
     Tag,
     Ticket,
     TicketCheck,
+    Timer,
+    Trash2,
     Trophy,
     Users,
     UsersRound,
@@ -60,6 +63,7 @@ import {
 import { usePermissions } from '@/composables/usePermissions';
 import { dashboard, home } from '@/routes';
 import { index as achievementsIndex } from '@/routes/achievements';
+import dataLifecycleRoutes from '@/routes/admin/data-lifecycle';
 import { index as adminTeamsIndex } from '@/routes/admin/teams';
 import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import { index as announcementsIndex } from '@/routes/announcements';
@@ -523,6 +527,88 @@ function toggleFavorite(itemId: string): void {
                             >
                                 <PinOff
                                     v-if="isFavorited('users')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+
+            <!-- Data Lifecycle (GDPR Art. 17) -->
+            <SidebarGroup
+                v-if="
+                    canAny(
+                        'view_deletion_requests',
+                        'manage_retention_policies',
+                    )
+                "
+            >
+                <SidebarGroupLabel>Data lifecycle</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem v-if="can('view_deletion_requests')">
+                            <SidebarMenuButton as-child>
+                                <Link
+                                    :href="
+                                        dataLifecycleRoutes.deletionRequests.index().url
+                                    "
+                                >
+                                    <Trash2 />
+                                    <span>Deletion requests</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('deletion-requests')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('deletion-requests')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="can('manage_retention_policies')">
+                            <SidebarMenuButton as-child>
+                                <Link
+                                    :href="
+                                        dataLifecycleRoutes.retentionPolicies.index().url
+                                    "
+                                >
+                                    <Timer />
+                                    <span>Retention policies</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('retention-policies')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('retention-policies')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="can('view_deletion_requests')">
+                            <SidebarMenuButton as-child>
+                                <Link
+                                    :href="
+                                        dataLifecycleRoutes.anonymizationLog.index().url
+                                    "
+                                >
+                                    <History />
+                                    <span>Anonymization log</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('anonymization-log')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('anonymization-log')"
                                     class="size-4"
                                 />
                                 <Pin v-else class="size-4" />

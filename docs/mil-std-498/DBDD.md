@@ -1194,6 +1194,37 @@ Competition ──< OrchestrationJob
 OrchestrationJob ──< MatchChatMessage
 ```
 
+### 5.X Data Lifecycle Tables
+
+Three new tables and four new columns on existing tables back the Data Lifecycle feature domain (CAP-DL-001..008).
+
+**users (added columns)** — migration `2026_04_30_124000_add_lifecycle_columns_to_users_table.php`:
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `deleted_at` | TIMESTAMP NULL | SoftDeletes column. |
+| `anonymized_at` | TIMESTAMP NULL | Stamped by `UserAnonymizer` when PII is scrubbed. |
+| `pending_deletion_at` | TIMESTAMP NULL | Set by `RequestUserDeletion`; triggers `EnforceAccountReadOnlyDuringGrace` middleware. |
+| `email_hash` | CHAR(64) NULL UNIQUE | HMAC-SHA256(lower(trim(email)), HKDF-key); preserved across anonymization for post-deletion GDPR lookup. Backfilled in the same migration. |
+
+**events (added columns)** — migration `2026_04_30_124001_add_soft_deletes_to_events_table.php`:
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `deleted_at` | TIMESTAMP NULL | SoftDeletes column. Hard-delete is forbidden by `EventPolicy::forceDelete`. |
+
+**deletion_requests** — state machine for the deletion flow (auditable via owen-it):
+
+`(id, user_id FK users RESTRICT, initiator VARCHAR(16), requested_by_user_id FK users NULL, requested_by_admin_id FK users NULL, status VARCHAR(32), reason TEXT NULL, email_confirmation_token CHAR(64) UNIQUE NULL, email_confirmed_at, scheduled_for, anonymized_at, force_deleted_at, cancelled_at, metadata JSON NULL, created_at, updated_at)`. Composite index `(status, scheduled_for)` to support the nightly job scan.
+
+**retention_policies** — admin-editable retention windows (auditable):
+
+`(id, data_class VARCHAR(64) UNIQUE, retention_days INT UNSIGNED, legal_basis TEXT, can_be_force_deleted BOOLEAN DEFAULT TRUE, description TEXT NULL, updated_by_user_id FK users NULL, timestamps)`. Seeded by `RetentionPolicySeeder` (idempotent — `firstOrCreate`).
+
+**anonymization_log_entries** — append-only paper trail. Application layer rejects UPDATEs.
+
+`(id, user_id FK users NULL ON DELETE SET NULL, data_class VARCHAR(64), anonymizer_class VARCHAR(191), records_scrubbed_count, records_kept_under_retention_count, retention_until DATE NULL, completed_at TIMESTAMP NULL, summary JSON NULL, created_at TIMESTAMP DEFAULT CURRENT)`. No `updated_at`.
+
 ---
 
 ## 6. Notes

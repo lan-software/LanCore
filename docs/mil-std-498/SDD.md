@@ -1256,6 +1256,32 @@ unrendered.
 
 ---
 
+### 5.9 Data Lifecycle Implementation
+
+Implementation root: `app/Domain/DataLifecycle/`.
+
+| Component | Path | Notes |
+|-----------|------|-------|
+| Service provider | `Providers/DataLifecycleServiceProvider.php` | Registers anonymizer registry, evaluator registry, policies, event listeners. Registers `UserAnonymizer` last in the list. |
+| Domain registry | `Anonymizers/DomainAnonymizerRegistry.php`, `RetentionEvaluators/RetentionEvaluatorRegistry.php` | Singletons populated at boot. |
+| Anonymizers (12) | `Anonymizers/UserAnonymizer.php`, `SessionsAnonymizer.php`, `PolicyAnonymizer.php`, `ShopAnonymizer.php`, `NotificationAnonymizer.php`, `TicketingAnonymizer.php`, `NewsAnonymizer.php`, `OrgaTeamAnonymizer.php`, `SponsoringAnonymizer.php`, `AchievementsAnonymizer.php`, `CompetitionAnonymizer.php` | Each implements `Anonymizers/Contracts/DomainAnonymizer`. |
+| Evaluators (3) | `RetentionEvaluators/AccountingEvaluator.php`, `AuditEvaluator.php`, `ConsentEvaluator.php` | Each implements `Contracts/RetentionEvaluator`. |
+| Actions | `Actions/RequestUserDeletion.php`, `ConfirmUserDeletion.php`, `CancelUserDeletion.php`, `AnonymizeUser.php`, `ForceDeleteUserData.php`, `PurgeExpiredData.php`, `ApplyRetentionHolds.php`, `UpdateRetentionPolicy.php`, `DeleteEvent.php`, `RestoreEvent.php` | Hand-rolled actions following the existing `execute()` + `DB::transaction` convention. |
+| Models | `Models/DeletionRequest.php` (Auditable), `Models/RetentionPolicy.php` (Auditable), `Models/AnonymizationLogEntry.php` (immutable — `save()` throws on update) | Plus migrations under `database/migrations/2026_04_30_124*.php`. |
+| Enums | `Enums/Permission.php`, `DeletionRequestStatus.php`, `DeletionInitiator.php`, `AnonymizationMode.php`, `RetentionDataClass.php` | `RetentionDataClass` cases self-describe their default retention days, legal basis, and description. |
+| Service | `Services/EmailHasher.php` | HMAC-SHA256 with HKDF-derived per-installation salt, versioned context. Used both at write-time (User `booted` saving handler) and at read-time (GDPR export fallback). |
+| Mail / Listeners | `Mail/DeletionConfirmationMail.php`, `DeletionScheduledMail.php`, `DeletionCancelledMail.php`; `Listeners/SendDeletionConfirmationEmail.php`, `SendDeletionScheduledEmail.php`, `SendDeletionCancelledEmail.php`; views under `resources/views/mail/data-lifecycle/`. |
+| Middleware | `Http/Middleware/EnforceAccountReadOnlyDuringGrace.php` | Wired into the `web` group in `bootstrap/app.php`. |
+| Console commands | `Console/Commands/RequestUserDeletionCommand.php`, `AnonymizeUserCommand.php`, `ForceDeleteUserDataCommand.php`, `PurgeExpiredDataCommand.php` |
+| Job | `Jobs/ProcessDueDeletionRequestsJob.php` | Scheduled daily in `routes/console.php`. |
+| Policies | `Policies/DeletionRequestPolicy.php`, `RetentionPolicyPolicy.php` |
+| Controllers | `Http/Controllers/UserDeletionController.php`, `AdminDeletionRequestController.php`, `AdminRetentionPolicyController.php`; routes in `routes/data-lifecycle.php` |
+| Vue pages | `resources/js/pages/account/Delete.vue`, `DeletionPending.vue`; `resources/js/pages/admin/data-lifecycle/DeletionRequests/{Index,Show}.vue`, `RetentionPolicies/Index.vue` |
+| Seeder | `database/seeders/RetentionPolicySeeder.php` | Idempotent — uses `firstOrCreate`. |
+| GDPR export integration | `app/Console/Commands/Gdpr/ExportUserDataCommand.php::locateUser` | Falls back to `email_hash` lookup with `withTrashed()` (CAP-DL-007). |
+
+---
+
 ## 7. Notes
 
 ### 7.1 Acronyms

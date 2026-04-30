@@ -68,6 +68,12 @@ export const Permission = {
     // Orchestration (app/Domain/Orchestration/Enums/Permission.php)
     ManageGameServers: 'manage_game_servers',
     ViewOrchestration: 'view_orchestration',
+
+    // Data Lifecycle (app/Domain/DataLifecycle/Enums/Permission.php)
+    RequestUserDeletion: 'request_user_deletion',
+    ForceDeleteUserData: 'force_delete_user_data',
+    ManageRetentionPolicies: 'manage_retention_policies',
+    ViewDeletionRequests: 'view_deletion_requests',
 } as const;
 
 export type PermissionValue = (typeof Permission)[keyof typeof Permission];

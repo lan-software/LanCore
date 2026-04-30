@@ -997,6 +997,25 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | CAP-USR-015, ICLIB-F-002, ICLIB-F-010 | Username SSO Claim tests (4.27) |
 | CAP-ACH-005, ACH-F-008 | Achievement Rarity tests (4.26) |
 | CAP-EVT-007, EVT-F-012 | Event calendar export tests (4.30) |
+| CAP-DL-001..008, DL-F-001..018 | Data Lifecycle test suite (4.31) |
+
+---
+
+### 4.31 Data Lifecycle Tests
+
+Located under `tests/Feature/Domain/DataLifecycle/` (and `tests/Unit/Domain/DataLifecycle/EmailHasherTest.php`).
+
+| Test ID | File | Verifies |
+|---------|------|----------|
+| TC-DL-001 | `EmailHasherTest.php` | Determinism, normalization, secret-rotation behaviour of HMAC email hash (DL-F-016, SEC-DL-001) |
+| TC-DL-002 | `SelfDeletionFlowTest.php` | Full happy path: request → email → confirm → grace → anonymize; mailables queued; PII scrubbed (CAP-DL-001..004, DL-F-001..010) |
+| TC-DL-003 | `AdminDeletionFlowTest.php` | Admin-induced request records initiator + admin id; "Anonymize now" succeeds; force-delete removes the user row entirely (CAP-DL-002, CAP-DL-006, DL-F-002, DL-F-015) |
+| TC-DL-004 | `RetentionEvaluatorTest.php` | `AccountingEvaluator` triggers hold for any order or stripe linkage; no hold without (DL-F-011) |
+| TC-DL-005 | `PurgeExpiredDataTest.php` | Soft-deleted users with active retention are NOT purged; expired retention IS purged and the user row is hard-deleted (DL-F-013) |
+| TC-DL-006 | `EventSoftDeleteTest.php` | `DeleteEvent` soft-deletes; `RestoreEvent` works; `EventPolicy::forceDelete` returns false (CAP-DL-008, DL-F-018) |
+| TC-DL-007 | `GraceReadOnlyMiddlewareTest.php` | Mutating requests during grace return 423 Locked; GET routes still pass (DL-F-006) |
+| TC-DL-008 | `PostDeletionGdprExportTest.php` | Anonymized user is locatable by `email_hash` for post-deletion subject access requests (CAP-DL-007, GDPR-F-009) |
+| TC-DL-009 | `AnonymizerTest.php` | `UserAnonymizer` scrubs every PII column and preserves `email_hash`; `SessionsAnonymizer` hard-deletes user sessions; `PolicyAnonymizer` is a no-op without acceptances (DL-F-009, CAP-DL-004) |
 
 ---
 

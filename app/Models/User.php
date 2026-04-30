@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Concerns\HasPermissions;
 use App\Domain\Achievements\Models\Achievement;
 use App\Domain\Announcement\Models\Announcement;
+use App\Domain\DataLifecycle\Services\EmailHasher;
 use App\Domain\Event\Models\Event;
 use App\Domain\Notification\Models\NotificationPreference;
 use App\Domain\Notification\Models\ProgramNotificationSubscription;
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\URL;
@@ -35,8 +37,8 @@ use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
- * @see docs/mil-std-498/SSS.md CAP-USR-001, CAP-USR-002, CAP-USR-003, CAP-USR-011..014
- * @see docs/mil-std-498/SRS.md USR-F-001, USR-F-002, USR-F-003, USR-F-006, USR-F-022..026
+ * @see docs/mil-std-498/SSS.md CAP-USR-001, CAP-USR-002, CAP-USR-003, CAP-USR-011..014, CAP-DL-004, CAP-DL-007
+ * @see docs/mil-std-498/SRS.md USR-F-001, USR-F-002, USR-F-003, USR-F-006, USR-F-022..026, DL-F-009, DL-F-016
  */
 #[Fillable([
     'name', 'email', 'password', 'phone', 'street', 'city', 'zip_code', 'country', 'locale',
@@ -46,11 +48,24 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
     'avatar_source', 'avatar_path', 'banner_path', 'profile_visibility', 'profile_updated_at',
     'steam_id_64', 'steam_linked_at',
 ])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'email_hash'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use Billable, HasFactory, HasPermissions, Notifiable, TwoFactorAuthenticatable;
+    use Billable, HasFactory, HasPermissions, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $user): void {
+            if (! $user->isDirty('email')) {
+                return;
+            }
+
+            $user->email_hash = $user->email !== null
+                ? app(EmailHasher::class)->hash($user->email)
+                : null;
+        });
+    }
 
     /**
      * Check if the user has a complete profile (address + contact) required for purchases.
@@ -84,7 +99,19 @@ class User extends Authenticatable
             'profile_visibility' => ProfileVisibility::class,
             'profile_updated_at' => 'datetime',
             'steam_linked_at' => 'datetime',
+            'anonymized_at' => 'datetime',
+            'pending_deletion_at' => 'datetime',
         ];
+    }
+
+    public function isAnonymized(): bool
+    {
+        return $this->anonymized_at !== null;
+    }
+
+    public function isPendingDeletion(): bool
+    {
+        return $this->pending_deletion_at !== null;
     }
 
     /**

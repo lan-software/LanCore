@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Auth\Steam\Providers\SteamSocialiteServiceProvider;
+use App\Domain\DataLifecycle\Providers\DataLifecycleServiceProvider;
 use App\Domain\Policy\Providers\GdprServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\FortifyServiceProvider;
@@ -13,6 +14,7 @@ use Laravel\Telescope\TelescopeApplicationServiceProvider;
 
 return array_values(array_filter([
     AppServiceProvider::class,
+    DataLifecycleServiceProvider::class,
     FortifyServiceProvider::class,
     GdprServiceProvider::class,
     class_exists(HorizonApplicationServiceProvider::class)

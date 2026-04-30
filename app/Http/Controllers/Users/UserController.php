@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Users;
 use App\Actions\User\ChangeRoles;
 use App\Actions\User\DeleteUser;
 use App\Actions\User\UpdateUserAttributes;
+use App\Domain\DataLifecycle\Models\DeletionRequest;
 use App\Enums\RoleName;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Users\UserBulkRoleRequest;
@@ -72,11 +73,22 @@ class UserController extends Controller
             ->limit(10)
             ->get();
 
+        $deletionRequests = DeletionRequest::query()
+            ->where('user_id', $user->getKey())
+            ->latest('id')
+            ->limit(10)
+            ->get();
+
         return Inertia::render('users/Show', [
-            'user' => $user,
+            'user' => array_merge($user->toArray(), [
+                'pending_deletion_at' => $user->pending_deletion_at?->toIso8601String(),
+                'anonymized_at' => $user->anonymized_at?->toIso8601String(),
+                'deleted_at' => $user->deleted_at?->toIso8601String(),
+            ]),
             'availableRoles' => Role::dropdownOptions(),
             'recentOrders' => $recentOrders,
             'recentTickets' => $recentTickets,
+            'deletionRequests' => $deletionRequests,
         ]);
     }
 

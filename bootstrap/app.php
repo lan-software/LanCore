@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\DataLifecycle\Http\Middleware\EnforceAccountReadOnlyDuringGrace;
 use App\Domain\Integration\Http\Middleware\AuthenticateIntegration;
 use App\Http\Middleware\AddRequestId;
 use App\Http\Middleware\EnforceDemoGuardrails;
@@ -52,6 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
             RequirePolicyAcceptance::class,
+            EnforceAccountReadOnlyDuringGrace::class,
         ]);
 
         $middleware->alias([

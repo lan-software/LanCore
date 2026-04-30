@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands\Gdpr;
 
+use App\Domain\DataLifecycle\Anonymizers\UserAnonymizer;
+use App\Domain\DataLifecycle\Services\EmailHasher;
 use App\Domain\Policy\Actions\Gdpr\GenerateGdprExport;
 use App\Models\User;
 use Illuminate\Console\Attributes\Description;
@@ -39,7 +41,9 @@ class ExportUserDataCommand extends Command
             required: true,
         ));
 
-        $user = User::query()->where('email', $email)->first();
+        $includeSoftDeleted = (bool) $this->option('include-soft-deleted');
+
+        $user = $this->locateUser($email, $includeSoftDeleted);
 
         if ($user === null) {
             error("No user found for {$email}.");
@@ -47,9 +51,14 @@ class ExportUserDataCommand extends Command
             return self::FAILURE;
         }
 
-        info(sprintf('Found user #%d: %s <%s>', $user->id, $user->name ?? '(unnamed)', $user->email));
+        if ($user->isAnonymized()) {
+            warning(
+                "User #{$user->id} has been anonymized. The export will contain only data retained after deletion "
+                .'(typically accounting, audit, and consent records).',
+            );
+        }
 
-        $includeSoftDeleted = (bool) $this->option('include-soft-deleted');
+        info(sprintf('Found user #%d: %s <%s>', $user->id, $user->name ?? '(unnamed)', $user->email));
         $outputDir = $this->option('output-dir') ?: null;
 
         $password = $this->option('password');
@@ -98,5 +107,28 @@ class ExportUserDataCommand extends Command
         );
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Locate a user by their original email address. Falls back to the
+     * salted email_hash so that post-deletion exports still work even after
+     * the {@see UserAnonymizer} has
+     * replaced the email column.
+     */
+    private function locateUser(string $email, bool $includeSoftDeleted): ?User
+    {
+        $query = User::query();
+        if ($includeSoftDeleted) {
+            $query->withTrashed();
+        }
+
+        $user = (clone $query)->where('email', $email)->first();
+        if ($user !== null) {
+            return $user;
+        }
+
+        $hash = app(EmailHasher::class)->hash($email);
+
+        return $query->where('email_hash', $hash)->first();
     }
 }

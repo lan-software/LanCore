@@ -684,6 +684,46 @@ manifest emits pseudonym → hint label, never pseudonym → real id.
 | CAP-ACH-005 | Section 5.7.6 (achievements with rarity surfaced via public profile) |
 | SEC-021 | Section 5.7.6 (privacy carve-out: real name, email, address, locale never on public profile / DTO consumption rules) |
 | SEC-022 | Section 5.4.2 (avatar URL resolution), Section 3.2 (S3 storage role for avatars/banners normalized server-side) |
+| CAP-DL-001..008, SEC-DL-001..002 | Section 5.11 (Deletion & Retention Pipeline) |
+
+---
+
+### 5.11 Deletion & Retention Pipeline (Data Lifecycle Domain)
+
+The DataLifecycle subsystem (`app/Domain/DataLifecycle/`) sits beside the existing GDPR Export pipeline (§5.10) and shares its open-set composition pattern.
+
+**State machine.** A `DeletionRequest` carries a `DeletionRequestStatus` enum:
+
+```
+PendingEmailConfirm → PendingGrace → Anonymized
+                        │             │
+                        └─→ Cancelled │
+                                      └─→ ForceDeleted (admin override)
+```
+
+`PendingEmailConfirm` and `PendingGrace` are cancellable; `Anonymized`, `Cancelled`, and `ForceDeleted` are terminal. The user-row column `pending_deletion_at` is denormalized for fast lookup at request time so `EnforceAccountReadOnlyDuringGrace` middleware can decide quickly whether to lock a request.
+
+**Open-set composition.** Two registries are populated at boot by `DataLifecycleServiceProvider`:
+
+- `DomainAnonymizerRegistry` — list of `DomainAnonymizer` plugins. Each implementation declares one `RetentionDataClass` and an idempotent `anonymize(User, AnonymizationMode)`. `AnonymizeUser` walks the list in registration order; `UserAnonymizer` is registered last so per-domain anonymizers can still resolve User properties.
+- `RetentionEvaluatorRegistry` — keyed by `RetentionDataClass`. Each evaluator returns a `RetentionVerdict { holds, until, basis }`. `PurgeExpiredData` consults the registry to decide whether a soft-deleted-and-anonymized user can be hard-deleted.
+
+**Post-deletion lookup.** Every users row carries a salted `email_hash` column (`HMAC-SHA256(lower(email), HKDF(APP_KEY, "data-lifecycle-email-v1"))`). `UserAnonymizer` writes via raw `DB::table` to bypass the model's email mutator and preserve this hash. The `gdpr:export-user` command consults `email_hash` with `withTrashed()` when a plain-email lookup misses, so post-deletion subject access requests remain serviceable.
+
+**Anonymization log.** Every per-domain anonymization (or purge) appends one immutable `AnonymizationLogEntry` row with `records_scrubbed_count`, `records_kept_under_retention_count`, `retention_until`, and a JSON summary, providing the documentary evidence required by Art. 30 GDPR record-keeping.
+
+**Schedulers.** `ProcessDueDeletionRequestsJob` (daily 03:00) scans `pending_grace` requests with `scheduled_for <= now()` and feeds them to `AnonymizeUser`. `lifecycle:purge` (daily 03:15) walks anonymized users for retention-expired data classes.
+
+**Force-delete path.** `ForceDeleteUserData` runs every anonymizer in `PurgeNow` mode (which respects `RetentionPolicy.can_be_force_deleted`), hard-deletes the users row, and stamps the request as `ForceDeleted` with `reason` recorded. Owen-it auditing captures the full diff on `DeletionRequest` and `RetentionPolicy`.
+
+**Event soft-delete.** `Event` uses `SoftDeletes`; `EventPolicy::forceDelete` permanently returns false. `DeleteEvent::execute` is the single chokepoint that translates a delete intent into a soft-delete + `EventSoftDeleted` event.
+
+| Subsystem dependency | Direction |
+|----------------------|-----------|
+| `User` model        | DataLifecycle reads + scrubs |
+| `Event` model       | DataLifecycle soft-deletes; never hard-deletes |
+| Each domain (Shop, Ticketing, …) | exposes a `DomainAnonymizer` impl into the registry |
+| `Policy` GDPR Export pipeline | shares the email-hash key for §5.6 lookups |
 
 ---
 

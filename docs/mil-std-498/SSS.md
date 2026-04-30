@@ -309,6 +309,24 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-GDPR-003 | The export shall optionally apply AES-256 encryption to every ZIP entry when an operator-supplied password is provided |
 | CAP-GDPR-004 | The export shall include a copy of the PDF of every policy version the user has accepted, alongside their acceptance/withdrawal records |
 
+#### 3.2.Z Data Lifecycle (GDPR Article 17 + Retention)
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-DL-001 | The system shall provide a self-service "delete my account" flow at `/account/delete` that requires the user's current password and produces a `DeletionRequest` row in the `pending_email_confirm` state |
+| CAP-DL-002 | The system shall provide an admin-initiated deletion flow at `/admin/data-lifecycle/deletion-requests` for users holding `RequestUserDeletion`; the resulting request records both the admin and the subject |
+| CAP-DL-003 | After the user clicks the email confirmation link, the request shall transition to `pending_grace` with a 30-day window before automatic anonymization; the user may cancel at any time during the grace via `data-lifecycle.account.cancel-via-link` (signed URL) or while logged in |
+| CAP-DL-004 | At the end of the grace window (or immediately on admin "Anonymize now"), the system shall scrub every PII column on the `users` row in place (name, email, username, phone, address, profile fields, two-factor secrets, remember tokens) and run every registered `DomainAnonymizer` so that no personal data remains in any domain table not under retention |
+| CAP-DL-005 | The system shall maintain admin-editable per-data-class `retention_policies` and shall hold (not anonymize / not purge) data classes whose retention has not yet expired; a nightly scheduler shall purge expired data and ultimately hard-delete the `users` row when no obligations remain |
+| CAP-DL-006 | The system shall provide a force-delete path that bypasses retention windows for users holding the dedicated `ForceDeleteUserData` permission, requires a recorded reason, and is fully audited via `owen-it/laravel-auditing`; pinned policies (`can_be_force_deleted = false`) shall still hold |
+| CAP-DL-007 | After in-place anonymization, the GDPR Art.15 export command shall remain able to locate the (now anonymized) subject by their original email address via a salted email_hash column on the `users` row, so that post-deletion subject access requests remain serviceable for as long as the soft-deleted users row exists |
+| CAP-DL-008 | The system shall not permit hard-deletion of `Event` rows; events shall be soft-deletable only, with `EventPolicy::forceDelete` permanently returning `false` to preserve attendance, accounting, and competition history |
+
+| Security Req ID | Requirement |
+|-----------------|------------|
+| SEC-DL-001 | The `email_hash` column shall be derived via HMAC-SHA256 keyed by an HKDF-derived secret with a versioned context (`data-lifecycle-email-v1`) so the column cannot be brute-forced from a leaked DB dump alone |
+| SEC-DL-002 | All deletion-request and retention-policy state changes shall be auditable via `owen-it/laravel-auditing`; the dedicated `AnonymizationLogEntry` table shall be append-only at the model layer |
+
 > **Scope note**: `CAP-SHP-006` (checkout-condition acknowledgement) remains scoped to shop checkout and is distinct from `CAP-POL-*`. The two flows do not share storage or middleware.
 
 ### 3.3 System External Interface Requirements

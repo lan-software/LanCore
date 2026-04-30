@@ -24,12 +24,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @see docs/mil-std-498/SSS.md CAP-EVT-001, CAP-EVT-002, CAP-EVT-005
- * @see docs/mil-std-498/SRS.md EVT-F-002, EVT-F-004, EVT-F-010
+ * @see docs/mil-std-498/SSS.md CAP-EVT-001, CAP-EVT-002, CAP-EVT-005, CAP-DL-008
+ * @see docs/mil-std-498/SRS.md EVT-F-002, EVT-F-004, EVT-F-010, DL-F-018
  */
 #[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_images', 'status', 'venue_id', 'primary_program_id', 'seat_capacity', 'orga_team_id'])]
 class Event extends Model implements AuditableContract
@@ -37,7 +38,7 @@ class Event extends Model implements AuditableContract
     use Auditable;
 
     /** @use HasFactory<EventFactory> */
-    use HasFactory, HasModelCache;
+    use HasFactory, HasModelCache, SoftDeletes;
 
     protected static function newFactory(): EventFactory
     {

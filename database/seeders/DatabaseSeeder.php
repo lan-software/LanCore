@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->seedRoles();
+        $this->call(RetentionPolicySeeder::class);
     }
 
     private function seedRoles(): void

@@ -338,7 +338,21 @@ LanCore captures, versions, and audits user consent for platform-wide policies (
 
 ### 5.6 GDPR Article 15 Operator Workflow
 
-A platform operator (acting on a Subject Access Request) runs `vendor/bin/sail artisan gdpr:export-user user@example.com`. Laravel-Prompts walks them through optional AES-256 password protection. The command writes a single ZIP at `storage/app/gdpr-exports/{user-id}-{Y-m-d_His}.zip` containing JSON dumps of every record about the subject across every domain (Profile, Policy acceptances, Sessions, Audits, Shop, Ticketing, Competition, News, Notification, OrgaTeam, Sponsoring, Achievements), plus a copy of the PDF of every accepted policy version, plus a `manifest.json` and `README.txt`. Identifiers of other users that appear inside the subject's records (teammates, comment authors, ticket co-users, etc.) are obfuscated as `user_a`, `user_b`, … per export run; no reverse map is included. **Article 17 (erasure) is out of scope.**
+A platform operator (acting on a Subject Access Request) runs `vendor/bin/sail artisan gdpr:export-user user@example.com`. Laravel-Prompts walks them through optional AES-256 password protection. The command writes a single ZIP at `storage/app/gdpr-exports/{user-id}-{Y-m-d_His}.zip` containing JSON dumps of every record about the subject across every domain (Profile, Policy acceptances, Sessions, Audits, Shop, Ticketing, Competition, News, Notification, OrgaTeam, Sponsoring, Achievements), plus a copy of the PDF of every accepted policy version, plus a `manifest.json` and `README.txt`. Identifiers of other users that appear inside the subject's records (teammates, comment authors, ticket co-users, etc.) are obfuscated as `user_a`, `user_b`, … per export run; no reverse map is included. The export command also locates anonymized users by salted email-hash, so post-deletion subject access requests are still serviceable — see §5.7.
+
+### 5.7 GDPR Article 17 — Right to Erasure & Data Lifecycle
+
+The Data Lifecycle feature domain (`app/Domain/DataLifecycle/`) implements right-to-erasure and per-domain retention. There are three flows:
+
+- *User-initiated deletion.* From `/account/delete` the user re-confirms their password and submits a deletion request. A confirmation email with a one-shot token is sent. Clicking the link starts a 30-day grace period: the account remains accessible but is locked to read-only by `EnforceAccountReadOnlyDuringGrace` middleware, allowing the user to download GDPR exports, reverse the decision, or simply log out. After the grace expires, `ProcessDueDeletionRequestsJob` (scheduled at 03:00 daily) hands the request to `AnonymizeUser`, which walks every registered `DomainAnonymizer` in dependency order and ends with `UserAnonymizer` scrubbing the `users` row in place. The `email_hash` (HMAC-SHA256 of the lowercased original email, salted with an HKDF-derived per-installation key) is preserved as the post-deletion lookup key for §5.6.
+
+- *Admin-initiated deletion.* From `/admin/data-lifecycle/deletion-requests` an admin holding `RequestUserDeletion` opens a request on behalf of a user (e.g. ToS violation, support ticket asking for deletion). The same email-confirmation + grace flow applies. An "Anonymize now" action skips the remaining grace once a justification is recorded.
+
+- *Force-delete (legal request).* From the same admin page an admin holding the dedicated `ForceDeleteUserData` permission can bypass retention and hard-delete the user row plus all force-deletable data, on signed legal request. A free-text reason is required and recorded; the action is fully audited via `owen-it/laravel-auditing`. Pinned `RetentionPolicy` rows (`can_be_force_deleted = false`) still hold.
+
+Retention windows per data class are configurable from `/admin/data-lifecycle/retention-policies` and stored in the `retention_policies` table (default 10 years for accounting and audit data, 30 days for sessions, 0 for non-financial fields). `PurgeExpiredDataCommand` (scheduled at 03:15 daily) walks soft-deleted, anonymized users and applies expired retention policies, ultimately hard-deleting the user row when no retention obligation remains.
+
+**Events are soft-delete only.** `EventPolicy::forceDelete` permanently returns false; events are never hard-deleted, preserving attendance, accounting, and competition history.
 
 ---
 

@@ -533,6 +533,32 @@ This CSCI is consumed by all Lan\* satellite applications (LanBrackets, LanEntra
 | GDPR-F-006 | The exported ZIP shall include a copy of the PDF of every policy version the subject has accepted, copied verbatim into `policy_acceptances/{policy-key}-v{n}.pdf` |
 | GDPR-F-007 | The exported ZIP shall include `manifest.json` containing the export timestamp, `app_version`, the list of registered data sources with record counts, and the pseudonym table |
 | GDPR-F-008 | The exported ZIP shall be written to `storage/app/gdpr-exports/{user-id}-{Y-m-d_His}.zip`; the path shall be printed to the operator on success |
+| GDPR-F-009 | The export command shall fall back to a salted `email_hash` lookup with `withTrashed()` when a plain-email lookup misses, so anonymized users remain discoverable for post-deletion subject access requests (parent: CAP-DL-007) |
+
+#### 3.2.Z Data Lifecycle (GDPR Article 17 + Retention)
+
+Implementation domain: `app/Domain/DataLifecycle/`. Parent SSS rows: `CAP-DL-001..008`, `SEC-DL-001..002`.
+
+| Req ID | Requirement |
+|--------|------------|
+| DL-F-001 | The system shall provide `RequestUserDeletion::execute(User, DeletionInitiator, ?reason, ?requestedByAdmin)` that creates a `DeletionRequest` row in `pending_email_confirm`, sets `users.pending_deletion_at`, generates a one-shot SHA-256 hashed token, and dispatches `UserDeletionRequested` (parent: CAP-DL-001) |
+| DL-F-002 | An admin-initiated invocation of `RequestUserDeletion` shall set `requested_by_admin_id` and emit the same `UserDeletionRequested` event so the subject receives the same email confirmation flow (parent: CAP-DL-002) |
+| DL-F-003 | `ConfirmUserDeletion::execute(plainToken)` shall transition a matching `pending_email_confirm` request to `pending_grace`, stamp `email_confirmed_at`, set `scheduled_for = now() + 30 days`, clear the token, and dispatch `UserDeletionConfirmed` (parent: CAP-DL-003) |
+| DL-F-004 | `CancelUserDeletion::execute(DeletionRequest)` shall be valid only when the request status `isCancellable()`; it shall transition to `cancelled`, stamp `cancelled_at`, clear `users.pending_deletion_at`, and dispatch `UserDeletionCancelled` (parent: CAP-DL-003) |
+| DL-F-005 | The `DeletionRequest` model shall be auditable via `owen-it/laravel-auditing`; status transitions, reason, and force-delete metadata shall be captured in audit rows (parent: SEC-DL-002) |
+| DL-F-006 | The `EnforceAccountReadOnlyDuringGrace` middleware shall block all non-GET requests for users with `users.pending_deletion_at IS NOT NULL` except for the explicit allow-list (cancel, confirm, GDPR self-export, logout) and respond with HTTP 423 Locked (parent: CAP-DL-003) |
+| DL-F-007 | The `ProcessDueDeletionRequestsJob` shall, when scheduled daily, locate every `pending_grace` request where `scheduled_for <= now()` and call `AnonymizeUser::execute()` on each (parent: CAP-DL-004) |
+| DL-F-008 | The `RequestUserDeletion` flow shall reject creation when an active deletion request already exists for the user, raising `RuntimeException` (parent: CAP-DL-001) |
+| DL-F-009 | `UserAnonymizer::anonymize(User, AnonymizationMode)` shall write directly via `DB::table` (bypassing the email mutator) to set name → "Deleted User #<6 hex>", username → "deleted_<id>", email → "deleted-<id>@anonymized.invalid", clear all PII columns, randomize the password hash, and stamp `anonymized_at` + `deleted_at` (parent: CAP-DL-004) |
+| DL-F-010 | `AnonymizeUser::execute(DeletionRequest, AnonymizationMode = Anonymize)` shall iterate every registered `DomainAnonymizer` in registration order, write one append-only `AnonymizationLogEntry` per domain, and end by flipping the request status to `anonymized` (parent: CAP-DL-004, SEC-DL-002) |
+| DL-F-011 | The `AccountingEvaluator` shall return a hold verdict for any user with at least one order, a non-null `stripe_id`, or any subscription record; the retention window shall be `latest_accounting_touchpoint + retention_days` from the active `RetentionPolicy` (parent: CAP-DL-005) |
+| DL-F-012 | `UpdateRetentionPolicy::execute(RetentionPolicy, attributes, editor)` shall fill the policy, stamp `updated_by_user_id`, and persist; the row shall be auditable via owen-it (parent: CAP-DL-005) |
+| DL-F-013 | `PurgeExpiredData::execute(dryRun)` shall walk `User::onlyTrashed()->whereNotNull('anonymized_at')` and, for each, ask each registered `RetentionEvaluator` whether retention is expired; expired classes whose `RetentionPolicy.can_be_force_deleted` is true shall be purged via the corresponding anonymizer in `PurgeNow` mode; when all evaluators agree, the user row itself shall be hard-deleted (parent: CAP-DL-005) |
+| DL-F-014 | The `DataLifecycle\Permission` enum shall expose `RequestUserDeletion`, `ForceDeleteUserData`, `ManageRetentionPolicies`, `ViewDeletionRequests`; Admin role shall hold all of these except `ForceDeleteUserData`, which is reserved for Superadmin (parent: SEC-DL-001) |
+| DL-F-015 | `ForceDeleteUserData::execute(User, admin, reason)` shall require a non-empty reason, run all anonymizers in `PurgeNow` mode, hard-delete the `users` row, and stamp `force_deleted_at` + reason on the `DeletionRequest` row before dispatching `UserForceDeleted` (parent: CAP-DL-006) |
+| DL-F-016 | The `EmailHasher` service shall compute `hash_hmac('sha256', mb_strtolower(trim($email)), hash_hkdf('sha256', APP_KEY, 32, 'data-lifecycle-email-v1'))`; the User model `booted` saving handler shall keep `users.email_hash` in sync with `users.email` whenever `email` is dirty (parent: CAP-DL-007, SEC-DL-001) |
+| DL-F-017 | The Data Lifecycle scheduler shall register `lifecycle:purge` daily at 03:15 and `ProcessDueDeletionRequestsJob` daily at 03:00, both via `Schedule::onOneServer()->withoutOverlapping()` (parent: CAP-DL-005) |
+| DL-F-018 | The Event model shall use the `SoftDeletes` trait and `EventPolicy::forceDelete` shall return `false` unconditionally; `DeleteEvent::execute()` shall soft-delete and dispatch `EventSoftDeleted` (parent: CAP-DL-008) |
 
 > Settings extension: the existing `SET-F-009`/`SET-F-010` requirements remain in scope. New `SET-F-011`: from `/settings/privacy`, the system shall list the user's active acceptances and provide a per-policy "Withdraw consent" action that POSTs to `/settings/consent/{policy}/withdraw` with an optional `reason`. Existing `SHP-F-010`/`SHP-F-011` remain scoped to checkout-condition acknowledgement and are explicitly distinct from the Policy domain.
 

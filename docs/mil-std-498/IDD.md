@@ -837,6 +837,30 @@ Output path: `<output-dir>/{user-id}-{Y-m-d_His}.zip`. The path is printed to st
 | SET-F-012..013 (Two-phase seat-plan update) | Section 3.16 |
 | SET-F-015 (Background images) | Section 3.17 |
 | SET-F-016 (Wire-shape preservation via SeatPlanResource) | Section 3.14.1 |
+| DL-F-007, DL-F-013, DL-F-015, DL-F-017 (Data Lifecycle artisan commands) | Section 3.20 |
+
+---
+
+### 3.20 Data Lifecycle Artisan Commands
+
+Implementation: `app/Domain/DataLifecycle/Console/Commands/`. Parent SSS / SRS rows: `CAP-DL-001..006`, `DL-F-001..018`.
+
+| Command | Signature | Purpose |
+|---------|-----------|---------|
+| `lifecycle:user:delete` | `lifecycle:user:delete {email} {--reason=} {--immediate}` | Open a deletion request. `--immediate` bypasses the email confirmation step and runs `AnonymizeUser` immediately. |
+| `lifecycle:user:anonymize` | `lifecycle:user:anonymize {email}` | Anonymize a user with an active deletion request, skipping remaining grace. |
+| `lifecycle:user:force-delete` | `lifecycle:user:force-delete {email} {--reason=} {--admin-id=}` | Bypass retention; hard-delete user row + all force-deletable data. `--reason` and `--admin-id` are required and recorded in audit. |
+| `lifecycle:purge` | `lifecycle:purge {--dry-run}` | Walk soft-deleted/anonymized users and purge data classes whose retention has expired. Outputs a stats table. |
+
+Internal interfaces:
+
+| Interface ID | Contract | Path |
+|--------------|----------|------|
+| IF-DL-001 | `EmailHasher::hash(string $email): string` (HMAC-SHA256, normalized, HKDF-keyed) | `app/Domain/DataLifecycle/Services/EmailHasher.php` |
+| IF-DL-002 | `DomainAnonymizer::dataClass(): RetentionDataClass; anonymize(User, AnonymizationMode): AnonymizationResult` | `app/Domain/DataLifecycle/Anonymizers/Contracts/DomainAnonymizer.php` |
+| IF-DL-003 | `RetentionEvaluator::dataClass(): RetentionDataClass; evaluate(User): RetentionVerdict` | `app/Domain/DataLifecycle/RetentionEvaluators/Contracts/RetentionEvaluator.php` |
+
+The GDPR Article 15 export command (`gdpr:export-user`) gains a salted-email-hash fallback (CAP-DL-007 / GDPR-F-009) so post-deletion subject access requests resolve via `email_hash` with `withTrashed()`.
 
 ---
 
