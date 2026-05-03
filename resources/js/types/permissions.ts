@@ -74,6 +74,10 @@ export const Permission = {
     ForceDeleteUserData: 'force_delete_user_data',
     ManageRetentionPolicies: 'manage_retention_policies',
     ViewDeletionRequests: 'view_deletion_requests',
+
+    // Email Log (app/Domain/EmailLog/Enums/Permission.php)
+    ViewEmailLog: 'view_email_log',
+    ResendEmail: 'resend_email',
 } as const;
 
 export type PermissionValue = (typeof Permission)[keyof typeof Permission];

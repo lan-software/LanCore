@@ -654,11 +654,11 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | GDPR-F-002 | Policy | CAP-GDPR-001 | SDD §5.8 | `ExportUserDataCommand::handle` (Laravel Prompts) | manual smoke (interactive) |
 | GDPR-F-003 | Policy | CAP-GDPR-003 | SDD §5.8 | `Actions/Gdpr/GenerateGdprExport::buildZip` | `ExportUserDataCommandTest.php` |
 | GDPR-F-004 | Policy | CAP-GDPR-001 | SDD §5.8 | `ExportUserDataCommand` (`--include-soft-deleted`) | manual smoke |
-| GDPR-F-005 | Policy | CAP-GDPR-002 | SDD §5.10 | `Gdpr/GdprExportContext` | `tests/Unit/Domain/Policy/Gdpr/GdprExportContextTest.php` |
+| GDPR-F-005 | Policy | CAP-GDPR-002 | SDD §5.8 | `Gdpr/GdprExportContext` | `tests/Unit/Domain/Policy/Gdpr/GdprExportContextTest.php` |
 | GDPR-F-006 | Policy | CAP-GDPR-004 | SDD §5.8 | `Gdpr/PolicyDataSource::for` (binary attachments) | `ExportUserDataCommandTest.php` |
 | GDPR-F-007 | Policy | CAP-GDPR-001 | SDD §5.8 | `GenerateGdprExport::execute` (manifest) | `ExportUserDataCommandTest.php` |
 | GDPR-F-008 | Policy | CAP-GDPR-001 | SDD §5.8 | `GenerateGdprExport::execute` (output path) | `ExportUserDataCommandTest.php` |
-| GDPR-F-009 | Policy / DataLifecycle | CAP-DL-007 | SDD §5.9 | `Console/Commands/Gdpr/ExportUserDataCommand::locateUser` (email_hash fallback) | `tests/Feature/Domain/DataLifecycle/PostDeletionGdprExportTest.php` |
+| GDPR-F-009 | Policy / DataLifecycle | CAP-DL-007 | SDD §5.10 | `Console/Commands/Gdpr/ExportUserDataCommand::locateUser` (email_hash fallback) | `tests/Feature/Domain/DataLifecycle/PostDeletionGdprExportTest.php` |
 
 ---
 
@@ -666,21 +666,21 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 
 | Req ID | Domain | Source CAP | Design § | Code path | Test file |
 |--------|--------|------------|----------|-----------|-----------|
-| DL-F-001 | DataLifecycle | CAP-DL-001 | SDD §5.9, SSDD §5.11 | `app/Domain/DataLifecycle/Actions/RequestUserDeletion.php` | `tests/Feature/Domain/DataLifecycle/SelfDeletionFlowTest.php` |
-| DL-F-002 | DataLifecycle | CAP-DL-002 | SDD §5.9 | `Actions/RequestUserDeletion::execute` (admin path) | `AdminDeletionFlowTest.php` |
-| DL-F-003 | DataLifecycle | CAP-DL-003 | SDD §5.9 | `Actions/ConfirmUserDeletion.php` | `SelfDeletionFlowTest.php` |
-| DL-F-004 | DataLifecycle | CAP-DL-003 | SDD §5.9 | `Actions/CancelUserDeletion.php` | `SelfDeletionFlowTest.php` |
-| DL-F-005 | DataLifecycle | SEC-DL-002 | SDD §5.9 | `Models/DeletionRequest` (Auditable) | `AdminDeletionFlowTest.php` (audit assertions) |
-| DL-F-006 | DataLifecycle | CAP-DL-003 | SDD §5.9, SSDD §5.11 | `Http/Middleware/EnforceAccountReadOnlyDuringGrace.php` | `tests/Feature/Domain/DataLifecycle/GraceReadOnlyMiddlewareTest.php` |
-| DL-F-007 | DataLifecycle | CAP-DL-004 | SDD §5.9 | `Jobs/ProcessDueDeletionRequestsJob.php` (scheduled in `routes/console.php`) | `SelfDeletionFlowTest.php` (full flow) |
-| DL-F-008 | DataLifecycle | CAP-DL-001 | SDD §5.9 | `Actions/RequestUserDeletion::execute` (duplicate guard) | `SelfDeletionFlowTest.php` |
-| DL-F-009 | DataLifecycle | CAP-DL-004 | SDD §5.9 | `Anonymizers/UserAnonymizer.php` | `tests/Feature/Domain/DataLifecycle/AnonymizerTest.php` |
-| DL-F-010 | DataLifecycle | CAP-DL-004, SEC-DL-002 | SDD §5.9 | `Actions/AnonymizeUser.php`, `Models/AnonymizationLogEntry.php` | `SelfDeletionFlowTest.php` |
-| DL-F-011 | DataLifecycle | CAP-DL-005 | SDD §5.9 | `RetentionEvaluators/AccountingEvaluator.php` | `tests/Feature/Domain/DataLifecycle/RetentionEvaluatorTest.php` |
-| DL-F-012 | DataLifecycle | CAP-DL-005 | SDD §5.9 | `Actions/UpdateRetentionPolicy.php` | (covered via admin Vue page; manual smoke) |
-| DL-F-013 | DataLifecycle | CAP-DL-005 | SDD §5.9, SSDD §5.11 | `Actions/PurgeExpiredData.php` | `tests/Feature/Domain/DataLifecycle/PurgeExpiredDataTest.php` |
-| DL-F-014 | DataLifecycle | SEC-DL-001 | SDD §5.9 | `Enums/Permission.php`, `app/Enums/RolePermissionMap.php` | `AdminDeletionFlowTest.php` |
-| DL-F-015 | DataLifecycle | CAP-DL-006 | SDD §5.9, SSDD §5.11 | `Actions/ForceDeleteUserData.php` | `AdminDeletionFlowTest.php` |
+| DL-F-001 | DataLifecycle | CAP-DL-001 | SDD §5.10, SSDD §5.11 | `app/Domain/DataLifecycle/Actions/RequestUserDeletion.php` | `tests/Feature/Domain/DataLifecycle/SelfDeletionFlowTest.php` |
+| DL-F-002 | DataLifecycle | CAP-DL-002 | SDD §5.10 | `Actions/RequestUserDeletion::execute` (admin path) | `AdminDeletionFlowTest.php` |
+| DL-F-003 | DataLifecycle | CAP-DL-003 | SDD §5.10 | `Actions/ConfirmUserDeletion.php` | `SelfDeletionFlowTest.php` |
+| DL-F-004 | DataLifecycle | CAP-DL-003 | SDD §5.10 | `Actions/CancelUserDeletion.php` | `SelfDeletionFlowTest.php` |
+| DL-F-005 | DataLifecycle | SEC-DL-002 | SDD §5.10 | `Models/DeletionRequest` (Auditable) | `AdminDeletionFlowTest.php` (audit assertions) |
+| DL-F-006 | DataLifecycle | CAP-DL-003 | SDD §5.10, SSDD §5.11 | `Http/Middleware/EnforceAccountReadOnlyDuringGrace.php` | `tests/Feature/Domain/DataLifecycle/GraceReadOnlyMiddlewareTest.php` |
+| DL-F-007 | DataLifecycle | CAP-DL-004 | SDD §5.10 | `Jobs/ProcessDueDeletionRequestsJob.php` (scheduled in `routes/console.php`) | `SelfDeletionFlowTest.php` (full flow) |
+| DL-F-008 | DataLifecycle | CAP-DL-001 | SDD §5.10 | `Actions/RequestUserDeletion::execute` (duplicate guard) | `SelfDeletionFlowTest.php` |
+| DL-F-009 | DataLifecycle | CAP-DL-004 | SDD §5.10 | `Anonymizers/UserAnonymizer.php` | `tests/Feature/Domain/DataLifecycle/AnonymizerTest.php` |
+| DL-F-010 | DataLifecycle | CAP-DL-004, SEC-DL-002 | SDD §5.10 | `Actions/AnonymizeUser.php`, `Models/AnonymizationLogEntry.php` | `SelfDeletionFlowTest.php` |
+| DL-F-011 | DataLifecycle | CAP-DL-005 | SDD §5.10 | `RetentionEvaluators/AccountingEvaluator.php` | `tests/Feature/Domain/DataLifecycle/RetentionEvaluatorTest.php` |
+| DL-F-012 | DataLifecycle | CAP-DL-005 | SDD §5.10 | `Actions/UpdateRetentionPolicy.php` | (covered via admin Vue page; manual smoke) |
+| DL-F-013 | DataLifecycle | CAP-DL-005 | SDD §5.10, SSDD §5.11 | `Actions/PurgeExpiredData.php` | `tests/Feature/Domain/DataLifecycle/PurgeExpiredDataTest.php` |
+| DL-F-014 | DataLifecycle | SEC-DL-001 | SDD §5.10 | `Enums/Permission.php`, `app/Enums/RolePermissionMap.php` | `AdminDeletionFlowTest.php` |
+| DL-F-015 | DataLifecycle | CAP-DL-006 | SDD §5.10, SSDD §5.11 | `Actions/ForceDeleteUserData.php` | `AdminDeletionFlowTest.php` |
 | DL-F-016 | DataLifecycle | CAP-DL-007, SEC-DL-001 | IDD §3.20, IRS §5.X | `Services/EmailHasher.php`, `app/Models/User::booted()` | `tests/Unit/Domain/DataLifecycle/EmailHasherTest.php`, `PostDeletionGdprExportTest.php` |
-| DL-F-017 | DataLifecycle | CAP-DL-005 | SDD §5.9 | `routes/console.php` (Schedule entries) | manual smoke |
-| DL-F-018 | DataLifecycle | CAP-DL-008 | SDD §5.9 | `app/Domain/Event/Models/Event.php` (SoftDeletes), `app/Domain/Event/Policies/EventPolicy::forceDelete`, `Actions/DeleteEvent.php` | `tests/Feature/Domain/DataLifecycle/EventSoftDeleteTest.php` |
+| DL-F-017 | DataLifecycle | CAP-DL-005 | SDD §5.10 | `routes/console.php` (Schedule entries) | manual smoke |
+| DL-F-018 | DataLifecycle | CAP-DL-008 | SDD §5.10 | `app/Domain/Event/Models/Event.php` (SoftDeletes), `app/Domain/Event/Policies/EventPolicy::forceDelete`, `Actions/DeleteEvent.php` | `tests/Feature/Domain/DataLifecycle/EventSoftDeleteTest.php` |

@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\AuditPermission;
 use App\Enums\Permission;
 use App\Models\User;
 
@@ -35,5 +36,10 @@ class UserPolicy
     public function deleteAny(User $user): bool
     {
         return $user->hasPermission(Permission::DeleteUsers);
+    }
+
+    public function viewAudit(User $actor, User $user): bool
+    {
+        return $actor->hasPermission(AuditPermission::ViewAuditLogs);
     }
 }

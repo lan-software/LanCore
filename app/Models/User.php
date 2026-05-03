@@ -6,8 +6,10 @@ namespace App\Models;
 use App\Concerns\HasPermissions;
 use App\Domain\Achievements\Models\Achievement;
 use App\Domain\Announcement\Models\Announcement;
+use App\Domain\Auth\Steam\Enums\SteamLinkStatus;
 use App\Domain\DataLifecycle\Services\EmailHasher;
 use App\Domain\Event\Models\Event;
+use App\Domain\News\Models\NewsComment;
 use App\Domain\Notification\Models\NotificationPreference;
 use App\Domain\Notification\Models\ProgramNotificationSubscription;
 use App\Domain\Notification\Models\PushSubscription;
@@ -24,6 +26,7 @@ use App\Support\StorageRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -35,6 +38,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\URL;
 use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @see docs/mil-std-498/SSS.md CAP-USR-001, CAP-USR-002, CAP-USR-003, CAP-USR-011..014, CAP-DL-004, CAP-DL-007
@@ -49,10 +54,24 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
     'steam_id_64', 'steam_linked_at',
 ])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'email_hash'])]
-class User extends Authenticatable
+class User extends Authenticatable implements AuditableContract
 {
     /** @use HasFactory<UserFactory> */
-    use Billable, HasFactory, HasPermissions, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
+    use Auditable, Billable, HasFactory, HasPermissions, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
+
+    /**
+     * @var array<int, string>
+     */
+    protected $auditExclude = [
+        'password',
+        'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
+        'email_hash',
+        'sidebar_favorites',
+        'cookie_preferences',
+    ];
 
     protected static function booted(): void
     {
@@ -120,6 +139,33 @@ class User extends Authenticatable
     public function hasSteam(): bool
     {
         return $this->steam_id_64 !== null;
+    }
+
+    /**
+     * Derived Steam-link status (Linked / SteamOnly / NotLinked).
+     *
+     * @see SteamLinkStatus
+     */
+    public function steamLinkStatus(): SteamLinkStatus
+    {
+        return SteamLinkStatus::for($this);
+    }
+
+    /**
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    public function scopeWhereSteamStatus(Builder $query, SteamLinkStatus $status): Builder
+    {
+        return match ($status) {
+            SteamLinkStatus::Linked => $query
+                ->whereNotNull('steam_id_64')
+                ->whereNotNull('password'),
+            SteamLinkStatus::SteamOnly => $query
+                ->whereNotNull('steam_id_64')
+                ->whereNull('password'),
+            SteamLinkStatus::NotLinked => $query->whereNull('steam_id_64'),
+        };
     }
 
     /**
@@ -206,6 +252,11 @@ class User extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(NewsComment::class);
     }
 
     /**

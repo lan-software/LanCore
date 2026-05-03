@@ -14,6 +14,7 @@ import {
     Handshake,
     History,
     LayoutGrid,
+    Mail,
     MapPin,
     Megaphone,
     MessageSquare,
@@ -97,6 +98,7 @@ import { index as ticketAddonsIndex } from '@/routes/ticket-addons';
 import { index as ticketCategoriesIndex } from '@/routes/ticket-categories';
 import { index as ticketTypesIndex } from '@/routes/ticket-types';
 import { index as ticketsIndex } from '@/routes/tickets';
+import { index as adminEmailsIndex } from '@/routes/admin/emails';
 import { index as usersIndex } from '@/routes/users';
 import { index as venuesIndex } from '@/routes/venues';
 import { index as vouchersIndex } from '@/routes/vouchers';
@@ -478,7 +480,13 @@ function toggleFavorite(itemId: string): void {
 
             <!-- Platform Settings -->
             <SidebarGroup
-                v-if="canAny(Permission.ManageUsers, Permission.ManagePolicies)"
+                v-if="
+                    canAny(
+                        Permission.ManageUsers,
+                        Permission.ManagePolicies,
+                        Permission.ViewEmailLog,
+                    )
+                "
             >
                 <SidebarGroupLabel>{{
                     $t('navigation.groups.platform')
@@ -500,6 +508,14 @@ function toggleFavorite(itemId: string): void {
                                 <Link href="/admin/policies">
                                     <FileText />
                                     <span>{{ $t('navigation.policies') }}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ViewEmailLog)">
+                            <SidebarMenuButton as-child>
+                                <Link :href="adminEmailsIndex()">
+                                    <Mail />
+                                    <span>Emails</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

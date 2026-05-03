@@ -1,10 +1,21 @@
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, ArrowUpDown, Gamepad2 } from 'lucide-vue-next';
 import { h } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { User } from '@/types/auth';
+
+type SteamStatus = 'linked' | 'steam_only' | 'not_linked';
+
+const steamStatusMeta: Record<
+    SteamStatus,
+    { label: string; variant: 'default' | 'secondary' | 'outline' }
+> = {
+    linked: { label: 'Linked', variant: 'default' },
+    steam_only: { label: 'Steam-only', variant: 'secondary' },
+    not_linked: { label: 'Not linked', variant: 'outline' },
+};
 
 function sortableHeader(label: string) {
     return ({
@@ -75,6 +86,28 @@ export const columns: ColumnDef<User>[] = [
                 { class: 'text-muted-foreground' },
                 row.getValue<string>('email'),
             ),
+    },
+    {
+        id: 'steam_status',
+        accessorFn: (row) => row.steam_status,
+        enableSorting: false,
+        header: () => h('span', 'Steam'),
+        cell: ({ row }) => {
+            const status = row.getValue<SteamStatus | undefined>('steam_status');
+            const meta = status ? steamStatusMeta[status] : steamStatusMeta.not_linked;
+            const isLinked = status === 'linked' || status === 'steam_only';
+
+            return h(
+                Badge,
+                { variant: meta.variant, class: 'gap-1' },
+                () => [
+                    isLinked
+                        ? h(Gamepad2, { class: 'size-3' })
+                        : null,
+                    meta.label,
+                ],
+            );
+        },
     },
     {
         id: 'roles',

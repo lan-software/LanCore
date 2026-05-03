@@ -87,3 +87,4 @@ require __DIR__.'/webhooks.php';
 require __DIR__.'/integrations.php';
 require __DIR__.'/orchestration.php';
 require __DIR__.'/data-lifecycle.php';
+require __DIR__.'/email-log.php';

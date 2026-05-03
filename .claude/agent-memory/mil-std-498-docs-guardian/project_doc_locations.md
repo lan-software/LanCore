@@ -18,9 +18,14 @@ Full suite present (all version 0.1.0, dated 2026-04-02, status Draft):
 
 Traceability conventions:
 - SSS uses CAP-XXX-NNN (e.g., CAP-EVT-001)
-- SRS uses CSCI-XXX domain codes: EVT-F-*, TKT-F-*, SHP-F-*, COMP-F-*, ORC-F-*, etc.
+- SRS uses CSCI-XXX domain codes: EVT-F-*, TKT-F-*, SHP-F-*, COMP-F-*, ORC-F-*, DL-F-*, etc.
+- SSS CAP-DL-001..008 anchor the Data Lifecycle / GDPR Art.17 domain; SEC-DL-001..002 cover security reqs
+- SRS DL-F-001..018 trace to CAP-DL-* and SEC-DL-*; GDPR-F-009 cross-cuts into Policy domain
+- IRS §5.X IF-DL-001 (EmailHasher), IF-DL-002 (DomainAnonymizer contract), IF-DL-003 (RetentionEvaluator contract)
+- IDD §3.20 lists four artisan commands: lifecycle:user:delete, lifecycle:user:force-delete, lifecycle:purge, lifecycle:user:anonymize
+- RTM §23 "Data Lifecycle / Right to Erasure (CSCI-DL)" — all 18 DL-F-* rows present
 - SDD §6 maps SRS → design component (app/Domain/XXX/)
-- STD §5 maps SRS → test files
+- STD §5 maps SRS → test files; STD TC-DL-001..009 cover DataLifecycle test suite
 - RTM provides full coverage matrix per domain
 
 Domain modules (17 actual directories under app/Domain/):

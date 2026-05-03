@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Users;
+namespace App\Http\Requests\EmailLog;
 
-use App\Domain\Auth\Steam\Enums\SteamLinkStatus;
-use App\Enums\RoleName;
+use App\Domain\EmailLog\Enums\EmailMessageStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UserIndexRequest extends FormRequest
+class EmailMessageIndexRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -18,10 +17,10 @@ class UserIndexRequest extends FormRequest
     {
         return [
             'search' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'sort' => ['sometimes', 'nullable', 'string', Rule::in(['name', 'email', 'created_at'])],
+            'status' => ['sometimes', 'nullable', 'string', Rule::in(array_column(EmailMessageStatus::cases(), 'value'))],
+            'source' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'sort' => ['sometimes', 'nullable', 'string', Rule::in(['created_at', 'subject', 'status'])],
             'direction' => ['sometimes', 'nullable', 'string', Rule::in(['asc', 'desc'])],
-            'role' => ['sometimes', 'nullable', 'string', Rule::in(array_column(RoleName::cases(), 'value'))],
-            'steam_status' => ['sometimes', 'nullable', 'string', Rule::in(array_column(SteamLinkStatus::cases(), 'value'))],
             'per_page' => ['sometimes', 'nullable', 'integer', Rule::in([10, 20, 50, 100])],
         ];
     }

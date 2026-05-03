@@ -191,6 +191,12 @@ const roleOptions = [
     { value: 'superadmin', label: 'Superadmin' },
 ];
 
+const steamStatusOptions = [
+    { value: 'linked', label: 'Linked' },
+    { value: 'steam_only', label: 'Steam-only' },
+    { value: 'not_linked', label: 'Not linked' },
+];
+
 const perPageOptions = [10, 20, 50, 100];
 </script>
 
@@ -228,6 +234,32 @@ const perPageOptions = [10, 20, 50, 100];
                         <SelectItem value="all">All roles</SelectItem>
                         <SelectItem
                             v-for="option in roleOptions"
+                            :key="option.value"
+                            :value="option.value"
+                        >
+                            {{ option.label }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <!-- Steam-link status filter -->
+                <Select
+                    :model-value="filters.steam_status ?? 'all'"
+                    @update:model-value="
+                        (val) =>
+                            setFilter(
+                                'steam_status',
+                                val === 'all' ? undefined : val,
+                            )
+                    "
+                >
+                    <SelectTrigger class="w-40">
+                        <SelectValue placeholder="Any Steam state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Any Steam state</SelectItem>
+                        <SelectItem
+                            v-for="option in steamStatusOptions"
                             :key="option.value"
                             :value="option.value"
                         >

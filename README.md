@@ -63,21 +63,23 @@ What started as a three-day tech demo quickly evolved into a comprehensive event
 | Integration API | REST API with SSO, webhooks, and third-party app connectivity | Done |
 | Responsive UI | Mobile and desktop-friendly interface with dark mode | Done |
 | Tournament Management | Brackets and match management | In Testing |
-| Fully GDPR Compliant | Respects the rights of all users by following the GDPR Laws | In development |
+| Fully GDPR Compliant | Respects the rights of all users by following the GDPR Laws (Articles 15 & 17 — export and right to erasure) | Done |
 | Game Server Management | Pelican Panel integration | Planned |
 
 ---
 
 ## Architecture
 
-LanCore follows a **domain-driven design** with 14 bounded contexts organized under `app/Domain/`. Each domain encapsulates its own models, actions, controllers, events, listeners, and policies.
+LanCore follows a **domain-driven design** with 22 bounded contexts organized under `app/Domain/`. Each domain encapsulates its own models, actions, controllers, events, listeners, and policies.
 
 ```
 app/Domain/
-  Event/          Ticketing/        Shop/           Program/
-  Seating/        Sponsoring/       News/           Announcement/
-  Notification/   Integration/      Webhook/        Games/
-  Achievements/   Venue/
+  Achievements/   Announcement/     Api/            Auth/
+  Competition/    DataLifecycle/    Event/          Games/
+  Integration/    News/             Notification/   Orchestration/
+  OrgaTeam/       Policy/           Profile/        Program/
+  Seating/        Shop/             Sponsoring/     Ticketing/
+  Venue/          Webhook/
 ```
 
 Key architectural decisions:

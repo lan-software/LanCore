@@ -8,6 +8,8 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use OwenIt\Auditing\Events\AuditCustom;
 
 class ChangeRoles
 {
@@ -21,8 +23,15 @@ class ChangeRoles
             $roleModel = Role::where('name', $role->value)->firstOrFail();
 
             if (! $user->hasRole($role)) {
+                $previous = $user->roles->pluck('name')->all();
                 $user->roles()->attach($roleModel);
                 $user->unsetRelation('roles');
+
+                $this->recordRoleAudit(
+                    $user,
+                    previous: $previous,
+                    next: $user->roles->pluck('name')->all(),
+                );
 
                 UserRolesChanged::dispatch($user, addedRoles: [$role]);
             }
@@ -41,8 +50,15 @@ class ChangeRoles
 
             $users->each(function (User $user) use ($roleModel, $role) {
                 if (! $user->hasRole($role)) {
+                    $previous = $user->roles->pluck('name')->all();
                     $user->roles()->attach($roleModel);
                     $user->unsetRelation('roles');
+
+                    $this->recordRoleAudit(
+                        $user,
+                        previous: $previous,
+                        next: $user->roles->pluck('name')->all(),
+                    );
 
                     UserRolesChanged::dispatch($user, addedRoles: [$role]);
                 }
@@ -70,8 +86,52 @@ class ChangeRoles
             $removed = array_values(array_udiff($previousRoles, $roles, fn (RoleName $a, RoleName $b) => $a->value <=> $b->value));
 
             if ($added || $removed) {
+                $this->recordRoleAudit(
+                    $user,
+                    previous: $previousRoles,
+                    next: $user->roles->pluck('name')->all(),
+                );
+
                 UserRolesChanged::dispatch($user, addedRoles: $added, removedRoles: $removed);
             }
         });
+    }
+
+    /**
+     * Emit a custom audit row capturing the role pivot change. The Auditable
+     * trait does not observe the role_user pivot, so this is the only way to
+     * surface role mutations in the user's audit log.
+     *
+     * @param  array<int, string|RoleName>  $previous
+     * @param  array<int, string|RoleName>  $next
+     */
+    private function recordRoleAudit(User $user, array $previous, array $next): void
+    {
+        $user->auditEvent = 'roles_synced';
+        $user->isCustomEvent = true;
+        $user->auditCustomOld = ['roles' => $this->normalizeRoleNames($previous)];
+        $user->auditCustomNew = ['roles' => $this->normalizeRoleNames($next)];
+
+        Event::dispatch(new AuditCustom($user));
+
+        $user->isCustomEvent = false;
+        $user->auditCustomOld = [];
+        $user->auditCustomNew = [];
+    }
+
+    /**
+     * @param  array<int, string|RoleName>  $roles
+     * @return array<int, string>
+     */
+    private function normalizeRoleNames(array $roles): array
+    {
+        $names = array_map(
+            fn (string|RoleName $r) => $r instanceof RoleName ? $r->value : $r,
+            $roles,
+        );
+
+        sort($names);
+
+        return $names;
     }
 }

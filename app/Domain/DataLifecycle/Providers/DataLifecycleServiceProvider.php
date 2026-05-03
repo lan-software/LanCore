@@ -40,7 +40,7 @@ use Illuminate\Support\ServiceProvider;
  * matters — the users-row scrub MUST run last so per-domain anonymizers
  * can still resolve User properties.
  *
- * @see docs/mil-std-498/SDD.md §5.9 "Data Lifecycle Implementation"
+ * @see docs/mil-std-498/SDD.md §5.10 "Data Lifecycle Implementation"
  */
 class DataLifecycleServiceProvider extends ServiceProvider
 {

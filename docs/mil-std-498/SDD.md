@@ -1256,7 +1256,7 @@ unrendered.
 
 ---
 
-### 5.9 Data Lifecycle Implementation
+### 5.10 Data Lifecycle Implementation
 
 Implementation root: `app/Domain/DataLifecycle/`.
 
@@ -1264,7 +1264,7 @@ Implementation root: `app/Domain/DataLifecycle/`.
 |-----------|------|-------|
 | Service provider | `Providers/DataLifecycleServiceProvider.php` | Registers anonymizer registry, evaluator registry, policies, event listeners. Registers `UserAnonymizer` last in the list. |
 | Domain registry | `Anonymizers/DomainAnonymizerRegistry.php`, `RetentionEvaluators/RetentionEvaluatorRegistry.php` | Singletons populated at boot. |
-| Anonymizers (12) | `Anonymizers/UserAnonymizer.php`, `SessionsAnonymizer.php`, `PolicyAnonymizer.php`, `ShopAnonymizer.php`, `NotificationAnonymizer.php`, `TicketingAnonymizer.php`, `NewsAnonymizer.php`, `OrgaTeamAnonymizer.php`, `SponsoringAnonymizer.php`, `AchievementsAnonymizer.php`, `CompetitionAnonymizer.php` | Each implements `Anonymizers/Contracts/DomainAnonymizer`. |
+| Anonymizers (11 + registry) | `Anonymizers/UserAnonymizer.php`, `SessionsAnonymizer.php`, `PolicyAnonymizer.php`, `ShopAnonymizer.php`, `NotificationAnonymizer.php`, `TicketingAnonymizer.php`, `NewsAnonymizer.php`, `OrgaTeamAnonymizer.php`, `SponsoringAnonymizer.php`, `AchievementsAnonymizer.php`, `CompetitionAnonymizer.php` | Each implements `Anonymizers/Contracts/DomainAnonymizer`. The `DomainAnonymizerRegistry` (separate row above) iterates them. |
 | Evaluators (3) | `RetentionEvaluators/AccountingEvaluator.php`, `AuditEvaluator.php`, `ConsentEvaluator.php` | Each implements `Contracts/RetentionEvaluator`. |
 | Actions | `Actions/RequestUserDeletion.php`, `ConfirmUserDeletion.php`, `CancelUserDeletion.php`, `AnonymizeUser.php`, `ForceDeleteUserData.php`, `PurgeExpiredData.php`, `ApplyRetentionHolds.php`, `UpdateRetentionPolicy.php`, `DeleteEvent.php`, `RestoreEvent.php` | Hand-rolled actions following the existing `execute()` + `DB::transaction` convention. |
 | Models | `Models/DeletionRequest.php` (Auditable), `Models/RetentionPolicy.php` (Auditable), `Models/AnonymizationLogEntry.php` (immutable — `save()` throws on update) | Plus migrations under `database/migrations/2026_04_30_124*.php`. |
