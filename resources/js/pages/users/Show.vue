@@ -211,8 +211,8 @@ function formatOrderCurrency(order: Order): string {
 
 function formatDate(dateString: string | null): string {
     if (!dateString) {
-return '—';
-}
+        return '—';
+    }
 
     return new Date(dateString).toLocaleDateString(undefined, {
         year: 'numeric',

@@ -28,8 +28,8 @@ import type { DataTableFilters } from '@/composables/useDataTable';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index as emailsRoute } from '@/routes/admin/emails';
 import type { BreadcrumbItem } from '@/types';
-import { columns  } from './columns';
-import type {EmailMessageRow} from './columns';
+import { columns } from './columns';
+import type { EmailMessageRow } from './columns';
 
 interface PaginatedMessages {
     data: EmailMessageRow[];

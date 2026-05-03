@@ -57,8 +57,8 @@ const statusVariant: Record<
 
 function formatAddresses(addrs: Address[] | null): string {
     if (!addrs || addrs.length === 0) {
-return '—';
-}
+        return '—';
+    }
 
     return addrs
         .map((a) => (a.name ? `${a.name} <${a.address}>` : a.address))
@@ -67,8 +67,8 @@ return '—';
 
 function shortSource(source: string | null): string {
     if (!source) {
-return '—';
-}
+        return '—';
+    }
 
     return source.split('\\').pop() ?? source;
 }
