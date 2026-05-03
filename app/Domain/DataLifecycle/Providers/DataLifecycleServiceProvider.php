@@ -6,6 +6,7 @@ use App\Domain\DataLifecycle\Anonymizers\AchievementsAnonymizer;
 use App\Domain\DataLifecycle\Anonymizers\CompetitionAnonymizer;
 use App\Domain\DataLifecycle\Anonymizers\Contracts\DomainAnonymizer;
 use App\Domain\DataLifecycle\Anonymizers\DomainAnonymizerRegistry;
+use App\Domain\DataLifecycle\Anonymizers\EmailLogAnonymizer;
 use App\Domain\DataLifecycle\Anonymizers\NewsAnonymizer;
 use App\Domain\DataLifecycle\Anonymizers\NotificationAnonymizer;
 use App\Domain\DataLifecycle\Anonymizers\OrgaTeamAnonymizer;
@@ -58,6 +59,7 @@ class DataLifecycleServiceProvider extends ServiceProvider
         TicketingAnonymizer::class,
         ShopAnonymizer::class,
         PolicyAnonymizer::class,
+        EmailLogAnonymizer::class,
         // The users-row scrub must run last.
         UserAnonymizer::class,
     ];

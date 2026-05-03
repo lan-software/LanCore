@@ -24,6 +24,7 @@ enum RetentionDataClass: string
     case AchievementEarned = 'achievement.earned';
     case OrgaTeamMembership = 'orgateam.membership';
     case SponsoringRelation = 'sponsoring.relation';
+    case EmailLogMessage = 'email_log.message';
 
     public function defaultRetentionDays(): int
     {
@@ -60,6 +61,7 @@ enum RetentionDataClass: string
             self::AchievementEarned => 'Earned achievements pivot rows.',
             self::OrgaTeamMembership => 'Organizer team memberships and roles.',
             self::SponsoringRelation => 'Sponsor management and relation records.',
+            self::EmailLogMessage => 'Recorded outgoing emails (subject, recipients, headers, rendered body) sent to the user.',
         };
     }
 }

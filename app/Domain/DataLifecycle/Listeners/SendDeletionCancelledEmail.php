@@ -16,6 +16,6 @@ class SendDeletionCancelledEmail implements ShouldQueue
             return;
         }
 
-        Mail::to($subject->email)->send(new DeletionCancelledMail(subject: $subject));
+        Mail::to($subject->email)->send(new DeletionCancelledMail(user: $subject));
     }
 }

@@ -82,11 +82,7 @@ export const columns: ColumnDef<EmailMessageRow>[] = [
                       ? addrs[0].address
                       : `${addrs[0].address} (+${addrs.length - 1})`;
 
-            return h(
-                'span',
-                { class: 'text-sm whitespace-nowrap' },
-                label,
-            );
+            return h('span', { class: 'text-sm whitespace-nowrap' }, label);
         },
     },
     {
@@ -106,11 +102,8 @@ export const columns: ColumnDef<EmailMessageRow>[] = [
         header: sortableHeader('Status'),
         cell: ({ row }) => {
             const status = row.getValue<EmailMessageRow['status']>('status');
-            return h(
-                Badge,
-                { variant: statusVariant[status] },
-                () => status,
-            );
+
+            return h(Badge, { variant: statusVariant[status] }, () => status);
         },
     },
     {

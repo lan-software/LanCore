@@ -90,7 +90,7 @@ class UserController extends Controller
             'availableRoles' => Role::dropdownOptions(),
             'deletionRequests' => $deletionRequests,
             'orders' => Inertia::defer(fn () => $user->orders()
-                ->with(['event:id,name,slug'])
+                ->with(['event:id,name'])
                 ->latest()
                 ->limit(50)
                 ->get()),
@@ -120,19 +120,19 @@ class UserController extends Controller
         };
 
         $owned = $user->ownedTickets()
-            ->with(['ticketType:id,name', 'event:id,name,slug'])
+            ->with(['ticketType:id,name', 'event:id,name'])
             ->latest()
             ->limit(50)
             ->get();
 
         $managed = $user->managedTickets()
-            ->with(['ticketType:id,name', 'event:id,name,slug'])
+            ->with(['ticketType:id,name', 'event:id,name'])
             ->latest()
             ->limit(50)
             ->get();
 
         $assigned = $user->assignedTickets()
-            ->with(['ticketType:id,name', 'event:id,name,slug'])
+            ->with(['ticketType:id,name', 'event:id,name'])
             ->latest('tickets.created_at')
             ->limit(50)
             ->get();

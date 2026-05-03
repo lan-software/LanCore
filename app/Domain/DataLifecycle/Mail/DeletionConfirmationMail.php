@@ -14,7 +14,7 @@ class DeletionConfirmationMail extends Mailable
     use Queueable, SerializesModels;
 
     public function __construct(
-        public readonly User $subject,
+        public readonly User $user,
         public readonly string $confirmUrl,
         public readonly string $cancelUrl,
         public readonly int $graceDays = 30,
@@ -32,7 +32,7 @@ class DeletionConfirmationMail extends Mailable
         return new Content(
             markdown: 'mail.data-lifecycle.deletion-confirmation',
             with: [
-                'subject' => $this->subject,
+                'subject' => $this->user,
                 'confirmUrl' => $this->confirmUrl,
                 'cancelUrl' => $this->cancelUrl,
                 'graceDays' => $this->graceDays,

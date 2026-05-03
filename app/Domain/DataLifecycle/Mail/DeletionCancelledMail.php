@@ -13,7 +13,7 @@ class DeletionCancelledMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public readonly User $subject) {}
+    public function __construct(public readonly User $user) {}
 
     public function envelope(): Envelope
     {
@@ -26,7 +26,7 @@ class DeletionCancelledMail extends Mailable
     {
         return new Content(
             markdown: 'mail.data-lifecycle.deletion-cancelled',
-            with: ['subject' => $this->subject],
+            with: ['subject' => $this->user],
         );
     }
 }

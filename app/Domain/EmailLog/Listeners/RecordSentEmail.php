@@ -7,6 +7,7 @@ use App\Domain\EmailLog\Models\EmailMessage;
 use Illuminate\Mail\Events\MessageSent;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Header\Headers;
 
 /**
  * Persists every sent email into the email_messages table for the
@@ -51,7 +52,7 @@ class RecordSentEmail
         ]);
     }
 
-    private function headerValue(\Symfony\Component\Mime\Header\Headers $headers, string $name): ?string
+    private function headerValue(Headers $headers, string $name): ?string
     {
         return $headers->has($name)
             ? $headers->get($name)->getBodyAsString()
@@ -81,7 +82,7 @@ class RecordSentEmail
     /**
      * @return array<string, string>
      */
-    private function serializeHeaders(\Symfony\Component\Mime\Header\Headers $headers): array
+    private function serializeHeaders(Headers $headers): array
     {
         $out = [];
 

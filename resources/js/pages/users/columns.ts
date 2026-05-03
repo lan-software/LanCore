@@ -93,20 +93,18 @@ export const columns: ColumnDef<User>[] = [
         enableSorting: false,
         header: () => h('span', 'Steam'),
         cell: ({ row }) => {
-            const status = row.getValue<SteamStatus | undefined>('steam_status');
-            const meta = status ? steamStatusMeta[status] : steamStatusMeta.not_linked;
+            const status = row.getValue<SteamStatus | undefined>(
+                'steam_status',
+            );
+            const meta = status
+                ? steamStatusMeta[status]
+                : steamStatusMeta.not_linked;
             const isLinked = status === 'linked' || status === 'steam_only';
 
-            return h(
-                Badge,
-                { variant: meta.variant, class: 'gap-1' },
-                () => [
-                    isLinked
-                        ? h(Gamepad2, { class: 'size-3' })
-                        : null,
-                    meta.label,
-                ],
-            );
+            return h(Badge, { variant: meta.variant, class: 'gap-1' }, () => [
+                isLinked ? h(Gamepad2, { class: 'size-3' }) : null,
+                meta.label,
+            ]);
         },
     },
     {

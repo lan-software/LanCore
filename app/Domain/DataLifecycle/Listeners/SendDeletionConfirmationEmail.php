@@ -25,7 +25,7 @@ class SendDeletionConfirmationEmail implements ShouldQueue
         );
 
         Mail::to($subject->email)->send(new DeletionConfirmationMail(
-            subject: $subject,
+            user: $subject,
             confirmUrl: $confirmUrl,
             cancelUrl: $cancelUrl,
         ));

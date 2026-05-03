@@ -48,6 +48,9 @@ Route::middleware(['auth', 'verified', 'require.username'])
         Route::post('users/{user}/force-delete', [AdminDeletionRequestController::class, 'forceDelete'])
             ->name('users.force-delete');
 
+        Route::post('users/{user}/anonymize-immediately', [AdminDeletionRequestController::class, 'anonymizeImmediately'])
+            ->name('users.anonymize-immediately');
+
         Route::get('retention-policies', [AdminRetentionPolicyController::class, 'index'])
             ->name('retention-policies.index');
         Route::patch('retention-policies/{retentionPolicy}', [AdminRetentionPolicyController::class, 'update'])

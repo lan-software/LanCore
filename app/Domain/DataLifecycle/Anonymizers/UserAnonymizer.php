@@ -53,7 +53,7 @@ final class UserAnonymizer implements DomainAnonymizer
             'profile_emoji' => null,
             'avatar_path' => null,
             'banner_path' => null,
-            'avatar_source' => null,
+            'avatar_source' => 'default',
             'steam_id_64' => null,
             'steam_linked_at' => null,
             'two_factor_secret' => null,

@@ -25,12 +25,17 @@ final class NewsAnonymizer implements DomainAnonymizer
     {
         $kept = 0;
 
-        foreach (['news_comments', 'news_articles'] as $table) {
+        $authorshipColumns = [
+            'news_comments' => 'user_id',
+            'news_articles' => 'author_id',
+        ];
+
+        foreach ($authorshipColumns as $table => $column) {
             if (! Schema::hasTable($table)) {
                 continue;
             }
 
-            $kept += DB::table($table)->where('user_id', $user->getKey())->count();
+            $kept += DB::table($table)->where($column, $user->getKey())->count();
         }
 
         return new AnonymizationResult(

@@ -25,3 +25,9 @@ Schedule::command('lifecycle:purge')
     ->name('data-lifecycle:purge-expired')
     ->withoutOverlapping()
     ->onOneServer();
+
+Schedule::command('email-log:prune-bodies')
+    ->dailyAt('03:30')
+    ->name('email-log:prune-bodies')
+    ->withoutOverlapping()
+    ->onOneServer();

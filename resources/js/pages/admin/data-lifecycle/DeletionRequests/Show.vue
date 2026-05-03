@@ -127,11 +127,18 @@ const forceDelete = () => {
                     Cancel request
                 </Button>
                 <Button
-                    v-if="deletionRequest.status === 'pending_grace'"
+                    v-if="
+                        deletionRequest.status === 'pending_email_confirm' ||
+                        deletionRequest.status === 'pending_grace'
+                    "
                     variant="destructive"
                     @click="anonymizeNow"
                 >
-                    Anonymize now (skip grace)
+                    {{
+                        deletionRequest.status === 'pending_email_confirm'
+                            ? 'Anonymize now (skip email confirm + grace)'
+                            : 'Anonymize now (skip grace)'
+                    }}
                 </Button>
             </div>
 

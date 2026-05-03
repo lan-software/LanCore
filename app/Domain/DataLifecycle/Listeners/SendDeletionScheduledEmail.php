@@ -24,7 +24,7 @@ class SendDeletionScheduledEmail implements ShouldQueue
         );
 
         Mail::to($subject->email)->send(new DeletionScheduledMail(
-            subject: $subject,
+            user: $subject,
             scheduledFor: $event->request->scheduled_for,
             cancelUrl: $cancelUrl,
         ));

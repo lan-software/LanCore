@@ -111,6 +111,11 @@ const forceDeleteForm = useForm({
     confirmation: '',
 });
 
+const anonymizeImmediatelyForm = useForm({
+    reason: '',
+    confirmation: '',
+});
+
 const gdprExportPassword = ref('');
 const gdprExportIncludeSoftDeleted = ref(true);
 
@@ -124,6 +129,10 @@ const csrfToken = computed<string>(
 const showRequestDeletion = ref(false);
 const showForceDelete = ref(false);
 const showGdprExport = ref(false);
+const showAnonymizeImmediately = ref(false);
+
+const ANONYMIZE_CONFIRMATION_PHRASE =
+    'I UNDERSTAND THIS SKIPS THE GRACE PERIOD';
 
 const submitPersonalData = () => {
     personalDataForm.patch(
@@ -157,6 +166,26 @@ const submitForceDelete = () => {
     );
 };
 
+const submitAnonymizeImmediately = () => {
+    if (
+        anonymizeImmediatelyForm.confirmation !== ANONYMIZE_CONFIRMATION_PHRASE
+    ) {
+        return;
+    }
+
+    anonymizeImmediatelyForm.transform((data) => ({ reason: data.reason }));
+    anonymizeImmediatelyForm.post(
+        `/admin/data-lifecycle/users/${props.user.id}/anonymize-immediately`,
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                showAnonymizeImmediately.value = false;
+                anonymizeImmediatelyForm.reset();
+            },
+        },
+    );
+};
+
 const statusBadgeClass = (status: string): string =>
     ({
         pending_email_confirm: 'bg-blue-100 text-blue-800',
@@ -181,7 +210,10 @@ function formatOrderCurrency(order: Order): string {
 }
 
 function formatDate(dateString: string | null): string {
-    if (!dateString) return '—';
+    if (!dateString) {
+return '—';
+}
+
     return new Date(dateString).toLocaleDateString(undefined, {
         year: 'numeric',
         month: 'short',
@@ -310,7 +342,11 @@ function truncate(value: string, length = 80): string {
                             <Form
                                 v-bind="UserController.update.form(user.id)"
                                 class="space-y-8"
-                                v-slot="{ errors, processing, recentlySuccessful }"
+                                v-slot="{
+                                    errors,
+                                    processing,
+                                    recentlySuccessful,
+                                }"
                             >
                                 <div class="space-y-4">
                                     <Heading
@@ -419,9 +455,7 @@ function truncate(value: string, length = 80): string {
                                 </div>
 
                                 <div class="flex items-center gap-4">
-                                    <Button
-                                        type="submit"
-                                        :disabled="processing"
+                                    <Button type="submit" :disabled="processing"
                                         >Save changes</Button
                                     >
                                     <Transition
@@ -566,9 +600,7 @@ function truncate(value: string, length = 80): string {
 
                                 <div class="grid gap-4 sm:grid-cols-2">
                                     <div class="grid gap-2">
-                                        <Label for="emoji"
-                                            >Profile emoji</Label
-                                        >
+                                        <Label for="emoji">Profile emoji</Label>
                                         <Input
                                             id="emoji"
                                             v-model="
@@ -644,9 +676,7 @@ function truncate(value: string, length = 80): string {
                                 <div class="flex items-center gap-4">
                                     <Button
                                         type="submit"
-                                        :disabled="
-                                            personalDataForm.processing
-                                        "
+                                        :disabled="personalDataForm.processing"
                                         >Save personal data</Button
                                     >
                                     <Transition
@@ -761,7 +791,8 @@ function truncate(value: string, length = 80): string {
                                             </TableRow>
                                         </template>
                                         <TableEmpty v-else :colspan="6"
-                                            >No tickets for this user.</TableEmpty
+                                            >No tickets for this
+                                            user.</TableEmpty
                                         >
                                     </TableBody>
                                 </Table>
@@ -800,7 +831,9 @@ function truncate(value: string, length = 80): string {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <template v-if="orders && orders.length">
+                                        <template
+                                            v-if="orders && orders.length"
+                                        >
                                             <TableRow
                                                 v-for="order in orders"
                                                 :key="order.id"
@@ -859,7 +892,8 @@ function truncate(value: string, length = 80): string {
                                             </TableRow>
                                         </template>
                                         <TableEmpty v-else :colspan="6"
-                                            >No orders for this user.</TableEmpty
+                                            >No orders for this
+                                            user.</TableEmpty
                                         >
                                     </TableBody>
                                 </Table>
@@ -1008,6 +1042,21 @@ function truncate(value: string, length = 80): string {
                                 </Button>
 
                                 <Button
+                                    v-if="
+                                        can('request_user_deletion') &&
+                                        !user.pending_deletion_at &&
+                                        !user.anonymized_at
+                                    "
+                                    variant="destructive"
+                                    @click="
+                                        showAnonymizeImmediately =
+                                            !showAnonymizeImmediately
+                                    "
+                                >
+                                    Anonymize immediately (skip email + grace)
+                                </Button>
+
+                                <Button
                                     v-if="can('force_delete_user_data')"
                                     variant="destructive"
                                     @click="showForceDelete = !showForceDelete"
@@ -1107,6 +1156,79 @@ function truncate(value: string, length = 80): string {
                                         type="button"
                                         variant="ghost"
                                         @click="showGdprExport = false"
+                                        >Cancel</Button
+                                    >
+                                </div>
+                            </form>
+
+                            <form
+                                v-if="showAnonymizeImmediately"
+                                class="space-y-3 rounded border border-orange-300 bg-orange-50 p-4"
+                                @submit.prevent="submitAnonymizeImmediately"
+                            >
+                                <p class="text-sm text-orange-900">
+                                    <strong
+                                        >Skips email confirmation and the grace
+                                        period.</strong
+                                    >
+                                    Opens a deletion request, marks the
+                                    confirmation as satisfied, and runs every
+                                    domain anonymizer immediately.
+                                    Per-data-class retention windows are still
+                                    honoured (use Force-delete to bypass those).
+                                    The reason is recorded in the audit trail.
+                                </p>
+                                <div class="grid gap-1">
+                                    <Label for="ai-reason"
+                                        >Reason (audited)</Label
+                                    >
+                                    <textarea
+                                        id="ai-reason"
+                                        v-model="
+                                            anonymizeImmediatelyForm.reason
+                                        "
+                                        class="min-h-20 rounded border p-2 text-sm"
+                                        required
+                                        minlength="5"
+                                    />
+                                    <InputError
+                                        :message="
+                                            anonymizeImmediatelyForm.errors
+                                                .reason
+                                        "
+                                    />
+                                </div>
+                                <div class="grid gap-1">
+                                    <Label for="ai-confirm"
+                                        >Type "{{
+                                            ANONYMIZE_CONFIRMATION_PHRASE
+                                        }}" to confirm</Label
+                                    >
+                                    <Input
+                                        id="ai-confirm"
+                                        v-model="
+                                            anonymizeImmediatelyForm.confirmation
+                                        "
+                                        type="text"
+                                    />
+                                </div>
+                                <div class="flex gap-2">
+                                    <Button
+                                        type="submit"
+                                        variant="destructive"
+                                        :disabled="
+                                            anonymizeImmediatelyForm.processing ||
+                                            anonymizeImmediatelyForm.confirmation !==
+                                                ANONYMIZE_CONFIRMATION_PHRASE
+                                        "
+                                        >Anonymize now</Button
+                                    >
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        @click="
+                                            showAnonymizeImmediately = false
+                                        "
                                         >Cancel</Button
                                     >
                                 </div>

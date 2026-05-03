@@ -15,7 +15,7 @@ class DeletionScheduledMail extends Mailable
     use Queueable, SerializesModels;
 
     public function __construct(
-        public readonly User $subject,
+        public readonly User $user,
         public readonly CarbonInterface $scheduledFor,
         public readonly string $cancelUrl,
     ) {}
@@ -32,7 +32,7 @@ class DeletionScheduledMail extends Mailable
         return new Content(
             markdown: 'mail.data-lifecycle.deletion-scheduled',
             with: [
-                'subject' => $this->subject,
+                'subject' => $this->user,
                 'scheduledFor' => $this->scheduledFor,
                 'cancelUrl' => $this->cancelUrl,
             ],
