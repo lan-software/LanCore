@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { Bell } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import {
     store as storePushSubscription,
     destroy as destroyPushSubscription,
@@ -18,15 +18,19 @@ const page = usePage();
 const dismissed = ref(page.props.pushPromptDismissed as boolean);
 const loading = ref(false);
 const subscribed = ref(page.props.pushSubscribed as boolean);
-const permissionState = ref<NotificationPermission>(
-    typeof Notification !== 'undefined' ? Notification.permission : 'default',
-);
+const permissionState = ref<NotificationPermission>('default');
+const isPushSupported = ref(false);
 
-const isPushSupported =
-    typeof window !== 'undefined' &&
-    'serviceWorker' in navigator &&
-    'PushManager' in window &&
-    'Notification' in window;
+onMounted(() => {
+    isPushSupported.value =
+        'serviceWorker' in navigator &&
+        'PushManager' in window &&
+        'Notification' in window;
+
+    if ('Notification' in window) {
+        permissionState.value = Notification.permission;
+    }
+});
 
 const vapidPublicKey = page.props.vapidPublicKey as string;
 
@@ -41,7 +45,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 async function subscribe(): Promise<void> {
-    if (!isPushSupported || !vapidPublicKey) {
+    if (!isPushSupported.value || !vapidPublicKey) {
         return;
     }
 
@@ -91,7 +95,8 @@ async function subscribe(): Promise<void> {
 
         // Update shared prop so other components reflect the change without a full reload
         page.props.pushSubscribed = true;
-    } catch {
+    } catch (error) {
+        console.error('[push] subscribe failed', error);
         permissionState.value = Notification.permission;
     } finally {
         loading.value = false;
@@ -99,7 +104,7 @@ async function subscribe(): Promise<void> {
 }
 
 async function unsubscribe(): Promise<void> {
-    if (!isPushSupported) {
+    if (!isPushSupported.value) {
         return;
     }
 

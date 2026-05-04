@@ -181,8 +181,10 @@ This document specifies the system-level requirements for LanCore, organized by 
 |--------|------------|
 | CAP-NTF-001 | The system shall support per-user notification preferences for email and push channels |
 | CAP-NTF-002 | The system shall support Web Push notifications via service workers |
-| CAP-NTF-003 | The system shall support notification categories: news, events, comments, programs, announcements |
+| CAP-NTF-003 | The system shall support notification categories: news, events, comments, programs, announcements, ticket sales |
 | CAP-NTF-004 | The system shall support notification archiving |
+| CAP-NTF-005 | The system shall notify opted-in users when a ticket type's purchase window opens (release) and before it closes (configurable lead time per ticket type), with idempotent dispatch and suppression of release notifications for users who already hold a ticket of that type |
+| CAP-NTF-006 | The system shall provide a Web Push delivery channel that bridges Laravel notifications to stored Web Push subscriptions and prunes subscriptions that respond with 404/410 |
 
 #### 3.2.11 Integrations (CAP-INT)
 

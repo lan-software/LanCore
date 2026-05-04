@@ -47,3 +47,19 @@ Schedule::job(new ReconcileSubscriptionsJob)
     ->name('newsletter:reconcile-subscriptions')
     ->withoutOverlapping()
     ->onOneServer();
+
+/*
+ * Ticket-sale notifications dispatcher.
+ *
+ * Scans for TicketTypes whose `purchase_from` just opened or whose
+ * `purchase_until - lead_minutes` window just crossed, then fans out
+ * one Notification per opted-in user. Idempotency guaranteed by the
+ * `release_notified_at` / `end_notified_at` sentinels on `ticket_types`.
+ *
+ * @see docs/mil-std-498/SRS.md NTF-F-010
+ */
+Schedule::command('notifications:dispatch-ticket-sale')
+    ->everyFiveMinutes()
+    ->name('ticketing:dispatch-sale-notifications')
+    ->withoutOverlapping()
+    ->onOneServer();

@@ -27,6 +27,8 @@ class UpdateNotificationPreferencesRequest extends FormRequest
             'push_on_news_comments' => ['required', 'boolean'],
             'push_on_program_time_slots' => ['required', 'boolean'],
             'push_on_announcements' => ['required', 'boolean'],
+            'mail_on_ticket_sale' => ['required', 'boolean'],
+            'push_on_ticket_sale' => ['required', 'boolean'],
         ];
     }
 }

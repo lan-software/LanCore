@@ -30,6 +30,8 @@ class NotificationPreferenceFactory extends Factory
             'push_on_news_comments' => false,
             'push_on_program_time_slots' => false,
             'push_on_announcements' => false,
+            'mail_on_ticket_sale' => true,
+            'push_on_ticket_sale' => false,
         ];
     }
 
@@ -46,6 +48,8 @@ class NotificationPreferenceFactory extends Factory
             'push_on_news_comments' => false,
             'push_on_program_time_slots' => false,
             'push_on_announcements' => false,
+            'mail_on_ticket_sale' => false,
+            'push_on_ticket_sale' => false,
         ]);
     }
 }

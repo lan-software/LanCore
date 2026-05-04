@@ -58,6 +58,8 @@ it('allows users to update their notification preferences', function () {
             'push_on_news_comments' => false,
             'push_on_program_time_slots' => false,
             'push_on_announcements' => false,
+            'mail_on_ticket_sale' => true,
+            'push_on_ticket_sale' => false,
         ])
         ->assertRedirect();
 
@@ -78,6 +80,7 @@ it('validates notification preference fields are required', function () {
             'mail_on_announcements',
             'push_on_news', 'push_on_events', 'push_on_news_comments', 'push_on_program_time_slots',
             'push_on_announcements',
+            'mail_on_ticket_sale', 'push_on_ticket_sale',
         ]);
 });
 

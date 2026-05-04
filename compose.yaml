@@ -26,8 +26,7 @@ services:
         networks:
             - sail
             - lanparty
-        depends_on:
-            - garage
+
     horizon:
         container_name: 'lancore-horizon'
         build:
@@ -50,50 +49,32 @@ services:
         stop_signal: SIGTERM
         stop_grace_period: 3600s
         restart: unless-stopped
-    garage:
-        image: 'dxflrs/garage:v2.2.0'
-        restart: unless-stopped
-        ports:
-            - '${FORWARD_GARAGE_S3_PORT:-3900}:3900'
-            - '${FORWARD_GARAGE_RPC_PORT:-3901}:3901'
-            - '${FORWARD_GARAGE_ADMIN_PORT:-3903}:3903'
-        volumes:
-            - './contrib/garage.toml:/etc/garage.toml'
-            - 'garage-meta:/var/lib/garage/meta'
-            - 'garage-data:/var/lib/garage/data'
-        networks:
-            - sail
-        healthcheck:
-            test:
-                - CMD
-                - /garage
-                - status
-            interval: 10s
-            retries: 3
-            timeout: 5s
-    garage-webui:
-        image: 'khairul169/garage-webui:latest'
-        restart: unless-stopped
-        ports:
-            - '${FORWARD_GARAGE_WEBUI_PORT:-3909}:3909'
+
+    scheduler:
+        container_name: 'lancore-scheduler'
+        build:
+            context: ./vendor/laravel/sail/runtimes/8.5
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+        image: sail-8.5/app
         environment:
-            API_BASE_URL: 'http://garage:3903'
-            S3_ENDPOINT_URL: 'http://garage:3900'
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
         volumes:
-            - './contrib/garage.toml:/etc/garage.toml:ro'
+            - '.:/var/www/html'
         networks:
             - sail
+            - lanparty
         depends_on:
-            - garage
+            - laravel.test
+        command: 'php artisan schedule:work'
+        stop_signal: SIGTERM
+        stop_grace_period: 30s
+        restart: unless-stopped
 
 networks:
     sail:
         driver: bridge
     lanparty:
         external: true
-
-volumes:
-    garage-meta:
-        driver: local
-    garage-data:
-        driver: local

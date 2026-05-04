@@ -858,6 +858,97 @@ The five `external-apis:test:*` console commands (`TestTmt2Command`, `TestStripe
 
 ---
 
+### 5.14 Notification Subsystem — WebPushChannel Bridge
+
+Prior to this change the Notification subsystem had two parallel, unbridged surfaces:
+
+1. **Standard Laravel Notifications** — any class extending `Illuminate\Notifications\Notification` could declare `via()` returning `['mail', 'database']` and Laravel would route through the framework's MailChannel / DatabaseChannel automatically.
+2. **Bespoke VAPID push transport** — the `PushSubscription` Eloquent model, the VAPID key configuration in `config/services.php` (`vapid.public_key` / `vapid.private_key` / `vapid.subject`), and a working `Minishlink\WebPush\WebPush` invocation lived only inside `app/Console/Commands/Notification/TestPushNotificationCommand.php`. Push payloads could be sent ad-hoc but no `via()` value mapped to it.
+
+The `WebPushChannel` introduced under §5.13 (SDD) is the missing bridge. Architecturally:
+
+```
+Notification::send($users, new SomeNotification(...))
+        │
+        ▼  (Laravel core)
+ChannelManager::driver('webpush')                   ← registered by Notification::extend('webpush', ...)
+        │                                              in AppServiceProvider::boot()
+        ▼
+App\Domain\Notification\Channels\WebPushChannel
+        │
+        ├── 1. Calls $notification->shouldSend($notifiable, 'webpush')
+        │      └─ returns false unless user opted in AND has ≥1 subscription → short-circuit
+        │
+        ├── 2. Calls $notification->toWebPush($notifiable) → ['title','body','url']
+        │
+        ├── 3. Iterates $notifiable->pushSubscriptions (one DB row per registered browser)
+        │
+        └── 4. For each row, dispatches via App\Domain\Notification\Support\WebPushFactory
+                            │
+                            ▼
+                Minishlink\WebPush\WebPush::sendOneNotification(
+                    Subscription::create([endpoint, keys: {p256dh, auth}]),
+                    json_encode($payload)
+                )
+                            │
+                            ├── HTTP 2xx → delivered to user agent's push service (FCM / Mozilla autopush / WNS)
+                            ├── HTTP 410 (Gone) → channel deletes that PushSubscription row (auto-pruning)
+                            └── HTTP 404 (Not Found) → channel deletes that PushSubscription row (auto-pruning)
+```
+
+The auto-pruning behaviour (NTF-F-011) keeps the `push_subscriptions` table clean of stale endpoints (browser uninstalled, user revoked permission, push service rotated), which is critical because every notification dispatch iterates *every* subscription per recipient — orphans would otherwise accumulate unboundedly and inflate every push fan-out's outbound HTTP cost.
+
+`WebPushFactory` exists solely to centralise the `WebPush::__construct(['VAPID' => [...]])` wiring (formerly duplicated inside `TestPushNotificationCommand`) so the test command and the production channel build identical instances. It is bound as a singleton in `AppServiceProvider`.
+
+After this bridge is in place, **any** Laravel notification can opt into push delivery by:
+1. Adding `'webpush'` to its `via()` return value.
+2. Implementing `toWebPush($notifiable): array` returning `{title, body, url}`.
+
+The first consumer is `TicketSaleNotification` (NTF-F-010..012, see SDD §5.13). Future consumers — match-start reminders, achievement-unlock toasts, news posts — can opt in identically without touching channel infrastructure.
+
+#### 5.14.1 Channel Registration
+
+In `app/Providers/AppServiceProvider::boot()`:
+
+```php
+Notification::extend('webpush', fn ($app) => $app->make(WebPushChannel::class));
+```
+
+This runs once at boot. From that point forward Laravel's `ChannelManager` recognises `'webpush'` as a valid `via()` entry. The factory binding (`$this->app->singleton(WebPushFactory::class, ...)`) sits in the same provider's `register()` method.
+
+#### 5.14.2 Idempotent Dispatcher (Ticket-Sale Use Case)
+
+The first end-to-end consumer of the bridge is the ticket-sale dispatcher (SDD §5.13):
+
+```
+            cron (every 5 min)
+                  │
+                  ▼
+  notifications:dispatch-ticket-sale
+                  │
+                  ├── SELECT ticket_types WHERE notify_on_release=true
+                  │     AND release_notified_at IS NULL
+                  │     AND purchase_from <= now()
+                  │     AND event.published()
+                  │            │
+                  │            ▼
+                  │   DispatchTicketSaleReleaseJob
+                  │            │
+                  │            ├── re-check isAvailableForPurchase()  ← race protection
+                  │            ├── walk opted-in users (mail OR push)
+                  │            ├── EXCLUDE existing TicketType holders ← suppression
+                  │            ├── Notification::send($users, new TicketSaleNotification($type, Release))
+                  │            │      └─ via=[mail, database, webpush]
+                  │            └── ticket_types.release_notified_at = now()  ← idempotency sentinel
+                  │
+                  └── (mirror for End phase, with `purchase_until - lead_minutes`,
+                       no holder suppression, sets end_notified_at)
+```
+
+`withoutOverlapping()->onOneServer()` on the schedule entry ensures only one node in a multi-pod Kubernetes deployment ever runs the dispatcher per tick.
+
+---
+
 ## 7. Notes
 
 This document will be expanded as LanCore moves from PoC to production deployment.

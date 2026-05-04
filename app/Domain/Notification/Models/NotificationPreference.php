@@ -23,6 +23,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'push_on_program_time_slots',
     'push_on_announcements',
     'push_on_seating',
+    'mail_on_ticket_sale',
+    'push_on_ticket_sale',
 ])]
 class NotificationPreference extends Model
 {
@@ -52,6 +54,8 @@ class NotificationPreference extends Model
             'push_on_program_time_slots' => 'boolean',
             'push_on_announcements' => 'boolean',
             'push_on_seating' => 'boolean',
+            'mail_on_ticket_sale' => 'boolean',
+            'push_on_ticket_sale' => 'boolean',
         ];
     }
 

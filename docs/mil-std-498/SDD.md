@@ -1352,6 +1352,37 @@ Implementation domain: `app/Domain/Newsletter/`. Traces to NLT-F-001..007, CTD-F
 
 ---
 
+### 5.13 Ticket-Sale Notification Dispatcher
+
+Implementation domain: `app/Domain/Ticketing/` + `app/Domain/Notification/`. Traces to NTF-F-008..013, CAP-NTF-005, CAP-NTF-006. Bridges the existing VAPID push transport (`PushSubscription` model + Minishlink WebPush SDK already wired in `TestPushNotificationCommand`) into the standard Laravel `Notification` channel surface so that any future feature can simply append `'webpush'` to its `via()` array.
+
+| Component | Path | Notes |
+|-----------|------|-------|
+| TicketType migration | `database/migrations/2026_05_05_*_add_ticket_sale_notification_fields_to_ticket_types_table.php` | Adds `notify_on_release` (bool, default false), `notify_on_end` (bool, default false), `notify_on_end_lead_minutes` (uint, default 1440), `release_notified_at` (timestamp, nullable), `end_notified_at` (timestamp, nullable). The two `*_notified_at` columns are the **idempotency sentinel** — once set, the dispatcher skips that row on subsequent ticks. |
+| NotificationPreference migration | `database/migrations/2026_05_05_*_add_ticket_sale_to_notification_preferences_table.php` | Adds `mail_on_ticket_sale` (bool, default true) and `push_on_ticket_sale` (bool, default false). Defaults match the existing `mail_on_X` / `push_on_X` pattern (mail opt-out, push opt-in). |
+| TicketType model | `app/Domain/Ticketing/Models/TicketType.php` | Adds the five new columns to `#[Fillable]` and casts (`bool`, `bool`, `integer`, `datetime`, `datetime`). |
+| NotificationPreference model | `app/Domain/Notification/Models/NotificationPreference.php` | Adds the two new fields to `#[Fillable]` and casts. |
+| Form Requests | `app/Domain/Ticketing/Http/Requests/{Store,Update}TicketTypeRequest.php`, `app/Domain/Notification/Http/Requests/UpdateNotificationPreferencesRequest.php` | Notification fields stay editable on `UpdateTicketTypeRequest` even when `is_locked` (they are notification metadata, not commercial). `notify_on_end_lead_minutes` validated `required_if:notify_on_end,true`, `integer`, `min:1`, `max:43200` (30d). |
+| Phase enum | `app/Domain/Ticketing/Enums/TicketSalePhase.php` | `Release`, `End`. Single `TicketSaleNotification` is parameterised by phase rather than two notification classes. |
+| Notification | `app/Domain/Ticketing/Notifications/TicketSaleNotification.php` | `via()` returns `['mail', 'database', 'webpush']`. `shouldSend()`: `database` always; `mail` gated by `mail_on_ticket_sale`; `webpush` gated by `push_on_ticket_sale` AND existence of at least one `PushSubscription`. `toMail()` subject/body diverges by phase. `toArray()` produces inbox payload. `toWebPush()` returns `{title, body, url}`. Modelled on `app/Domain/Announcement/Notifications/AnnouncementPublishedNotification.php`. |
+| Mail templates | `resources/views/emails/ticketing/sale-{release,end}.blade.php` | Markdown components matching the `DeletionConfirmationMail` shape. |
+| WebPushFactory | `app/Domain/Notification/Support/WebPushFactory.php` | Extracts the `Minishlink\WebPush\WebPush` construction logic that currently lives in `app/Console/Commands/Notification/TestPushNotificationCommand.php` so both the test command and the channel build the same way. Bound in `AppServiceProvider`. |
+| WebPushChannel | `app/Domain/Notification/Channels/WebPushChannel.php` | Custom Laravel notification channel. `send()` calls `$notification->toWebPush($notifiable)`, iterates `$notifiable->pushSubscriptions`, dispatches each via Minishlink, and prunes subscriptions on 404/410 status (gone). Registered via `Notification::extend('webpush', fn ($app) => $app->make(WebPushChannel::class))` in `AppServiceProvider::boot()`. **This is the bridge that makes `'webpush'` a first-class entry in any notification's `via()` array.** |
+| Dispatcher command | `app/Console/Commands/Notification/DispatchTicketSaleNotificationsCommand.php` | `notifications:dispatch-ticket-sale`. Two queries: one for newly-released ticket types where `purchase_from <= now()` AND `release_notified_at IS NULL`, one for end-window types where `purchase_until - (notify_on_end_lead_minutes * interval '1 minute') <= now()` AND `end_notified_at IS NULL`. Both filter by `whereHas('event', fn ($q) => $q->published())` and re-check `isAvailableForPurchase()` inside the per-row callback (race protection). Each match dispatches a fan-out job. |
+| Fan-out jobs | `app/Domain/Ticketing/Jobs/DispatchTicketSaleReleaseJob.php`, `DispatchTicketSaleEndJob.php` | `ShouldQueue + Queueable`. Walk `User::query()` joined to `notification_preferences` filtered by `mail_on_ticket_sale OR push_on_ticket_sale`. Release job adds `whereDoesntHave('tickets', fn ($q) => $q->where('ticket_type_id', $type->id))` (suppression for existing holders, NTF-F-012). End job has no suppression (users may want extras). Both call `Notification::send($users, new TicketSaleNotification($type, $phase))` and then atomically set the corresponding `*_notified_at` timestamp on the TicketType. |
+| Schedule | `routes/console.php` | `Schedule::command('notifications:dispatch-ticket-sale')->everyFiveMinutes()->withoutOverlapping()->onOneServer()->name('ticketing:dispatch-sale-notifications')`. Pattern matches `ProcessDueDeletionRequestsJob` and `ReconcileSubscriptionsJob`. |
+| Settings UI | `resources/js/pages/settings/Notifications.vue` | New "Ticket sales" section with two checkboxes (`mail_on_ticket_sale`, `push_on_ticket_sale`) following the same shape as the existing News/Events/Announcements rows. Push checkbox is enabled (no longer "coming soon") because `WebPushChannel` is now wired. |
+| Backstage admin UI | `resources/js/pages/ticket-types/{Create,Edit}.vue` | New "Notifications" panel: checkbox `notify_on_release`, checkbox `notify_on_end`, conditional number input `notify_on_end_lead_minutes` visible only when `notify_on_end === true`. Helper text explains lead-minute mapping (1440 = 24h, 60 = 1h). Renders only when `purchase_from`/`purchase_until` are set. |
+| Settings controller | `app/Domain/Notification/Http/Controllers/NotificationSettingsController.php` | `edit()` payload + `firstOrCreate()` defaults extended with the two new preference fields. |
+
+**Idempotency mechanism.** Because the scheduler re-runs every 5 minutes, the dispatcher MUST not re-send. The `release_notified_at` / `end_notified_at` columns on `ticket_types` are set as the final atomic step inside each fan-out job. The next cron tick's `whereNull(*_notified_at)` filter excludes already-notified rows. Manual re-send (e.g. admin pushed wrong release time first) requires nulling the column from tinker; this is intentional — see "Out of scope" in the originating plan.
+
+**Suppression rule (NTF-F-012).** The Release fan-out job filters out users who already hold a ticket of this exact `TicketType` (`whereDoesntHave('tickets', ...)`). The End fan-out job does NOT suppress, because opted-in users may want a "last chance to grab another ticket for a friend / for an upgrade" reminder.
+
+**Race protection (NTF-F-013).** Between the dispatcher's `SELECT` and the fan-out job's actual `Notification::send`, the TicketType could be sold out, hidden, or have its `purchase_until` shortened. Each job re-checks `TicketType::isAvailableForPurchase()` immediately before fan-out and short-circuits silently otherwise. `release_notified_at` is still set on the row even on short-circuit, to prevent retry loops.
+
+---
+
 ## 7. Notes
 
 ### 7.1 Acronyms

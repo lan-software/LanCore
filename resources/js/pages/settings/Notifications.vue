@@ -25,6 +25,8 @@ type NotificationPreferences = {
     push_on_news_comments: boolean;
     push_on_program_time_slots: boolean;
     push_on_announcements: boolean;
+    mail_on_ticket_sale: boolean;
+    push_on_ticket_sale: boolean;
 };
 
 const props = defineProps<{
@@ -49,6 +51,8 @@ const form = useForm({
     push_on_news_comments: props.preferences.push_on_news_comments,
     push_on_program_time_slots: props.preferences.push_on_program_time_slots,
     push_on_announcements: props.preferences.push_on_announcements,
+    mail_on_ticket_sale: props.preferences.mail_on_ticket_sale,
+    push_on_ticket_sale: props.preferences.push_on_ticket_sale,
 });
 
 function submit() {
@@ -66,6 +70,8 @@ function submit() {
                 push_on_news_comments: form.push_on_news_comments,
                 push_on_program_time_slots: form.push_on_program_time_slots,
                 push_on_announcements: form.push_on_announcements,
+                mail_on_ticket_sale: form.mail_on_ticket_sale,
+                push_on_ticket_sale: form.push_on_ticket_sale,
             });
         },
     });
@@ -111,6 +117,13 @@ const notificationRows: NotificationRow[] = [
             'When organizers publish a new announcement (emergency announcements always send)',
         mailKey: 'mail_on_announcements',
         pushKey: 'push_on_announcements',
+    },
+    {
+        label: 'Ticket sales',
+        description:
+            'When tickets go on sale or are about to close (per-event subscriptions configured by admins)',
+        mailKey: 'mail_on_ticket_sale',
+        pushKey: 'push_on_ticket_sale',
     },
 ];
 </script>

@@ -182,6 +182,13 @@ This ensures complete isolation between test cases.
 |------|--------------|-------|-----------------|
 | notification preferences page displayed | Authenticated | GET /settings/notifications | 200 OK |
 | preferences can be updated | Authenticated | PATCH /settings/notifications {channels} | 302, preferences saved |
+| ticket-sale preferences accept mail+push toggles | Authenticated | PATCH /settings/notifications {mail_on_ticket_sale,push_on_ticket_sale} | 302, both fields persist |
+| ticket-sale dispatcher fires release mail to opted-in users | Cron tick after `purchase_from`, `notify_on_release=true`, opted-in user | `notifications:dispatch-ticket-sale` | 1 mail + 1 inbox row + 1 webpush per opted-in user; `release_notified_at` set |
+| ticket-sale dispatcher is idempotent | Same precondition, second cron tick after first run | `notifications:dispatch-ticket-sale` | No additional mails sent |
+| ticket-sale dispatcher suppresses release for existing ticket holders | User already owns a ticket of that TicketType | `notifications:dispatch-ticket-sale` | Owner does not receive release mail; other opted-in users do |
+| ticket-sale dispatcher fires end mail at lead-minutes before close | `purchase_until - notify_on_end_lead_minutes <= now`, `notify_on_end=true` | `notifications:dispatch-ticket-sale` | 1 mail + 1 inbox row + 1 webpush per opted-in user; `end_notified_at` set |
+| ticket-sale dispatcher skips sold-out / hidden types | Race: window opens but `isAvailableForPurchase()` returns false at job time | `notifications:dispatch-ticket-sale` | No mail sent; `release_notified_at` remains null so a future state change can re-trigger |
+| webpush channel iterates subscriptions and prunes 410/404 | User has 2 PushSubscription rows, second returns 410 | Notification::send($user, $notification) | Both `sendOneNotification` calls made; second subscription deleted |
 
 #### 4.2.4 Ticket Discovery
 

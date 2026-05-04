@@ -929,6 +929,8 @@
             "achievementUnlocked": "Achievement unlocked: {name}",
             "ticketQrUpdatedNamed": "Ticket QR updated: {eventName}",
             "ticketQrUpdated": "Ticket QR updated",
+            "ticketSaleRelease": "Tickets on sale: {ticketName}",
+            "ticketSaleEnd": "Last chance: {ticketName}",
             "generic": "New notification"
         },
         "push": {

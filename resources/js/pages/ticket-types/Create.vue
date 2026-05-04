@@ -244,6 +244,53 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </div>
                 </div>
 
+                <!-- Notifications -->
+                <div class="space-y-4">
+                    <Heading
+                        variant="small"
+                        title="Notifications"
+                        description="Notify opted-in users when this ticket goes on sale or is about to close. Requires the purchase window to be configured."
+                    />
+
+                    <div class="flex items-center gap-2">
+                        <Checkbox
+                            id="notify_on_release"
+                            name="notify_on_release"
+                        />
+                        <Label for="notify_on_release" class="cursor-pointer">
+                            Notify subscribed users when this ticket goes on
+                            sale
+                        </Label>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <Checkbox id="notify_on_end" name="notify_on_end" />
+                        <Label for="notify_on_end" class="cursor-pointer">
+                            Send a "last chance" reminder before sale closes
+                        </Label>
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="notify_on_end_lead_minutes">
+                            "Last chance" lead time (minutes before close)
+                        </Label>
+                        <Input
+                            id="notify_on_end_lead_minutes"
+                            type="number"
+                            name="notify_on_end_lead_minutes"
+                            default-value="1440"
+                            min="1"
+                            max="43200"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            1440 = 24 hours, 60 = 1 hour. Max 43200 (30 days).
+                        </p>
+                        <InputError
+                            :message="errors.notify_on_end_lead_minutes"
+                        />
+                    </div>
+                </div>
+
                 <!-- Associations -->
                 <div class="space-y-4">
                     <Heading

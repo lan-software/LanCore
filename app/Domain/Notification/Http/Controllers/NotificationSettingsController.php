@@ -32,6 +32,8 @@ class NotificationSettingsController extends Controller
                 'push_on_news_comments' => false,
                 'push_on_program_time_slots' => false,
                 'push_on_announcements' => false,
+                'mail_on_ticket_sale' => true,
+                'push_on_ticket_sale' => false,
             ],
         );
 
@@ -47,6 +49,8 @@ class NotificationSettingsController extends Controller
                 'push_on_news_comments' => $preferences->push_on_news_comments,
                 'push_on_program_time_slots' => $preferences->push_on_program_time_slots,
                 'push_on_announcements' => $preferences->push_on_announcements,
+                'mail_on_ticket_sale' => $preferences->mail_on_ticket_sale,
+                'push_on_ticket_sale' => $preferences->push_on_ticket_sale,
             ],
         ]);
     }

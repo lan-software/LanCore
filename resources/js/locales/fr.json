@@ -608,6 +608,8 @@
             "achievementUnlocked": "Succès débloqué : {name}",
             "ticketQrUpdatedNamed": "QR du billet mis à jour : {eventName}",
             "ticketQrUpdated": "QR du billet mis à jour",
+            "ticketSaleRelease": "Billets en vente : {ticketName}",
+            "ticketSaleEnd": "Dernière chance : {ticketName}",
             "generic": "Nouvelle notification"
         },
         "push": {

@@ -34,6 +34,9 @@ class StoreTicketTypeRequest extends FormRequest
             'event_id' => ['required', 'integer', 'exists:events,id'],
             'ticket_category_id' => ['nullable', 'integer', 'exists:ticket_categories,id'],
             'ticket_group_id' => ['nullable', 'integer', 'exists:ticket_groups,id'],
+            'notify_on_release' => ['sometimes', 'boolean'],
+            'notify_on_end' => ['sometimes', 'boolean'],
+            'notify_on_end_lead_minutes' => ['required_if:notify_on_end,true', 'integer', 'min:1', 'max:43200'],
         ];
     }
 
@@ -42,6 +45,8 @@ class StoreTicketTypeRequest extends FormRequest
         $this->merge([
             'is_seatable' => $this->boolean('is_seatable'),
             'is_hidden' => $this->boolean('is_hidden'),
+            'notify_on_release' => $this->boolean('notify_on_release'),
+            'notify_on_end' => $this->boolean('notify_on_end'),
         ]);
     }
 }

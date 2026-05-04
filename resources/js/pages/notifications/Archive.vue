@@ -63,6 +63,12 @@ function notificationLabel(notification: AppNotification): string {
             : 'Ticket QR updated';
     }
 
+    if (type === 'TicketSaleNotification' && data.ticket_type_name) {
+        return data.phase === 'end'
+            ? `Last chance: ${data.ticket_type_name}`
+            : `Tickets on sale: ${data.ticket_type_name}`;
+    }
+
     return 'New notification';
 }
 
@@ -95,6 +101,27 @@ function notificationDescription(notification: AppNotification): string | null {
                       : 'The ticket QR was refreshed.';
 
         return `${reasonText} Previously printed copies are no longer valid.`;
+    }
+
+    if (type === 'TicketSaleNotification') {
+        const eventName = (data.event_name as string | null) ?? null;
+        const closes = data.purchase_until
+            ? new Date(data.purchase_until as string).toLocaleString()
+            : null;
+
+        if (data.phase === 'end' && eventName && closes) {
+            return `${eventName} — sales close ${closes}.`;
+        }
+
+        if (data.phase === 'end' && closes) {
+            return `Sales close ${closes}.`;
+        }
+
+        if (eventName) {
+            return `${eventName} — open the shop to grab a ticket.`;
+        }
+
+        return 'Open the shop to grab a ticket.';
     }
 
     return null;

@@ -25,6 +25,8 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
     'is_row_ticket', 'is_seatable', 'is_hidden',
     'purchase_from', 'purchase_until', 'is_locked',
     'event_id', 'ticket_category_id', 'ticket_group_id',
+    'notify_on_release', 'notify_on_end', 'notify_on_end_lead_minutes',
+    'release_notified_at', 'end_notified_at',
 ])]
 class TicketType extends Model implements AuditableContract, Purchasable
 {
@@ -58,6 +60,11 @@ class TicketType extends Model implements AuditableContract, Purchasable
             'is_locked' => 'boolean',
             'purchase_from' => 'datetime',
             'purchase_until' => 'datetime',
+            'notify_on_release' => 'boolean',
+            'notify_on_end' => 'boolean',
+            'notify_on_end_lead_minutes' => 'integer',
+            'release_notified_at' => 'datetime',
+            'end_notified_at' => 'datetime',
         ];
     }
 

@@ -311,6 +311,22 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 4. The user toggles one or more lists on or off; the PATCH request applies the diff — subscribe or unsubscribe — by calling Listmonk immediately
 5. Subscription state is kept in sync by a nightly `newsletter:reconcile-subscriptions` scheduled job (daily at 03:45, `withoutOverlapping()->onOneServer()`) that pulls Listmonk subscriber data and updates the local pivot, catching any drift from bounces or admin-side changes inside Listmonk
 
+#### 5.2.12 Ticket-Sale Notifications
+
+1. An admin editing a TicketType (under the backstage Ticketing area) sees a "Notifications" panel with three controls: `notify_on_release`, `notify_on_end`, and (when `notify_on_end` is true) `notify_on_end_lead_minutes` — defaulting to 1440 minutes (24 hours). Both toggles default to OFF for existing rows; admins explicitly opt in per ticket type
+2. An interested user navigates to `/settings/notifications` and sees a "Ticket sales" section with two checkboxes: "Email me when tickets go on sale" (defaults ON) and "Push me when tickets go on sale" (defaults OFF). They tick whichever channels they want, then save
+3. A scheduled command `notifications:dispatch-ticket-sale` runs every five minutes (`withoutOverlapping()->onOneServer()`) and scans `ticket_types` for two conditions: (a) a release window that just opened (`purchase_from <= now AND release_notified_at IS NULL`) and (b) a closing window approaching (`purchase_until - notify_on_end_lead_minutes <= now AND end_notified_at IS NULL`)
+4. For each matching ticket type the dispatcher fans out one queued job per phase. Inside the job the system re-checks `TicketType::isAvailableForPurchase()` (race protection against sold-out / hidden ticket types) and walks every user with the corresponding preference toggle on
+5. The release fan-out job suppresses users who already hold a ticket of that exact `TicketType` (they already have one — no duplicate "now on sale" mail). The closing fan-out job sends to all opted-in users regardless of existing ownership (they may want extras for friends or family)
+6. Each notification is delivered through three Laravel notification channels: `mail` (transactional email), `database` (an entry on the user's `/portal/notifications` inbox), and `webpush` (a browser push toast for users who also enabled push and have an active `PushSubscription`)
+7. After successful fan-out the job sets `release_notified_at` (or `end_notified_at`) on the ticket type. This sentinel is the idempotency guarantee: the next cron tick skips this row, so even if Horizon retries the dispatcher mid-flight, no user gets a duplicate mail
+
+#### 5.2.13 Web Push Delivery Channel
+
+1. The system implements a custom Laravel notification channel `webpush` (registered in `AppServiceProvider`) that bridges `Notification::send()` to the existing `PushSubscription` rows and the `Minishlink\WebPush\WebPush` SDK already configured with the project's VAPID keys
+2. Any notification class can opt into push by appending `'webpush'` to its `via()` array and implementing a `toWebPush()` method returning `{ title, body, url }`
+3. When sending, the channel iterates the notifiable's `pushSubscriptions` relation and posts each one. If a subscription endpoint responds with HTTP 404 or 410 (browser unsubscribed, device retired, etc.) the channel deletes that `PushSubscription` row automatically — preventing the table from accumulating dead endpoints
+
 ### 5.3 System Context
 
 ```

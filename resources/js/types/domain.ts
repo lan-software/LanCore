@@ -269,6 +269,11 @@ export type TicketType = {
     ticket_group?: TicketGroup | null;
     tickets_count?: number;
     remaining_quota?: number;
+    notify_on_release: boolean;
+    notify_on_end: boolean;
+    notify_on_end_lead_minutes: number;
+    release_notified_at: string | null;
+    end_notified_at: string | null;
     created_at: string;
     updated_at: string;
 };

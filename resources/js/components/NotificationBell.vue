@@ -47,6 +47,13 @@ function notificationUrl(notification: AppNotification): string {
         return `/tickets/${data.ticket_id}`;
     }
 
+    if (
+        type === 'TicketSaleNotification' &&
+        typeof data.shop_url === 'string'
+    ) {
+        return data.shop_url;
+    }
+
     return notificationsIndex().url;
 }
 
@@ -105,6 +112,15 @@ function notificationLabel(notification: AppNotification): string {
                   eventName: data.event_name,
               })
             : t('notifications.types.ticketQrUpdated');
+    }
+
+    if (type === 'TicketSaleNotification' && data.ticket_type_name) {
+        const key =
+            data.phase === 'end'
+                ? 'notifications.types.ticketSaleEnd'
+                : 'notifications.types.ticketSaleRelease';
+
+        return t(key, { ticketName: data.ticket_type_name });
     }
 
     return t('notifications.types.generic');

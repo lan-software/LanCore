@@ -35,6 +35,7 @@ use App\Domain\News\Policies\NewsArticlePolicy;
 use App\Domain\News\Policies\NewsCommentPolicy;
 use App\Domain\Newsletter\Models\NewsletterList;
 use App\Domain\Newsletter\Policies\NewsletterListPolicy;
+use App\Domain\Notification\Channels\WebPushChannel;
 use App\Domain\Notification\Events\NotificationPreferencesUpdated;
 use App\Domain\Notification\Events\NotificationsArchived;
 use App\Domain\Notification\Events\ProfileUpdated;
@@ -124,6 +125,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
@@ -184,6 +186,18 @@ class AppServiceProvider extends ServiceProvider
         $this->configureEvents();
         $this->configurePaypalAutoEnable();
         $this->configureRateLimiters();
+        $this->configureNotificationChannels();
+    }
+
+    /**
+     * Bridge Laravel notifications to the existing VAPID transport.
+     *
+     * @see docs/mil-std-498/SSDD.md §5.14
+     * @see docs/mil-std-498/SRS.md NTF-F-011
+     */
+    protected function configureNotificationChannels(): void
+    {
+        NotificationFacade::extend('webpush', fn ($app) => $app->make(WebPushChannel::class));
     }
 
     /**

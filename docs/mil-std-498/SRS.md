@@ -291,6 +291,12 @@ The LanCore CSCI shall support the following operational states:
 | NTF-F-005 | The software shall support notification archiving with archived_at timestamp |
 | NTF-F-006 | The software shall deliver notifications via: database, mail, web push channels |
 | NTF-F-007 | The software shall allow users to dismiss the push notification prompt; dismissal shall persist for the duration of the login session and reset upon logout |
+| NTF-F-008 | The software shall expose two per-TicketType admin toggles `notify_on_release` and `notify_on_end` (both default false) plus a configurable `notify_on_end_lead_minutes` integer (default 1440) controlling how far before `purchase_until` the closing reminder fires |
+| NTF-F-009 | The software shall expose a global per-user notification preference pair `mail_on_ticket_sale` (default true) and `push_on_ticket_sale` (default false) on the `/settings/notifications` page |
+| NTF-F-010 | The software shall run a scheduled command `notifications:dispatch-ticket-sale` every five minutes that scans `ticket_types` for windows that just opened (`purchase_from <= now AND release_notified_at IS NULL`) and windows nearing close (`purchase_until - notify_on_end_lead_minutes <= now AND end_notified_at IS NULL`), dispatching one fan-out job per matched row and setting the corresponding `*_notified_at` sentinel on success to guarantee idempotency |
+| NTF-F-011 | The software shall implement a custom Laravel notification channel `webpush` that iterates the notifiable's `pushSubscriptions`, calls `Minishlink\WebPush\WebPush::sendOneNotification` for each, and deletes any subscription that responds with HTTP 404 or 410 |
+| NTF-F-012 | The software shall suppress release notifications for users who already hold at least one ticket of the same `TicketType`; closing-reminder notifications shall be sent to all opted-in users regardless of existing ticket ownership |
+| NTF-F-013 | The software shall re-check `TicketType::isAvailableForPurchase()` inside the release fan-out job and skip dispatch if the ticket type became hidden or sold out between the cron tick and the job execution |
 
 #### 3.2.11 Integration Domain (CSCI-INT)
 
