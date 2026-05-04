@@ -5,6 +5,7 @@ import { createApp, h } from 'vue';
 import 'flag-icons/css/flag-icons.min.css';
 import '../css/app.css';
 import DemoShell from '@/components/demo/DemoShell.vue';
+import ThemeProvider from '@/components/theme/ThemeProvider.vue';
 import { initializeTheme } from '@/composables/useAppearance';
 import i18n from '@/i18n';
 import type { AvailableLocale } from '@/i18n';
@@ -122,7 +123,13 @@ createInertiaApp({
         });
 
         createApp({
-            render: () => h(DemoShell, null, { default: () => h(App, props) }),
+            render: () =>
+                h(DemoShell, null, {
+                    default: () =>
+                        h(ThemeProvider, null, {
+                            default: () => h(App, props),
+                        }),
+                }),
         })
             .use(plugin)
             .use(i18n)

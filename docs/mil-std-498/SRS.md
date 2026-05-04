@@ -406,7 +406,7 @@ The LanCore CSCI shall support the following operational states:
 | USR-F-007 | The software shall emit UserRolesChanged and UserAttributesUpdated events on changes |
 | USR-F-008 | The software shall support ticket discovery settings (user visibility to other users) |
 | USR-F-009 | The software shall support sidebar favorites for navigation customization |
-| USR-F-010 | The software shall support appearance/theme settings |
+| USR-F-010 | The software shall support per-user appearance/theme settings (`light` / `dark` / `system`) persisted via cookie and localStorage. Scope note: this requirement covers the user's *personal* display preference only and is distinct from the admin-managed event-scoped Theme Library — see THM-F-001..005 |
 | USR-F-011 | The software shall integrate with Stripe Cashier for billing customer management |
 | USR-F-012 | The software shall store user address fields (phone, street, city, zip_code, country) on the users table. These fields shall not appear in any public-facing API response, public profile page, integration DTO, or webhook payload (privacy carve-out enforced by SEC-021) |
 | USR-F-013 | The software shall enforce profile completeness (address + at least phone or email) via `hasCompleteProfile()` before allowing cart item additions |
@@ -562,6 +562,19 @@ Implementation domain: `app/Domain/DataLifecycle/`. Parent SSS rows: `CAP-DL-001
 
 > Settings extension: the existing `SET-F-009`/`SET-F-010` requirements remain in scope. New `SET-F-011`: from `/settings/privacy`, the system shall list the user's active acceptances and provide a per-policy "Withdraw consent" action that POSTs to `/settings/consent/{policy}/withdraw` with an optional `reason`. Existing `SHP-F-010`/`SHP-F-011` remain scoped to checkout-condition acknowledgement and are explicitly distinct from the Policy domain.
 
+#### 3.2.AA Theme Library Domain (CSCI-THM)
+
+Implementation domain: `app/Domain/Theme/`. Parent SSS rows: `CAP-EVT-008`, `CAP-THM-001..004`. (Section number `AA` follows the same placeholder convention as the existing `X`/`Y`/`Z` sections above; renumber when the SRS receives a top-to-bottom resequence.)
+
+| Req ID | Requirement |
+|--------|------------|
+| THM-F-001 | The software shall expose a RESTful admin CRUD for `Theme` records via `App\Domain\Theme\Http\Controllers\ThemeController` (resourceful actions `index`/`create`/`store`/`edit`/`update`/`destroy`, plus `setDefault`), routed in `routes/themes.php` and gated by the `ManageThemes` permission (parent: CAP-THM-001) |
+| THM-F-002 | The software shall persist themes with the columns `id`, `name` (string, unique), `description` (nullable string), `light_config` (nullable JSON), `dark_config` (nullable JSON), and timestamps. Validation in `Store/UpdateThemeRequest` shall enforce: `light_config` and `dark_config` keys must be present in `PaletteVariables::allowedKeys()`; values reject `;`, `}`, `<` to prevent CSS-injection breakout from the inlined `<style>` blocks. No `kind`, `vendor`, or `skin` fields exist (parent: CAP-THM-001) |
+| THM-F-003 | The software shall enforce `ThemePolicy` (`viewAny`/`view`/`create`/`update`/`delete`) gated by `Permission::ManageThemes`; non-admin requests shall receive HTTP 403 (parent: CAP-THM-001) |
+| THM-F-004 | The software shall add a nullable `theme_id` foreign-key column to the `events` table (`->nullOnDelete()`), expose a `theme(): BelongsTo` relation on the `Event` model, include `theme_id` in `Event::$fillable`, and provide an `events.theme.update` endpoint that persists or clears the assignment. Theme assignment changes shall be recorded in the existing `Event` audit trail via the `Auditable` trait (parent: CAP-EVT-008, CAP-THM-002) |
+| THM-F-005 | The software shall provide a `ResolveEventTheme` HTTP middleware registered in the `web` group between `HandleAppearance` and `HandleInertiaRequests`. Resolution order: per-event `theme_id` → `OrganizationSetting` key `default_theme_id` → `null`. When a theme resolves, `View::share` shall receive an `activeTheme` payload `{id, name, lightConfig, darkConfig, source: 'event'\|'organization'}`. `HandleInertiaRequests::share()` exposes this as the `activeTheme` shared prop. No `dataTheme`/`vendor`/`kind`/`skin` fields are included. For requests outside the `/events/{event}/...` subtree, or when no theme resolves, the prop shall be `null` (parent: CAP-THM-003, CAP-THM-004) |
+| THM-F-006 | The software shall expose a `PATCH /themes/default` endpoint (named `themes.set-default`) gated by `ManageThemes`. A non-null `theme_id` body parameter persists `OrganizationSetting::set('default_theme_id', $id)` and invalidates the `inertia.activeTheme.default_id` cache; a `null` body parameter clears the setting. The endpoint returns 200 on success and 403 for unauthorized callers (parent: CAP-THM-001, CAP-THM-004) |
+
 ### 3.3 CSCI External Interface Requirements
 
 See [IRS](IRS.md) for detailed external interface requirements.
@@ -708,6 +721,11 @@ Additional CSCI-level requirements:
 | SEC-021 | USR-F-012 (carve-out), USR-F-023 |
 | SEC-022 | USR-F-024 |
 | CAP-I18N-001..007 | I18N-F-001..007 |
+| CAP-EVT-008 | EVT-F-008 (theme_id assignment endpoint), THM-F-004 |
+| CAP-THM-001 | THM-F-001, THM-F-002, THM-F-003, THM-F-006 |
+| CAP-THM-002 | THM-F-004 |
+| CAP-THM-003 | THM-F-005 |
+| CAP-THM-004 | THM-F-005, THM-F-006 |
 
 ---
 

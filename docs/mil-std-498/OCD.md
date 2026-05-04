@@ -136,6 +136,7 @@ LanCore is a ground-up rewrite providing:
 - View audit trails for all entities
 - Manage users and assign roles
 - Configure purchase requirements and checkout conditions
+- Create and manage named color-palette themes (`name`, `description`, `light_config`, `dark_config`) and assign at most one theme per event — or set a site-wide default — from the Themes admin area
 
 #### 5.1.5 Superadmin
 
@@ -153,8 +154,9 @@ LanCore is a ground-up rewrite providing:
 4. Admin configures ticket types with pricing and quotas
 5. Admin optionally creates a seating plan
 6. Admin assigns sponsors to the event
-7. Admin publishes the event — triggers webhook notifications to integrations
-8. Registered users can now browse and purchase tickets
+7. Admin optionally selects a color-palette Theme from the Theme Library; the assigned theme governs the visual rendering of all `/events/{event}/...` routes (admin and public). Leaving the assignment empty inherits the site-wide default theme (if set) or the platform default appearance
+8. Admin publishes the event — triggers webhook notifications to integrations
+9. Registered users can now browse and purchase tickets
 
 #### 5.2.2 Ticket Purchase Flow
 
@@ -279,6 +281,15 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 5. The OrgaTeamCard links to a dedicated public OrgChart page (`/events/{event}/orga-team`) showing the full hierarchy as a tree: Organizer + Deputies at the top, each Sub-Team as a coloured/emoji-tagged group below with its Leader, Fallback Leaders, and Members
 6. Each person card on the OrgChart links to the user's public profile (`/u/{username}`)
 7. Membership is purely informational and confers no system permissions; only `ManageOrgaTeams` (admin) governs editing the team
+
+#### 5.2.9 Event-Scoped Theme Rendering
+
+1. A visitor (authenticated or anonymous) navigates to any URL under `/events/{event}/...` (e.g., the public event page, the orga-team page, the program view, or the admin event edit screen)
+2. The `ResolveEventTheme` middleware resolves the active palette in priority order: per-event assigned Theme first, then the site-wide default Theme (stored as `OrganizationSetting` key `default_theme_id`), then `null` (no override). The resolved payload `{id, name, lightConfig, darkConfig, source}` is shared into the Inertia response
+3. The server-rendered HTML inlines two `<style>` blocks: `#event-theme-vars-light` targeting `:root` with `light_config` overrides, and `#event-theme-vars-dark` targeting `.dark` with `dark_config` overrides. No `data-theme` attribute is set and no vendor stylesheet is loaded
+4. On the client, the global `<ThemeProvider>` teleports these two style blocks into `<head>` on every Inertia navigation. The user's personal `dark` class is never suppressed; both color contexts coexist
+5. When the user navigates away from the `/events/{event}/...` subtree and there is no site-wide default, `activeTheme` becomes `null` and the style blocks are removed, restoring the Tailwind base palette
+- The admin can also designate any Theme as the **site-wide default** via `PATCH /themes/default` (`themes.set-default`), which applies that palette as a fallback across all event-scoped routes that have no per-event assignment
 
 ### 5.3 System Context
 
@@ -407,3 +418,5 @@ Retention windows per data class are configurable from `/admin/data-lifecycle/re
 | l10n | Localization — the process of adapting an internationalized application for a specific language or region |
 | vue-i18n | The Vue.js internationalization plugin (`vue-i18n@9+`) used in the LanCore and satellite Vue frontends to translate UI strings from JSON locale files |
 | Weblate | Self-hosted translation management system at `https://weblate.sxcs.de` used to maintain translation strings; organised as one project (`lan-software`) with five components (one per app); translator commits arrive via a dedicated `weblate` branch per app repository and are fast-forwarded onto `main` by the `.github/workflows/weblate-merge.yml` workflow; Weblate reads source strings directly from the existing `resources/js/locales/{en,de,fr,es}.json` files |
+| Theme | A named palette of CSS-variable color overrides managed by admins, comprising a unique `name`, an optional `description`, an optional `light_config` JSON map (applied to `:root`), and an optional `dark_config` JSON map (applied to `.dark`). A Theme may be assigned per-event via the nullable `theme_id` FK on `events`, or designated as the site-wide default via `OrganizationSetting` key `default_theme_id`; multiple events may share the same Theme. Distinct from `appearance` (`dark` / `light` / `system`), which is a per-user personal preference |
+| Theme Library | The admin-managed collection of available Themes, surfaced under `/themes` and gated by the `ManageThemes` permission; the source of truth from which an Event's `theme_id` is selected |

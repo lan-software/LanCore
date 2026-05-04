@@ -10,8 +10,10 @@ use App\Domain\Event\Actions\UpdateEvent;
 use App\Domain\Event\Http\Requests\EventIndexRequest;
 use App\Domain\Event\Http\Requests\StoreEventRequest;
 use App\Domain\Event\Http\Requests\UpdateEventRequest;
+use App\Domain\Event\Http\Requests\UpdateEventThemeRequest;
 use App\Domain\Event\Models\Event;
 use App\Domain\OrgaTeam\Models\OrgaTeam;
+use App\Domain\Theme\Models\Theme;
 use App\Domain\Venue\Models\Venue;
 use App\Http\Controllers\Controller;
 use App\Support\StorageRole;
@@ -107,7 +109,25 @@ class EventController extends Controller
             'orgaTeams' => OrgaTeam::query()
                 ->orderBy('name')
                 ->get(['id', 'name']),
+            'themes' => Theme::query()
+                ->orderBy('name')
+                ->get(['id', 'name']),
         ]);
+    }
+
+    /**
+     * @see docs/mil-std-498/SSS.md CAP-EVT-008, CAP-THM-002
+     * @see docs/mil-std-498/SRS.md THM-F-004
+     */
+    public function updateTheme(UpdateEventThemeRequest $request, Event $event): RedirectResponse
+    {
+        $this->authorize('update', $event);
+
+        $event->update([
+            'theme_id' => $request->validated('theme_id'),
+        ]);
+
+        return back();
     }
 
     public function update(UpdateEventRequest $request, Event $event): RedirectResponse

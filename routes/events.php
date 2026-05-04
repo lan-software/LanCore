@@ -15,5 +15,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::patch('events/{event}/publish', [EventController::class, 'publish'])->name('events.publish');
     Route::patch('events/{event}/unpublish', [EventController::class, 'unpublish'])->name('events.unpublish');
+    Route::patch('events/{event}/theme', [EventController::class, 'updateTheme'])->name('events.theme.update');
     Route::delete('events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
 });

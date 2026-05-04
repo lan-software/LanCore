@@ -4,7 +4,7 @@ description: Recurring stale references and missing coverage found across audits
 type: project
 ---
 
-Audit date: 2026-04-07. Feature batch: My Pages event selector, org logo, team leave flow refactor, mail letter animation, mobile UI fixes.
+Audit date: 2026-05-04 (Theme Library scope reduction). Last major batch: 2026-04-07 (My Pages event selector, org logo, team leave flow refactor, mail letter animation, mobile UI fixes).
 
 ## Pre-existing structural drift (not from this batch)
 
@@ -39,6 +39,20 @@ Audit date: 2026-04-07. Feature batch: My Pages event selector, org logo, team l
 ### Mail letter animation
 - SDD §5.3.2 lists MailLetterAnimation component.
 - COMP join request sub-flow (COMP-F-013..015) now documented in SRS.
+
+## Theme Library scope reduction (2026-05-04) — RESOLVED
+
+Vendor takeover layer deleted from codebase. All six docs updated:
+- OCD §5.1.4, §5.2.1 step 7, §5.2.9, §7.1 "Theme" glossary entry
+- SSS CAP-THM-001..004 rewritten; §5 traceability updated (THM-F-006 added)
+- SSDD §5.12 rewritten: vendor stylesheet/enum/Reka clash subsections removed; PaletteVariables + site-wide default subsections added
+- SRS §3.2.AA THM-F-001..005 rewritten, THM-F-006 added, §5 traceability updated
+- STD §4.32 TC-THM-001..009 rewritten; TC-THM-006 (new site-wide default test), TC-THM-009 architecture invariant updated
+- SDD §5.1 middleware table row 4 updated; §5.11 fully rewritten; §11 traceability line updated
+- RTM §24 EVT-F-008 and THM-F-001..005 rows updated; THM-F-006 row added
+
+Key traceability pattern: THM-F-006 traces to CAP-THM-001 + CAP-THM-004 → STD §4.32.5 TC-THM-008.
+PaletteVariables is now the canonical key source; ThemeConfigKeysRule is the backend consumer.
 
 ## User Profile Enhancement — pending documentation (as of 2026-04-26)
 

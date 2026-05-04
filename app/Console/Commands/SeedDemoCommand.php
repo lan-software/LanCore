@@ -20,6 +20,7 @@ use App\Domain\Games\Models\GameMode;
 use App\Domain\Integration\Models\IntegrationApp;
 use App\Domain\News\Enums\ArticleVisibility;
 use App\Domain\News\Models\NewsArticle;
+use App\Domain\OrgaTeam\Models\OrgaTeam;
 use App\Domain\Program\Models\Program;
 use App\Domain\Program\Models\TimeSlot;
 use App\Domain\Seating\Models\SeatPlan;
@@ -29,6 +30,7 @@ use App\Domain\Shop\Models\PaymentProviderCondition;
 use App\Domain\Shop\Models\PurchaseRequirement;
 use App\Domain\Sponsoring\Models\Sponsor;
 use App\Domain\Sponsoring\Models\SponsorLevel;
+use App\Domain\Theme\Models\Theme;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\TicketCategory;
 use App\Domain\Ticketing\Models\TicketGroup;
@@ -65,6 +67,8 @@ class SeedDemoCommand extends Command
         $this->attempt('Users', $results, fn () => $this->seedUsers());
         $this->attempt('Venues', $results, fn () => $this->seedVenues());
         $this->attempt('Games', $results, fn () => $this->seedGames());
+        $this->attempt('Themes', $results, fn () => $this->seedThemes());
+        $this->attempt('Orga Teams', $results, fn () => $this->seedOrgaTeams());
 
         /** @var array{published: Event, draft: Event, past: Event}|null $events */
         $events = $this->attempt(
@@ -400,6 +404,151 @@ class SeedDemoCommand extends Command
         return true;
     }
 
+    private function seedThemes(): bool
+    {
+        if (Theme::query()->where('name', 'Aurora')->exists()) {
+            return false;
+        }
+
+        $this->components->task('Seeding themes', function (): void {
+            Theme::create([
+                'name' => 'Aurora',
+                'description' => 'Cool teal-and-violet palette for summer events.',
+                'light_config' => [
+                    '--background' => '#f5fbff',
+                    '--foreground' => '#0e1726',
+                    '--card' => '#ffffff',
+                    '--card-foreground' => '#0e1726',
+                    '--primary' => '#0d9488',
+                    '--primary-foreground' => '#ffffff',
+                    '--secondary' => '#e0f2fe',
+                    '--secondary-foreground' => '#0c4a6e',
+                    '--accent' => '#a78bfa',
+                    '--accent-foreground' => '#1e1b4b',
+                    '--muted' => '#eef2f6',
+                    '--muted-foreground' => '#475569',
+                    '--border' => '#dbeafe',
+                    '--ring' => '#0d9488',
+                    '--sidebar-background' => '#0f172a',
+                    '--sidebar-foreground' => '#cbd5f5',
+                    '--sidebar-primary' => '#22d3ee',
+                    '--sidebar-primary-foreground' => '#0f172a',
+                    '--sidebar-accent' => '#1e293b',
+                    '--sidebar-accent-foreground' => '#e2e8f0',
+                    '--sidebar-border' => '#1e293b',
+                ],
+                'dark_config' => [
+                    '--background' => '#020617',
+                    '--foreground' => '#f1f5f9',
+                    '--card' => '#0b1220',
+                    '--card-foreground' => '#f1f5f9',
+                    '--primary' => '#2dd4bf',
+                    '--primary-foreground' => '#042f2e',
+                    '--secondary' => '#1e293b',
+                    '--secondary-foreground' => '#cbd5f5',
+                    '--accent' => '#a78bfa',
+                    '--accent-foreground' => '#1e1b4b',
+                    '--muted' => '#0f172a',
+                    '--muted-foreground' => '#94a3b8',
+                    '--border' => '#1e293b',
+                    '--ring' => '#2dd4bf',
+                    '--sidebar-background' => '#020617',
+                    '--sidebar-foreground' => '#cbd5f5',
+                    '--sidebar-primary' => '#22d3ee',
+                    '--sidebar-primary-foreground' => '#020617',
+                    '--sidebar-accent' => '#0f172a',
+                    '--sidebar-accent-foreground' => '#e2e8f0',
+                    '--sidebar-border' => '#0f172a',
+                ],
+            ]);
+
+            Theme::create([
+                'name' => 'Sunset Arcade',
+                'description' => 'Warm orange-and-magenta palette for retro-flavored events.',
+                'light_config' => [
+                    '--background' => '#fff7ed',
+                    '--foreground' => '#27121a',
+                    '--card' => '#ffffff',
+                    '--card-foreground' => '#27121a',
+                    '--primary' => '#ea580c',
+                    '--primary-foreground' => '#ffffff',
+                    '--secondary' => '#fde68a',
+                    '--secondary-foreground' => '#7c2d12',
+                    '--accent' => '#db2777',
+                    '--accent-foreground' => '#ffffff',
+                    '--muted' => '#ffe4d3',
+                    '--muted-foreground' => '#8b3a1d',
+                    '--border' => '#fbd9b9',
+                    '--ring' => '#ea580c',
+                    '--sidebar-background' => '#27121a',
+                    '--sidebar-foreground' => '#fde7d6',
+                    '--sidebar-primary' => '#fb923c',
+                    '--sidebar-primary-foreground' => '#27121a',
+                    '--sidebar-accent' => '#3b1a26',
+                    '--sidebar-accent-foreground' => '#fde7d6',
+                    '--sidebar-border' => '#3b1a26',
+                ],
+                'dark_config' => [
+                    '--background' => '#1c0d12',
+                    '--foreground' => '#fde7d6',
+                    '--card' => '#27121a',
+                    '--card-foreground' => '#fde7d6',
+                    '--primary' => '#fb923c',
+                    '--primary-foreground' => '#27121a',
+                    '--secondary' => '#3b1a26',
+                    '--secondary-foreground' => '#fde7d6',
+                    '--accent' => '#f472b6',
+                    '--accent-foreground' => '#27121a',
+                    '--muted' => '#2a1119',
+                    '--muted-foreground' => '#d8a89a',
+                    '--border' => '#3b1a26',
+                    '--ring' => '#fb923c',
+                    '--sidebar-background' => '#160a0f',
+                    '--sidebar-foreground' => '#fde7d6',
+                    '--sidebar-primary' => '#fb923c',
+                    '--sidebar-primary-foreground' => '#160a0f',
+                    '--sidebar-accent' => '#27121a',
+                    '--sidebar-accent-foreground' => '#fde7d6',
+                    '--sidebar-border' => '#27121a',
+                ],
+            ]);
+        });
+
+        return true;
+    }
+
+    private function seedOrgaTeams(): bool
+    {
+        if (OrgaTeam::query()->where('slug', 'lan-party-crew')->exists()) {
+            return false;
+        }
+
+        $organizer = User::query()->where('email', 'admin@example.com')->first();
+
+        if ($organizer === null) {
+            return false;
+        }
+
+        $this->components->task('Seeding orga teams', function () use ($organizer): void {
+            $team = OrgaTeam::create([
+                'name' => 'LAN Party Crew',
+                'slug' => 'lan-party-crew',
+                'description' => 'The core organizing crew running every LAN event in this demo dataset.',
+                'organizer_user_id' => $organizer->id,
+            ]);
+
+            $deputies = User::query()
+                ->whereIn('email', ['superadmin@example.com', 'sponsor@example.com'])
+                ->get();
+
+            foreach ($deputies as $index => $deputy) {
+                $team->deputies()->attach($deputy->id, ['sort_order' => $index]);
+            }
+        });
+
+        return true;
+    }
+
     /**
      * @return array{published: Event, draft: Event, past: Event}|false
      */
@@ -413,6 +562,9 @@ class SeedDemoCommand extends Command
 
         $this->components->task('Seeding events', function () use (&$events): void {
             $venues = Venue::all();
+            $orgaTeam = OrgaTeam::query()->where('slug', 'lan-party-crew')->first();
+            $aurora = Theme::query()->where('name', 'Aurora')->first();
+            $sunset = Theme::query()->where('name', 'Sunset Arcade')->first();
 
             $events['published'] = Event::factory()->published()->create([
                 'name' => 'Summer LAN 2026',
@@ -420,6 +572,8 @@ class SeedDemoCommand extends Command
                 'start_date' => '2026-07-15 16:00:00',
                 'end_date' => '2026-07-18 14:00:00',
                 'venue_id' => $venues->first()?->id,
+                'orga_team_id' => $orgaTeam?->id,
+                'theme_id' => $aurora?->id,
             ]);
 
             $events['draft'] = Event::factory()->create([
@@ -428,6 +582,7 @@ class SeedDemoCommand extends Command
                 'start_date' => '2026-04-10 18:00:00',
                 'end_date' => '2026-04-12 16:00:00',
                 'venue_id' => $venues->skip(1)->first()?->id,
+                'orga_team_id' => $orgaTeam?->id,
             ]);
 
             $events['past'] = Event::factory()->published()->create([
@@ -436,6 +591,8 @@ class SeedDemoCommand extends Command
                 'start_date' => '2025-12-27 14:00:00',
                 'end_date' => '2025-12-29 18:00:00',
                 'venue_id' => $venues->skip(2)->first()?->id,
+                'orga_team_id' => $orgaTeam?->id,
+                'theme_id' => $sunset?->id,
             ]);
         });
 

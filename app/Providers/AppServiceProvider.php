@@ -94,6 +94,8 @@ use App\Domain\Sponsoring\Models\Sponsor;
 use App\Domain\Sponsoring\Models\SponsorLevel;
 use App\Domain\Sponsoring\Policies\SponsorLevelPolicy;
 use App\Domain\Sponsoring\Policies\SponsorPolicy;
+use App\Domain\Theme\Models\Theme;
+use App\Domain\Theme\Policies\ThemePolicy;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketCategory;
@@ -239,6 +241,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(GameMode::class, GameModePolicy::class);
         Gate::policy(IntegrationApp::class, IntegrationAppPolicy::class);
         Gate::policy(Event::class, EventPolicy::class);
+        Gate::policy(Theme::class, ThemePolicy::class);
         Gate::policy(Program::class, ProgramPolicy::class);
         Gate::policy(Sponsor::class, SponsorPolicy::class);
         Gate::policy(SponsorLevel::class, SponsorLevelPolicy::class);

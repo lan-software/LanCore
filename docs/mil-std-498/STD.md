@@ -998,6 +998,7 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | CAP-ACH-005, ACH-F-008 | Achievement Rarity tests (4.26) |
 | CAP-EVT-007, EVT-F-012 | Event calendar export tests (4.30) |
 | CAP-DL-001..008, DL-F-001..018 | Data Lifecycle test suite (4.31) |
+| CAP-EVT-008, CAP-THM-001..004, THM-F-001..006 | Event Theme test suite (4.32) |
 
 ---
 
@@ -1016,6 +1017,51 @@ Located under `tests/Feature/Domain/DataLifecycle/` (and `tests/Unit/Domain/Data
 | TC-DL-007 | `GraceReadOnlyMiddlewareTest.php` | Mutating requests during grace return 423 Locked; GET routes still pass (DL-F-006) |
 | TC-DL-008 | `PostDeletionGdprExportTest.php` | Anonymized user is locatable by `email_hash` for post-deletion subject access requests (CAP-DL-007, GDPR-F-009) |
 | TC-DL-009 | `AnonymizerTest.php` | `UserAnonymizer` scrubs every PII column and preserves `email_hash`; `SessionsAnonymizer` hard-deletes user sessions; `PolicyAnonymizer` is a no-op without acceptances (DL-F-009, CAP-DL-004) |
+
+---
+
+### 4.32 Event Theme Tests
+
+Located under `tests/Feature/Themes/` and `tests/Feature/Architecture/ThemeArchitectureTest.php`.
+
+#### 4.32.1 Theme CRUD
+
+| Test ID | File | Verifies |
+|---------|------|----------|
+| TC-THM-001 | `ThemeCrudTest.php` | An admin holding `ManageThemes` can index, create, update, and delete themes via the admin endpoints; the resulting Theme rows persist `name`, `description`, `light_config`, and `dark_config` (CAP-THM-001, THM-F-001, THM-F-002) |
+| TC-THM-002 | `ThemeCrudTest.php` | Validation: `name` uniqueness; `light_config`/`dark_config` keys must be present in `PaletteVariables::allowedKeys()`; values reject `;`, `}`, `<` to prevent CSS-injection breakout. No `vendor`/`skin`/`kind` fields are accepted (THM-F-002) |
+
+#### 4.32.2 Theme Authorization
+
+| Test ID | File | Verifies |
+|---------|------|----------|
+| TC-THM-003 | `ThemePolicyTest.php` | A non-admin user cannot index, create, update, or delete themes; every endpoint returns 403 (THM-F-003) |
+
+#### 4.32.3 Per-Event Theme Assignment
+
+| Test ID | File | Verifies |
+|---------|------|----------|
+| TC-THM-004 | `EventThemeAssignmentTest.php` | Posting `events.theme.update` with a valid `theme_id` persists the assignment; posting `null` clears it; the change is captured in the Event audit trail (CAP-EVT-008, CAP-THM-002, THM-F-004) |
+| TC-THM-005 | `EventThemeAssignmentTest.php` | Soft-deleting a Theme that is referenced by an event sets the event's `theme_id` to `null` via the FK's `nullOnDelete` rule (THM-F-002, THM-F-004) |
+
+#### 4.32.4 Themed Rendering
+
+| Test ID | File | Verifies |
+|---------|------|----------|
+| TC-THM-006 | `ResolveEventThemeMiddlewareTest.php` | A request to a route under `/events/{event}/...` for an event with an assigned theme produces an Inertia `activeTheme` shared prop with `{id, name, lightConfig, darkConfig, source: 'event'}` and no `dataTheme`/`vendor`/`kind`/`skin` fields (CAP-THM-003, THM-F-005) |
+| TC-THM-007 | `ResolveEventThemeMiddlewareTest.php` | ResolveEventTheme resolution order: event-scoped theme wins over org default; org default resolves when event has none; prop is `null` when neither exists. The user's `dark` class is never suppressed in any case (CAP-THM-004, THM-F-005) |
+
+#### 4.32.5 Site-Wide Default
+
+| Test ID | File | Verifies |
+|---------|------|----------|
+| TC-THM-008 | `SiteDefaultThemeTest.php` | `PATCH /themes/default` with a valid `theme_id` sets `OrganizationSetting` key `default_theme_id` and invalidates the cache; passing `null` clears the setting. A non-admin caller receives 403 (CAP-THM-004, THM-F-006) |
+
+#### 4.32.6 Architecture
+
+| Test ID | File | Verifies |
+|---------|------|----------|
+| TC-THM-009 | `tests/Feature/Architecture/ThemeArchitectureTest.php` | The Theme model lives under `App\Domain\Theme\Models`; `PaletteVariables` is the sole definition of allowed CSS-variable keys; no `ThemeVendor` or `ThemeKind` enum exists in the codebase (architecture invariant) |
 
 ---
 

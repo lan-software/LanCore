@@ -101,6 +101,7 @@ class HandleInertiaRequests extends Middleware
                 : null,
             'eventContext' => fn () => $this->eventContext($request),
             'myEventContext' => fn () => $this->myEventContext($request),
+            'activeTheme' => fn () => view()->shared('activeTheme'),
             'vapidPublicKey' => config('services.vapid.public_key'),
             'integrationLinks' => fn () => IntegrationApp::query()
                 ->where('is_active', true)

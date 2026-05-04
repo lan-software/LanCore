@@ -685,6 +685,7 @@ manifest emits pseudonym → hint label, never pseudonym → real id.
 | SEC-021 | Section 5.7.6 (privacy carve-out: real name, email, address, locale never on public profile / DTO consumption rules) |
 | SEC-022 | Section 5.4.2 (avatar URL resolution), Section 3.2 (S3 storage role for avatars/banners normalized server-side) |
 | CAP-DL-001..008, SEC-DL-001..002 | Section 5.11 (Deletion & Retention Pipeline) |
+| CAP-EVT-008, CAP-THM-001..004 | Section 5.12 (Event Theme Architecture) |
 
 ---
 
@@ -724,6 +725,41 @@ PendingEmailConfirm → PendingGrace → Anonymized
 | `Event` model       | DataLifecycle soft-deletes; never hard-deletes |
 | Each domain (Shop, Ticketing, …) | exposes a `DomainAnonymizer` impl into the registry |
 | `Policy` GDPR Export pipeline | shares the email-hash key for §5.6 lookups |
+
+---
+
+### 5.12 Event Theme Architecture
+
+The Event Theme subsystem (`app/Domain/Theme/`) lets admins build a library of named color-palette themes and assign one per Event (or set a site-wide default). The active palette governs the rendering of every route under `/events/{event}/...` (admin and public) and falls back to the per-user `light` / `dark` / `system` mechanism (CAP-USR-008) when no theme resolves.
+
+**Domain shape.** A `Theme` carries:
+
+- `id` — surrogate primary key
+- `name` — unique display name
+- `description` — nullable human-readable description
+- `light_config` — nullable JSON map of CSS-variable overrides applied to `:root` (light context)
+- `dark_config` — nullable JSON map of CSS-variable overrides applied to `.dark` (dark context)
+
+The `events` table gains a nullable `theme_id` foreign key (`->nullOnDelete()`); `Event` exposes a `theme(): BelongsTo` relation. Theme assignment changes are captured by the existing `Auditable` trait on `Event`.
+
+**Curated palette allowlist.** The set of CSS variables that `light_config` and `dark_config` may reference is defined by `App\Domain\Theme\Support\PaletteVariables`. It groups allowed keys into three semantic groups: Surface (`--background`, `--foreground`, `--card`, `--muted`, `--border`, `--input`), Brand (`--primary`, `--secondary`, `--accent`, `--ring`), and Sidebar (`--sidebar-*`). Both backend validation (`ThemeConfigKeysRule`) and the editor UI consume the same schema so the allowed key sets are never duplicated.
+
+**Site-wide default.** An admin can designate any Theme as the site-wide default by calling `PATCH /themes/default` (`themes.set-default`, gated by `ManageThemes`). The action persists `OrganizationSetting::set('default_theme_id', $id)`. `ResolveEventTheme` reads this setting via `Cache::remember('inertia.activeTheme.default_id', 3600, ...)` and uses it as the fallback when the resolved Event has no per-event theme assigned.
+
+**Request pipeline.** `ResolveEventTheme` is registered in the `web` group between `HandleAppearance` and `HandleInertiaRequests`. Resolution order: (1) per-event `theme_id`; (2) `default_theme_id` org setting; (3) `null`. The resolved payload is `{id, name, lightConfig, darkConfig, source: 'event'|'organization'}`. `HandleInertiaRequests::share()` exposes this as the `activeTheme` shared prop. The prop is `null` when no palette resolves.
+
+**Server-side first paint.** `resources/views/app.blade.php` emits two `<style>` blocks: `#event-theme-vars-light` targets `:root` with the `light_config` overrides; `#event-theme-vars-dark` targets `.dark` with the `dark_config` overrides. No `data-theme` attribute is set. The user's `dark` class is never suppressed.
+
+**Client mirror.** `<ThemeProvider>` (mounted once at app shell level in `resources/js/app.ts`) reads the `activeTheme` shared prop and teleports the two style blocks into `<head>` on every Inertia navigation. No dynamic chunk loading occurs; no dark-mode suppression is applied.
+
+| Subsystem dependency | Direction |
+|----------------------|-----------|
+| `Event` model | adds nullable `theme_id` FK; `Auditable` captures assignment changes |
+| `PaletteVariables` | defines allowed CSS-variable keys; consumed by `ThemeConfigKeysRule` and editor UI |
+| `OrganizationSetting` | stores `default_theme_id`; read by `ResolveEventTheme` via 1-hour cache |
+| `web` middleware group | hosts `ResolveEventTheme` between `HandleAppearance` and `HandleInertiaRequests` |
+| `HandleInertiaRequests` | shares `activeTheme` prop |
+| `app.blade.php` | server-renders two `<style>` blocks for `:root` and `.dark` overrides |
 
 ---
 

@@ -19,6 +19,7 @@ use App\Domain\Program\Enums\Permission as ProgramPermission;
 use App\Domain\Seating\Enums\Permission as SeatingPermission;
 use App\Domain\Shop\Enums\Permission as ShopPermission;
 use App\Domain\Sponsoring\Enums\Permission as SponsoringPermission;
+use App\Domain\Theme\Enums\Permission as ThemePermission;
 use App\Domain\Ticketing\Enums\Permission as TicketingPermission;
 use App\Domain\Venue\Enums\Permission as VenuePermission;
 use App\Domain\Webhook\Enums\Permission as WebhookPermission;
@@ -67,6 +68,7 @@ final class RolePermissionMap
                 SponsoringPermission::ManageSponsors,
                 SponsoringPermission::ManageSponsorLevels,
                 OrgaTeamPermission::ManageOrgaTeams,
+                ThemePermission::ManageThemes,
                 IntegrationPermission::ManageIntegrations,
                 WebhookPermission::ManageWebhooks,
                 OrchestrationPermission::ManageGameServers,
@@ -110,6 +112,7 @@ final class RolePermissionMap
             ...SponsoringPermission::cases(),
             ...OrgaTeamPermission::cases(),
             ...PolicyPermission::cases(),
+            ...ThemePermission::cases(),
             ...TicketingPermission::cases(),
             ...VenuePermission::cases(),
             ...WebhookPermission::cases(),

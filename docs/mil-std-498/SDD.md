@@ -442,15 +442,16 @@ show({ id: 1 })
 |-------|-----------|---------|
 | 1 | AddRequestId | Assigns X-Request-ID header for tracing |
 | 2 | TrackHttpMetrics | Records Prometheus metrics |
-| 3 | HandleAppearance | Reads appearance/theme preference |
-| 4 | SetLocale | Applies the authenticated user's stored `locale` (from `users.locale`) via `app()->setLocale()`; for unauthenticated requests, parses `Accept-Language` and maps to the nearest supported locale (`en`, `de`, `fr`, `es`), falling back to `en`. Must run after `StartSession` so the authenticated user is available; runs before `HandleInertiaRequests` so the active locale is set when Inertia builds its shared props. Traces to I18N-F-002. |
-| 5 | HandleInertiaRequests | Shares global data with Inertia (auth, flash, push prompt dismissal, permissions, `organization`, `myEventContext`, `locale`, `availableLocales`, etc.). The `organization` prop is read from cache key `inertia.organization` (1h TTL, invalidated by `OrganizationSettingsController::update/uploadLogo/removeLogo`). The `myEventContext` prop resolves the user's currently selected event from session key `my_selected_event_id`, validates participation via `Event::scopeForUser`, and auto-clears a stale selection. The `locale` prop is `app()->getLocale()` after `SetLocale` has run; `availableLocales` is `['en', 'de', 'fr', 'es']`. Traces to I18N-F-003. |
-| 6 | EncryptCookies | Cookie encryption |
-| 7 | StartSession | Session initialization |
-| 8 | VerifyCsrfToken | CSRF protection |
-| 9 | EnsureUserHasRole | Role-based route protection (alias: `role`) |
-| 10 | AuthenticateIntegration | Bearer token validation for API routes |
-| 11 | RequireUsername | After `auth`, redirects authenticated users with `username = null` to `/onboarding/username`. Allowlist: `/onboarding/username`, logout, language switch, asset and Inertia version routes, telescope/horizon admin paths. Stores intended URL in session for post-onboarding redirect. Traces to USR-F-022 |
+| 3 | HandleAppearance | Reads the per-user `light` / `dark` / `system` preference (cookie + localStorage). Personal display preference only — distinct from event-scoped Theme Library, which is resolved one slot later by `ResolveEventTheme`. Traces to USR-F-010. |
+| 4 | ResolveEventTheme | If the resolved route binding includes an `Event`, resolves the active palette in priority order: per-event `theme_id` → `OrganizationSetting` key `default_theme_id` (cached 1h under `inertia.activeTheme.default_id`) → `null`. When a theme resolves, `View::share`s an `activeTheme` payload `{id, name, lightConfig, darkConfig, source: 'event'\|'organization'}`. No `dataTheme`, `vendor`, `kind`, or `skin` fields. Must run after `SubstituteBindings`, after `HandleAppearance`, and before `HandleInertiaRequests`. Traces to THM-F-005, THM-F-006, CAP-THM-003, CAP-THM-004. |
+| 5 | SetLocale | Applies the authenticated user's stored `locale` (from `users.locale`) via `app()->setLocale()`; for unauthenticated requests, parses `Accept-Language` and maps to the nearest supported locale (`en`, `de`, `fr`, `es`), falling back to `en`. Must run after `StartSession` so the authenticated user is available; runs before `HandleInertiaRequests` so the active locale is set when Inertia builds its shared props. Traces to I18N-F-002. |
+| 6 | HandleInertiaRequests | Shares global data with Inertia (auth, flash, push prompt dismissal, permissions, `organization`, `myEventContext`, `locale`, `availableLocales`, `activeTheme`, etc.). The `organization` prop is read from cache key `inertia.organization` (1h TTL, invalidated by `OrganizationSettingsController::update/uploadLogo/removeLogo`). The `myEventContext` prop resolves the user's currently selected event from session key `my_selected_event_id`, validates participation via `Event::scopeForUser`, and auto-clears a stale selection. The `locale` prop is `app()->getLocale()` after `SetLocale` has run; `availableLocales` is `['en', 'de', 'fr', 'es']`. The `activeTheme` prop is `view()->shared('activeTheme')` — the payload populated by `ResolveEventTheme`, or `null` outside event-scoped routes. Traces to I18N-F-003, THM-F-005. |
+| 7 | EncryptCookies | Cookie encryption |
+| 8 | StartSession | Session initialization |
+| 9 | VerifyCsrfToken | CSRF protection |
+| 10 | EnsureUserHasRole | Role-based route protection (alias: `role`) |
+| 11 | AuthenticateIntegration | Bearer token validation for API routes |
+| 12 | RequireUsername | After `auth`, redirects authenticated users with `username = null` to `/onboarding/username`. Allowlist: `/onboarding/username`, logout, language switch, asset and Inertia version routes, telescope/horizon admin paths. Stores intended URL in session for post-onboarding redirect. Traces to USR-F-022 |
 
 ### 5.2 Service Layer
 
@@ -1253,6 +1254,7 @@ unrendered.
 | ICLIB-F-002 (amended), ICLIB-F-010, CAP-USR-015 | `app/Domain/Integration/Actions/ResolveIntegrationUser.php` (returns `username`, `name`, `avatar_url`, `avatar_source`, `profile_url`); `app/Domain/Webhook/` payload builders for `user.registered` and `profile.updated`; `lancore-client` package DTO updates |
 | SEC-021 | `app/Http/Controllers/PublicProfileController.php` (privacy enforcement, 404 not 403); `app/Http/Resources/PublicProfileResource.php` (whitelist of public-facing fields); test suite §4.24 |
 | SEC-022 | `app/Domain/Profile/Actions/NormalizeAvatar.php`, `app/Domain/Profile/Actions/NormalizeBanner.php`, `app/Http/Requests/UpdateProfileMediaRequest.php` (size + mime + bomb-protection validation) |
+| EVT-F-008, THM-F-001..006 | app/Domain/Theme/, app/Domain/Theme/Support/PaletteVariables.php, app/Domain/Theme/Http/Requests/ThemeConfigKeysRule.php, app/Http/Middleware/ResolveEventTheme.php, app/Http/Middleware/HandleInertiaRequests.php (activeTheme shared prop), bootstrap/app.php (middleware registration), resources/views/app.blade.php (SSR light/dark style blocks), resources/js/components/theme/ThemeProvider.vue, resources/js/components/theme/{ColorPickerInput,ThemePalettePicker,ThemePreview}.vue, OrganizationSetting (default_theme_id key); see §5.11 |
 
 ---
 
@@ -1279,6 +1281,36 @@ Implementation root: `app/Domain/DataLifecycle/`.
 | Vue pages | `resources/js/pages/account/Delete.vue`, `DeletionPending.vue`; `resources/js/pages/admin/data-lifecycle/DeletionRequests/{Index,Show}.vue`, `RetentionPolicies/Index.vue` |
 | Seeder | `database/seeders/RetentionPolicySeeder.php` | Idempotent — uses `firstOrCreate`. |
 | GDPR export integration | `app/Console/Commands/Gdpr/ExportUserDataCommand.php::locateUser` | Falls back to `email_hash` lookup with `withTrashed()` (CAP-DL-007). |
+
+---
+
+### 5.11 Event Theme Implementation
+
+Implementation root: `app/Domain/Theme/`. Color-palette only; no vendor stylesheets, no kind/skin enums.
+
+| Component | Path | Notes |
+|-----------|------|-------|
+| Model | `app/Domain/Theme/Models/Theme.php` | Implements `OwenIt\Auditing\Contracts\Auditable` and uses the `Auditable` trait (parity with `Event`). Casts: `light_config => 'array'`, `dark_config => 'array'`. No `kind`/`vendor`/`skin` casts. |
+| Palette allowlist | `app/Domain/Theme/Support/PaletteVariables.php` | Defines `allowedKeys(): array` across three groups — Surface (`--background`, `--foreground`, `--card`, `--muted`, `--border`, `--input`), Brand (`--primary`, `--secondary`, `--accent`, `--ring`), Sidebar (`--sidebar-*`). Consumed by `ThemeConfigKeysRule` (backend validation) and the editor UI (frontend key enumeration). |
+| Validation rule | `app/Domain/Theme/Http/Requests/ThemeConfigKeysRule.php` | Implements `ValidationRule`; rejects any key not in `PaletteVariables::allowedKeys()` and any value containing `;`, `}`, or `<`. Used for both `light_config` and `dark_config` in `Store/UpdateThemeRequest`. |
+| Enums | `app/Domain/Theme/Enums/Permission.php` | `Permission`: `ManageThemes` implementing `App\Contracts\PermissionEnum`; included in `RolePermissionMap` for the `Admin` role. (`ThemeKind` and `ThemeVendor` have been removed.) |
+| Migrations | `database/migrations/*_create_themes_table.php`, `*_add_theme_id_to_events_table.php` | Two separate migrations. `themes` table: `id`, `name` (unique), `description` (nullable), `light_config` (nullable JSON), `dark_config` (nullable JSON), timestamps. The second adds `foreignId('theme_id')->nullable()->after('orga_team_id')->constrained()->nullOnDelete()` to the `events` table. |
+| Factory | `database/factories/ThemeFactory.php` | States: `withLightConfig()`, `withDarkConfig()`, `withBothConfigs()`. |
+| Form Requests | `app/Domain/Theme/Http/Requests/StoreThemeRequest.php`, `UpdateThemeRequest.php` | `name` unique (Update ignores current id); `light_config`/`dark_config` keys validated via `ThemeConfigKeysRule`; values reject `;`, `}`, `<`. No `kind`/`vendor`/`skin` fields. |
+| Actions | `app/Domain/Theme/Actions/CreateTheme.php`, `UpdateTheme.php`, `DeleteTheme.php`, `SetDefaultTheme.php` | Hand-rolled actions following the `execute()` + `DB::transaction` convention. `SetDefaultTheme` calls `OrganizationSetting::set('default_theme_id', $id)` and flushes the `inertia.activeTheme.default_id` cache entry. |
+| Policy | `app/Domain/Theme/Policies/ThemePolicy.php` | All abilities (`viewAny`/`view`/`create`/`update`/`delete`) gated by `Permission::ManageThemes`. Registered in `AppServiceProvider`'s `$policies` array (parity with `EventPolicy`). |
+| Controller | `app/Domain/Theme/Http/Controllers/ThemeController.php` | RESTful (`index`/`create`/`store`/`edit`/`update`/`destroy`), plus `setDefault` action for `PATCH /themes/default`. Returns Inertia responses (`themes/Index\|Create\|Edit`). |
+| Routes | `routes/themes.php` (required by `routes/web.php`); plus `events.theme.update` in `routes/events.php` | `PATCH /themes/default` → `themes.set-default`. Wayfinder regenerates typed action imports automatically. |
+| Site-wide default | `OrganizationSetting` (`default_theme_id` key) + cache key `inertia.activeTheme.default_id` (1h TTL) | `SetDefaultTheme` writes the setting and flushes the cache. `ResolveEventTheme` reads via `Cache::remember(...)` to avoid per-request DB hits. |
+| Event-side wiring | `app/Domain/Event/Models/Event.php` | Adds `theme_id` to `$fillable`, adds `theme(): BelongsTo` relation. Audit changes captured automatically by the existing `Auditable` trait. |
+| Middleware | `app/Http/Middleware/ResolveEventTheme.php`, registered in `bootstrap/app.php` `web` group between `HandleAppearance` and `HandleInertiaRequests` | Resolution order: per-event `theme_id` → cached `default_theme_id` → `null`. Builds `activeTheme = {id, name, lightConfig, darkConfig, source}` and `View::share`s it. No-op when no theme resolves. |
+| Inertia share | `app/Http/Middleware/HandleInertiaRequests.php` | `'activeTheme' => fn () => view()->shared('activeTheme')` shared-prop entry. |
+| SSR template | `resources/views/app.blade.php` | Emits `<style id="event-theme-vars-light">:root { … }</style>` and `<style id="event-theme-vars-dark">.dark { … }</style>` when `$activeTheme` is non-null. No `data-theme` attribute. Mirrors the existing `class="dark"` preempt logic position. |
+| Provider component | `resources/js/components/theme/ThemeProvider.vue` | Mounted once at the app shell level in `resources/js/app.ts`. Uses `<Teleport to="head">` to inject the two style blocks on every Inertia navigation. No dynamic chunk loading, no `data-theme` mutation, no dark-mode suppression. |
+| Theme composable | `resources/js/composables/useEventTheme.ts` | Reads the `activeTheme` Inertia shared prop with optional-chained access (resilient to `usePage()` being called before Inertia's `<App>` initializes the page state) and exposes `lightConfig` / `darkConfig` computed refs to `ThemeProvider`. |
+| App shell wiring | `resources/js/app.ts` | Wraps `<App>` with `<ThemeProvider>` inside the existing `<DemoShell>` mount. |
+| PageProps types | `resources/js/types/index.d.ts` | Extends Inertia `PageProps` with `activeTheme: ThemeContext \| null` where `ThemeContext = {id, name, lightConfig, darkConfig, source: 'event'\|'organization'}`. |
+| Theme editor UI | `resources/js/pages/themes/{Index,Create,Edit}.vue`, `resources/js/components/theme/{ColorPickerInput,ThemePalettePicker,ThemePreview}.vue` | `ColorPickerInput` wraps a native `<input type="color">` swatch feeding hex values. `ThemePalettePicker` renders two columns (light + dark) over the `PaletteVariables` groups. `ThemePreview` shows a sidebar slice + card + buttons + badges in both light and dark variants side-by-side (stacked on small screens), live-updating as values change. Sidebar nav entry in `AppSidebar.vue` gated by `ManageThemes`. |
 
 ---
 

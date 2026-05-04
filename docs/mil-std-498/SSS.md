@@ -64,6 +64,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-EVT-005 | The system shall support seat capacity configuration per event |
 | CAP-EVT-006 | The system shall maintain audit trails for event modifications |
 | CAP-EVT-007 | The system shall allow attendees to download a published event as an iCalendar (RFC 5545) file from the public event page so it can be imported into Google / Apple / Outlook calendars |
+| CAP-EVT-008 | The system shall allow each Event to be optionally assigned exactly one Theme from the Theme Library; an unassigned (`null`) theme leaves the event rendered in the platform default appearance. Traces forward to CAP-THM-002 |
 
 #### 3.2.2 Ticketing (CAP-TKT)
 
@@ -232,7 +233,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-USR-009 | The system shall require a complete profile (address and at least one contact method) before allowing purchases |
 | CAP-USR-006 | The system shall support ticket discovery settings (user visibility control) |
 | CAP-USR-007 | The system shall support sidebar favorites for navigation customization |
-| CAP-USR-008 | The system shall support appearance settings (theme preferences) |
+| CAP-USR-008 | The system shall support per-user appearance settings (`light` / `dark` / `system`) persisted via cookie + localStorage. **Scope note:** this capability covers the user's *personal* display preference only and does not govern the admin-managed event-scoped Theme Library — see CAP-THM-001..004 |
 | CAP-USR-010 | The system shall store a `locale` field on the user record representing the user's preferred display language, selectable from the supported locales: `en`, `de`, `fr`, `es` |
 | CAP-USR-011 | The system shall require every user to choose a public-facing `username` (gamer handle), 3–32 characters, drawn from the gamer character set `[A-Za-z0-9_-]` with no leading or trailing punctuation, globally unique case-insensitively, distinct from the `name` (real name) field. The username shall be mandatory at signup. Users registered before this capability shipped shall be intercepted on next login by a one-time onboarding step until they choose a username; until that point the user's `username` claim shall be `null` (transitional state) |
 | CAP-USR-012 | The system shall provide a public profile page at `/u/{username}` rendering the user's username, custom emoji, short bio, long-form description, avatar, banner, and earned achievements with rarity. The page shall enforce the user's `profile_visibility` setting: `public` (accessible to anonymous visitors), `logged_in` (default; accessible to authenticated LanCore users), `private` (accessible only to the user themselves). Forbidden states shall return HTTP 404 to avoid leaking user existence |
@@ -286,7 +287,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-ICLIB-004 | The package shall provide a webhook verification middleware implementing HMAC-SHA256 signature verification using a single environment secret (`LANCORE_WEBHOOK_SECRET`), rejecting any request whose signature or event header does not match |
 | CAP-ICLIB-005 | The package shall provide an opt-in `entrance()` sub-client for LanEntrance consumers, offering ticket validation, check-in confirmation, attendee search, entrance statistics, and JWKS fetching with configurable TTL-based caching; the sub-client shall not be loaded by satellites that do not enable it |
 
-#### 3.2.X Platform Policies and User Consent
+#### 3.2.20 Platform Policies and User Consent
 
 | Req ID | Requirement |
 |--------|------------|
@@ -300,7 +301,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-POL-008 | Withdrawal shall trigger a notification (mail + database channels) to every user holding `ManagePolicies`, excluding the withdrawing user |
 | CAP-POL-009 | All Policy CRUD, version publish, acceptance, and withdrawal events shall emit audit log rows via `owen-it/laravel-auditing` and be readable from the Policy admin UI |
 
-#### 3.2.Y GDPR Article 15 Operator Workflow
+#### 3.2.21 GDPR Article 15 Operator Workflow
 
 | Req ID | Requirement |
 |--------|------------|
@@ -309,7 +310,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-GDPR-003 | The export shall optionally apply AES-256 encryption to every ZIP entry when an operator-supplied password is provided |
 | CAP-GDPR-004 | The export shall include a copy of the PDF of every policy version the user has accepted, alongside their acceptance/withdrawal records |
 
-#### 3.2.Z Data Lifecycle (GDPR Article 17 + Retention)
+#### 3.2.22 Data Lifecycle (GDPR Article 17 + Retention)
 
 | Req ID | Requirement |
 |--------|------------|
@@ -328,6 +329,15 @@ This document specifies the system-level requirements for LanCore, organized by 
 | SEC-DL-002 | All deletion-request and retention-policy state changes shall be auditable via `owen-it/laravel-auditing`; the dedicated `AnonymizationLogEntry` table shall be append-only at the model layer |
 
 > **Scope note**: `CAP-SHP-006` (checkout-condition acknowledgement) remains scoped to shop checkout and is distinct from `CAP-POL-*`. The two flows do not share storage or middleware.
+
+#### 3.2.23 Event Theme Library (CAP-THM)
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-THM-001 | The system shall provide a Theme Library admin area (gated by the `ManageThemes` permission) in which authorized admins can create, list, update, and delete named Themes. Each Theme shall comprise a unique `name`, an optional `description`, an optional `light_config` JSON map of CSS-variable overrides applied to `:root`, and an optional `dark_config` JSON map applied to `.dark`. No `kind`, `vendor`, `skin`, or vendor stylesheet is involved. Admins may also designate any Theme as the site-wide default via the same admin area |
+| CAP-THM-002 | The system shall allow each Event to be assigned at most one Theme from the Theme Library via a nullable `theme_id` foreign key on the `events` table; a `null` value indicates no event-scoped theme. Multiple events may share the same Theme. Theme assignment changes shall be captured in the existing Event audit trail. Traces upstream to CAP-EVT-008 |
+| CAP-THM-003 | When a request resolves to a route under `/events/{event}/...` (admin or public), the system shall apply the active palette by inlining `light_config` overrides under `:root` and `dark_config` overrides under `.dark` server-side (two distinct `<style>` blocks), and expose the same overrides client-side via `<ThemeProvider>`. No `data-theme` attribute shall be set and no vendor stylesheet chunk shall be loaded |
+| CAP-THM-004 | The system shall resolve the active Theme using the following priority order: (1) the per-event assigned Theme (`events.theme_id`); (2) the site-wide default Theme (`OrganizationSetting` key `default_theme_id`); (3) no palette override (platform default appearance). The user's personal `dark` class shall never be suppressed regardless of which Theme is active |
 
 ### 3.3 System External Interface Requirements
 
@@ -488,6 +498,11 @@ Requirements in this document trace to:
 | SEC-022 | OCD §5.1.2 (avatar/banner customization) | USR-F-024 |
 | CAP-I18N-001..007 | OCD §5.4 (Localized Display mode), OCD §5.1.2 | I18N-F-001..007 |
 | CAP-OT-001..007 | OCD §5.2.8 (Showing the Orga-Team to Attendees) | OT-F-001..010 |
+| CAP-EVT-008 | OCD §5.2.1 step 7 (theme selection during event creation), OCD §5.2.9 | EVT-F-008 (theme assignment endpoint), THM-F-004 |
+| CAP-THM-001 | OCD §5.1.4 (admin theme management bullet), OCD §5.2.9 bullet, OCD §7.1 glossary "Theme", "Theme Library" | THM-F-001, THM-F-002, THM-F-006 |
+| CAP-THM-002 | OCD §5.2.1 step 7, OCD §5.2.9 steps 1–2 | THM-F-004, EVT-F-008 |
+| CAP-THM-003 | OCD §5.2.9 steps 2–4 | THM-F-005 |
+| CAP-THM-004 | OCD §5.2.9 steps 2, 5, bullet | THM-F-005, THM-F-006 |
 
 ---
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"  @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    @class(['dark' => ($appearance ?? 'system') == 'dark'])>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -30,6 +31,35 @@
                 background-color: oklch(0.145 0 0);
             }
         </style>
+
+        @if(! empty($activeTheme))
+            {{-- Server-render the active palette Theme's CSS variable overrides
+                 so the first paint matches the theme (no FOUC, no hydration
+                 mismatch). Light overrides target :root; dark overrides target
+                 .dark, mirroring the cascade in resources/css/app.css. --}}
+            @if(! empty($activeTheme['lightConfig']) && is_array($activeTheme['lightConfig']))
+                <style id="event-theme-vars-light">
+                    :root {
+                        @foreach($activeTheme['lightConfig'] as $cssVar => $cssValue)
+                            @if(preg_match('/^--[a-z][a-z0-9-]*$/', $cssVar) && ! preg_match('/[;}<>]/', $cssValue))
+                                {{ $cssVar }}: {{ $cssValue }};
+                            @endif
+                        @endforeach
+                    }
+                </style>
+            @endif
+            @if(! empty($activeTheme['darkConfig']) && is_array($activeTheme['darkConfig']))
+                <style id="event-theme-vars-dark">
+                    .dark {
+                        @foreach($activeTheme['darkConfig'] as $cssVar => $cssValue)
+                            @if(preg_match('/^--[a-z][a-z0-9-]*$/', $cssVar) && ! preg_match('/[;}<>]/', $cssValue))
+                                {{ $cssVar }}: {{ $cssValue }};
+                            @endif
+                        @endforeach
+                    }
+                </style>
+            @endif
+        @endif
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 

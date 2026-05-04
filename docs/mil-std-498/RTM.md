@@ -471,7 +471,7 @@ No gaps identified.
 | USR-F-007 | UserRolesChanged + UserAttributesUpdated events | Events | `Actions/User/UpdateUserAttributesTest.php` (2), `Webhook/WebhookTest.php` | Covered |
 | USR-F-008 | Ticket discovery settings | `Settings/TicketDiscoveryController.php` | `Settings/TicketDiscoveryTest.php` (9 tests) | Covered |
 | USR-F-009 | Sidebar favorites | `Settings/SidebarFavoriteController.php` | `Settings/SidebarFavoriteTest.php` (8 tests) | Covered |
-| USR-F-010 | Appearance/theme settings | HandleAppearance middleware | — | **Gap** |
+| USR-F-010 | Per-user appearance settings (`light` / `dark` / `system`) — personal preference only; event-scoped Theme Library lives under THM-F-001..005 | HandleAppearance middleware | — | **Gap** |
 | USR-F-011 | Stripe Cashier billing customer | `App/Models/User.php` (Billable trait) | — | **Gap** |
 | USR-F-014 | Domain-specific Permission enums (27 cases across 17 enums) | `App/Contracts/PermissionEnum.php`, `App/Enums/Permission.php`, `App/Enums/AuditPermission.php`, `App/Domain/*/Enums/Permission.php` | `Unit/PermissionEnumTest.php` (7 tests), `Unit/PermissionArchitectureTest.php` (2 tests) | Covered |
 | USR-F-015 | Static role-to-permission mapping via `RolePermissionMap::forRole()` | `App/Enums/RolePermissionMap.php` | `Unit/PermissionEnumTest.php` (7 tests), `Unit/PermissionArchitectureTest.php` (2 tests) | Covered |
@@ -489,13 +489,14 @@ No gaps identified.
 
 ### User Management Gaps — Proposed Tests
 
-**USR-F-010: Appearance Settings**
+**USR-F-010: Appearance Settings (personal preference only)**
 ```
 File: tests/Feature/Settings/AppearanceTest.php
 - it renders the appearance settings page
 - it stores appearance preference in cookie
 - it persists preference across requests
 ```
+*Scope note: this test set covers the per-user `light` / `dark` / `system` preference only. The admin-managed event-scoped Theme Library is tested separately — see §24 below (THM-F-001..005, STD §4.32).*
 
 **USR-F-011: Stripe Customer Management**
 ```
@@ -584,7 +585,7 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | PRG-F-004 | Program | Time slot approaching notification | Medium | `Programs/ProgramTimeSlotNotificationTest.php` |
 | NWS-F-006 | News | NewsArticleRead analytics event | Low | `News/NewsArticleReadTest.php` |
 | NTF-F-003 | Notification | Push subscription CRUD | Medium | `Notification/PushSubscriptionTest.php` |
-| USR-F-010 | User | Appearance settings | Low | `Settings/AppearanceTest.php` |
+| USR-F-010 | User | Appearance settings (personal `light`/`dark`/`system` only — event-scoped themes covered by THM-F-001..005) | Low | `Settings/AppearanceTest.php` |
 | USR-F-011 | User | Stripe customer management | Low | `Shop/StripeCustomerTest.php` |
 | USR-F-019 | User | `usePermissions()` composable (frontend) | Low | `composables/usePermissions.test.ts` |
 | USR-F-020 | User | Permission-based sidebar rendering (frontend) | Low | `components/AppSidebar.test.ts` |
@@ -684,3 +685,17 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | DL-F-016 | DataLifecycle | CAP-DL-007, SEC-DL-001 | IDD §3.20, IRS §5.X | `Services/EmailHasher.php`, `app/Models/User::booted()` | `tests/Unit/Domain/DataLifecycle/EmailHasherTest.php`, `PostDeletionGdprExportTest.php` |
 | DL-F-017 | DataLifecycle | CAP-DL-005 | SDD §5.10 | `routes/console.php` (Schedule entries) | manual smoke |
 | DL-F-018 | DataLifecycle | CAP-DL-008 | SDD §5.10 | `app/Domain/Event/Models/Event.php` (SoftDeletes), `app/Domain/Event/Policies/EventPolicy::forceDelete`, `Actions/DeleteEvent.php` | `tests/Feature/Domain/DataLifecycle/EventSoftDeleteTest.php` |
+
+---
+
+## 24. Event Theme Library (CSCI-THM)
+
+| Req ID | Domain | Source CAP | Design § | Code path | Test file |
+|--------|--------|------------|----------|-----------|-----------|
+| EVT-F-008 | Event | CAP-EVT-008 | SDD §5.11, SSDD §5.12 | `app/Domain/Event/Models/Event.php` (`theme_id` fillable + `theme()` relation), `routes/events.php` (`events.theme.update`) | `tests/Feature/Themes/EventThemeAssignmentTest.php` (STD §4.32.3) |
+| THM-F-001 | Theme | CAP-THM-001 | SDD §5.11, SSDD §5.12 | `app/Domain/Theme/Http/Controllers/ThemeController.php` (incl. `setDefault` action), `routes/themes.php` | `tests/Feature/Themes/ThemeCrudTest.php` (STD §4.32.1) |
+| THM-F-002 | Theme | CAP-THM-001 | SDD §5.11, SSDD §5.12 | `app/Domain/Theme/Http/Requests/{Store,Update}ThemeRequest.php`, `app/Domain/Theme/Http/Requests/ThemeConfigKeysRule.php`, `app/Domain/Theme/Support/PaletteVariables.php`, `app/Domain/Theme/Models/Theme.php`, `database/migrations/*_create_themes_table.php`, `database/migrations/*_add_theme_id_to_events_table.php` | `tests/Feature/Themes/ThemeCrudTest.php` (validation cases, STD §4.32.1), `tests/Feature/Themes/EventThemeAssignmentTest.php` (FK `nullOnDelete`, STD §4.32.3) |
+| THM-F-003 | Theme | CAP-THM-001 | SDD §5.11 | `app/Domain/Theme/Policies/ThemePolicy.php`, `app/Domain/Theme/Enums/Permission.php` (`ManageThemes`) | `tests/Feature/Themes/ThemePolicyTest.php` (STD §4.32.2) |
+| THM-F-004 | Theme | CAP-EVT-008, CAP-THM-002 | SDD §5.11, SSDD §5.12 | `app/Domain/Event/Models/Event.php` (`theme()` BelongsTo), `routes/events.php` (`events.theme.update`) | `tests/Feature/Themes/EventThemeAssignmentTest.php` (STD §4.32.3) |
+| THM-F-005 | Theme | CAP-THM-003, CAP-THM-004 | SDD §5.11, SSDD §5.12 | `app/Http/Middleware/ResolveEventTheme.php`, `app/Http/Middleware/HandleInertiaRequests.php` (`activeTheme` shared prop), `bootstrap/app.php` (middleware registration), `resources/views/app.blade.php` (SSR light/dark style blocks), `resources/js/components/theme/ThemeProvider.vue`, `resources/js/composables/useEventTheme.ts`, `resources/js/components/theme/{ColorPickerInput,ThemePalettePicker,ThemePreview}.vue` | `tests/Feature/Themes/ResolveEventThemeMiddlewareTest.php` (STD §4.32.4), `tests/Feature/Architecture/ThemeArchitectureTest.php` (STD §4.32.6) |
+| THM-F-006 | Theme | CAP-THM-001, CAP-THM-004 | SDD §5.11, SSDD §5.12 | `app/Http/Middleware/ResolveEventTheme.php` (org fallback), `app/Domain/Theme/Actions/SetDefaultTheme.php`, `routes/themes.php` (`themes.set-default`), `OrganizationSetting` (`default_theme_id` key), cache key `inertia.activeTheme.default_id` | `tests/Feature/Themes/SiteDefaultThemeTest.php` (STD §4.32.5) |

@@ -20,6 +20,7 @@ import {
     MessageSquare,
     Newspaper,
     Palette,
+    PaintBucket,
     Pin,
     PinOff,
     PlugZap,
@@ -95,6 +96,7 @@ import { index as seatPlansIndex } from '@/routes/seat-plans';
 import { index as shopSettingsIndex } from '@/routes/shop-settings';
 import { index as sponsorLevelsIndex } from '@/routes/sponsor-levels';
 import { index as sponsorsIndex } from '@/routes/sponsors';
+import { index as themesIndex } from '@/routes/themes';
 import { index as ticketAddonsIndex } from '@/routes/ticket-addons';
 import { index as ticketCategoriesIndex } from '@/routes/ticket-categories';
 import { index as ticketTypesIndex } from '@/routes/ticket-types';
@@ -288,6 +290,15 @@ const allPinnableItems = computed<NavItem[]>(() => {
             title: 'Orga-Teams',
             href: orgaTeamsIndex(),
             icon: UsersRound,
+        });
+    }
+
+    if (can(Permission.ManageThemes)) {
+        items.push({
+            id: 'themes',
+            title: 'Themes',
+            href: themesIndex(),
+            icon: PaintBucket,
         });
     }
 
@@ -818,6 +829,24 @@ function toggleFavorite(itemId: string): void {
                             >
                                 <PinOff
                                     v-if="isFavorited('orga-teams')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManageThemes)">
+                            <SidebarMenuButton as-child>
+                                <Link :href="themesIndex()">
+                                    <PaintBucket />
+                                    <span>Themes</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('themes')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('themes')"
                                     class="size-4"
                                 />
                                 <Pin v-else class="size-4" />

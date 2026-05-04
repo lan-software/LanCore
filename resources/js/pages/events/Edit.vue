@@ -37,6 +37,7 @@ const props = defineProps<{
     event: Event;
     venues: { id: number; name: string }[];
     orgaTeams: { id: number; name: string }[];
+    themes: { id: number; name: string }[];
 }>();
 
 const orgaTeamSelection = ref<number | null>(
@@ -44,10 +45,22 @@ const orgaTeamSelection = ref<number | null>(
         null,
 );
 
+const themeSelection = ref<number | null>(
+    (props.event as Event & { theme_id: number | null }).theme_id ?? null,
+);
+
 function saveOrgaTeam() {
     router.patch(
         `/events/${props.event.id}/orga-team`,
         { orga_team_id: orgaTeamSelection.value },
+        { preserveScroll: true },
+    );
+}
+
+function saveTheme() {
+    router.patch(
+        `/events/${props.event.id}/theme`,
+        { theme_id: themeSelection.value },
         { preserveScroll: true },
     );
 }
@@ -517,6 +530,54 @@ function unpublishEvent() {
                         </SelectContent>
                     </Select>
                     <Button type="button" @click="saveOrgaTeam">
+                        Save assignment
+                    </Button>
+                </div>
+            </div>
+
+            <!-- Theme assignment -->
+            <div class="space-y-3 border-t pt-6">
+                <div>
+                    <h3 class="text-sm font-medium">Event theme</h3>
+                    <p class="text-sm text-muted-foreground">
+                        Pick a theme from the
+                        <Link :href="$page.props.route ?? ''" class="underline">
+                            theme library
+                        </Link>
+                        to govern the appearance of every page under this
+                        event's URL. Leave unset to use the platform default.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <Select
+                        :model-value="
+                            themeSelection === null
+                                ? '__none__'
+                                : String(themeSelection)
+                        "
+                        @update:model-value="
+                            (v) =>
+                                (themeSelection =
+                                    v === '__none__' || !v ? null : Number(v))
+                        "
+                    >
+                        <SelectTrigger class="max-w-sm">
+                            <SelectValue placeholder="Default appearance" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="__none__">
+                                Default appearance
+                            </SelectItem>
+                            <SelectItem
+                                v-for="theme in themes"
+                                :key="theme.id"
+                                :value="String(theme.id)"
+                            >
+                                {{ theme.name }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Button type="button" @click="saveTheme">
                         Save assignment
                     </Button>
                 </div>

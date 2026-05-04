@@ -49,6 +49,9 @@ export const Permission = {
     ManageSponsorLevels: 'manage_sponsor_levels',
     ManageAssignedSponsors: 'manage_assigned_sponsors',
 
+    // Themes (app/Domain/Theme/Enums/Permission.php)
+    ManageThemes: 'manage_themes',
+
     // Orga-Team (app/Domain/OrgaTeam/Enums/Permission.php)
     ManageOrgaTeams: 'manage_orga_teams',
 

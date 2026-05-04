@@ -11,6 +11,7 @@ use App\Domain\Program\Models\Program;
 use App\Domain\Seating\Models\SeatPlan;
 use App\Domain\Shop\Models\Order;
 use App\Domain\Sponsoring\Models\Sponsor;
+use App\Domain\Theme\Models\Theme;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Domain\Ticketing\Models\TicketType;
@@ -29,10 +30,10 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @see docs/mil-std-498/SSS.md CAP-EVT-001, CAP-EVT-002, CAP-EVT-005, CAP-DL-008
- * @see docs/mil-std-498/SRS.md EVT-F-002, EVT-F-004, EVT-F-010, DL-F-018
+ * @see docs/mil-std-498/SSS.md CAP-EVT-001, CAP-EVT-002, CAP-EVT-005, CAP-EVT-008, CAP-DL-008
+ * @see docs/mil-std-498/SRS.md EVT-F-002, EVT-F-004, EVT-F-010, DL-F-018, THM-F-004
  */
-#[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_images', 'status', 'venue_id', 'primary_program_id', 'seat_capacity', 'orga_team_id'])]
+#[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_images', 'status', 'venue_id', 'primary_program_id', 'seat_capacity', 'orga_team_id', 'theme_id'])]
 class Event extends Model implements AuditableContract
 {
     use Auditable;
@@ -82,6 +83,11 @@ class Event extends Model implements AuditableContract
     public function orgaTeam(): BelongsTo
     {
         return $this->belongsTo(OrgaTeam::class);
+    }
+
+    public function theme(): BelongsTo
+    {
+        return $this->belongsTo(Theme::class);
     }
 
     public function ticketTypes(): HasMany

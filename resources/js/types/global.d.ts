@@ -1,5 +1,6 @@
 import type { Auth } from '@/types/auth';
 import type { EventContext } from '@/types/event-context';
+import type { ThemeContext } from '@/types/theme';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -26,6 +27,7 @@ declare module '@inertiajs/core' {
                 selectedEventId: number | null;
                 events: { id: number; name: string }[];
             } | null;
+            activeTheme: ThemeContext | null;
             organization: {
                 logoUrl: string | null;
                 name: string | null;
