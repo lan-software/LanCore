@@ -116,7 +116,13 @@ const { can, canAny } = usePermissions();
 const { t } = useI18n();
 
 const isSuperadmin = computed<boolean>(() => {
-    const roles = (page.props.auth as { user?: { roles?: { name: string }[] } } | undefined)?.user?.roles ?? [];
+    const roles =
+        (
+            page.props.auth as
+                | { user?: { roles?: { name: string }[] } }
+                | undefined
+        )?.user?.roles ?? [];
+
     return roles.some((role) => role.name === 'superadmin');
 });
 
@@ -619,7 +625,11 @@ function toggleFavorite(itemId: string): void {
                         </SidebarMenuItem>
                         <SidebarMenuItem v-if="isSuperadmin">
                             <SidebarMenuButton as-child>
-                                <a href="/horizon" target="_blank" rel="noopener">
+                                <a
+                                    href="/horizon"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
                                     <GaugeCircle />
                                     <span>Queue Monitor</span>
                                 </a>
@@ -630,13 +640,20 @@ function toggleFavorite(itemId: string): void {
             </SidebarGroup>
 
             <!-- Administration -->
-            <SidebarGroup v-if="can(Permission.ManageUsers)">
+            <SidebarGroup
+                v-if="
+                    canAny(
+                        Permission.ManageUsers,
+                        Permission.ManageAchievements,
+                    )
+                "
+            >
                 <SidebarGroupLabel>{{
                     $t('navigation.groups.administration')
                 }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
-                        <SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManageUsers)">
                             <SidebarMenuButton as-child>
                                 <Link :href="usersIndex()">
                                     <Users />
@@ -649,6 +666,28 @@ function toggleFavorite(itemId: string): void {
                             >
                                 <PinOff
                                     v-if="isFavorited('users')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem
+                            v-if="can(Permission.ManageAchievements)"
+                        >
+                            <SidebarMenuButton as-child>
+                                <Link :href="achievementsIndex()">
+                                    <Trophy />
+                                    <span>{{
+                                        $t('navigation.achievements')
+                                    }}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('achievements')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('achievements')"
                                     class="size-4"
                                 />
                                 <Pin v-else class="size-4" />
@@ -799,37 +838,6 @@ function toggleFavorite(itemId: string): void {
                 </SidebarGroupContent>
             </SidebarGroup>
 
-            <!-- Achievements Domain -->
-            <SidebarGroup v-if="can(Permission.ManageAchievements)">
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.achievements')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="achievementsIndex()">
-                                    <Trophy />
-                                    <span>{{
-                                        $t('navigation.achievements')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('achievements')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('achievements')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
-
             <!-- Announcement Domain -->
             <SidebarGroup v-if="can(Permission.ManageAnnouncements)">
                 <SidebarGroupLabel>{{
@@ -861,11 +869,16 @@ function toggleFavorite(itemId: string): void {
                 </SidebarGroupContent>
             </SidebarGroup>
 
-            <!-- Event Domain -->
+            <!-- Events Domain -->
             <SidebarGroup
                 v-if="
-                    can(Permission.ManageEvents) ||
-                    can(Permission.ManageOrgaTeams)
+                    canAny(
+                        Permission.ManageEvents,
+                        Permission.ManageOrgaTeams,
+                        Permission.ManagePrograms,
+                        Permission.ManageVenues,
+                        Permission.ManageSeatPlans,
+                    )
                 "
             >
                 <SidebarGroupLabel>{{
@@ -911,36 +924,7 @@ function toggleFavorite(itemId: string): void {
                                 <Pin v-else class="size-4" />
                             </SidebarMenuAction>
                         </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can(Permission.ManageOrgaTeams)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="orgaTeamsIndex()">
-                                    <UsersRound />
-                                    <span>Orga-Teams</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('orga-teams')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('orga-teams')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
-
-            <!-- Program Domain -->
-            <SidebarGroup v-if="can(Permission.ManagePrograms)">
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.program')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManagePrograms)">
                             <SidebarMenuButton as-child>
                                 <Link :href="programsIndex()">
                                     <ClipboardList />
@@ -958,18 +942,7 @@ function toggleFavorite(itemId: string): void {
                                 <Pin v-else class="size-4" />
                             </SidebarMenuAction>
                         </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
-
-            <!-- Venue Domain -->
-            <SidebarGroup v-if="can(Permission.ManageVenues)">
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.venue')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManageVenues)">
                             <SidebarMenuButton as-child>
                                 <Link :href="venuesIndex()">
                                     <MapPin />
@@ -982,6 +955,44 @@ function toggleFavorite(itemId: string): void {
                             >
                                 <PinOff
                                     v-if="isFavorited('venues')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManageSeatPlans)">
+                            <SidebarMenuButton as-child>
+                                <Link :href="seatPlansIndex()">
+                                    <Grid2x2 />
+                                    <span>{{
+                                        $t('navigation.seatPlans')
+                                    }}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('seat-plans')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('seat-plans')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManageOrgaTeams)">
+                            <SidebarMenuButton as-child>
+                                <Link :href="orgaTeamsIndex()">
+                                    <UsersRound />
+                                    <span>Orga-Teams</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('orga-teams')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('orga-teams')"
                                     class="size-4"
                                 />
                                 <Pin v-else class="size-4" />
@@ -1301,45 +1312,41 @@ function toggleFavorite(itemId: string): void {
                 </SidebarGroupContent>
             </SidebarGroup>
 
-            <!-- Seating Domain -->
-            <SidebarGroup v-if="can(Permission.ManageSeatPlans)">
+            <!-- Integrations Domain -->
+            <SidebarGroup
+                v-if="
+                    canAny(
+                        Permission.ManageIntegrations,
+                        Permission.ManageWebhooks,
+                    )
+                "
+            >
                 <SidebarGroupLabel>{{
-                    $t('navigation.groups.seating')
+                    $t('navigation.groups.integrations')
                 }}</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
-                        <SidebarMenuItem>
+                        <SidebarMenuItem
+                            v-if="can(Permission.ManageIntegrations)"
+                        >
                             <SidebarMenuButton as-child>
-                                <Link :href="seatPlansIndex()">
-                                    <Grid2x2 />
-                                    <span>{{
-                                        $t('navigation.seatPlans')
-                                    }}</span>
+                                <Link :href="integrationsIndex()">
+                                    <Cog />
+                                    <span>{{ $t('navigation.lanApps') }}</span>
                                 </Link>
                             </SidebarMenuButton>
                             <SidebarMenuAction
                                 :show-on-hover="true"
-                                @click="toggleFavorite('seat-plans')"
+                                @click="toggleFavorite('integrations')"
                             >
                                 <PinOff
-                                    v-if="isFavorited('seat-plans')"
+                                    v-if="isFavorited('integrations')"
                                     class="size-4"
                                 />
                                 <Pin v-else class="size-4" />
                             </SidebarMenuAction>
                         </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
-
-            <!-- Webhook Domain -->
-            <SidebarGroup v-if="can(Permission.ManageWebhooks)">
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.webhooks')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManageWebhooks)">
                             <SidebarMenuButton as-child>
                                 <Link :href="webhooksIndex()">
                                     <Webhook />
@@ -1352,37 +1359,6 @@ function toggleFavorite(itemId: string): void {
                             >
                                 <PinOff
                                     v-if="isFavorited('webhooks')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
-
-            <!-- Integration Domain -->
-            <SidebarGroup v-if="can(Permission.ManageIntegrations)">
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.integrations')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="integrationsIndex()">
-                                    <Cog />
-                                    <span>{{
-                                        $t('navigation.integrations')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('integrations')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('integrations')"
                                     class="size-4"
                                 />
                                 <Pin v-else class="size-4" />
