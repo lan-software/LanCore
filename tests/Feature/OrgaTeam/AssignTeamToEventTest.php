@@ -17,7 +17,7 @@ it('admins can assign an orga-team to an event', function () {
     $team = OrgaTeam::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/events/{$event->id}/orga-team", ['orga_team_id' => $team->id])
+        ->patch("/backstage/events/{$event->id}/orga-team", ['orga_team_id' => $team->id])
         ->assertRedirect();
 
     expect($event->fresh()->orga_team_id)->toBe($team->id);
@@ -29,7 +29,7 @@ it('admins can unassign an orga-team from an event', function () {
     $event = Event::factory()->create(['orga_team_id' => $team->id]);
 
     $this->actingAs($admin)
-        ->patch("/events/{$event->id}/orga-team", ['orga_team_id' => null])
+        ->patch("/backstage/events/{$event->id}/orga-team", ['orga_team_id' => null])
         ->assertRedirect();
 
     expect($event->fresh()->orga_team_id)->toBeNull();
@@ -41,7 +41,7 @@ it('forbids non-admins from assigning teams to events', function () {
     $team = OrgaTeam::factory()->create();
 
     $this->actingAs($user)
-        ->patch("/events/{$event->id}/orga-team", ['orga_team_id' => $team->id])
+        ->patch("/backstage/events/{$event->id}/orga-team", ['orga_team_id' => $team->id])
         ->assertForbidden();
 
     expect($event->fresh()->orga_team_id)->toBeNull();
@@ -52,7 +52,7 @@ it('rejects assignment of non-existent orga-team id', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/events/{$event->id}/orga-team", ['orga_team_id' => 999999])
+        ->patch("/backstage/events/{$event->id}/orga-team", ['orga_team_id' => 999999])
         ->assertSessionHasErrors('orga_team_id');
 });
 

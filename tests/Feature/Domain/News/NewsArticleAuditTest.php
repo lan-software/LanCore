@@ -16,7 +16,7 @@ it('allows admins to view the audit page for a news article', function () {
     $article = NewsArticle::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/news-admin/{$article->id}/audit")
+        ->get("/backstage/news/{$article->id}/audit")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,13 +31,13 @@ it('denies non-admin users access to the news article audit page', function () {
     $article = NewsArticle::factory()->create();
 
     $this->actingAs($user)
-        ->get("/news-admin/{$article->id}/audit")
+        ->get("/backstage/news/{$article->id}/audit")
         ->assertForbidden();
 });
 
 it('redirects unauthenticated users to login for news article audit', function () {
     $article = NewsArticle::factory()->create();
 
-    $this->get("/news-admin/{$article->id}/audit")
+    $this->get("/backstage/news/{$article->id}/audit")
         ->assertRedirect('/login');
 });

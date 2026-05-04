@@ -21,7 +21,7 @@ it('shows the user their own orders', function () {
     Order::factory()->count(2)->create(); // other user's orders
 
     $this->actingAs($user)
-        ->get('/my-orders')
+        ->get('/portal/orders')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -35,7 +35,7 @@ it('does not show other users orders', function () {
     Order::factory()->count(2)->create(); // other user's orders
 
     $this->actingAs($user)
-        ->get('/my-orders')
+        ->get('/portal/orders')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -49,7 +49,7 @@ it('shows order detail for own order', function () {
     $order = Order::factory()->for($user)->create();
 
     $this->actingAs($user)
-        ->get("/my-orders/{$order->id}")
+        ->get("/portal/orders/{$order->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -63,11 +63,11 @@ it('denies viewing another users order', function () {
     $order = Order::factory()->create(); // another user's order
 
     $this->actingAs($user)
-        ->get("/my-orders/{$order->id}")
+        ->get("/portal/orders/{$order->id}")
         ->assertForbidden();
 });
 
 it('requires authentication', function () {
-    $this->get('/my-orders')
+    $this->get('/portal/orders')
         ->assertRedirect('/login');
 });

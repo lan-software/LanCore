@@ -130,7 +130,7 @@ it('filters programs index by session event context including null event_id', fu
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event1->id])
-        ->get('/programs')
+        ->get('/backstage/programs')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -150,7 +150,7 @@ it('explicit event_id param overrides session event context', function () {
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event1->id])
-        ->get('/programs?event_id='.$event2->id)
+        ->get('/backstage/programs?event_id='.$event2->id)
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -170,7 +170,7 @@ it('filters seat plans index by session event context', function () {
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event1->id])
-        ->get('/seat-plans')
+        ->get('/backstage/seat-plans')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -189,7 +189,7 @@ it('shows all data when no event context is set', function () {
     Program::factory()->for($event2)->create();
 
     $this->actingAs($admin)
-        ->get('/programs')
+        ->get('/backstage/programs')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -206,7 +206,7 @@ it('passes selectedEventId to program create page', function () {
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event->id])
-        ->get('/programs/create')
+        ->get('/backstage/programs/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -221,7 +221,7 @@ it('passes selectedEventId to seat plan create page', function () {
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event->id])
-        ->get('/seat-plans/create')
+        ->get('/backstage/seat-plans/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -234,7 +234,7 @@ it('passes null selectedEventId when no event context is set', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/programs/create')
+        ->get('/backstage/programs/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -249,7 +249,7 @@ it('passes selectedEventId to sponsor create page', function () {
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event->id])
-        ->get('/sponsors/create')
+        ->get('/backstage/sponsors/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -262,7 +262,7 @@ it('passes null selectedEventId to sponsor create page when no event context is 
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/sponsors/create')
+        ->get('/backstage/sponsors/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -277,7 +277,7 @@ it('passes selectedEventId to announcement create page', function () {
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event->id])
-        ->get('/announcements-admin/create')
+        ->get('/backstage/announcements/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -290,7 +290,7 @@ it('passes null selectedEventId to announcement create page when no event contex
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/announcements-admin/create')
+        ->get('/backstage/announcements/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

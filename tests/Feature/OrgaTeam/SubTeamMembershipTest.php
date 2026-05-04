@@ -17,7 +17,7 @@ it('admins can create a sub-team under an orga-team', function () {
     $team = OrgaTeam::factory()->create();
 
     $this->actingAs($admin)
-        ->post("/orga-teams/{$team->id}/sub-teams", [
+        ->post("/backstage/orga-teams/{$team->id}/sub-teams", [
             'name' => 'Tech',
             'emoji' => '🛠',
             'color' => '#22d3ee',
@@ -37,7 +37,7 @@ it('admins can update a sub-team', function () {
     $sub = OrgaSubTeam::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/orga-sub-teams/{$sub->id}", [
+        ->patch("/backstage/orga-sub-teams/{$sub->id}", [
             'name' => 'Renamed Sub',
             'sort_order' => 9,
         ])
@@ -55,7 +55,7 @@ it('admins can sync sub-team memberships with mixed roles', function () {
     $u3 = User::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/orga-sub-teams/{$sub->id}/members", [
+        ->patch("/backstage/orga-sub-teams/{$sub->id}/members", [
             'memberships' => [
                 ['user_id' => $u1->id, 'role' => 'deputy'],
                 ['user_id' => $u2->id, 'role' => 'member'],
@@ -82,7 +82,7 @@ it('membership sync prunes removed users', function () {
     ]);
 
     $this->actingAs($admin)
-        ->patch("/orga-sub-teams/{$sub->id}/members", [
+        ->patch("/backstage/orga-sub-teams/{$sub->id}/members", [
             'memberships' => [
                 ['user_id' => $u1->id, 'role' => 'member'],
             ],
@@ -98,6 +98,6 @@ it('forbids users from managing sub-teams', function () {
     $sub = OrgaSubTeam::factory()->create();
 
     $this->actingAs($user)
-        ->patch("/orga-sub-teams/{$sub->id}", ['name' => 'X'])
+        ->patch("/backstage/orga-sub-teams/{$sub->id}", ['name' => 'X'])
         ->assertForbidden();
 });

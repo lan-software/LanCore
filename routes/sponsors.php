@@ -6,7 +6,7 @@ use App\Domain\Sponsoring\Http\Controllers\SponsorLevelAuditController;
 use App\Domain\Sponsoring\Http\Controllers\SponsorLevelController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('backstage')->group(function () {
     Route::get('sponsors', [SponsorController::class, 'index'])->name('sponsors.index');
     Route::get('sponsors/create', [SponsorController::class, 'create'])->name('sponsors.create');
     Route::post('sponsors', [SponsorController::class, 'store'])->name('sponsors.store');

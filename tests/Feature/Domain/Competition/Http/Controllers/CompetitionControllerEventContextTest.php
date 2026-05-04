@@ -18,7 +18,7 @@ it('passes selectedEventId to competition create page when event context is set'
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event->id])
-        ->get('/competitions/create')
+        ->get('/backstage/competitions/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,7 +31,7 @@ it('passes null selectedEventId to competition create page when no event context
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/competitions/create')
+        ->get('/backstage/competitions/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -50,7 +50,7 @@ it('filters competitions index by session event context', function () {
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event1->id])
-        ->get('/competitions')
+        ->get('/backstage/competitions')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -69,7 +69,7 @@ it('shows all competitions when no event context is set', function () {
     Competition::factory()->for($event2)->create();
 
     $this->actingAs($admin)
-        ->get('/competitions')
+        ->get('/backstage/competitions')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

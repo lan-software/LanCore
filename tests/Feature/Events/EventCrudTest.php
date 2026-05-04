@@ -18,7 +18,7 @@ it('allows admins to view the create event page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/events/create')
+        ->get('/backstage/events/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -32,14 +32,14 @@ it('allows admins to store a new event', function () {
     $venue = Venue::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/events', [
+        ->post('/backstage/events', [
             'name' => 'Summer LAN Party',
             'description' => 'The best LAN event.',
             'start_date' => '2026-07-01 10:00:00',
             'end_date' => '2026-07-03 18:00:00',
             'venue_id' => $venue->id,
         ])
-        ->assertRedirect('/events');
+        ->assertRedirect('/backstage/events');
 
     expect(Event::where('name', 'Summer LAN Party')->exists())->toBeTrue();
 });
@@ -48,7 +48,7 @@ it('validates required fields when storing an event', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/events', [])
+        ->post('/backstage/events', [])
         ->assertSessionHasErrors(['name', 'start_date', 'end_date']);
 });
 
@@ -56,7 +56,7 @@ it('validates end_date is after start_date', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/events', [
+        ->post('/backstage/events', [
             'name' => 'Bad Dates Event',
             'start_date' => '2026-07-03 18:00:00',
             'end_date' => '2026-07-01 10:00:00',
@@ -69,7 +69,7 @@ it('allows admins to view the edit event page', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/events/{$event->id}")
+        ->get("/backstage/events/{$event->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -85,7 +85,7 @@ it('allows admins to update an event', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/events/{$event->id}", [
+        ->patch("/backstage/events/{$event->id}", [
             'name' => 'Updated Event Name',
             'start_date' => '2026-08-01 09:00:00',
             'end_date' => '2026-08-03 17:00:00',
@@ -102,8 +102,8 @@ it('allows admins to delete an event', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/events/{$event->id}")
-        ->assertRedirect('/events');
+        ->delete("/backstage/events/{$event->id}")
+        ->assertRedirect('/backstage/events');
 
     expect(Event::find($event->id))->toBeNull();
 });
@@ -112,7 +112,7 @@ it('forbids users from creating events', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->post('/events', [
+        ->post('/backstage/events', [
             'name' => 'Test',
             'start_date' => '2026-07-01 10:00:00',
             'end_date' => '2026-07-03 18:00:00',
@@ -125,7 +125,7 @@ it('stores banner image files when creating an event', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/events', [
+        ->post('/backstage/events', [
             'name' => 'Event With Banner',
             'start_date' => '2026-07-01 10:00:00',
             'end_date' => '2026-07-03 18:00:00',
@@ -134,7 +134,7 @@ it('stores banner image files when creating an event', function () {
                 UploadedFile::fake()->image('banner2.jpg', 800, 400),
             ],
         ])
-        ->assertRedirect('/events');
+        ->assertRedirect('/backstage/events');
 
     $event = Event::where('name', 'Event With Banner')->first();
     expect($event->banner_images)->toHaveCount(2);
@@ -152,7 +152,7 @@ it('adds banner images when updating an event', function () {
     $event = Event::factory()->create(['banner_images' => [$oldPath]]);
 
     $this->actingAs($admin)
-        ->patch("/events/{$event->id}", [
+        ->patch("/backstage/events/{$event->id}", [
             'name' => $event->name,
             'start_date' => $event->start_date->format('Y-m-d H:i:s'),
             'end_date' => $event->end_date->format('Y-m-d H:i:s'),
@@ -177,7 +177,7 @@ it('removes a specific banner image when remove flag is set', function () {
     $event = Event::factory()->create(['banner_images' => [$path1, $path2]]);
 
     $this->actingAs($admin)
-        ->patch("/events/{$event->id}", [
+        ->patch("/backstage/events/{$event->id}", [
             'name' => $event->name,
             'start_date' => $event->start_date->format('Y-m-d H:i:s'),
             'end_date' => $event->end_date->format('Y-m-d H:i:s'),
@@ -202,8 +202,8 @@ it('deletes all banner images from storage when deleting an event', function () 
     $event = Event::factory()->create(['banner_images' => [$path1, $path2]]);
 
     $this->actingAs($admin)
-        ->delete("/events/{$event->id}")
-        ->assertRedirect('/events');
+        ->delete("/backstage/events/{$event->id}")
+        ->assertRedirect('/backstage/events');
 
     Storage::disk('public')->assertMissing($path1);
     Storage::disk('public')->assertMissing($path2);
@@ -213,7 +213,7 @@ it('rejects non-image files for banner images', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/events', [
+        ->post('/backstage/events', [
             'name' => 'Bad Upload',
             'start_date' => '2026-07-01 10:00:00',
             'end_date' => '2026-07-03 18:00:00',

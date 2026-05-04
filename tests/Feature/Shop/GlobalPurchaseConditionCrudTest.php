@@ -16,7 +16,7 @@ it('allows admins to view global purchase conditions index', function () {
     GlobalPurchaseCondition::factory()->count(2)->create();
 
     $this->actingAs($admin)
-        ->get('/global-purchase-conditions')
+        ->get('/backstage/global-purchase-conditions')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -29,7 +29,7 @@ it('allows admins to store a global purchase condition', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/global-purchase-conditions', [
+        ->post('/backstage/global-purchase-conditions', [
             'name' => 'Terms of Service',
             'description' => 'General T&C',
             'content' => '<p>Accept our terms</p>',
@@ -39,7 +39,7 @@ it('allows admins to store a global purchase condition', function () {
             'requires_scroll' => true,
             'sort_order' => 0,
         ])
-        ->assertRedirect('/global-purchase-conditions');
+        ->assertRedirect('/backstage/global-purchase-conditions');
 
     $condition = GlobalPurchaseCondition::where('name', 'Terms of Service')->first();
     expect($condition)->not->toBeNull()
@@ -53,7 +53,7 @@ it('allows admins to update a global purchase condition', function () {
     $condition = GlobalPurchaseCondition::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/global-purchase-conditions/{$condition->id}", [
+        ->patch("/backstage/global-purchase-conditions/{$condition->id}", [
             'name' => 'Updated Condition',
             'description' => $condition->description,
             'content' => $condition->content,
@@ -77,8 +77,8 @@ it('allows admins to delete a global purchase condition', function () {
     $condition = GlobalPurchaseCondition::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/global-purchase-conditions/{$condition->id}")
-        ->assertRedirect('/global-purchase-conditions');
+        ->delete("/backstage/global-purchase-conditions/{$condition->id}")
+        ->assertRedirect('/backstage/global-purchase-conditions');
 
     expect(GlobalPurchaseCondition::find($condition->id))->toBeNull();
 });
@@ -87,6 +87,6 @@ it('denies regular users access to global purchase conditions', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/global-purchase-conditions')
+        ->get('/backstage/global-purchase-conditions')
         ->assertForbidden();
 });

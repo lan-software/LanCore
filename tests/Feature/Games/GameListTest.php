@@ -16,7 +16,7 @@ it('returns paginated games for admins', function () {
     Game::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/games')
+        ->get('/backstage/games')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -33,7 +33,7 @@ it('filters games by search term', function () {
     Game::factory()->create(['name' => 'League of Legends']);
 
     $this->actingAs($admin)
-        ->get('/games?search=counter')
+        ->get('/backstage/games?search=counter')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -49,7 +49,7 @@ it('sorts games by name ascending', function () {
     Game::factory()->create(['name' => 'Alpha Game']);
 
     $this->actingAs($admin)
-        ->get('/games?sort=name&direction=asc')
+        ->get('/backstage/games?sort=name&direction=asc')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

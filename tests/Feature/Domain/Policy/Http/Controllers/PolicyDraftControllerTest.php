@@ -16,7 +16,7 @@ it('adds a new locale draft', function (): void {
     $policy = Policy::factory()->create();
 
     $this->actingAs($admin)
-        ->post("/admin/policies/{$policy->id}/drafts", ['locale' => 'en'])
+        ->post("/backstage/policies/{$policy->id}/drafts", ['locale' => 'en'])
         ->assertRedirect();
 
     expect($policy->drafts()->where('locale', 'en')->exists())->toBeTrue();
@@ -28,7 +28,7 @@ it('rejects duplicate locales', function (): void {
     PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'en']);
 
     $this->actingAs($admin)
-        ->post("/admin/policies/{$policy->id}/drafts", ['locale' => 'en'])
+        ->post("/backstage/policies/{$policy->id}/drafts", ['locale' => 'en'])
         ->assertSessionHasErrors('locale');
 });
 
@@ -37,7 +37,7 @@ it('rejects unknown locales', function (): void {
     $policy = Policy::factory()->create();
 
     $this->actingAs($admin)
-        ->post("/admin/policies/{$policy->id}/drafts", ['locale' => 'xx'])
+        ->post("/backstage/policies/{$policy->id}/drafts", ['locale' => 'xx'])
         ->assertSessionHasErrors('locale');
 });
 
@@ -47,13 +47,13 @@ it('updates draft content (and allows empty content)', function (): void {
     PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'en', 'content' => 'old']);
 
     $this->actingAs($admin)
-        ->put("/admin/policies/{$policy->id}/drafts/en", ['content' => 'new'])
+        ->put("/backstage/policies/{$policy->id}/drafts/en", ['content' => 'new'])
         ->assertRedirect();
 
     expect($policy->drafts()->where('locale', 'en')->first()->content)->toBe('new');
 
     $this->actingAs($admin)
-        ->put("/admin/policies/{$policy->id}/drafts/en", ['content' => ''])
+        ->put("/backstage/policies/{$policy->id}/drafts/en", ['content' => ''])
         ->assertRedirect();
 
     expect($policy->drafts()->where('locale', 'en')->first()->content)->toBe('');
@@ -65,7 +65,7 @@ it('records the editing admin', function (): void {
     PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'en', 'content' => '']);
 
     $this->actingAs($admin)
-        ->put("/admin/policies/{$policy->id}/drafts/en", ['content' => 'mine']);
+        ->put("/backstage/policies/{$policy->id}/drafts/en", ['content' => 'mine']);
 
     expect($policy->drafts()->first()->updated_by_user_id)->toBe($admin->id);
 });
@@ -77,7 +77,7 @@ it('removes a draft when the policy has more than one locale', function (): void
     PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'de']);
 
     $this->actingAs($admin)
-        ->delete("/admin/policies/{$policy->id}/drafts/de")
+        ->delete("/backstage/policies/{$policy->id}/drafts/de")
         ->assertRedirect();
 
     expect($policy->drafts()->pluck('locale')->all())->toBe(['en']);
@@ -89,7 +89,7 @@ it('refuses to remove the last remaining draft', function (): void {
     PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'en']);
 
     $this->actingAs($admin)
-        ->delete("/admin/policies/{$policy->id}/drafts/en")
+        ->delete("/backstage/policies/{$policy->id}/drafts/en")
         ->assertSessionHasErrors('locale');
 
     expect($policy->drafts()->count())->toBe(1);
@@ -101,6 +101,6 @@ it('forbids non-admins from editing drafts', function (): void {
     PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'en']);
 
     $this->actingAs($user)
-        ->put("/admin/policies/{$policy->id}/drafts/en", ['content' => 'nope'])
+        ->put("/backstage/policies/{$policy->id}/drafts/en", ['content' => 'nope'])
         ->assertForbidden();
 });

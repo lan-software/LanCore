@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 // User-facing self-service flow. Confirmation link is reachable without
 // `verified` (the user may be in grace and still need to confirm).
 Route::middleware(['auth'])
-    ->prefix('account/delete')
+    ->prefix('portal/account/delete')
     ->name('data-lifecycle.account.')
     ->group(function (): void {
         Route::get('/', [UserDeletionController::class, 'show'])->name('show');
@@ -25,13 +25,13 @@ Route::middleware(['auth'])
     });
 
 // Cancel via signed email link (works even after browser logout).
-Route::get('account/delete/{request}/cancel-link', [UserDeletionController::class, 'cancelViaLink'])
+Route::get('portal/account/delete/{request}/cancel-link', [UserDeletionController::class, 'cancelViaLink'])
     ->middleware('signed')
     ->name('data-lifecycle.account.cancel-via-link');
 
 // Admin queue + admin-induced flows.
 Route::middleware(['auth', 'verified', 'require.username'])
-    ->prefix('admin/data-lifecycle')
+    ->prefix('backstage/data-lifecycle')
     ->name('admin.data-lifecycle.')
     ->group(function (): void {
         Route::get('deletion-requests', [AdminDeletionRequestController::class, 'index'])

@@ -24,7 +24,7 @@ it('creates a group ticket type with max_users_per_ticket and check_in_mode', fu
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/ticket-types', [
+        ->post('/backstage/ticket-types', [
             'name' => 'Team Ticket',
             'price' => 8000,
             'quota' => 50,
@@ -35,7 +35,7 @@ it('creates a group ticket type with max_users_per_ticket and check_in_mode', fu
             'is_hidden' => false,
             'event_id' => $event->id,
         ])
-        ->assertRedirect('/ticket-types');
+        ->assertRedirect('/backstage/ticket-types');
 
     $ticketType = TicketType::where('name', 'Team Ticket')->first();
     expect($ticketType)->not->toBeNull();
@@ -57,7 +57,7 @@ it('rejects max_users_per_ticket below 1', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/ticket-types', [
+        ->post('/backstage/ticket-types', [
             'name' => 'Invalid',
             'price' => 1000,
             'quota' => 10,
@@ -73,7 +73,7 @@ it('prevents changing group fields on locked ticket types', function () {
     $ticketType = TicketType::factory()->locked()->groupTicket(4, 'individual')->create();
 
     $this->actingAs($admin)
-        ->patch("/ticket-types/{$ticketType->id}", [
+        ->patch("/backstage/ticket-types/{$ticketType->id}", [
             'name' => 'Changed',
             'max_users_per_ticket' => 2,
             'check_in_mode' => 'group',
@@ -105,7 +105,7 @@ it('assigns multiple users to a group ticket up to the limit', function () {
 
     foreach ($users as $user) {
         $this->actingAs($owner)
-            ->post("/tickets/{$ticket->id}/users", [
+            ->post("/portal/tickets/{$ticket->id}/users", [
                 'user_email' => $user->email,
             ])
             ->assertRedirect();
@@ -135,7 +135,7 @@ it('rejects exceeding max_users_per_ticket', function () {
     $user2 = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($owner)
-        ->post("/tickets/{$ticket->id}/users", [
+        ->post("/portal/tickets/{$ticket->id}/users", [
             'user_email' => $user2->email,
         ])
         ->assertStatus(500); // InvalidArgumentException
@@ -160,7 +160,7 @@ it('removes an assigned user from a group ticket', function () {
     $ticket->users()->attach($user->id);
 
     $this->actingAs($owner)
-        ->delete("/tickets/{$ticket->id}/users/{$user->id}")
+        ->delete("/portal/tickets/{$ticket->id}/users/{$user->id}")
         ->assertRedirect();
 
     expect($ticket->fresh()->users)->toHaveCount(0);
@@ -300,7 +300,7 @@ it('allows owner to add users to their group ticket', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($owner)
-        ->post("/tickets/{$ticket->id}/users", [
+        ->post("/portal/tickets/{$ticket->id}/users", [
             'user_email' => $user->email,
         ])
         ->assertRedirect();
@@ -324,7 +324,7 @@ it('allows manager to add users to a group ticket', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($manager)
-        ->post("/tickets/{$ticket->id}/users", [
+        ->post("/portal/tickets/{$ticket->id}/users", [
             'user_email' => $user->email,
         ])
         ->assertRedirect();
@@ -350,7 +350,7 @@ it('allows assigned users to see all other assigned users on the ticket', functi
 
     // An assigned user views the ticket — should see all 3 assigned users
     $this->actingAs($users[0])
-        ->get("/tickets/{$ticket->id}")
+        ->get("/portal/tickets/{$ticket->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -378,7 +378,7 @@ it('shows assigned tickets with users in the index view', function () {
 
     // The assigned user views the tickets index — should see the ticket with users loaded
     $this->actingAs($assignedUser)
-        ->get('/tickets')
+        ->get('/portal/tickets')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -405,7 +405,7 @@ it('denies non-owner/manager from adding users', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($other)
-        ->post("/tickets/{$ticket->id}/users", [
+        ->post("/portal/tickets/{$ticket->id}/users", [
             'user_email' => $user->email,
         ])
         ->assertForbidden();

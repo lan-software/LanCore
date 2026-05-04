@@ -7,7 +7,7 @@ use App\Domain\Newsletter\Http\Controllers\Public\NewsletterSubscribeController;
 use App\Domain\Newsletter\Http\Controllers\User\EmailSettingsController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('backstage')->group(function () {
     Route::get('newsletter-lists', [NewsletterListController::class, 'index'])->name('newsletter-lists.index');
     Route::get('newsletter-lists/create', [NewsletterListController::class, 'create'])->name('newsletter-lists.create');
     Route::post('newsletter-lists', [NewsletterListController::class, 'store'])->name('newsletter-lists.store');
@@ -19,7 +19,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('newsletter-lists/{newsletterList}/opt-in-all', [NewsletterListSyncController::class, 'optInAllUsers'])->name('newsletter-lists.opt-in-all');
 
     Route::patch('users/{user}/newsletter-subscriptions', [UserSubscriptionsController::class, 'update'])->name('users.newsletter-subscriptions.update');
+});
 
+// User-facing email subscription preferences. Stays under /settings/* (per route-prefix convention).
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('settings/email', [EmailSettingsController::class, 'edit'])->name('email-settings.edit');
     Route::patch('settings/email', [EmailSettingsController::class, 'update'])->name('email-settings.update');
 });

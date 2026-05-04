@@ -3,7 +3,7 @@
 use App\Domain\Venue\Http\Controllers\VenueController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('backstage')->group(function () {
     Route::get('venues', [VenueController::class, 'index'])->name('venues.index');
     Route::get('venues/create', [VenueController::class, 'create'])->name('venues.create');
     Route::post('venues', [VenueController::class, 'store'])->name('venues.store');

@@ -15,7 +15,7 @@ it('exposes the currency and available currencies to the shop settings page', fu
     ShopSetting::set('currency', 'usd');
 
     $this->actingAs($admin)
-        ->get('/shop-settings')
+        ->get('/backstage/shop-settings')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('shop/Settings')
@@ -30,7 +30,7 @@ it('allows authenticated users to update the shop currency', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->patch('/shop-settings/currency', ['currency' => 'usd'])
+        ->patch('/backstage/shop-settings/currency', ['currency' => 'usd'])
         ->assertRedirect();
 
     expect(ShopSetting::currency())->toBe('usd');
@@ -40,14 +40,14 @@ it('rejects unknown currency codes', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->patch('/shop-settings/currency', ['currency' => 'xyz'])
+        ->patch('/backstage/shop-settings/currency', ['currency' => 'xyz'])
         ->assertSessionHasErrors('currency');
 
     expect(ShopSetting::currency())->not->toBe('xyz');
 });
 
 it('rejects unauthenticated currency updates', function () {
-    $this->patch('/shop-settings/currency', ['currency' => 'usd'])
+    $this->patch('/backstage/shop-settings/currency', ['currency' => 'usd'])
         ->assertRedirect('/login');
 });
 
@@ -55,7 +55,7 @@ it('normalises mixed-case currency input to lowercase', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->patch('/shop-settings/currency', ['currency' => 'EUR'])
+        ->patch('/backstage/shop-settings/currency', ['currency' => 'EUR'])
         ->assertRedirect();
 
     expect(ShopSetting::get('currency'))->toBe('eur');

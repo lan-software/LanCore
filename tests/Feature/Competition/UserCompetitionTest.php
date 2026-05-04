@@ -22,7 +22,7 @@ it('shows only competitions where user is a team member', function () {
     $otherCompetition = Competition::factory()->create();
 
     $this->actingAs($user)
-        ->get('/my-competitions')
+        ->get('/portal/competitions')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -39,7 +39,7 @@ it('allows user to view their competition', function () {
     CompetitionTeamMember::factory()->create(['team_id' => $team->id, 'user_id' => $user->id]);
 
     $this->actingAs($user)
-        ->get("/my-competitions/{$competition->id}")
+        ->get("/portal/competitions/{$competition->id}")
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('competitions/user/Show'));
 });
@@ -49,6 +49,6 @@ it('forbids user from viewing competition they are not part of', function () {
     $competition = Competition::factory()->create();
 
     $this->actingAs($user)
-        ->get("/my-competitions/{$competition->id}")
+        ->get("/portal/competitions/{$competition->id}")
         ->assertForbidden();
 });

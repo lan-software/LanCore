@@ -231,14 +231,14 @@ it('allows admins to store an integration with announcement settings', function 
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'LanShout',
             'slug' => 'lanshout',
             'is_active' => true,
             'send_announcements' => true,
             'announcement_endpoint' => 'https://lanshout.example.com/api/announcements',
         ])
-        ->assertRedirect('/integrations');
+        ->assertRedirect('/backstage/integrations');
 
     $app = IntegrationApp::where('slug', 'lanshout')->first();
     expect($app->send_announcements)->toBeTrue()
@@ -251,7 +251,7 @@ it('validates announcement_endpoint is required when send_announcements is true'
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'Test',
             'slug' => 'test',
             'send_announcements' => true,
@@ -264,7 +264,7 @@ it('validates announcement_endpoint must be a valid url', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'Test',
             'slug' => 'test',
             'send_announcements' => true,
@@ -278,7 +278,7 @@ it('allows admins to update integration announcement settings', function () {
     $app = IntegrationApp::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/integrations/{$app->id}", [
+        ->patch("/backstage/integrations/{$app->id}", [
             'name' => $app->name,
             'send_announcements' => true,
             'announcement_endpoint' => 'https://lanshout.example.com/api/announcements',
@@ -294,7 +294,7 @@ it('sets managed webhook secret when storing integration with a secret', functio
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'LanShout',
             'slug' => 'lanshout',
             'is_active' => true,
@@ -302,7 +302,7 @@ it('sets managed webhook secret when storing integration with a secret', functio
             'announcement_endpoint' => 'https://lanshout.example.com/api/announcements',
             'announcement_webhook_secret' => 'super-secret',
         ])
-        ->assertRedirect('/integrations');
+        ->assertRedirect('/backstage/integrations');
 
     $app = IntegrationApp::where('slug', 'lanshout')->first();
     $webhook = Webhook::where('integration_app_id', $app->id)->sole();
@@ -315,7 +315,7 @@ it('updates managed webhook secret when updating integration', function () {
     app(SyncIntegrationWebhooks::class)->execute($app, 'old-secret');
 
     $this->actingAs($admin)
-        ->patch("/integrations/{$app->id}", [
+        ->patch("/backstage/integrations/{$app->id}", [
             'name' => $app->name,
             'send_announcements' => true,
             'announcement_endpoint' => $app->announcement_endpoint,
@@ -437,7 +437,7 @@ it('allows admins to store an integration with role update settings via HTTP', f
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'LanShout',
             'slug' => 'lanshout-roles',
             'is_active' => true,
@@ -445,7 +445,7 @@ it('allows admins to store an integration with role update settings via HTTP', f
             'roles_endpoint' => 'https://lanshout.example.com/api/webhooks/roles',
             'roles_webhook_secret' => 'my-roles-secret',
         ])
-        ->assertRedirect('/integrations');
+        ->assertRedirect('/backstage/integrations');
 
     $app = IntegrationApp::where('slug', 'lanshout-roles')->first();
     expect($app->send_role_updates)->toBeTrue()
@@ -462,7 +462,7 @@ it('validates roles_endpoint is required when send_role_updates is true', functi
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'Test',
             'slug' => 'test-roles-val',
             'send_role_updates' => true,

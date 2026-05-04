@@ -11,7 +11,7 @@ beforeEach(function () {
 });
 
 it('redirects unauthenticated users to login', function () {
-    $this->get('/integrations')
+    $this->get('/backstage/integrations')
         ->assertRedirectToRoute('login');
 });
 
@@ -19,7 +19,7 @@ it('forbids users with the user role', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/integrations')
+        ->get('/backstage/integrations')
         ->assertForbidden();
 });
 
@@ -27,7 +27,7 @@ it('allows users with the admin role', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/integrations')
+        ->get('/backstage/integrations')
         ->assertSuccessful();
 });
 
@@ -35,7 +35,7 @@ it('allows users with the superadmin role', function () {
     $superadmin = User::factory()->withRole(RoleName::Superadmin)->create();
 
     $this->actingAs($superadmin)
-        ->get('/integrations')
+        ->get('/backstage/integrations')
         ->assertSuccessful();
 });
 
@@ -43,7 +43,7 @@ it('forbids regular users from accessing create page', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/integrations/create')
+        ->get('/backstage/integrations/create')
         ->assertForbidden();
 });
 
@@ -51,6 +51,6 @@ it('allows admins to access create page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/integrations/create')
+        ->get('/backstage/integrations/create')
         ->assertSuccessful();
 });

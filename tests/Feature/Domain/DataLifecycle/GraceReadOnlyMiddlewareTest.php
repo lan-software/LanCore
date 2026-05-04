@@ -33,6 +33,6 @@ it('GET requests still pass for the locked user', function () {
     );
 
     $this->actingAs($user->refresh())
-        ->get('/account/delete')
+        ->get('/portal/account/delete')
         ->assertSuccessful();
 });

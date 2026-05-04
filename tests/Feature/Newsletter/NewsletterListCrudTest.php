@@ -20,7 +20,7 @@ it('forbids regular users from listing newsletter lists', function (): void {
     $user = User::factory()->withRole(RoleName::User)->create(['email_verified_at' => now()]);
 
     $this->actingAs($user)
-        ->get('/newsletter-lists')
+        ->get('/backstage/newsletter-lists')
         ->assertForbidden();
 });
 
@@ -29,7 +29,7 @@ it('lets admins list newsletter lists', function (): void {
     NewsletterList::factory()->create(['name' => 'Demo']);
 
     $this->actingAs($admin)
-        ->get('/newsletter-lists')
+        ->get('/backstage/newsletter-lists')
         ->assertOk();
 });
 
@@ -44,7 +44,7 @@ it('creates a list both in Listmonk and the local mirror', function (): void {
     ]);
 
     $this->actingAs($admin)
-        ->post('/newsletter-lists', [
+        ->post('/backstage/newsletter-lists', [
             'name' => 'Hype Train',
             'description' => 'Big news only',
             'type' => 'public',
@@ -52,7 +52,7 @@ it('creates a list both in Listmonk and the local mirror', function (): void {
             'is_user_selectable' => true,
             'is_default_public' => false,
         ])
-        ->assertRedirect('/newsletter-lists');
+        ->assertRedirect('/backstage/newsletter-lists');
 
     expect(NewsletterList::where('listmonk_id', 77)->first())
         ->not->toBeNull()
@@ -66,8 +66,8 @@ it('deletes a local mirror without deleting in Listmonk by default', function ()
     Http::fake();
 
     $this->actingAs($admin)
-        ->delete("/newsletter-lists/{$list->id}")
-        ->assertRedirect('/newsletter-lists');
+        ->delete("/backstage/newsletter-lists/{$list->id}")
+        ->assertRedirect('/backstage/newsletter-lists');
 
     expect(NewsletterList::find($list->id))->toBeNull();
     Http::assertNothingSent();

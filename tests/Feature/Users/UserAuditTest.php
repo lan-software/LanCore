@@ -17,7 +17,7 @@ it('records an audit row when a user is updated', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($admin)
-        ->patch("/users/{$user->id}", [
+        ->patch("/backstage/users/{$user->id}", [
             'name' => 'Updated Name',
             'email' => $user->email,
         ])
@@ -40,7 +40,7 @@ it('never persists secrets in audit values', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($admin)
-        ->patch("/users/{$user->id}", [
+        ->patch("/backstage/users/{$user->id}", [
             'name' => $user->name,
             'email' => $user->email,
             'password' => 'new-password-123',
@@ -104,13 +104,13 @@ it('exposes the on-user audit endpoint to admins', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($admin)
-        ->patch("/users/{$user->id}", [
+        ->patch("/backstage/users/{$user->id}", [
             'name' => 'Auditable Name',
             'email' => $user->email,
         ]);
 
     $this->actingAs($admin)
-        ->get("/users/{$user->id}/audit/on")
+        ->get("/backstage/users/{$user->id}/audit/on")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -126,13 +126,13 @@ it('exposes the by-user audit endpoint to admins and lists actor changes', funct
     $target = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($admin)
-        ->patch("/users/{$target->id}", [
+        ->patch("/backstage/users/{$target->id}", [
             'name' => 'Driven By Admin',
             'email' => $target->email,
         ]);
 
     $this->actingAs($admin)
-        ->get("/users/{$admin->id}/audit/by")
+        ->get("/backstage/users/{$admin->id}/audit/by")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -148,10 +148,10 @@ it('forbids non-admins from viewing the user audit endpoints', function () {
     $target = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get("/users/{$target->id}/audit/on")
+        ->get("/backstage/users/{$target->id}/audit/on")
         ->assertForbidden();
 
     $this->actingAs($user)
-        ->get("/users/{$target->id}/audit/by")
+        ->get("/backstage/users/{$target->id}/audit/by")
         ->assertForbidden();
 });

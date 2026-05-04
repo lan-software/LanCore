@@ -99,7 +99,7 @@ it('allows admins to approve a comment', function () {
     $comment = NewsComment::factory()->create(['is_approved' => false]);
 
     $this->actingAs($admin)
-        ->post("/news/comments/{$comment->id}/approve")
+        ->post("/backstage/news/comments/{$comment->id}/approve")
         ->assertRedirect();
 
     expect($comment->fresh()->is_approved)->toBeTrue();
@@ -110,7 +110,7 @@ it('allows admins to delete a comment', function () {
     $comment = NewsComment::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/news/comments/{$comment->id}")
+        ->delete("/backstage/news/comments/{$comment->id}")
         ->assertRedirect();
 
     expect(NewsComment::find($comment->id))->toBeNull();
@@ -121,7 +121,7 @@ it('forbids regular users from deleting comments', function () {
     $comment = NewsComment::factory()->create();
 
     $this->actingAs($user)
-        ->delete("/news/comments/{$comment->id}")
+        ->delete("/backstage/news/comments/{$comment->id}")
         ->assertForbidden();
 });
 

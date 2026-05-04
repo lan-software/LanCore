@@ -17,7 +17,7 @@ it('allows admins to view the create article page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/news-admin/create')
+        ->get('/backstage/news/create')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('news/Create'));
 });
@@ -26,14 +26,14 @@ it('allows admins to store a new article', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/news-admin', [
+        ->post('/backstage/news', [
             'title' => 'Test News Article',
             'summary' => 'A short summary.',
             'content' => '<p>Article body content.</p>',
             'visibility' => 'draft',
             'tags' => ['update', 'event'],
         ])
-        ->assertRedirect('/news-admin');
+        ->assertRedirect('/backstage/news');
 
     expect(NewsArticle::where('title', 'Test News Article')->exists())->toBeTrue();
     expect(NewsArticle::where('slug', 'test-news-article')->exists())->toBeTrue();
@@ -44,13 +44,13 @@ it('allows admins to store an article with an image', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/news-admin', [
+        ->post('/backstage/news', [
             'title' => 'Article With Image',
             'visibility' => 'public',
             'published_at' => now()->toDateTimeString(),
             'image' => UploadedFile::fake()->image('news.jpg', 800, 600),
         ])
-        ->assertRedirect('/news-admin');
+        ->assertRedirect('/backstage/news');
 
     $article = NewsArticle::where('title', 'Article With Image')->first();
     expect($article)->not->toBeNull();
@@ -62,13 +62,13 @@ it('generates unique slugs for articles with the same title', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/news-admin', [
+        ->post('/backstage/news', [
             'title' => 'Duplicate Title',
             'visibility' => 'draft',
         ]);
 
     $this->actingAs($admin)
-        ->post('/news-admin', [
+        ->post('/backstage/news', [
             'title' => 'Duplicate Title',
             'visibility' => 'draft',
         ]);
@@ -82,7 +82,7 @@ it('validates required fields when storing an article', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/news-admin', [])
+        ->post('/backstage/news', [])
         ->assertSessionHasErrors(['title', 'visibility']);
 });
 
@@ -91,7 +91,7 @@ it('allows admins to view the edit article page', function () {
     $article = NewsArticle::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/news-admin/{$article->id}")
+        ->get("/backstage/news/{$article->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -106,7 +106,7 @@ it('allows admins to update an article', function () {
     $article = NewsArticle::factory()->create();
 
     $this->actingAs($admin)
-        ->post("/news-admin/{$article->id}", [
+        ->post("/backstage/news/{$article->id}", [
             'title' => 'Updated Title',
             'visibility' => 'public',
             'published_at' => now()->toDateTimeString(),
@@ -123,7 +123,7 @@ it('allows admins to archive an article', function () {
     $article = NewsArticle::factory()->published()->create();
 
     $this->actingAs($admin)
-        ->post("/news-admin/{$article->id}", [
+        ->post("/backstage/news/{$article->id}", [
             'title' => $article->title,
             'visibility' => $article->visibility->value,
             'is_archived' => true,
@@ -138,8 +138,8 @@ it('allows admins to delete an article', function () {
     $article = NewsArticle::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/news-admin/{$article->id}")
-        ->assertRedirect('/news-admin');
+        ->delete("/backstage/news/{$article->id}")
+        ->assertRedirect('/backstage/news');
 
     expect(NewsArticle::find($article->id))->toBeNull();
 });
@@ -153,7 +153,7 @@ it('deletes the image when deleting an article', function () {
     Storage::disk('public')->assertExists($imagePath);
 
     $this->actingAs($admin)
-        ->delete("/news-admin/{$article->id}");
+        ->delete("/backstage/news/{$article->id}");
 
     Storage::disk('public')->assertMissing($imagePath);
 });
@@ -162,7 +162,7 @@ it('forbids users from creating articles', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->post('/news-admin', [
+        ->post('/backstage/news', [
             'title' => 'Test',
             'visibility' => 'draft',
         ])
@@ -173,11 +173,11 @@ it('sets the authenticated user as the author', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/news-admin', [
+        ->post('/backstage/news', [
             'title' => 'Authored Article',
             'visibility' => 'draft',
         ])
-        ->assertRedirect('/news-admin');
+        ->assertRedirect('/backstage/news');
 
     $article = NewsArticle::where('title', 'Authored Article')->first();
     expect($article->author_id)->toBe($admin->id);
@@ -189,12 +189,12 @@ it('sets published_at server-side when publish_now is true', function () {
     $this->freezeTime();
 
     $this->actingAs($admin)
-        ->post('/news-admin', [
+        ->post('/backstage/news', [
             'title' => 'Publish Now Article',
             'visibility' => 'public',
             'publish_now' => true,
         ])
-        ->assertRedirect('/news-admin');
+        ->assertRedirect('/backstage/news');
 
     $article = NewsArticle::where('title', 'Publish Now Article')->first();
     expect($article->published_at)->not->toBeNull();
@@ -205,12 +205,12 @@ it('does not set published_at when publish_now is false', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/news-admin', [
+        ->post('/backstage/news', [
             'title' => 'No Publish Date Article',
             'visibility' => 'draft',
             'publish_now' => false,
         ])
-        ->assertRedirect('/news-admin');
+        ->assertRedirect('/backstage/news');
 
     $article = NewsArticle::where('title', 'No Publish Date Article')->first();
     expect($article->published_at)->toBeNull();

@@ -147,7 +147,7 @@ it('allows admins to view announcements index', function () {
     $admin->roles()->attach($adminRole);
 
     $this->actingAs($admin)
-        ->get('/announcements-admin')
+        ->get('/backstage/announcements')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('announcements/Index'));
 });
@@ -156,7 +156,7 @@ it('prevents non-admin users from viewing announcements index', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/announcements-admin')
+        ->get('/backstage/announcements')
         ->assertForbidden();
 });
 
@@ -170,14 +170,14 @@ it('allows admins to create announcements', function () {
     EventFacade::fake([AnnouncementPublished::class]);
 
     $this->actingAs($admin)
-        ->post('/announcements-admin', [
+        ->post('/backstage/announcements', [
             'title' => 'New Announcement',
             'description' => 'A test announcement',
             'priority' => 'normal',
             'event_id' => $event->id,
             'publish_now' => true,
         ])
-        ->assertRedirect('/announcements-admin');
+        ->assertRedirect('/backstage/announcements');
 
     expect(Announcement::where('title', 'New Announcement')->exists())->toBeTrue();
 });
@@ -190,7 +190,7 @@ it('allows admins to update announcements', function () {
     $announcement = Announcement::factory()->published()->create();
 
     $this->actingAs($admin)
-        ->patch("/announcements-admin/{$announcement->id}", [
+        ->patch("/backstage/announcements/{$announcement->id}", [
             'title' => 'Updated Title',
             'description' => 'Updated description',
             'priority' => 'emergency',
@@ -209,8 +209,8 @@ it('allows admins to delete announcements', function () {
     $announcement = Announcement::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/announcements-admin/{$announcement->id}")
-        ->assertRedirect('/announcements-admin');
+        ->delete("/backstage/announcements/{$announcement->id}")
+        ->assertRedirect('/backstage/announcements');
 
     expect(Announcement::find($announcement->id))->toBeNull();
 });

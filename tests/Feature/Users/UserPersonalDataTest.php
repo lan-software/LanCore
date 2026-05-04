@@ -21,7 +21,7 @@ it('allows admins to update personal data and writes an audit row', function () 
     ]);
 
     $this->actingAs($admin)
-        ->patch("/users/{$user->id}/personal-data", [
+        ->patch("/backstage/users/{$user->id}/personal-data", [
             'phone' => '+49 123 4567',
             'street' => 'Hauptstrasse 1',
             'city' => 'Berlin',
@@ -60,7 +60,7 @@ it('rejects an invalid country code', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($admin)
-        ->patch("/users/{$user->id}/personal-data", [
+        ->patch("/backstage/users/{$user->id}/personal-data", [
             'country' => 'GERMANY',
         ])
         ->assertSessionHasErrors('country');
@@ -71,7 +71,7 @@ it('forbids non-admins from updating personal data', function () {
     $target = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->patch("/users/{$target->id}/personal-data", [
+        ->patch("/backstage/users/{$target->id}/personal-data", [
             'phone' => '+49 123',
         ])
         ->assertForbidden();

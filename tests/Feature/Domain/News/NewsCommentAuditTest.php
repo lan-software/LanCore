@@ -16,7 +16,7 @@ it('allows admins to view the audit page for a news comment', function () {
     $comment = NewsComment::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/news/comments/{$comment->id}/audit")
+        ->get("/backstage/news/comments/{$comment->id}/audit")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,13 +31,13 @@ it('denies non-admin users access to the news comment audit page', function () {
     $comment = NewsComment::factory()->create();
 
     $this->actingAs($user)
-        ->get("/news/comments/{$comment->id}/audit")
+        ->get("/backstage/news/comments/{$comment->id}/audit")
         ->assertForbidden();
 });
 
 it('redirects unauthenticated users to login for news comment audit', function () {
     $comment = NewsComment::factory()->create();
 
-    $this->get("/news/comments/{$comment->id}/audit")
+    $this->get("/backstage/news/comments/{$comment->id}/audit")
         ->assertRedirect('/login');
 });

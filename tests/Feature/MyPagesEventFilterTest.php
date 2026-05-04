@@ -49,7 +49,7 @@ it('filters my-competitions by my_selected_event_id', function () {
 
     $this->actingAs($user)
         ->withSession(['my_selected_event_id' => $eventA->id])
-        ->get('/my-competitions')
+        ->get('/portal/competitions')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->where('competitions.total', 1));
 });
@@ -58,7 +58,7 @@ it('returns all my-competitions when no my_selected_event_id is set', function (
     ['user' => $user] = seedMyPagesData();
 
     $this->actingAs($user)
-        ->get('/my-competitions')
+        ->get('/portal/competitions')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->where('competitions.total', 2));
 });
@@ -68,7 +68,7 @@ it('filters my-teams by my_selected_event_id via competition.event_id', function
 
     $this->actingAs($user)
         ->withSession(['my_selected_event_id' => $eventA->id])
-        ->get('/my-teams')
+        ->get('/portal/teams')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->has('teams', 1));
 });
@@ -77,7 +77,7 @@ it('returns all my-teams when no my_selected_event_id is set', function () {
     ['user' => $user] = seedMyPagesData();
 
     $this->actingAs($user)
-        ->get('/my-teams')
+        ->get('/portal/teams')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->has('teams', 2));
 });
@@ -87,7 +87,7 @@ it('filters my-orders by my_selected_event_id', function () {
 
     $this->actingAs($user)
         ->withSession(['my_selected_event_id' => $eventA->id])
-        ->get('/my-orders')
+        ->get('/portal/orders')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->has('orders', 1));
 });
@@ -96,7 +96,7 @@ it('returns all my-orders when no my_selected_event_id is set', function () {
     ['user' => $user] = seedMyPagesData();
 
     $this->actingAs($user)
-        ->get('/my-orders')
+        ->get('/portal/orders')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->has('orders', 2));
 });
@@ -106,7 +106,7 @@ it('filters owned tickets index by my_selected_event_id', function () {
 
     $this->actingAs($user)
         ->withSession(['my_selected_event_id' => $eventA->id])
-        ->get('/tickets')
+        ->get('/portal/tickets')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->has('ownedTickets', 1));
 });
@@ -115,7 +115,7 @@ it('returns all owned tickets when no my_selected_event_id is set', function () 
     ['user' => $user] = seedMyPagesData();
 
     $this->actingAs($user)
-        ->get('/tickets')
+        ->get('/portal/tickets')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->has('ownedTickets', 2));
 });

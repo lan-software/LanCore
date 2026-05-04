@@ -22,7 +22,7 @@ it('lets admins view the email log index', function () {
     ]);
 
     $this->actingAs($admin)
-        ->get('/admin/emails')
+        ->get('/backstage/emails')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -48,7 +48,7 @@ it('filters the index by status', function () {
 
     $captured = [];
     $this->actingAs($admin)
-        ->get('/admin/emails?status=failed')
+        ->get('/backstage/emails?status=failed')
         ->assertSuccessful()
         ->assertInertia(function ($page) use (&$captured) {
             $captured = collect($page->toArray()['props']['messages']['data'])
@@ -71,7 +71,7 @@ it('lets admins view a single email', function () {
     ]);
 
     $this->actingAs($admin)
-        ->get("/admin/emails/{$msg->id}")
+        ->get("/backstage/emails/{$msg->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -86,6 +86,6 @@ it('forbids non-admins from viewing the email log', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/admin/emails')
+        ->get('/backstage/emails')
         ->assertForbidden();
 });

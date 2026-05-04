@@ -16,7 +16,7 @@ it('allows admins to view the audit page for a program', function () {
     $program = Program::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/programs/{$program->id}/audit")
+        ->get("/backstage/programs/{$program->id}/audit")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,13 +31,13 @@ it('denies non-admin users access to the program audit page', function () {
     $program = Program::factory()->create();
 
     $this->actingAs($user)
-        ->get("/programs/{$program->id}/audit")
+        ->get("/backstage/programs/{$program->id}/audit")
         ->assertForbidden();
 });
 
 it('redirects unauthenticated users to login for program audit', function () {
     $program = Program::factory()->create();
 
-    $this->get("/programs/{$program->id}/audit")
+    $this->get("/backstage/programs/{$program->id}/audit")
         ->assertRedirect('/login');
 });

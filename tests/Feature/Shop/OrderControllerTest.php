@@ -16,7 +16,7 @@ it('allows admins to view orders index', function () {
     Order::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/orders')
+        ->get('/backstage/orders')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -32,7 +32,7 @@ it('allows admins to search orders', function () {
     Order::factory()->count(2)->create();
 
     $this->actingAs($admin)
-        ->get('/orders?search=John+Unique')
+        ->get('/backstage/orders?search=John+Unique')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -47,7 +47,7 @@ it('allows admins to filter orders by status', function () {
     Order::factory()->pending()->create();
 
     $this->actingAs($admin)
-        ->get('/orders?status=pending')
+        ->get('/backstage/orders?status=pending')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -61,7 +61,7 @@ it('allows admins to view an order detail', function () {
     $order = Order::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/orders/{$order->id}")
+        ->get("/backstage/orders/{$order->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -75,7 +75,7 @@ it('denies non-admin users from viewing orders index', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/orders')
+        ->get('/backstage/orders')
         ->assertForbidden();
 });
 
@@ -84,6 +84,6 @@ it('denies non-admin users from viewing order detail', function () {
     $order = Order::factory()->create();
 
     $this->actingAs($user)
-        ->get("/orders/{$order->id}")
+        ->get("/backstage/orders/{$order->id}")
         ->assertForbidden();
 });

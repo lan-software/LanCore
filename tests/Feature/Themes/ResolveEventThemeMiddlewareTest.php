@@ -24,7 +24,7 @@ it('shares the active palette on event-scoped routes', function () {
     $event = Event::factory()->create(['theme_id' => $theme->id]);
 
     $this->actingAs($admin)
-        ->get("/events/{$event->id}")
+        ->get("/backstage/events/{$event->id}")
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->where('activeTheme.name', 'Brand')
@@ -47,7 +47,7 @@ it('falls back to the organization default theme when no event theme is assigned
     $event = Event::factory()->create(['theme_id' => null]);
 
     $this->actingAs($admin)
-        ->get("/events/{$event->id}")
+        ->get("/backstage/events/{$event->id}")
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->where('activeTheme.name', 'Org Default')
@@ -95,7 +95,7 @@ it('per-event theme overrides the organization default', function () {
     $event = Event::factory()->create(['theme_id' => $eventTheme->id]);
 
     $this->actingAs($admin)
-        ->get("/events/{$event->id}")
+        ->get("/backstage/events/{$event->id}")
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->where('activeTheme.name', 'Event Theme')

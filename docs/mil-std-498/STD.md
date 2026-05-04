@@ -318,11 +318,11 @@ This ensures complete isolation between test cases.
 
 | Test | Preconditions | Input | Expected Result |
 |------|--------------|-------|-----------------|
-| shows the user their own orders | User with 3 orders, other user has 2 | GET /my-orders | 200, Inertia 'my-orders/Index', 3 orders |
-| does not show other users orders | User with 0 orders, other user has 2 | GET /my-orders | 200, 0 orders |
-| shows order detail for own order | User owns order | GET /my-orders/{order} | 200, Inertia 'my-orders/Show', correct order |
-| denies viewing another users order | User does not own order | GET /my-orders/{order} | 403 Forbidden |
-| requires authentication | Unauthenticated | GET /my-orders | 302 redirect to login |
+| shows the user their own orders | User with 3 orders, other user has 2 | GET /portal/orders | 200, Inertia 'my-orders/Index', 3 orders |
+| does not show other users orders | User with 0 orders, other user has 2 | GET /portal/orders | 200, 0 orders |
+| shows order detail for own order | User owns order | GET /portal/orders/{order} | 200, Inertia 'my-orders/Show', correct order |
+| denies viewing another users order | User does not own order | GET /portal/orders/{order} | 403 Forbidden |
+| requires authentication | Unauthenticated | GET /portal/orders | 302 redirect to login |
 
 #### 4.6.3 Stripe Webhook Processing
 
@@ -484,13 +484,13 @@ This ensures complete isolation between test cases.
 
 | Test | Preconditions | Input | Expected Result |
 |------|--------------|-------|-----------------|
-| allows admins to view achievements index | Admin | GET /achievements-admin | 200, list displayed |
-| prevents regular users from viewing | Regular user | GET /achievements-admin | 403 Forbidden |
-| allows admins to store a new achievement | Admin | POST /achievements-admin {name, description} | 302, achievement created |
-| validates required fields when storing | Admin | POST /achievements-admin {} | 422 validation error |
-| allows admins to update an achievement | Admin, achievement exists | PATCH /achievements-admin/{id} | 302, updated |
-| allows admins to delete an achievement | Admin, achievement exists | DELETE /achievements-admin/{id} | 302, deleted |
-| validates color format | Admin | POST /achievements-admin {color: invalid} | 422 validation error |
+| allows admins to view achievements index | Admin | GET /backstage/achievements | 200, list displayed |
+| prevents regular users from viewing | Regular user | GET /backstage/achievements | 403 Forbidden |
+| allows admins to store a new achievement | Admin | POST /backstage/achievements {name, description} | 302, achievement created |
+| validates required fields when storing | Admin | POST /backstage/achievements {} | 422 validation error |
+| allows admins to update an achievement | Admin, achievement exists | PATCH /backstage/achievements/{id} | 302, updated |
+| allows admins to delete an achievement | Admin, achievement exists | DELETE /backstage/achievements/{id} | 302, deleted |
+| validates color format | Admin | POST /backstage/achievements {color: invalid} | 422 validation error |
 
 ### 4.13 Permission System Tests
 
@@ -528,11 +528,11 @@ This ensures complete isolation between test cases.
 |------|------|--------|-----------------|
 | superadmin accesses all admin routes | Superadmin | 16 admin index routes | 200 OK (16 datasets) |
 | admin accesses all admin routes | Admin | 16 admin index routes | 200 OK (16 datasets) |
-| moderator accesses content routes | Moderator | `/announcements-admin`, `/news-admin/comments` | 200 OK (2 datasets) |
-| moderator blocked from non-content routes | Moderator | `/achievements-admin`, `/events`, `/venues`, etc. | 403 Forbidden (10 datasets) |
+| moderator accesses content routes | Moderator | `/backstage/announcements`, `/backstage/news/comments` | 200 OK (2 datasets) |
+| moderator blocked from non-content routes | Moderator | `/backstage/achievements`, `/events`, `/venues`, etc. | 403 Forbidden (10 datasets) |
 | regular user blocked from all admin routes | User | 16 admin index routes | 403 Forbidden (16 datasets) |
 | sponsor manager views sponsors list | SponsorManager | `/sponsors` | 200 OK |
-| sponsor manager blocked from other routes | SponsorManager | `/achievements-admin`, `/events`, `/venues`, etc. | 403 Forbidden (7 datasets) |
+| sponsor manager blocked from other routes | SponsorManager | `/backstage/achievements`, `/events`, `/venues`, etc. | 403 Forbidden (7 datasets) |
 
 #### 4.13.4 Permission Architecture Tests
 
@@ -597,10 +597,10 @@ This ensures complete isolation between test cases.
 
 | Test | Preconditions | Input | Expected Result |
 |------|--------------|-------|-----------------|
-| UserCompetitionController index filtered by session event | User in competitions across 2 events | GET /my-competitions (session set) | Only competitions for selected event returned |
-| UserCompetitionController index unfiltered without session | No session key | GET /my-competitions | All user competitions returned |
-| UserTeamController index filtered | Teams across 2 events | GET /my-teams (session set) | Only teams in selected event's competitions returned |
-| UserOrderController index filtered | Orders across 2 events | GET /my-orders (session set) | Only orders for selected event returned |
+| UserCompetitionController index filtered by session event | User in competitions across 2 events | GET /portal/competitions (session set) | Only competitions for selected event returned |
+| UserCompetitionController index unfiltered without session | No session key | GET /portal/competitions | All user competitions returned |
+| UserTeamController index filtered | Teams across 2 events | GET /portal/teams (session set) | Only teams in selected event's competitions returned |
+| UserOrderController index filtered | Orders across 2 events | GET /portal/orders (session set) | Only orders for selected event returned |
 | TicketController index filtered | Tickets (owned/manager/assignee) across 2 events | GET /my-tickets (session set) | Only tickets for selected event returned |
 
 #### 4.17.3 Unit Tests — EventScopeForUserTest

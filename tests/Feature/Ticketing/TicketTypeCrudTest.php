@@ -21,7 +21,7 @@ it('allows admins to view ticket types index', function () {
     TicketType::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/ticket-types')
+        ->get('/backstage/ticket-types')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -34,7 +34,7 @@ it('allows admins to view the create ticket type page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/ticket-types/create')
+        ->get('/backstage/ticket-types/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -50,7 +50,7 @@ it('allows admins to store a new ticket type', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/ticket-types', [
+        ->post('/backstage/ticket-types', [
             'name' => 'Premium Ticket',
             'description' => 'Best seat in the house',
             'price' => 5000,
@@ -60,7 +60,7 @@ it('allows admins to store a new ticket type', function () {
             'is_hidden' => false,
             'event_id' => $event->id,
         ])
-        ->assertRedirect('/ticket-types');
+        ->assertRedirect('/backstage/ticket-types');
 
     expect(TicketType::where('name', 'Premium Ticket')->exists())->toBeTrue();
 });
@@ -69,7 +69,7 @@ it('validates required fields when storing a ticket type', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/ticket-types', [])
+        ->post('/backstage/ticket-types', [])
         ->assertSessionHasErrors(['name', 'price', 'quota', 'event_id']);
 });
 
@@ -78,7 +78,7 @@ it('allows admins to update a ticket type', function () {
     $ticketType = TicketType::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/ticket-types/{$ticketType->id}", [
+        ->patch("/backstage/ticket-types/{$ticketType->id}", [
             'name' => 'Updated Ticket Type',
             'price' => 6000,
             'quota' => 200,
@@ -97,7 +97,7 @@ it('prevents updating locked fields on a locked ticket type', function () {
     $ticketType = TicketType::factory()->locked()->create(['price' => 5000]);
 
     $this->actingAs($admin)
-        ->patch("/ticket-types/{$ticketType->id}", [
+        ->patch("/backstage/ticket-types/{$ticketType->id}", [
             'name' => 'Changed Name',
             'description' => null,
             'price' => 9999,
@@ -119,8 +119,8 @@ it('allows admins to delete a ticket type', function () {
     $ticketType = TicketType::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/ticket-types/{$ticketType->id}")
-        ->assertRedirect('/ticket-types');
+        ->delete("/backstage/ticket-types/{$ticketType->id}")
+        ->assertRedirect('/backstage/ticket-types');
 
     expect(TicketType::find($ticketType->id))->toBeNull();
 });
@@ -129,7 +129,7 @@ it('denies regular users access to ticket types', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/ticket-types')
+        ->get('/backstage/ticket-types')
         ->assertForbidden();
 });
 
@@ -139,12 +139,12 @@ it('allows admins to store a ticket category', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/ticket-categories', [
+        ->post('/backstage/ticket-categories', [
             'name' => 'Premium',
             'description' => 'Premium seating area',
             'sort_order' => 1,
         ])
-        ->assertRedirect('/ticket-categories');
+        ->assertRedirect('/backstage/ticket-categories');
 
     expect(TicketCategory::where('name', 'Premium')->exists())->toBeTrue();
 });
@@ -154,7 +154,7 @@ it('allows admins to update a ticket category', function () {
     $category = TicketCategory::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/ticket-categories/{$category->id}", [
+        ->patch("/backstage/ticket-categories/{$category->id}", [
             'name' => 'Updated Category',
             'sort_order' => 5,
         ])
@@ -168,8 +168,8 @@ it('allows admins to delete a ticket category', function () {
     $category = TicketCategory::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/ticket-categories/{$category->id}")
-        ->assertRedirect('/ticket-categories');
+        ->delete("/backstage/ticket-categories/{$category->id}")
+        ->assertRedirect('/backstage/ticket-categories');
 
     expect(TicketCategory::find($category->id))->toBeNull();
 });
@@ -181,7 +181,7 @@ it('allows admins to store a ticket addon', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/ticket-addons', [
+        ->post('/backstage/ticket-addons', [
             'name' => '2.5 Gbit Ethernet',
             'description' => 'High-speed network upgrade',
             'price' => 1500,
@@ -191,7 +191,7 @@ it('allows admins to store a ticket addon', function () {
             'is_hidden' => false,
             'event_id' => $event->id,
         ])
-        ->assertRedirect('/ticket-addons');
+        ->assertRedirect('/backstage/ticket-addons');
 
     expect(Addon::where('name', '2.5 Gbit Ethernet')->exists())->toBeTrue();
 });
@@ -201,8 +201,8 @@ it('allows admins to delete a ticket addon', function () {
     $addon = Addon::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/ticket-addons/{$addon->id}")
-        ->assertRedirect('/ticket-addons');
+        ->delete("/backstage/ticket-addons/{$addon->id}")
+        ->assertRedirect('/backstage/ticket-addons');
 
     expect(Addon::find($addon->id))->toBeNull();
 });

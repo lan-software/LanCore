@@ -10,7 +10,7 @@ beforeEach(function () {
 
 it('shows the notifications index page to authenticated users', function () {
     $this->actingAs($this->user)
-        ->get('/notifications')
+        ->get('/portal/notifications')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->component('notifications/Index')
@@ -18,7 +18,7 @@ it('shows the notifications index page to authenticated users', function () {
 });
 
 it('redirects guests from the notifications page', function () {
-    $this->get('/notifications')
+    $this->get('/portal/notifications')
         ->assertRedirect('/login');
 });
 
@@ -41,7 +41,7 @@ it('shows paginated notifications belonging to the authenticated user', function
     ]);
 
     $this->actingAs($this->user)
-        ->get('/notifications')
+        ->get('/portal/notifications')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->component('notifications/Index')
@@ -60,7 +60,7 @@ it('allows marking a single notification as read', function () {
     ]);
 
     $this->actingAs($this->user)
-        ->patch("/notifications/{$notificationId}/read")
+        ->patch("/portal/notifications/{$notificationId}/read")
         ->assertRedirect();
 
     expect(DatabaseNotification::find($notificationId)->read_at)->not->toBeNull();
@@ -78,7 +78,7 @@ it('prevents users from marking other users\' notifications as read', function (
     ]);
 
     $this->actingAs($this->user)
-        ->patch("/notifications/{$notificationId}/read")
+        ->patch("/portal/notifications/{$notificationId}/read")
         ->assertNotFound();
 });
 
@@ -95,7 +95,7 @@ it('allows marking all notifications as read', function () {
     }
 
     $this->actingAs($this->user)
-        ->patch('/notifications/read-all')
+        ->patch('/portal/notifications/read-all')
         ->assertRedirect();
 
     expect($this->user->unreadNotifications()->count())->toBe(0);
@@ -112,7 +112,7 @@ it('allows archiving a notification', function () {
     ]);
 
     $this->actingAs($this->user)
-        ->patch("/notifications/{$notificationId}/archive")
+        ->patch("/portal/notifications/{$notificationId}/archive")
         ->assertRedirect();
 
     expect(DatabaseNotification::find($notificationId)->archived_at)->not->toBeNull();
@@ -130,7 +130,7 @@ it('prevents users from archiving other users\' notifications', function () {
     ]);
 
     $this->actingAs($this->user)
-        ->patch("/notifications/{$notificationId}/archive")
+        ->patch("/portal/notifications/{$notificationId}/archive")
         ->assertNotFound();
 });
 
@@ -146,7 +146,7 @@ it('allows archiving all notifications', function () {
     }
 
     $this->actingAs($this->user)
-        ->patch('/notifications/archive-all')
+        ->patch('/portal/notifications/archive-all')
         ->assertRedirect();
 
     expect($this->user->notifications()->whereNull('archived_at')->count())->toBe(0);
@@ -154,7 +154,7 @@ it('allows archiving all notifications', function () {
 
 it('shows the archived notifications index page to authenticated users', function () {
     $this->actingAs($this->user)
-        ->get('/notifications/archive')
+        ->get('/portal/notifications/archive')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->component('notifications/Archive')
@@ -180,7 +180,7 @@ it('only shows archived notifications on the archive page', function () {
     ]);
 
     $this->actingAs($this->user)
-        ->get('/notifications/archive')
+        ->get('/portal/notifications/archive')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->component('notifications/Archive')
@@ -198,7 +198,7 @@ it('shares unread notifications count via inertia props', function () {
     ]);
 
     $this->actingAs($this->user)
-        ->get('/notifications')
+        ->get('/portal/notifications')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->where('unreadNotificationsCount', 1));

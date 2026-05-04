@@ -16,7 +16,7 @@ it('allows admins to view the audit page for a ticket type', function () {
     $ticketType = TicketType::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/ticket-types/{$ticketType->id}/audit")
+        ->get("/backstage/ticket-types/{$ticketType->id}/audit")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,13 +31,13 @@ it('denies non-admin users access to the ticket type audit page', function () {
     $ticketType = TicketType::factory()->create();
 
     $this->actingAs($user)
-        ->get("/ticket-types/{$ticketType->id}/audit")
+        ->get("/backstage/ticket-types/{$ticketType->id}/audit")
         ->assertForbidden();
 });
 
 it('redirects unauthenticated users to login for ticket type audit', function () {
     $ticketType = TicketType::factory()->create();
 
-    $this->get("/ticket-types/{$ticketType->id}/audit")
+    $this->get("/backstage/ticket-types/{$ticketType->id}/audit")
         ->assertRedirect('/login');
 });

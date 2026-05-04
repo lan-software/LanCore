@@ -41,7 +41,7 @@ Route::get('/policies/{policy:key}', [PublicPolicyController::class, 'show'])
  * @see docs/mil-std-498/SRS.md POL-F-001..006
  */
 Route::middleware(['auth', 'verified', 'require.username'])
-    ->prefix('admin/policies')
+    ->prefix('backstage/policies')
     ->name('admin.policies.')
     ->group(function (): void {
         Route::get('/', [PolicyController::class, 'index'])->name('index');

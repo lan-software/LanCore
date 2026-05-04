@@ -16,7 +16,7 @@ it('returns paginated venues for admins', function () {
     Venue::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/venues')
+        ->get('/backstage/venues')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -33,7 +33,7 @@ it('filters venues by search term', function () {
     Venue::factory()->create(['name' => 'Side Hall']);
 
     $this->actingAs($admin)
-        ->get('/venues?search=arena')
+        ->get('/backstage/venues?search=arena')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -49,7 +49,7 @@ it('sorts venues by name ascending', function () {
     Venue::factory()->create(['name' => 'Alpha Arena']);
 
     $this->actingAs($admin)
-        ->get('/venues?sort=name&direction=asc')
+        ->get('/backstage/venues?sort=name&direction=asc')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

@@ -17,7 +17,7 @@ it('admins can create an orga-team with deputies', function () {
     $deputies = User::factory()->count(2)->create();
 
     $this->actingAs($admin)
-        ->post('/orga-teams', [
+        ->post('/backstage/orga-teams', [
             'name' => 'SXLAN Crew',
             'slug' => 'sxlan-crew',
             'description' => 'The crew running SXLAN events.',
@@ -37,7 +37,7 @@ it('rejects when organizer is also listed as a deputy', function () {
     $organizer = User::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/orga-teams', [
+        ->post('/backstage/orga-teams', [
             'name' => 'Bad Crew',
             'slug' => 'bad-crew',
             'organizer_user_id' => $organizer->id,
@@ -52,7 +52,7 @@ it('admins can update an orga-team and resync deputies', function () {
     $newDeputy = User::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/orga-teams/{$team->id}", [
+        ->patch("/backstage/orga-teams/{$team->id}", [
             'name' => 'Renamed Crew',
             'slug' => $team->slug,
             'organizer_user_id' => $team->organizer_user_id,
@@ -73,8 +73,8 @@ it('admins can delete an orga-team and cascade sub-teams', function () {
     expect($team->subTeams)->toHaveCount(3);
 
     $this->actingAs($admin)
-        ->delete("/orga-teams/{$team->id}")
-        ->assertRedirect('/orga-teams');
+        ->delete("/backstage/orga-teams/{$team->id}")
+        ->assertRedirect('/backstage/orga-teams');
 
     expect(OrgaTeam::find($team->id))->toBeNull();
     expect(OrgaSubTeam::where('orga_team_id', $team->id)->count())->toBe(0);
@@ -86,7 +86,7 @@ it('rejects duplicate slugs', function () {
     OrgaTeam::factory()->create(['slug' => 'taken-slug']);
 
     $this->actingAs($admin)
-        ->post('/orga-teams', [
+        ->post('/backstage/orga-teams', [
             'name' => 'Other Crew',
             'slug' => 'taken-slug',
             'organizer_user_id' => $organizer->id,

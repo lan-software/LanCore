@@ -11,7 +11,7 @@ beforeEach(function () {
 });
 
 it('redirects unauthenticated users to login', function () {
-    $this->get('/venues')
+    $this->get('/backstage/venues')
         ->assertRedirectToRoute('login');
 });
 
@@ -19,7 +19,7 @@ it('forbids users with the user role', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/venues')
+        ->get('/backstage/venues')
         ->assertForbidden();
 });
 
@@ -27,7 +27,7 @@ it('allows users with the admin role', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/venues')
+        ->get('/backstage/venues')
         ->assertSuccessful();
 });
 
@@ -35,6 +35,6 @@ it('allows users with the superadmin role', function () {
     $superadmin = User::factory()->withRole(RoleName::Superadmin)->create();
 
     $this->actingAs($superadmin)
-        ->get('/venues')
+        ->get('/backstage/venues')
         ->assertSuccessful();
 });

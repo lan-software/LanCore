@@ -23,7 +23,7 @@ it('forbids non-admins from changing another user subscriptions', function (): v
     NewsletterList::factory()->userSelectable()->create();
 
     $this->actingAs($actor)
-        ->patch("/users/{$target->id}/newsletter-subscriptions", [
+        ->patch("/backstage/users/{$target->id}/newsletter-subscriptions", [
             'subscribed_list_ids' => [],
         ])
         ->assertForbidden();
@@ -41,7 +41,7 @@ it('lets an admin subscribe a managed user to a curated list', function (): void
     ]);
 
     $this->actingAs($admin)
-        ->patch("/users/{$target->id}/newsletter-subscriptions", [
+        ->patch("/backstage/users/{$target->id}/newsletter-subscriptions", [
             'subscribed_list_ids' => [$list->id],
         ])
         ->assertRedirect();
@@ -56,7 +56,7 @@ it('renders the admin user show page with the newsletter tab wiring', function (
     NewsletterList::factory()->userSelectable()->create(['name' => 'Pickable']);
 
     $this->actingAs($admin)
-        ->get("/users/{$target->id}")
+        ->get("/backstage/users/{$target->id}")
         ->assertOk()
         ->assertInertia(fn ($page) => $page->component('users/Show'));
 });

@@ -16,7 +16,7 @@ it('allows admins to view the audit page for a sponsor level', function () {
     $sponsorLevel = SponsorLevel::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/sponsor-levels/{$sponsorLevel->id}/audit")
+        ->get("/backstage/sponsor-levels/{$sponsorLevel->id}/audit")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,13 +31,13 @@ it('denies non-admin users access to the sponsor level audit page', function () 
     $sponsorLevel = SponsorLevel::factory()->create();
 
     $this->actingAs($user)
-        ->get("/sponsor-levels/{$sponsorLevel->id}/audit")
+        ->get("/backstage/sponsor-levels/{$sponsorLevel->id}/audit")
         ->assertForbidden();
 });
 
 it('redirects unauthenticated users to login for sponsor level audit', function () {
     $sponsorLevel = SponsorLevel::factory()->create();
 
-    $this->get("/sponsor-levels/{$sponsorLevel->id}/audit")
+    $this->get("/backstage/sponsor-levels/{$sponsorLevel->id}/audit")
         ->assertRedirect('/login');
 });

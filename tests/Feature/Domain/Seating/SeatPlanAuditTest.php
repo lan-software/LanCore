@@ -16,7 +16,7 @@ it('allows admins to view the audit page for a seat plan', function () {
     $seatPlan = SeatPlan::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/seat-plans/{$seatPlan->id}/audit")
+        ->get("/backstage/seat-plans/{$seatPlan->id}/audit")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,13 +31,13 @@ it('denies non-admin users access to the seat plan audit page', function () {
     $seatPlan = SeatPlan::factory()->create();
 
     $this->actingAs($user)
-        ->get("/seat-plans/{$seatPlan->id}/audit")
+        ->get("/backstage/seat-plans/{$seatPlan->id}/audit")
         ->assertForbidden();
 });
 
 it('redirects unauthenticated users to login for seat plan audit', function () {
     $seatPlan = SeatPlan::factory()->create();
 
-    $this->get("/seat-plans/{$seatPlan->id}/audit")
+    $this->get("/backstage/seat-plans/{$seatPlan->id}/audit")
         ->assertRedirect('/login');
 });

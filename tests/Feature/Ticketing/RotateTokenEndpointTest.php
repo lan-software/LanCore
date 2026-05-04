@@ -27,7 +27,7 @@ it('lets the owner rotate the token', function (): void {
     $epochBefore = $this->ticket->validation_rotation_epoch;
 
     $this->actingAs($this->owner)
-        ->post("/tickets/{$this->ticket->id}/rotate-token")
+        ->post("/portal/tickets/{$this->ticket->id}/rotate-token")
         ->assertRedirect();
 
     $this->ticket->refresh();
@@ -42,7 +42,7 @@ it('lets the manager rotate the token', function (): void {
     $this->ticket->update(['manager_id' => $manager->id]);
 
     $this->actingAs($manager)
-        ->post("/tickets/{$this->ticket->id}/rotate-token")
+        ->post("/portal/tickets/{$this->ticket->id}/rotate-token")
         ->assertRedirect();
 
     $this->ticket->refresh();
@@ -54,11 +54,11 @@ it('denies rotation for an assigned-only user', function (): void {
     $this->ticket->users()->attach($stranger->id);
 
     $this->actingAs($stranger)
-        ->post("/tickets/{$this->ticket->id}/rotate-token")
+        ->post("/portal/tickets/{$this->ticket->id}/rotate-token")
         ->assertForbidden();
 });
 
 it('redirects guests to login', function (): void {
-    $this->post("/tickets/{$this->ticket->id}/rotate-token")
+    $this->post("/portal/tickets/{$this->ticket->id}/rotate-token")
         ->assertRedirect('/login');
 });

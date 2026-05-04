@@ -30,7 +30,7 @@ it('filters users by linked Steam status', function () {
         $captured = [];
 
         $this->actingAs($admin)
-            ->get('/users?steam_status='.$status.'&per_page=100')
+            ->get('/backstage/users?steam_status='.$status.'&per_page=100')
             ->assertSuccessful()
             ->assertInertia(function ($page) use (&$captured) {
                 $captured = collect($page->toArray()['props']['users']['data'])
@@ -66,7 +66,7 @@ it('rejects an invalid steam_status value', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/users?steam_status=bogus')
+        ->get('/backstage/users?steam_status=bogus')
         ->assertSessionHasErrors('steam_status');
 });
 
@@ -78,7 +78,7 @@ it('exposes computed steam_status on each row in the index payload', function ()
     ]);
 
     $this->actingAs($admin)
-        ->get('/users')
+        ->get('/backstage/users')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

@@ -16,7 +16,7 @@ it('allows admins to view admin tickets index', function () {
     Ticket::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/admin-tickets')
+        ->get('/backstage/admin-tickets')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,7 +31,7 @@ it('allows admins to search tickets by ticket id', function () {
     $ticket = Ticket::factory()->create();
 
     $this->actingAs($admin)
-        ->get('/admin-tickets?search='.$ticket->id)
+        ->get('/backstage/admin-tickets?search='.$ticket->id)
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -46,7 +46,7 @@ it('allows admins to filter tickets by status', function () {
     Ticket::factory()->cancelled()->create();
 
     $this->actingAs($admin)
-        ->get('/admin-tickets?status=cancelled')
+        ->get('/backstage/admin-tickets?status=cancelled')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -60,7 +60,7 @@ it('allows admins to view a ticket detail', function () {
     $ticket = Ticket::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/admin-tickets/{$ticket->id}")
+        ->get("/backstage/admin-tickets/{$ticket->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -74,7 +74,7 @@ it('denies non-admin users from viewing admin tickets index', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/admin-tickets')
+        ->get('/backstage/admin-tickets')
         ->assertForbidden();
 });
 
@@ -83,6 +83,6 @@ it('denies non-admin users from viewing admin ticket detail', function () {
     $ticket = Ticket::factory()->create();
 
     $this->actingAs($user)
-        ->get("/admin-tickets/{$ticket->id}")
+        ->get("/backstage/admin-tickets/{$ticket->id}")
         ->assertForbidden();
 });

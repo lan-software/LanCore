@@ -27,12 +27,12 @@ it('serving the PDF endpoint does not rotate the stored nonce hash', function ()
     $hashBefore = $ticket->validation_nonce_hash;
     $epochBefore = $ticket->validation_rotation_epoch;
 
-    $this->actingAs($owner)->get("/tickets/{$ticket->id}/download")->assertOk();
+    $this->actingAs($owner)->get("/portal/tickets/{$ticket->id}/download")->assertOk();
     $ticket->refresh();
     expect($ticket->validation_nonce_hash)->toBe($hashBefore);
     expect($ticket->validation_rotation_epoch)->toBe($epochBefore);
 
-    $this->actingAs($owner)->get("/tickets/{$ticket->id}/download")->assertOk();
+    $this->actingAs($owner)->get("/portal/tickets/{$ticket->id}/download")->assertOk();
     $ticket->refresh();
     expect($ticket->validation_nonce_hash)->toBe($hashBefore);
     expect($ticket->validation_rotation_epoch)->toBe($epochBefore);

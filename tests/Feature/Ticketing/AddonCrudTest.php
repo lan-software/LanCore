@@ -17,7 +17,7 @@ it('allows admins to view the addons index', function () {
     Addon::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/ticket-addons')
+        ->get('/backstage/ticket-addons')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -33,7 +33,7 @@ it('filters addons by event id', function () {
     Addon::factory()->create(); // different event
 
     $this->actingAs($admin)
-        ->get("/ticket-addons?event_id={$event->id}")
+        ->get("/backstage/ticket-addons?event_id={$event->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -48,7 +48,7 @@ it('searches addons by name', function () {
     Addon::factory()->create(['name' => 'Power Supply']);
 
     $this->actingAs($admin)
-        ->get('/ticket-addons?search=Ethernet')
+        ->get('/backstage/ticket-addons?search=Ethernet')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -61,7 +61,7 @@ it('allows admins to view the create addon page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/ticket-addons/create')
+        ->get('/backstage/ticket-addons/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -75,7 +75,7 @@ it('allows admins to view the edit addon page', function () {
     $addon = Addon::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/ticket-addons/{$addon->id}")
+        ->get("/backstage/ticket-addons/{$addon->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -89,7 +89,7 @@ it('allows admins to update an addon', function () {
     $addon = Addon::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/ticket-addons/{$addon->id}", [
+        ->patch("/backstage/ticket-addons/{$addon->id}", [
             'name' => 'Updated Addon',
             'price' => 2000,
             'quota' => 30,
@@ -107,7 +107,7 @@ it('validates required fields when storing an addon', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/ticket-addons', [])
+        ->post('/backstage/ticket-addons', [])
         ->assertSessionHasErrors(['name', 'price', 'event_id']);
 });
 
@@ -116,7 +116,7 @@ it('validates required fields when updating an addon', function () {
     $addon = Addon::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/ticket-addons/{$addon->id}", [])
+        ->patch("/backstage/ticket-addons/{$addon->id}", [])
         ->assertSessionHasErrors(['name', 'price', 'seats_consumed']);
 });
 
@@ -124,7 +124,7 @@ it('denies regular users access to addons', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/ticket-addons')
+        ->get('/backstage/ticket-addons')
         ->assertForbidden();
 });
 
@@ -133,7 +133,7 @@ it('denies regular users from creating addons', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($user)
-        ->post('/ticket-addons', [
+        ->post('/backstage/ticket-addons', [
             'name' => 'Test',
             'price' => 100,
             'event_id' => $event->id,
@@ -143,7 +143,7 @@ it('denies regular users from creating addons', function () {
 });
 
 it('denies unauthenticated users access to addons', function () {
-    $this->get('/ticket-addons')
+    $this->get('/backstage/ticket-addons')
         ->assertRedirect('/login');
 });
 
@@ -152,7 +152,7 @@ it('paginates addons with custom per_page', function () {
     Addon::factory()->count(15)->create();
 
     $this->actingAs($admin)
-        ->get('/ticket-addons?per_page=10')
+        ->get('/backstage/ticket-addons?per_page=10')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -167,7 +167,7 @@ it('sorts addons by name', function () {
     Addon::factory()->create(['name' => 'Alpha']);
 
     $this->actingAs($admin)
-        ->get('/ticket-addons?sort=name&direction=asc')
+        ->get('/backstage/ticket-addons?sort=name&direction=asc')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

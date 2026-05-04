@@ -507,12 +507,12 @@ This CSCI is consumed by all Lan\* satellite applications (LanBrackets, LanEntra
 
 | Req ID | Requirement |
 |--------|------------|
-| POL-F-001 | The system shall expose `GET /admin/policies` as a paginated index of every policy, gated by `Permission::ManagePolicies` |
+| POL-F-001 | The system shall expose `GET /backstage/policies` as a paginated index of every policy, gated by `Permission::ManagePolicies` |
 | POL-F-002 | The system shall provide create / edit / archive UI for policies and inline create / update / delete UI for policy types from the admin Policies index |
 | POL-F-003 | Policies shall reference one `policy_type_id` (restrictOnDelete); deleting a `PolicyType` while any `Policy` references it shall fail with `PolicyTypeInUseException` |
-| POL-F-004 | The system shall expose `GET /admin/policies/{policy}` showing the policy version history and an audit-log feed sourced from `audits` |
-| POL-F-005 | The system shall expose `GET /admin/policies/{policy}/versions/create` and `POST /admin/policies/{policy}/versions` to publish a new version (markdown content, optional locale, optional effective_at, `is_non_editorial_change`, optional `public_statement`) |
-| POL-F-006 | The system shall reject submission of `POST /admin/policies/{policy}/versions` with `is_non_editorial_change=true` and an empty `public_statement` (422) |
+| POL-F-004 | The system shall expose `GET /backstage/policies/{policy}` showing the policy version history and an audit-log feed sourced from `audits` |
+| POL-F-005 | The system shall expose `GET /backstage/policies/{policy}/versions/create` and `POST /backstage/policies/{policy}/versions` to publish a new version (markdown content, optional locale, optional effective_at, `is_non_editorial_change`, optional `public_statement`) |
+| POL-F-006 | The system shall reject submission of `POST /backstage/policies/{policy}/versions` with `is_non_editorial_change=true` and an empty `public_statement` (422) |
 | POL-F-007 | `PublishPolicyVersion` shall lock the parent policy `for update`, compute the next `version_number` per `(policy_id, locale)`, render a PDF via dompdf, store it on the private storage role at `policy-versions/{id}.pdf`, and dispatch `PolicyVersionPublished($version, $isNonEditorial, $silent = !$isNonEditorial)` |
 | POL-F-008 | An editorial publish shall NOT update `policies.required_acceptance_version_id`; a non-editorial publish SHALL update it to the new version's id |
 | POL-F-009 | `RegisterController` (Fortify `CreateNewUser`) shall validate that the registration request includes `accepted_policy_version_ids[]` covering every currently-required version (`Policy::active()->requiredForRegistration()->currentVersion`); missing acceptances → 422 |

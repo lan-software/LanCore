@@ -12,7 +12,7 @@ beforeEach(function () {
 });
 
 it('redirects unauthenticated users to login', function () {
-    $this->get('/sponsors')
+    $this->get('/backstage/sponsors')
         ->assertRedirectToRoute('login');
 });
 
@@ -20,7 +20,7 @@ it('forbids users with the user role', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/sponsors')
+        ->get('/backstage/sponsors')
         ->assertForbidden();
 });
 
@@ -28,7 +28,7 @@ it('allows users with the admin role', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/sponsors')
+        ->get('/backstage/sponsors')
         ->assertSuccessful();
 });
 
@@ -36,7 +36,7 @@ it('allows users with the superadmin role', function () {
     $superadmin = User::factory()->withRole(RoleName::Superadmin)->create();
 
     $this->actingAs($superadmin)
-        ->get('/sponsors')
+        ->get('/backstage/sponsors')
         ->assertSuccessful();
 });
 
@@ -44,7 +44,7 @@ it('allows users with the sponsor_manager role', function () {
     $manager = User::factory()->withRole(RoleName::SponsorManager)->create();
 
     $this->actingAs($manager)
-        ->get('/sponsors')
+        ->get('/backstage/sponsors')
         ->assertSuccessful();
 });
 
@@ -52,7 +52,7 @@ it('forbids sponsor managers from accessing create page', function () {
     $manager = User::factory()->withRole(RoleName::SponsorManager)->create();
 
     $this->actingAs($manager)
-        ->get('/sponsors/create')
+        ->get('/backstage/sponsors/create')
         ->assertForbidden();
 });
 
@@ -60,6 +60,6 @@ it('forbids sponsor managers from accessing sponsor-levels', function () {
     $manager = User::factory()->withRole(RoleName::SponsorManager)->create();
 
     $this->actingAs($manager)
-        ->get('/sponsor-levels')
+        ->get('/backstage/sponsor-levels')
         ->assertForbidden();
 });

@@ -18,12 +18,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Admin routes
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('announcements-admin', [AnnouncementController::class, 'index'])->name('announcements.index');
-    Route::get('announcements-admin/create', [AnnouncementController::class, 'create'])->name('announcements.create');
-    Route::post('announcements-admin', [AnnouncementController::class, 'store'])->name('announcements.store');
-    Route::get('announcements-admin/{announcement}', [AnnouncementController::class, 'edit'])->name('announcements.edit');
-    Route::patch('announcements-admin/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
-    Route::post('announcements-admin/{announcement}/publish', [AnnouncementController::class, 'publish'])->name('announcements.publish');
-    Route::delete('announcements-admin/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+Route::middleware(['auth', 'verified'])->prefix('backstage/announcements')->group(function () {
+    Route::get('/', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('create', [AnnouncementController::class, 'create'])->name('announcements.create');
+    Route::post('/', [AnnouncementController::class, 'store'])->name('announcements.store');
+    Route::get('{announcement}', [AnnouncementController::class, 'edit'])->name('announcements.edit');
+    Route::patch('{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
+    Route::post('{announcement}/publish', [AnnouncementController::class, 'publish'])->name('announcements.publish');
+    Route::delete('{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
 });

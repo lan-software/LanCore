@@ -642,7 +642,7 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | POL-F-015 | Policy | CAP-POL-005 | SDD §5.7 | `Listeners/DispatchPolicyVersionEmails` | `tests/Feature/Domain/Policy/Listeners/DispatchPolicyVersionEmailsTest.php` |
 | POL-F-016 | Policy | CAP-POL-005 | SDD §5.7 | `Notifications/PolicyVersionPublishedNotification` | `tests/Feature/Domain/Policy/Notifications/PolicyVersionPublishedNotificationTest.php` |
 | POL-F-017 | Policy | CAP-POL-009 | SDD §5.7 | `Auditable` trait on all 4 models | `PolicyControllerTest.php` (audit assertions) |
-| POL-F-018 | Policy | CAP-POL-005 | SDD §5.7 | `resources/js/components/policies/NonEditorialChangeConfirmDialog.vue` | `tests/e2e/admin/policies-publish-flow.spec.ts` |
+| POL-F-018 | Policy | CAP-POL-005 | SDD §5.7 | `resources/js/components/policies/NonEditorialChangeConfirmDialog.vue` | `tests/e2e/backstage/policies-publish-flow.spec.ts` |
 | SET-F-011 | Settings | CAP-POL-007 | SDD §5.7 | `Http/Controllers/ConsentWithdrawalController` | `tests/Feature/Domain/Policy/Http/Controllers/ConsentWithdrawalControllerTest.php` |
 
 ---

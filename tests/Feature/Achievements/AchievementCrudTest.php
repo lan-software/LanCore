@@ -16,7 +16,7 @@ it('allows admins to view the achievements index', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/achievements-admin')
+        ->get('/backstage/achievements')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('achievements/Index'));
 });
@@ -25,7 +25,7 @@ it('prevents regular users from viewing the achievements index', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/achievements-admin')
+        ->get('/backstage/achievements')
         ->assertForbidden();
 });
 
@@ -33,7 +33,7 @@ it('allows admins to view the create achievement page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/achievements-admin/create')
+        ->get('/backstage/achievements/create')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('achievements/Create'));
 });
@@ -42,7 +42,7 @@ it('allows admins to store a new achievement', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/achievements-admin', [
+        ->post('/backstage/achievements', [
             'name' => 'First Login',
             'description' => 'Awarded for your first login.',
             'notification_text' => 'Congratulations on your first login!',
@@ -51,7 +51,7 @@ it('allows admins to store a new achievement', function () {
             'is_active' => true,
             'event_classes' => [GrantableEvent::UserRegistered->value],
         ])
-        ->assertRedirect('/achievements-admin');
+        ->assertRedirect('/backstage/achievements');
 
     expect(Achievement::where('name', 'First Login')->exists())->toBeTrue();
 
@@ -64,7 +64,7 @@ it('validates required fields when storing an achievement', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/achievements-admin', [])
+        ->post('/backstage/achievements', [])
         ->assertSessionHasErrors(['name', 'color', 'icon']);
 });
 
@@ -73,7 +73,7 @@ it('allows admins to view the edit achievement page', function () {
     $achievement = Achievement::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/achievements-admin/{$achievement->id}")
+        ->get("/backstage/achievements/{$achievement->id}")
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('achievements/Edit'));
 });
@@ -83,7 +83,7 @@ it('allows admins to update an achievement', function () {
     $achievement = Achievement::factory()->create(['name' => 'Old Name']);
 
     $this->actingAs($admin)
-        ->patch("/achievements-admin/{$achievement->id}", [
+        ->patch("/backstage/achievements/{$achievement->id}", [
             'name' => 'Updated Name',
             'description' => 'Updated description.',
             'color' => '#ef4444',
@@ -104,8 +104,8 @@ it('allows admins to delete an achievement', function () {
     $achievement = Achievement::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/achievements-admin/{$achievement->id}")
-        ->assertRedirect('/achievements-admin');
+        ->delete("/backstage/achievements/{$achievement->id}")
+        ->assertRedirect('/backstage/achievements');
 
     expect(Achievement::find($achievement->id))->toBeNull();
 });
@@ -114,7 +114,7 @@ it('validates color format', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/achievements-admin', [
+        ->post('/backstage/achievements', [
             'name' => 'Test',
             'color' => 'invalid',
             'icon' => 'star',

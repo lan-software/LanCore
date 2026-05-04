@@ -16,7 +16,7 @@ it('allows admins to view the audit page for a ticket addon', function () {
     $addon = Addon::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/ticket-addons/{$addon->id}/audit")
+        ->get("/backstage/ticket-addons/{$addon->id}/audit")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,13 +31,13 @@ it('denies non-admin users access to the ticket addon audit page', function () {
     $addon = Addon::factory()->create();
 
     $this->actingAs($user)
-        ->get("/ticket-addons/{$addon->id}/audit")
+        ->get("/backstage/ticket-addons/{$addon->id}/audit")
         ->assertForbidden();
 });
 
 it('redirects unauthenticated users to login for ticket addon audit', function () {
     $addon = Addon::factory()->create();
 
-    $this->get("/ticket-addons/{$addon->id}/audit")
+    $this->get("/backstage/ticket-addons/{$addon->id}/audit")
         ->assertRedirect('/login');
 });

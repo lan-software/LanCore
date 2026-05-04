@@ -18,7 +18,7 @@ it('allows admins to view vouchers index', function () {
     Voucher::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/vouchers')
+        ->get('/backstage/vouchers')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,13 +31,13 @@ it('allows admins to store a percentage voucher', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/vouchers', [
+        ->post('/backstage/vouchers', [
             'code' => 'SUMMER10',
             'type' => VoucherType::Percentage->value,
             'discount_percent' => 10,
             'is_active' => true,
         ])
-        ->assertRedirect('/vouchers');
+        ->assertRedirect('/backstage/vouchers');
 
     expect(Voucher::where('code', 'SUMMER10')->exists())->toBeTrue();
 });
@@ -47,7 +47,7 @@ it('allows admins to store a fixed amount voucher', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/vouchers', [
+        ->post('/backstage/vouchers', [
             'code' => 'FLAT500',
             'type' => VoucherType::FixedAmount->value,
             'discount_amount' => 500,
@@ -55,7 +55,7 @@ it('allows admins to store a fixed amount voucher', function () {
             'is_active' => true,
             'event_id' => $event->id,
         ])
-        ->assertRedirect('/vouchers');
+        ->assertRedirect('/backstage/vouchers');
 
     $voucher = Voucher::where('code', 'FLAT500')->first();
     expect($voucher)
@@ -69,7 +69,7 @@ it('validates unique voucher code', function () {
     Voucher::factory()->create(['code' => 'TAKEN']);
 
     $this->actingAs($admin)
-        ->post('/vouchers', [
+        ->post('/backstage/vouchers', [
             'code' => 'TAKEN',
             'type' => VoucherType::Percentage->value,
             'discount_percent' => 5,
@@ -83,7 +83,7 @@ it('allows admins to update a voucher', function () {
     $voucher = Voucher::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/vouchers/{$voucher->id}", [
+        ->patch("/backstage/vouchers/{$voucher->id}", [
             'code' => 'UPDATEDCODE',
             'type' => $voucher->type->value,
             'discount_percent' => $voucher->type === VoucherType::Percentage ? 15 : null,
@@ -102,8 +102,8 @@ it('allows admins to delete a voucher', function () {
     $voucher = Voucher::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/vouchers/{$voucher->id}")
-        ->assertRedirect('/vouchers');
+        ->delete("/backstage/vouchers/{$voucher->id}")
+        ->assertRedirect('/backstage/vouchers');
 
     expect(Voucher::find($voucher->id))->toBeNull();
 });
@@ -112,6 +112,6 @@ it('denies regular users access to vouchers', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/vouchers')
+        ->get('/backstage/vouchers')
         ->assertForbidden();
 });

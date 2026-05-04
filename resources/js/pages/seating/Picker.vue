@@ -873,7 +873,7 @@ function zoomToMySeat(): void {
                         size="sm"
                         class="w-full justify-start"
                     >
-                        <a href="/tickets">
+                        <a href="/portal/tickets">
                             <ChevronLeft class="size-4" />
                             {{ $t('seating.picker.backToTickets') }}
                         </a>

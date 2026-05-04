@@ -165,7 +165,7 @@ it('removing a user from a group ticket releases their seat', function (): void 
     ]);
 
     $this->actingAs($owner)
-        ->delete("/tickets/{$ticket->id}/users/{$assignee->id}")
+        ->delete("/portal/tickets/{$ticket->id}/users/{$assignee->id}")
         ->assertRedirect();
 
     expect(SeatAssignment::query()->where('ticket_id', $ticket->id)->where('user_id', $assignee->id)->count())->toBe(0);

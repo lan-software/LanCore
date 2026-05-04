@@ -13,7 +13,7 @@ it('stores a new push subscription', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->postJson('/push-subscriptions', [
+        ->postJson('/portal/push-subscriptions', [
             'endpoint' => 'https://push.example.com/subscription/abc123',
             'public_key' => 'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQtUbVlUls0VJXg7A8u-Ts1XbjhazAkj7I99e8p8jfR6A',
             'auth_token' => 'tBHItJI5svbpC7VsjrxcZQ',
@@ -42,7 +42,7 @@ it('replaces an existing subscription for the same endpoint', function () {
     ]);
 
     $this->actingAs($user)
-        ->postJson('/push-subscriptions', [
+        ->postJson('/portal/push-subscriptions', [
             'endpoint' => 'https://push.example.com/subscription/abc123',
             'public_key' => 'new-key',
             'auth_token' => 'new-token',
@@ -60,7 +60,7 @@ it('supports custom content encoding', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->postJson('/push-subscriptions', [
+        ->postJson('/portal/push-subscriptions', [
             'endpoint' => 'https://push.example.com/subscription/xyz',
             'public_key' => 'some-key',
             'auth_token' => 'some-token',
@@ -84,7 +84,7 @@ it('removes a push subscription by endpoint', function () {
     ]);
 
     $this->actingAs($user)
-        ->deleteJson('/push-subscriptions', [
+        ->deleteJson('/portal/push-subscriptions', [
             'endpoint' => 'https://push.example.com/subscription/abc123',
         ])
         ->assertSuccessful()
@@ -116,7 +116,7 @@ it('does not remove other users subscriptions', function () {
     ]);
 
     $this->actingAs($user)
-        ->deleteJson('/push-subscriptions', ['endpoint' => $endpoint])
+        ->deleteJson('/portal/push-subscriptions', ['endpoint' => $endpoint])
         ->assertSuccessful();
 
     expect(PushSubscription::where('user_id', $user->id)->count())->toBe(0)
@@ -124,7 +124,7 @@ it('does not remove other users subscriptions', function () {
 });
 
 it('requires authentication to store a push subscription', function () {
-    $this->postJson('/push-subscriptions', [
+    $this->postJson('/portal/push-subscriptions', [
         'endpoint' => 'https://push.example.com/subscription/abc123',
         'public_key' => 'key',
         'auth_token' => 'token',
@@ -135,7 +135,7 @@ it('validates the endpoint is a valid URL', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->postJson('/push-subscriptions', [
+        ->postJson('/portal/push-subscriptions', [
             'endpoint' => 'not-a-url',
             'public_key' => 'key',
             'auth_token' => 'token',
@@ -148,7 +148,7 @@ it('validates required fields', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->postJson('/push-subscriptions', [])
+        ->postJson('/portal/push-subscriptions', [])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['endpoint', 'public_key', 'auth_token']);
 });
@@ -157,7 +157,7 @@ it('rejects invalid content encoding', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->postJson('/push-subscriptions', [
+        ->postJson('/portal/push-subscriptions', [
             'endpoint' => 'https://push.example.com/subscription/abc',
             'public_key' => 'key',
             'auth_token' => 'token',
@@ -171,7 +171,7 @@ it('dismisses the push prompt and stores flag in session', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->postJson('/push-subscriptions/dismiss')
+        ->postJson('/portal/push-subscriptions/dismiss')
         ->assertSuccessful()
         ->assertJson(['dismissed' => true]);
 
@@ -202,7 +202,7 @@ it('shares pushPromptDismissed as true when session flag is set', function () {
 });
 
 it('requires authentication to dismiss the push prompt', function () {
-    $this->postJson('/push-subscriptions/dismiss')
+    $this->postJson('/portal/push-subscriptions/dismiss')
         ->assertUnauthorized();
 });
 
@@ -210,7 +210,7 @@ it('allows a user to have multiple subscriptions for different endpoints', funct
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->postJson('/push-subscriptions', [
+        ->postJson('/portal/push-subscriptions', [
             'endpoint' => 'https://push.example.com/subscription/device-1',
             'public_key' => 'key-1',
             'auth_token' => 'token-1',
@@ -218,7 +218,7 @@ it('allows a user to have multiple subscriptions for different endpoints', funct
         ->assertSuccessful();
 
     $this->actingAs($user)
-        ->postJson('/push-subscriptions', [
+        ->postJson('/portal/push-subscriptions', [
             'endpoint' => 'https://push.example.com/subscription/device-2',
             'public_key' => 'key-2',
             'auth_token' => 'token-2',

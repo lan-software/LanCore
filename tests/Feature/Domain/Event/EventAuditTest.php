@@ -16,7 +16,7 @@ it('allows admins to view the audit page for an event', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/events/{$event->id}/audit")
+        ->get("/backstage/events/{$event->id}/audit")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,14 +31,14 @@ it('denies non-admin users access to the audit page', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($user)
-        ->get("/events/{$event->id}/audit")
+        ->get("/backstage/events/{$event->id}/audit")
         ->assertForbidden();
 });
 
 it('redirects unauthenticated users to login', function () {
     $event = Event::factory()->create();
 
-    $this->get("/events/{$event->id}/audit")
+    $this->get("/backstage/events/{$event->id}/audit")
         ->assertRedirect('/login');
 });
 
@@ -46,17 +46,17 @@ it('records audit entries when an event is created', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/events', [
+        ->post('/backstage/events', [
             'name' => 'Test LAN Party',
             'start_date' => '2026-07-01 10:00:00',
             'end_date' => '2026-07-03 18:00:00',
         ])
-        ->assertRedirect('/events');
+        ->assertRedirect('/backstage/events');
 
     $event = Event::where('name', 'Test LAN Party')->first();
 
     $this->actingAs($admin)
-        ->get("/events/{$event->id}/audit")
+        ->get("/backstage/events/{$event->id}/audit")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -70,24 +70,24 @@ it('records audit entries when an event is updated', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/events', [
+        ->post('/backstage/events', [
             'name' => 'Original Name',
             'start_date' => '2026-07-01 10:00:00',
             'end_date' => '2026-07-03 18:00:00',
         ])
-        ->assertRedirect('/events');
+        ->assertRedirect('/backstage/events');
 
     $event = Event::where('name', 'Original Name')->first();
 
     $this->actingAs($admin)
-        ->patch("/events/{$event->id}", [
+        ->patch("/backstage/events/{$event->id}", [
             'name' => 'Updated Name',
             'start_date' => '2026-07-01 10:00:00',
             'end_date' => '2026-07-03 18:00:00',
         ]);
 
     $this->actingAs($admin)
-        ->get("/events/{$event->id}/audit")
+        ->get("/backstage/events/{$event->id}/audit")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

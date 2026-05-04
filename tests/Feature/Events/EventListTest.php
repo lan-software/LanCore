@@ -16,7 +16,7 @@ it('returns paginated events for admins', function () {
     Event::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/events')
+        ->get('/backstage/events')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -33,7 +33,7 @@ it('filters events by search term', function () {
     Event::factory()->create(['name' => 'Winter Meetup']);
 
     $this->actingAs($admin)
-        ->get('/events?search=summer')
+        ->get('/backstage/events?search=summer')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -49,7 +49,7 @@ it('filters events by status', function () {
     Event::factory()->create(['status' => 'published']);
 
     $this->actingAs($admin)
-        ->get('/events?status=published')
+        ->get('/backstage/events?status=published')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -64,7 +64,7 @@ it('sorts events by start_date ascending', function () {
     Event::factory()->create(['name' => 'Earlier Event', 'start_date' => '2026-06-01 10:00:00']);
 
     $this->actingAs($admin)
-        ->get('/events?sort=start_date&direction=asc')
+        ->get('/backstage/events?sort=start_date&direction=asc')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

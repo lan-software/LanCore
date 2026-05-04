@@ -16,7 +16,7 @@ it('allows admins to view the user show page', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($admin)
-        ->get("/users/{$user->id}")
+        ->get("/backstage/users/{$user->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -32,7 +32,7 @@ it('allows superadmins to view the user show page', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($superadmin)
-        ->get("/users/{$user->id}")
+        ->get("/backstage/users/{$user->id}")
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('users/Show'));
 });
@@ -42,7 +42,7 @@ it('forbids users from viewing the show page', function () {
     $target = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get("/users/{$target->id}")
+        ->get("/backstage/users/{$target->id}")
         ->assertForbidden();
 });
 
@@ -51,7 +51,7 @@ it('allows admins to update a user name and email', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($admin)
-        ->patch("/users/{$user->id}", [
+        ->patch("/backstage/users/{$user->id}", [
             'name' => 'Updated Name',
             'email' => 'updated@example.com',
         ])
@@ -67,7 +67,7 @@ it('allows admins to change a user password', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($admin)
-        ->patch("/users/{$user->id}", [
+        ->patch("/backstage/users/{$user->id}", [
             'name' => $user->name,
             'email' => $user->email,
             'password' => 'new-password-123',
@@ -83,7 +83,7 @@ it('allows superadmins to sync user roles', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($superadmin)
-        ->patch("/users/{$user->id}", [
+        ->patch("/backstage/users/{$user->id}", [
             'name' => $user->name,
             'email' => $user->email,
             'role_names' => [RoleName::Admin->value],
@@ -100,7 +100,7 @@ it('validates required fields on update', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($admin)
-        ->patch("/users/{$user->id}", [
+        ->patch("/backstage/users/{$user->id}", [
             'name' => '',
             'email' => 'not-an-email',
         ])
@@ -113,7 +113,7 @@ it('prevents duplicate email on update', function () {
     $other = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($admin)
-        ->patch("/users/{$user->id}", [
+        ->patch("/backstage/users/{$user->id}", [
             'name' => $user->name,
             'email' => $other->email,
         ])
@@ -125,7 +125,7 @@ it('forbids users from updating another user', function () {
     $target = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->patch("/users/{$target->id}", [
+        ->patch("/backstage/users/{$target->id}", [
             'name' => 'Hacked',
             'email' => 'hacked@example.com',
         ])
@@ -137,7 +137,7 @@ it('allows superadmins to sync sponsor_manager role', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($superadmin)
-        ->patch("/users/{$user->id}", [
+        ->patch("/backstage/users/{$user->id}", [
             'name' => $user->name,
             'email' => $user->email,
             'role_names' => [RoleName::Admin->value, RoleName::SponsorManager->value],

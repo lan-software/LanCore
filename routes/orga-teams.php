@@ -6,7 +6,7 @@ use App\Domain\OrgaTeam\Http\Controllers\OrgaTeamController;
 use App\Domain\OrgaTeam\Http\Controllers\PublicOrgaTeamController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('backstage')->group(function () {
     Route::get('orga-teams', [OrgaTeamController::class, 'index'])->name('orga-teams.index');
     Route::get('orga-teams/create', [OrgaTeamController::class, 'create'])->name('orga-teams.create');
     Route::post('orga-teams', [OrgaTeamController::class, 'store'])->name('orga-teams.store');

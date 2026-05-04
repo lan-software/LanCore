@@ -16,7 +16,7 @@ it('allows admins to view the audit page for a voucher', function () {
     $voucher = Voucher::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/vouchers/{$voucher->id}/audit")
+        ->get("/backstage/vouchers/{$voucher->id}/audit")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,13 +31,13 @@ it('denies non-admin users access to the voucher audit page', function () {
     $voucher = Voucher::factory()->create();
 
     $this->actingAs($user)
-        ->get("/vouchers/{$voucher->id}/audit")
+        ->get("/backstage/vouchers/{$voucher->id}/audit")
         ->assertForbidden();
 });
 
 it('redirects unauthenticated users to login for voucher audit', function () {
     $voucher = Voucher::factory()->create();
 
-    $this->get("/vouchers/{$voucher->id}/audit")
+    $this->get("/backstage/vouchers/{$voucher->id}/audit")
         ->assertRedirect('/login');
 });

@@ -18,7 +18,7 @@ it('allows admins to view the create sponsor page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/sponsors/create')
+        ->get('/backstage/sponsors/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -32,12 +32,12 @@ it('allows admins to store a new sponsor', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/sponsors', [
+        ->post('/backstage/sponsors', [
             'name' => 'Test Sponsor',
             'description' => 'A test sponsor.',
             'link' => 'https://example.com',
         ])
-        ->assertRedirect('/sponsors');
+        ->assertRedirect('/backstage/sponsors');
 
     expect(Sponsor::where('name', 'Test Sponsor')->exists())->toBeTrue();
 });
@@ -47,11 +47,11 @@ it('allows admins to store a sponsor with events', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/sponsors', [
+        ->post('/backstage/sponsors', [
             'name' => 'Event Sponsor',
             'event_ids' => [$event->id],
         ])
-        ->assertRedirect('/sponsors');
+        ->assertRedirect('/backstage/sponsors');
 
     $sponsor = Sponsor::where('name', 'Event Sponsor')->first();
     expect($sponsor)->not->toBeNull();
@@ -64,11 +64,11 @@ it('allows admins to store a sponsor with a level', function () {
     $level = SponsorLevel::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/sponsors', [
+        ->post('/backstage/sponsors', [
             'name' => 'Leveled Sponsor',
             'sponsor_level_id' => $level->id,
         ])
-        ->assertRedirect('/sponsors');
+        ->assertRedirect('/backstage/sponsors');
 
     $sponsor = Sponsor::where('name', 'Leveled Sponsor')->first();
     expect($sponsor->sponsor_level_id)->toBe($level->id);
@@ -78,7 +78,7 @@ it('validates required fields when storing a sponsor', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/sponsors', [])
+        ->post('/backstage/sponsors', [])
         ->assertSessionHasErrors(['name']);
 });
 
@@ -86,7 +86,7 @@ it('validates link is a valid url', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/sponsors', [
+        ->post('/backstage/sponsors', [
             'name' => 'Bad Link Sponsor',
             'link' => 'not-a-url',
         ])
@@ -98,7 +98,7 @@ it('allows admins to view the edit sponsor page', function () {
     $sponsor = Sponsor::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/sponsors/{$sponsor->id}")
+        ->get("/backstage/sponsors/{$sponsor->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -116,7 +116,7 @@ it('allows admins to update a sponsor', function () {
     $sponsor = Sponsor::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/sponsors/{$sponsor->id}", [
+        ->patch("/backstage/sponsors/{$sponsor->id}", [
             'name' => 'Updated Sponsor',
             'description' => 'Updated description.',
         ])
@@ -133,8 +133,8 @@ it('allows admins to delete a sponsor', function () {
     $sponsorId = $sponsor->id;
 
     $this->actingAs($admin)
-        ->delete("/sponsors/{$sponsorId}")
-        ->assertRedirect('/sponsors');
+        ->delete("/backstage/sponsors/{$sponsorId}")
+        ->assertRedirect('/backstage/sponsors');
 
     expect(Sponsor::find($sponsorId))->toBeNull();
 });
@@ -145,7 +145,7 @@ it('allows sponsor managers to edit their own sponsor', function () {
     $sponsor->managers()->attach($manager->id);
 
     $this->actingAs($manager)
-        ->get("/sponsors/{$sponsor->id}")
+        ->get("/backstage/sponsors/{$sponsor->id}")
         ->assertSuccessful();
 });
 
@@ -154,7 +154,7 @@ it('forbids sponsor managers from editing unassigned sponsors', function () {
     $sponsor = Sponsor::factory()->create();
 
     $this->actingAs($manager)
-        ->get("/sponsors/{$sponsor->id}")
+        ->get("/backstage/sponsors/{$sponsor->id}")
         ->assertForbidden();
 });
 
@@ -164,6 +164,6 @@ it('forbids sponsor managers from deleting sponsors', function () {
     $sponsor->managers()->attach($manager->id);
 
     $this->actingAs($manager)
-        ->delete("/sponsors/{$sponsor->id}")
+        ->delete("/backstage/sponsors/{$sponsor->id}")
         ->assertForbidden();
 });

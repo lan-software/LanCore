@@ -18,7 +18,7 @@ it('allows admins to view the game servers index', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/game-servers')
+        ->get('/backstage/game-servers')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('orchestration/servers/Index'));
 });
@@ -27,7 +27,7 @@ it('allows admins to view the create game server page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/game-servers/create')
+        ->get('/backstage/game-servers/create')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('orchestration/servers/Create'));
 });
@@ -37,7 +37,7 @@ it('allows admins to store a new game server', function () {
     $game = Game::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/game-servers', [
+        ->post('/backstage/game-servers', [
             'name' => 'CS2 Server #1',
             'host' => '192.168.1.100',
             'port' => 27015,
@@ -45,7 +45,7 @@ it('allows admins to store a new game server', function () {
             'allocation_type' => 'competition',
             'credentials' => ['rcon_password' => 'secret123'],
         ])
-        ->assertRedirect('/game-servers');
+        ->assertRedirect('/backstage/game-servers');
 
     $server = GameServer::where('name', 'CS2 Server #1')->first();
     expect($server)->not->toBeNull();
@@ -58,7 +58,7 @@ it('validates required fields when storing a game server', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/game-servers', [])
+        ->post('/backstage/game-servers', [])
         ->assertSessionHasErrors(['name', 'host', 'port', 'game_id', 'allocation_type']);
 });
 
@@ -67,7 +67,7 @@ it('allows admins to update a game server', function () {
     $server = GameServer::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/game-servers/{$server->id}", [
+        ->patch("/backstage/game-servers/{$server->id}", [
             'name' => 'Updated Server',
         ])
         ->assertRedirect();
@@ -80,8 +80,8 @@ it('allows admins to delete a game server', function () {
     $server = GameServer::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/game-servers/{$server->id}")
-        ->assertRedirect('/game-servers');
+        ->delete("/backstage/game-servers/{$server->id}")
+        ->assertRedirect('/backstage/game-servers');
 
     expect(GameServer::find($server->id))->toBeNull();
 });
@@ -91,7 +91,7 @@ it('prevents deleting an in-use server', function () {
     $server = GameServer::factory()->inUse()->create();
 
     $this->actingAs($admin)
-        ->delete("/game-servers/{$server->id}")
+        ->delete("/backstage/game-servers/{$server->id}")
         ->assertSessionHasErrors('server');
 
     expect(GameServer::find($server->id))->not->toBeNull();
@@ -101,10 +101,10 @@ it('forbids regular users from managing game servers', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/game-servers')
+        ->get('/backstage/game-servers')
         ->assertForbidden();
 
     $this->actingAs($user)
-        ->get('/game-servers/create')
+        ->get('/backstage/game-servers/create')
         ->assertForbidden();
 });

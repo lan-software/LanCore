@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 | Integration Admin Routes (web, auth required)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('backstage')->group(function () {
     Route::get('integrations', [IntegrationAppController::class, 'index'])->name('integrations.index');
     Route::get('integrations/create', [IntegrationAppController::class, 'create'])->name('integrations.create');
     Route::get('integrations/create/lanbrackets', [IntegrationAppController::class, 'createLanBrackets'])->name('integrations.create.lanbrackets');

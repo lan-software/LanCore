@@ -73,7 +73,7 @@ it('does not prefix webhook paths with the legacy /lancore segment', function ()
 });
 
 it('keeps the production config defaults aligned with the canonical satellite paths', function () {
-    $config = require base_path('config/integrations.php');
+    $config = require base_path('config/backstage/integrations.php');
 
     foreach ($config['apps'] as $slug => $definition) {
         $rolesPathArg = $definition['roles_path'] ?? null;
@@ -81,12 +81,12 @@ it('keeps the production config defaults aligned with the canonical satellite pa
         $callbackPathArg = $definition['callback_path'] ?? null;
 
         expect($rolesPathArg)
-            ->toBe('/api/webhooks/roles', "config/integrations.php apps.{$slug}.roles_path default must match satellite route registration");
+            ->toBe('/api/webhooks/roles', "config/backstage/integrations.php apps.{$slug}.roles_path default must match satellite route registration");
 
         expect($announcementPathArg)
-            ->toBe('/api/webhooks/announcements', "config/integrations.php apps.{$slug}.announcement_path default must match satellite route registration");
+            ->toBe('/api/webhooks/announcements', "config/backstage/integrations.php apps.{$slug}.announcement_path default must match satellite route registration");
 
         expect($callbackPathArg)
-            ->toBe('/auth/callback', "config/integrations.php apps.{$slug}.callback_path default must match satellite SSO route registration");
+            ->toBe('/auth/callback', "config/backstage/integrations.php apps.{$slug}.callback_path default must match satellite SSO route registration");
     }
 });

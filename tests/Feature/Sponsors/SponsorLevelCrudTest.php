@@ -15,7 +15,7 @@ it('allows admins to view sponsor levels index', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/sponsor-levels')
+        ->get('/backstage/sponsor-levels')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -28,7 +28,7 @@ it('allows admins to view the create page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/sponsor-levels/create')
+        ->get('/backstage/sponsor-levels/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page->component('sponsor-levels/Create')
@@ -39,11 +39,11 @@ it('allows admins to store a sponsor level', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/sponsor-levels', [
+        ->post('/backstage/sponsor-levels', [
             'name' => 'Platinum',
             'color' => '#E5E4E2',
         ])
-        ->assertRedirect('/sponsor-levels');
+        ->assertRedirect('/backstage/sponsor-levels');
 
     expect(SponsorLevel::where('name', 'Platinum')->exists())->toBeTrue();
 });
@@ -54,11 +54,11 @@ it('auto-increments sort order on store', function () {
     SponsorLevel::factory()->create(['sort_order' => 5]);
 
     $this->actingAs($admin)
-        ->post('/sponsor-levels', [
+        ->post('/backstage/sponsor-levels', [
             'name' => 'New Level',
             'color' => '#000000',
         ])
-        ->assertRedirect('/sponsor-levels');
+        ->assertRedirect('/backstage/sponsor-levels');
 
     expect(SponsorLevel::where('name', 'New Level')->first()->sort_order)->toBe(6);
 });
@@ -67,7 +67,7 @@ it('validates required fields when storing', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/sponsor-levels', [])
+        ->post('/backstage/sponsor-levels', [])
         ->assertSessionHasErrors(['name', 'color']);
 });
 
@@ -75,7 +75,7 @@ it('validates color format', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/sponsor-levels', [
+        ->post('/backstage/sponsor-levels', [
             'name' => 'Bad Color',
             'color' => 'not-a-color',
         ])
@@ -87,7 +87,7 @@ it('allows admins to view the edit page', function () {
     $level = SponsorLevel::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/sponsor-levels/{$level->id}")
+        ->get("/backstage/sponsor-levels/{$level->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -102,7 +102,7 @@ it('allows admins to update a sponsor level', function () {
     $level = SponsorLevel::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/sponsor-levels/{$level->id}", [
+        ->patch("/backstage/sponsor-levels/{$level->id}", [
             'name' => 'Diamond',
             'color' => '#B9F2FF',
         ])
@@ -119,8 +119,8 @@ it('allows admins to delete a sponsor level', function () {
     $levelId = $level->id;
 
     $this->actingAs($admin)
-        ->delete("/sponsor-levels/{$levelId}")
-        ->assertRedirect('/sponsor-levels');
+        ->delete("/backstage/sponsor-levels/{$levelId}")
+        ->assertRedirect('/backstage/sponsor-levels');
 
     expect(SponsorLevel::find($levelId))->toBeNull();
 });

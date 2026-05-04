@@ -17,7 +17,7 @@ it('assigns a theme to an event', function () {
     $theme = Theme::factory()->withPalette()->create();
 
     $this->actingAs($admin)
-        ->patch("/events/{$event->id}/theme", ['theme_id' => $theme->id])
+        ->patch("/backstage/events/{$event->id}/theme", ['theme_id' => $theme->id])
         ->assertRedirect();
 
     expect($event->fresh())->theme_id->toBe($theme->id);
@@ -29,7 +29,7 @@ it('clears a theme assignment when null is posted', function () {
     $event = Event::factory()->create(['theme_id' => $theme->id]);
 
     $this->actingAs($admin)
-        ->patch("/events/{$event->id}/theme", ['theme_id' => null])
+        ->patch("/backstage/events/{$event->id}/theme", ['theme_id' => null])
         ->assertRedirect();
 
     expect($event->fresh())->theme_id->toBeNull();
@@ -40,7 +40,7 @@ it('rejects assignment of a non-existent theme', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/events/{$event->id}/theme", ['theme_id' => 999_999])
+        ->patch("/backstage/events/{$event->id}/theme", ['theme_id' => 999_999])
         ->assertSessionHasErrors(['theme_id']);
 });
 
@@ -50,8 +50,8 @@ it('nulls the events theme_id when the theme is deleted (FK nullOnDelete)', func
     $event = Event::factory()->create(['theme_id' => $theme->id]);
 
     $this->actingAs($admin)
-        ->delete("/themes/{$theme->id}")
-        ->assertRedirect('/themes');
+        ->delete("/backstage/themes/{$theme->id}")
+        ->assertRedirect('/backstage/themes');
 
     expect($event->fresh())->theme_id->toBeNull();
 });
@@ -64,7 +64,7 @@ it('captures theme assignment changes in the event audit trail', function () {
     $initialAuditCount = $event->audits()->count();
 
     $this->actingAs($admin)
-        ->patch("/events/{$event->id}/theme", ['theme_id' => $theme->id])
+        ->patch("/backstage/events/{$event->id}/theme", ['theme_id' => $theme->id])
         ->assertRedirect();
 
     expect($event->fresh()->audits()->count())->toBeGreaterThan($initialAuditCount);
@@ -76,6 +76,6 @@ it('forbids a regular user from assigning a theme to an event', function () {
     $theme = Theme::factory()->withPalette()->create();
 
     $this->actingAs($user)
-        ->patch("/events/{$event->id}/theme", ['theme_id' => $theme->id])
+        ->patch("/backstage/events/{$event->id}/theme", ['theme_id' => $theme->id])
         ->assertForbidden();
 });

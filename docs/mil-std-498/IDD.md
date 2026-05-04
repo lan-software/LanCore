@@ -783,18 +783,18 @@ Files are written through `StorageRole::public()` under `seat-plans/{plan_id}/â€
 
 | Verb | Path | Name |
 |------|------|------|
-| GET | `/admin/policies` | `admin.policies.index` |
-| GET | `/admin/policies/create` | `admin.policies.create` |
-| POST | `/admin/policies` | `admin.policies.store` |
-| GET | `/admin/policies/{policy}` | `admin.policies.show` |
-| GET | `/admin/policies/{policy}/edit` | `admin.policies.edit` |
-| PUT | `/admin/policies/{policy}` | `admin.policies.update` |
-| POST | `/admin/policies/{policy}/archive` | `admin.policies.archive` |
-| GET | `/admin/policies/{policy}/versions/create` | `admin.policies.versions.create` |
-| POST | `/admin/policies/{policy}/versions` | `admin.policies.versions.store` |
-| POST | `/admin/policies/types` | `admin.policies.types.store` |
-| PUT | `/admin/policies/types/{policyType}` | `admin.policies.types.update` |
-| DELETE | `/admin/policies/types/{policyType}` | `admin.policies.types.destroy` |
+| GET | `/backstage/policies` | `admin.policies.index` |
+| GET | `/backstage/policies/create` | `admin.policies.create` |
+| POST | `/backstage/policies` | `admin.policies.store` |
+| GET | `/backstage/policies/{policy}` | `admin.policies.show` |
+| GET | `/backstage/policies/{policy}/edit` | `admin.policies.edit` |
+| PUT | `/backstage/policies/{policy}` | `admin.policies.update` |
+| POST | `/backstage/policies/{policy}/archive` | `admin.policies.archive` |
+| GET | `/backstage/policies/{policy}/versions/create` | `admin.policies.versions.create` |
+| POST | `/backstage/policies/{policy}/versions` | `admin.policies.versions.store` |
+| POST | `/backstage/policies/types` | `admin.policies.types.store` |
+| PUT | `/backstage/policies/types/{policyType}` | `admin.policies.types.update` |
+| DELETE | `/backstage/policies/types/{policyType}` | `admin.policies.types.destroy` |
 
 **Removed in this release:** `GET /privacy` (`legal.privacy`) and `GET /datenschutz` (`legal.datenschutz`). External links break â€” accepted risk.
 

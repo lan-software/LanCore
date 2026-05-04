@@ -17,19 +17,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Admin routes
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('news-admin', [NewsArticleController::class, 'index'])->name('news.index');
-    Route::get('news-admin/create', [NewsArticleController::class, 'create'])->name('news.create');
-    Route::get('news-admin/comments', [NewsCommentController::class, 'index'])->name('news.comments.index');
-    Route::post('news-admin', [NewsArticleController::class, 'store'])->name('news.store');
-    Route::get('news-admin/{newsArticle}', [NewsArticleController::class, 'edit'])->name('news.edit');
-    Route::get('news-admin/{newsArticle}/audit', NewsArticleAuditController::class)->name('news.audit');
-    Route::post('news-admin/{newsArticle}', [NewsArticleController::class, 'update'])->name('news.update');
-    Route::delete('news-admin/{newsArticle}', [NewsArticleController::class, 'destroy'])->name('news.destroy');
+Route::middleware(['auth', 'verified'])->prefix('backstage/news')->group(function () {
+    Route::get('/', [NewsArticleController::class, 'index'])->name('news.index');
+    Route::get('create', [NewsArticleController::class, 'create'])->name('news.create');
+    Route::get('comments', [NewsCommentController::class, 'index'])->name('news.comments.index');
+    Route::post('/', [NewsArticleController::class, 'store'])->name('news.store');
+    Route::get('{newsArticle}', [NewsArticleController::class, 'edit'])->name('news.edit');
+    Route::get('{newsArticle}/audit', NewsArticleAuditController::class)->name('news.audit');
+    Route::post('{newsArticle}', [NewsArticleController::class, 'update'])->name('news.update');
+    Route::delete('{newsArticle}', [NewsArticleController::class, 'destroy'])->name('news.destroy');
 
     // Admin comment management
-    Route::get('news/comments/{newsComment}/audit', NewsCommentAuditController::class)->name('news.comments.audit');
-    Route::patch('news/comments/{newsComment}', [NewsCommentController::class, 'update'])->name('news.comments.update');
-    Route::delete('news/comments/{newsComment}', [NewsCommentController::class, 'destroy'])->name('news.comments.destroy');
-    Route::post('news/comments/{newsComment}/approve', [NewsCommentController::class, 'approve'])->name('news.comments.approve');
+    Route::get('comments/{newsComment}/audit', NewsCommentAuditController::class)->name('news.comments.audit');
+    Route::patch('comments/{newsComment}', [NewsCommentController::class, 'update'])->name('news.comments.update');
+    Route::delete('comments/{newsComment}', [NewsCommentController::class, 'destroy'])->name('news.comments.destroy');
+    Route::post('comments/{newsComment}/approve', [NewsCommentController::class, 'approve'])->name('news.comments.approve');
 });

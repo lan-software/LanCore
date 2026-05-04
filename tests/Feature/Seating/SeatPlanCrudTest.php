@@ -16,7 +16,7 @@ it('allows admins to view the seat plans index', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/seat-plans')
+        ->get('/backstage/seat-plans')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('seating/Index'));
 });
@@ -25,7 +25,7 @@ it('allows admins to view the create seat plan page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/seat-plans/create')
+        ->get('/backstage/seat-plans/create')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('seating/Create')->has('events'));
 });
@@ -35,12 +35,12 @@ it('allows admins to store a new seat plan', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/seat-plans', [
+        ->post('/backstage/seat-plans', [
             'name' => 'Main Hall',
             'event_id' => $event->id,
             'data' => json_encode(['blocks' => []]),
         ])
-        ->assertRedirect('/seat-plans');
+        ->assertRedirect('/backstage/seat-plans');
 
     expect(SeatPlan::where('name', 'Main Hall')->exists())->toBeTrue();
 });
@@ -49,7 +49,7 @@ it('validates required fields when storing a seat plan', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/seat-plans', [])
+        ->post('/backstage/seat-plans', [])
         ->assertSessionHasErrors(['name', 'event_id']);
 });
 
@@ -57,7 +57,7 @@ it('validates event exists when storing a seat plan', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/seat-plans', [
+        ->post('/backstage/seat-plans', [
             'name' => 'Test Plan',
             'event_id' => 99999,
         ])
@@ -69,7 +69,7 @@ it('allows admins to view the edit seat plan page', function () {
     $seatPlan = SeatPlan::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/seat-plans/{$seatPlan->id}")
+        ->get("/backstage/seat-plans/{$seatPlan->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -108,7 +108,7 @@ it('allows admins to update a seat plan with a normalized block payload', functi
     ]);
 
     $response = $this->actingAs($admin)
-        ->patch("/seat-plans/{$seatPlan->id}", [
+        ->patch("/backstage/seat-plans/{$seatPlan->id}", [
             'name' => 'Updated Hall',
             'data' => $newData,
         ])
@@ -136,8 +136,8 @@ it('allows admins to delete a seat plan', function () {
     $seatPlan = SeatPlan::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/seat-plans/{$seatPlan->id}")
-        ->assertRedirect('/seat-plans');
+        ->delete("/backstage/seat-plans/{$seatPlan->id}")
+        ->assertRedirect('/backstage/seat-plans');
 
     expect(SeatPlan::find($seatPlan->id))->toBeNull();
 });
@@ -146,7 +146,7 @@ it('forbids regular users from accessing seat plans', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/seat-plans')
+        ->get('/backstage/seat-plans')
         ->assertForbidden();
 });
 
@@ -155,7 +155,7 @@ it('forbids regular users from creating seat plans', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($user)
-        ->post('/seat-plans', [
+        ->post('/backstage/seat-plans', [
             'name' => 'Test',
             'event_id' => $event->id,
         ])
@@ -167,11 +167,11 @@ it('stores seat plan with no blocks when data is omitted', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/seat-plans', [
+        ->post('/backstage/seat-plans', [
             'name' => 'Empty Plan',
             'event_id' => $event->id,
         ])
-        ->assertRedirect('/seat-plans');
+        ->assertRedirect('/backstage/seat-plans');
 
     $seatPlan = SeatPlan::where('name', 'Empty Plan')->first();
     expect($seatPlan)->not->toBeNull();
@@ -184,7 +184,7 @@ it('allows searching seat plans by name', function () {
     SeatPlan::factory()->create(['name' => 'Balcony']);
 
     $this->actingAs($admin)
-        ->get('/seat-plans?search=Main')
+        ->get('/backstage/seat-plans?search=Main')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

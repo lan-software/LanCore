@@ -4,7 +4,7 @@ use App\Domain\Games\Http\Controllers\GameController;
 use App\Domain\Games\Http\Controllers\GameModeController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('backstage')->group(function () {
     Route::get('games', [GameController::class, 'index'])->name('games.index');
     Route::get('games/create', [GameController::class, 'create'])->name('games.create');
     Route::post('games', [GameController::class, 'store'])->name('games.store');

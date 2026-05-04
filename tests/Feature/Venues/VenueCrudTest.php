@@ -18,7 +18,7 @@ it('allows admins to view the create venue page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/venues/create')
+        ->get('/backstage/venues/create')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('venues/Create'));
 });
@@ -27,7 +27,7 @@ it('allows admins to store a new venue', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/venues', [
+        ->post('/backstage/venues', [
             'name' => 'Test Venue',
             'description' => 'A great venue',
             'street' => '123 Main St',
@@ -35,7 +35,7 @@ it('allows admins to store a new venue', function () {
             'zip_code' => '12345',
             'country' => 'US',
         ])
-        ->assertRedirect('/venues');
+        ->assertRedirect('/backstage/venues');
 
     expect(Venue::where('name', 'Test Venue')->exists())->toBeTrue();
 });
@@ -44,7 +44,7 @@ it('validates required fields when storing a venue', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/venues', [])
+        ->post('/backstage/venues', [])
         ->assertSessionHasErrors(['name', 'street', 'city', 'zip_code', 'country']);
 });
 
@@ -53,7 +53,7 @@ it('allows admins to view the edit venue page', function () {
     $venue = Venue::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/venues/{$venue->id}")
+        ->get("/backstage/venues/{$venue->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -68,7 +68,7 @@ it('allows admins to update a venue', function () {
     $venue = Venue::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/venues/{$venue->id}", [
+        ->patch("/backstage/venues/{$venue->id}", [
             'name' => 'Updated Venue',
             'street' => '456 Elm St',
             'city' => 'Shelbyville',
@@ -85,8 +85,8 @@ it('allows admins to delete a venue', function () {
     $venue = Venue::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/venues/{$venue->id}")
-        ->assertRedirect('/venues');
+        ->delete("/backstage/venues/{$venue->id}")
+        ->assertRedirect('/backstage/venues');
 
     expect(Venue::find($venue->id))->toBeNull();
 });
@@ -95,7 +95,7 @@ it('forbids users from creating venues', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->post('/venues', [
+        ->post('/backstage/venues', [
             'name' => 'Test',
             'street' => '1 St',
             'city' => 'City',
@@ -110,7 +110,7 @@ it('stores venue images when creating a venue', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/venues', [
+        ->post('/backstage/venues', [
             'name' => 'Venue With Images',
             'street' => '123 Main St',
             'city' => 'Springfield',
@@ -121,7 +121,7 @@ it('stores venue images when creating a venue', function () {
                 ['file' => UploadedFile::fake()->image('photo2.png', 640, 480), 'alt_text' => ''],
             ],
         ])
-        ->assertRedirect('/venues');
+        ->assertRedirect('/backstage/venues');
 
     $venue = Venue::where('name', 'Venue With Images')->first();
     expect($venue->images)->toHaveCount(2);
@@ -148,7 +148,7 @@ it('keeps existing images and adds new ones when updating a venue', function () 
     ]);
 
     $this->actingAs($admin)
-        ->patch("/venues/{$venue->id}", [
+        ->patch("/backstage/venues/{$venue->id}", [
             'name' => $venue->name,
             'street' => $venue->address->street,
             'city' => $venue->address->city,
@@ -186,7 +186,7 @@ it('deletes removed images from storage when updating a venue', function () {
     ]);
 
     $this->actingAs($admin)
-        ->patch("/venues/{$venue->id}", [
+        ->patch("/backstage/venues/{$venue->id}", [
             'name' => $venue->name,
             'street' => $venue->address->street,
             'city' => $venue->address->city,
@@ -215,8 +215,8 @@ it('deletes venue images from storage when deleting a venue', function () {
     ]);
 
     $this->actingAs($admin)
-        ->delete("/venues/{$venue->id}")
-        ->assertRedirect('/venues');
+        ->delete("/backstage/venues/{$venue->id}")
+        ->assertRedirect('/backstage/venues');
 
     Storage::disk('public')->assertMissing($path);
 });
@@ -225,7 +225,7 @@ it('rejects non-image files for venue images', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/venues', [
+        ->post('/backstage/venues', [
             'name' => 'Bad Upload Venue',
             'street' => '1 St',
             'city' => 'City',

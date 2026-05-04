@@ -28,7 +28,7 @@ it('allows authenticated users to view their tickets', function () {
     ]);
 
     $this->actingAs($user)
-        ->get('/tickets')
+        ->get('/portal/tickets')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -51,7 +51,7 @@ it('allows ticket owner to view ticket detail', function () {
     ]);
 
     $this->actingAs($user)
-        ->get("/tickets/{$ticket->id}")
+        ->get("/portal/tickets/{$ticket->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -76,7 +76,7 @@ it('prevents non-owners from viewing a ticket', function () {
     ]);
 
     $this->actingAs($other)
-        ->get("/tickets/{$ticket->id}")
+        ->get("/portal/tickets/{$ticket->id}")
         ->assertForbidden();
 });
 
@@ -95,7 +95,7 @@ it('allows owner to update ticket manager', function () {
     ]);
 
     $this->actingAs($owner)
-        ->patch("/tickets/{$ticket->id}/manager", [
+        ->patch("/portal/tickets/{$ticket->id}/manager", [
             'manager_email' => $manager->email,
         ])
         ->assertRedirect();
@@ -118,7 +118,7 @@ it('allows owner to add a user to their ticket', function () {
     ]);
 
     $this->actingAs($owner)
-        ->post("/tickets/{$ticket->id}/users", [
+        ->post("/portal/tickets/{$ticket->id}/users", [
             'user_email' => $ticketUser->email,
         ])
         ->assertRedirect();
@@ -141,7 +141,7 @@ it('denies non-owners from updating ticket manager', function () {
     ]);
 
     $this->actingAs($other)
-        ->patch("/tickets/{$ticket->id}/manager", [
+        ->patch("/portal/tickets/{$ticket->id}/manager", [
             'manager_id' => $other->id,
         ])
         ->assertForbidden();

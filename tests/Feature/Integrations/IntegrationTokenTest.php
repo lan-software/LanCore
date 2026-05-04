@@ -17,7 +17,7 @@ it('allows admins to create a token for an integration app', function () {
     $app = IntegrationApp::factory()->create();
 
     $this->actingAs($admin)
-        ->post("/integrations/{$app->id}/tokens", [
+        ->post("/backstage/integrations/{$app->id}/tokens", [
             'name' => 'Production Token',
         ])
         ->assertRedirect()
@@ -39,7 +39,7 @@ it('allows admins to create a token with expiration', function () {
     $expiresAt = now()->addDays(30)->format('Y-m-d');
 
     $this->actingAs($admin)
-        ->post("/integrations/{$app->id}/tokens", [
+        ->post("/backstage/integrations/{$app->id}/tokens", [
             'name' => 'Temporary Token',
             'expires_at' => $expiresAt,
         ])
@@ -54,7 +54,7 @@ it('validates token name is required', function () {
     $app = IntegrationApp::factory()->create();
 
     $this->actingAs($admin)
-        ->post("/integrations/{$app->id}/tokens", [])
+        ->post("/backstage/integrations/{$app->id}/tokens", [])
         ->assertSessionHasErrors(['name']);
 });
 
@@ -64,7 +64,7 @@ it('allows admins to revoke a token', function () {
     $token = IntegrationToken::factory()->for($app)->create();
 
     $this->actingAs($admin)
-        ->delete("/integrations/{$app->id}/tokens/{$token->id}")
+        ->delete("/backstage/integrations/{$app->id}/tokens/{$token->id}")
         ->assertRedirect();
 
     $token->refresh();
@@ -78,7 +78,7 @@ it('returns 404 when revoking a token from a different app', function () {
     $token = IntegrationToken::factory()->for($app2)->create();
 
     $this->actingAs($admin)
-        ->delete("/integrations/{$app1->id}/tokens/{$token->id}")
+        ->delete("/backstage/integrations/{$app1->id}/tokens/{$token->id}")
         ->assertNotFound();
 });
 
@@ -87,7 +87,7 @@ it('forbids regular users from creating tokens', function () {
     $app = IntegrationApp::factory()->create();
 
     $this->actingAs($user)
-        ->post("/integrations/{$app->id}/tokens", [
+        ->post("/backstage/integrations/{$app->id}/tokens", [
             'name' => 'Sneaky Token',
         ])
         ->assertForbidden();
@@ -101,7 +101,7 @@ it('forbids regular users from revoking tokens', function () {
     $token = IntegrationToken::factory()->for($app)->create();
 
     $this->actingAs($user)
-        ->delete("/integrations/{$app->id}/tokens/{$token->id}")
+        ->delete("/backstage/integrations/{$app->id}/tokens/{$token->id}")
         ->assertForbidden();
 
     $token->refresh();
@@ -114,7 +114,7 @@ it('allows admins to rotate a token', function () {
     $token = IntegrationToken::factory()->for($app)->create(['name' => 'Rotate Me']);
 
     $this->actingAs($admin)
-        ->post("/integrations/{$app->id}/tokens/{$token->id}/rotate")
+        ->post("/backstage/integrations/{$app->id}/tokens/{$token->id}/rotate")
         ->assertRedirect()
         ->assertSessionHas('newToken');
 
@@ -132,7 +132,7 @@ it('cannot rotate a revoked token', function () {
     $token = IntegrationToken::factory()->revoked()->for($app)->create();
 
     $this->actingAs($admin)
-        ->post("/integrations/{$app->id}/tokens/{$token->id}/rotate")
+        ->post("/backstage/integrations/{$app->id}/tokens/{$token->id}/rotate")
         ->assertStatus(422);
 });
 
@@ -143,7 +143,7 @@ it('cannot rotate a token from a different app', function () {
     $token = IntegrationToken::factory()->for($app2)->create();
 
     $this->actingAs($admin)
-        ->post("/integrations/{$app1->id}/tokens/{$token->id}/rotate")
+        ->post("/backstage/integrations/{$app1->id}/tokens/{$token->id}/rotate")
         ->assertNotFound();
 });
 
@@ -153,7 +153,7 @@ it('forbids regular users from rotating tokens', function () {
     $token = IntegrationToken::factory()->for($app)->create();
 
     $this->actingAs($user)
-        ->post("/integrations/{$app->id}/tokens/{$token->id}/rotate")
+        ->post("/backstage/integrations/{$app->id}/tokens/{$token->id}/rotate")
         ->assertForbidden();
 
     expect($app->tokens()->count())->toBe(1);

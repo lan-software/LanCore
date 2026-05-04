@@ -1151,8 +1151,8 @@ in `bootstrap/app.php` and appended to the global `web` stack.
 
 Frontend (`resources/js/`):
 
-- `pages/admin/policies/{Index,Create,Edit,Show}.vue`
-- `pages/admin/policies/versions/Create.vue`
+- `pages/backstage/policies/{Index,Create,Edit,Show}.vue`
+- `pages/backstage/policies/versions/Create.vue`
 - `pages/policies/{Required,Show}.vue`
 - `pages/legal/Index.vue`
 - `pages/auth/Register.vue` extended with required-policy checkboxes
@@ -1279,7 +1279,7 @@ Implementation root: `app/Domain/DataLifecycle/`.
 | Job | `Jobs/ProcessDueDeletionRequestsJob.php` | Scheduled daily in `routes/console.php`. |
 | Policies | `Policies/DeletionRequestPolicy.php`, `RetentionPolicyPolicy.php` |
 | Controllers | `Http/Controllers/UserDeletionController.php`, `AdminDeletionRequestController.php`, `AdminRetentionPolicyController.php`; routes in `routes/data-lifecycle.php` |
-| Vue pages | `resources/js/pages/account/Delete.vue`, `DeletionPending.vue`; `resources/js/pages/admin/data-lifecycle/DeletionRequests/{Index,Show}.vue`, `RetentionPolicies/Index.vue` |
+| Vue pages | `resources/js/pages/account/Delete.vue`, `DeletionPending.vue`; `resources/js/pages/backstage/data-lifecycle/DeletionRequests/{Index,Show}.vue`, `RetentionPolicies/Index.vue` |
 | Seeder | `database/seeders/RetentionPolicySeeder.php` | Idempotent — uses `firstOrCreate`. |
 | GDPR export integration | `app/Console/Commands/Gdpr/ExportUserDataCommand.php::locateUser` | Falls back to `email_hash` lookup with `withTrashed()` (CAP-DL-007). |
 

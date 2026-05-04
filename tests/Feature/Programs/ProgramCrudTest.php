@@ -18,7 +18,7 @@ it('allows admins to view the create program page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/programs/create')
+        ->get('/backstage/programs/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -32,13 +32,13 @@ it('allows admins to store a new program', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/programs', [
+        ->post('/backstage/programs', [
             'name' => 'Main Schedule',
             'description' => 'The main event schedule.',
             'visibility' => 'public',
             'event_id' => $event->id,
         ])
-        ->assertRedirect('/programs');
+        ->assertRedirect('/backstage/programs');
 
     expect(Program::where('name', 'Main Schedule')->exists())->toBeTrue();
 });
@@ -48,7 +48,7 @@ it('allows admins to store a program with time slots', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/programs', [
+        ->post('/backstage/programs', [
             'name' => 'Tournament',
             'visibility' => 'public',
             'event_id' => $event->id,
@@ -65,7 +65,7 @@ it('allows admins to store a program with time slots', function () {
                 ],
             ],
         ])
-        ->assertRedirect('/programs');
+        ->assertRedirect('/backstage/programs');
 
     $program = Program::where('name', 'Tournament')->first();
     expect($program)->not->toBeNull();
@@ -77,13 +77,13 @@ it('marks a program as primary for the event', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/programs', [
+        ->post('/backstage/programs', [
             'name' => 'Primary Program',
             'visibility' => 'public',
             'event_id' => $event->id,
             'is_primary' => true,
         ])
-        ->assertRedirect('/programs');
+        ->assertRedirect('/backstage/programs');
 
     $program = Program::where('name', 'Primary Program')->first();
     expect($event->fresh()->primary_program_id)->toBe($program->id);
@@ -93,7 +93,7 @@ it('validates required fields when storing a program', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/programs', [])
+        ->post('/backstage/programs', [])
         ->assertSessionHasErrors(['name', 'visibility', 'event_id']);
 });
 
@@ -102,7 +102,7 @@ it('allows admins to view the edit program page', function () {
     $program = Program::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/programs/{$program->id}")
+        ->get("/backstage/programs/{$program->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -118,7 +118,7 @@ it('allows admins to update a program', function () {
     $program = Program::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/programs/{$program->id}", [
+        ->patch("/backstage/programs/{$program->id}", [
             'name' => 'Updated Program Name',
             'visibility' => 'internal',
         ])
@@ -135,7 +135,7 @@ it('allows admins to update time slots on a program', function () {
     $slot = TimeSlot::factory()->for($program)->create(['name' => 'Old Slot']);
 
     $this->actingAs($admin)
-        ->patch("/programs/{$program->id}", [
+        ->patch("/backstage/programs/{$program->id}", [
             'name' => $program->name,
             'visibility' => $program->visibility->value,
             'time_slots' => [
@@ -163,8 +163,8 @@ it('allows admins to delete a program', function () {
     $program = Program::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/programs/{$program->id}")
-        ->assertRedirect('/programs');
+        ->delete("/backstage/programs/{$program->id}")
+        ->assertRedirect('/backstage/programs');
 
     expect(Program::find($program->id))->toBeNull();
 });
@@ -176,8 +176,8 @@ it('nullifies primary_program_id when deleting a primary program', function () {
     $event->update(['primary_program_id' => $program->id]);
 
     $this->actingAs($admin)
-        ->delete("/programs/{$program->id}")
-        ->assertRedirect('/programs');
+        ->delete("/backstage/programs/{$program->id}")
+        ->assertRedirect('/backstage/programs');
 
     expect($event->fresh()->primary_program_id)->toBeNull();
 });
@@ -187,7 +187,7 @@ it('forbids users from creating programs', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($user)
-        ->post('/programs', [
+        ->post('/backstage/programs', [
             'name' => 'Test',
             'visibility' => 'public',
             'event_id' => $event->id,
@@ -201,7 +201,7 @@ it('allows admins to assign sponsors to a program', function () {
     $sponsors = Sponsor::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->patch("/programs/{$program->id}", [
+        ->patch("/backstage/programs/{$program->id}", [
             'name' => $program->name,
             'visibility' => $program->visibility->value,
             'sponsor_ids' => [$sponsors[0]->id, $sponsors[2]->id],
@@ -220,7 +220,7 @@ it('allows admins to update sponsors on a program', function () {
     $program->sponsors()->sync([$sponsors[0]->id, $sponsors[1]->id]);
 
     $this->actingAs($admin)
-        ->patch("/programs/{$program->id}", [
+        ->patch("/backstage/programs/{$program->id}", [
             'name' => $program->name,
             'visibility' => $program->visibility->value,
             'sponsor_ids' => [$sponsors[1]->id, $sponsors[2]->id],
@@ -238,7 +238,7 @@ it('allows admins to assign sponsors to individual time slots', function () {
     $sponsors = Sponsor::factory()->count(2)->create();
 
     $this->actingAs($admin)
-        ->patch("/programs/{$program->id}", [
+        ->patch("/backstage/programs/{$program->id}", [
             'name' => $program->name,
             'visibility' => $program->visibility->value,
             'time_slots' => [
@@ -263,7 +263,7 @@ it('allows admins to assign sponsors to both program and time slots', function (
     $sponsors = Sponsor::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->patch("/programs/{$program->id}", [
+        ->patch("/backstage/programs/{$program->id}", [
             'name' => $program->name,
             'visibility' => $program->visibility->value,
             'sponsor_ids' => [$sponsors[0]->id],
@@ -292,7 +292,7 @@ it('passes sponsors to the edit page', function () {
     Sponsor::factory()->count(2)->create();
 
     $this->actingAs($admin)
-        ->get("/programs/{$program->id}")
+        ->get("/backstage/programs/{$program->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

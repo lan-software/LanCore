@@ -17,7 +17,7 @@ it('allows admins to view the ticket categories index', function () {
     TicketCategory::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/ticket-categories')
+        ->get('/backstage/ticket-categories')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -33,7 +33,7 @@ it('filters categories by event id', function () {
     TicketCategory::factory()->create(); // different event
 
     $this->actingAs($admin)
-        ->get("/ticket-categories?event_id={$event->id}")
+        ->get("/backstage/ticket-categories?event_id={$event->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -48,7 +48,7 @@ it('searches categories by name', function () {
     TicketCategory::factory()->create(['name' => 'Standard Area']);
 
     $this->actingAs($admin)
-        ->get('/ticket-categories?search=Premium')
+        ->get('/backstage/ticket-categories?search=Premium')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -61,7 +61,7 @@ it('allows admins to view the create category page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/ticket-categories/create')
+        ->get('/backstage/ticket-categories/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -75,7 +75,7 @@ it('allows admins to view the edit category page', function () {
     $category = TicketCategory::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/ticket-categories/{$category->id}")
+        ->get("/backstage/ticket-categories/{$category->id}")
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -88,7 +88,7 @@ it('validates required fields when storing a category', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/ticket-categories', [])
+        ->post('/backstage/ticket-categories', [])
         ->assertSessionHasErrors(['name']);
 });
 
@@ -96,7 +96,7 @@ it('denies regular users access to categories', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/ticket-categories')
+        ->get('/backstage/ticket-categories')
         ->assertForbidden();
 });
 
@@ -104,7 +104,7 @@ it('denies regular users from creating categories', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->post('/ticket-categories', [
+        ->post('/backstage/ticket-categories', [
             'name' => 'Test Category',
             'sort_order' => 1,
         ])
@@ -112,7 +112,7 @@ it('denies regular users from creating categories', function () {
 });
 
 it('denies unauthenticated users access to categories', function () {
-    $this->get('/ticket-categories')
+    $this->get('/backstage/ticket-categories')
         ->assertRedirect('/login');
 });
 
@@ -121,7 +121,7 @@ it('paginates categories with custom per_page', function () {
     TicketCategory::factory()->count(15)->create();
 
     $this->actingAs($admin)
-        ->get('/ticket-categories?per_page=10')
+        ->get('/backstage/ticket-categories?per_page=10')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -136,7 +136,7 @@ it('sorts categories by sort_order', function () {
     TicketCategory::factory()->create(['name' => 'First', 'sort_order' => 1]);
 
     $this->actingAs($admin)
-        ->get('/ticket-categories?sort=sort_order&direction=asc')
+        ->get('/backstage/ticket-categories?sort=sort_order&direction=asc')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page

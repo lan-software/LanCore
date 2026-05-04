@@ -79,7 +79,7 @@ it('reports invalidations without writing when confirm_invalidations is false', 
     $newData = payloadKeepingOnlyA2($this->plan, $this->seatA2->id, $block->id, $row->id);
 
     $this->actingAs($this->admin)
-        ->patch("/seat-plans/{$this->plan->id}", [
+        ->patch("/backstage/seat-plans/{$this->plan->id}", [
             'name' => $this->plan->name,
             'data' => $newData,
         ])
@@ -98,7 +98,7 @@ it('persists + releases + notifies when confirm_invalidations is true', function
     $newData = payloadKeepingOnlyA2($this->plan, $this->seatA2->id, $block->id, $row->id);
 
     $this->actingAs($this->admin)
-        ->patch("/seat-plans/{$this->plan->id}", [
+        ->patch("/backstage/seat-plans/{$this->plan->id}", [
             'name' => $this->plan->name,
             'data' => $newData,
             'confirm_invalidations' => true,
@@ -119,7 +119,7 @@ it('requires the ManageSeating (or SeatPlanPolicy::update) permission', function
     $stranger = User::factory()->create();
 
     $this->actingAs($stranger)
-        ->patch("/seat-plans/{$this->plan->id}", [
+        ->patch("/backstage/seat-plans/{$this->plan->id}", [
             'name' => $this->plan->name,
             'data' => json_encode(['blocks' => []]),
         ])

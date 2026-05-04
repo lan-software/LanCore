@@ -23,7 +23,7 @@ it('displays the integrations index page', function () {
     IntegrationApp::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/integrations')
+        ->get('/backstage/integrations')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->component('integrations/Index')
@@ -37,7 +37,7 @@ it('searches integrations by name', function () {
     IntegrationApp::factory()->create(['name' => 'Other App']);
 
     $this->actingAs($admin)
-        ->get('/integrations?search=LanShout')
+        ->get('/backstage/integrations?search=LanShout')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->component('integrations/Index')
@@ -55,14 +55,14 @@ it('allows admins to store a new integration app', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'LanShout',
             'slug' => 'lanshout',
             'description' => 'Chat application for LAN events',
             'allowed_scopes' => ['user:read', 'user:email'],
             'is_active' => true,
         ])
-        ->assertRedirect('/integrations');
+        ->assertRedirect('/backstage/integrations');
 
     expect(IntegrationApp::where('slug', 'lanshout')->exists())->toBeTrue();
 
@@ -76,7 +76,7 @@ it('validates required fields when storing', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [])
+        ->post('/backstage/integrations', [])
         ->assertSessionHasErrors(['name', 'slug']);
 });
 
@@ -85,7 +85,7 @@ it('validates slug uniqueness', function () {
     IntegrationApp::factory()->create(['slug' => 'lanshout']);
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'LanShout 2',
             'slug' => 'lanshout',
         ])
@@ -96,7 +96,7 @@ it('validates allowed scopes are valid', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'Test App',
             'slug' => 'test-app',
             'allowed_scopes' => ['invalid:scope'],
@@ -115,7 +115,7 @@ it('allows admins to view the edit page', function () {
     $app = IntegrationApp::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/integrations/{$app->id}")
+        ->get("/backstage/integrations/{$app->id}")
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->component('integrations/Edit')
@@ -129,7 +129,7 @@ it('allows admins to update an integration app', function () {
     $app = IntegrationApp::factory()->create(['name' => 'Old Name']);
 
     $this->actingAs($admin)
-        ->patch("/integrations/{$app->id}", [
+        ->patch("/backstage/integrations/{$app->id}", [
             'name' => 'New Name',
             'description' => 'Updated description',
             'allowed_scopes' => ['user:read', 'user:roles'],
@@ -154,8 +154,8 @@ it('allows admins to delete an integration app', function () {
     IntegrationToken::factory()->for($app)->create();
 
     $this->actingAs($admin)
-        ->delete("/integrations/{$app->id}")
-        ->assertRedirect('/integrations');
+        ->delete("/backstage/integrations/{$app->id}")
+        ->assertRedirect('/backstage/integrations');
 
     expect(IntegrationApp::find($app->id))->toBeNull();
     expect(IntegrationToken::where('integration_app_id', $app->id)->count())->toBe(0);
@@ -166,7 +166,7 @@ it('forbids regular users from deleting', function () {
     $app = IntegrationApp::factory()->create();
 
     $this->actingAs($user)
-        ->delete("/integrations/{$app->id}")
+        ->delete("/backstage/integrations/{$app->id}")
         ->assertForbidden();
 
     expect(IntegrationApp::find($app->id))->not->toBeNull();
@@ -182,7 +182,7 @@ it('displays the LanBrackets create page for admins', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/integrations/create/lanbrackets')
+        ->get('/backstage/integrations/create/lanbrackets')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('integrations/CreateLanBrackets'));
 });
@@ -191,7 +191,7 @@ it('displays the LanShout create page for admins', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/integrations/create/lanshout')
+        ->get('/backstage/integrations/create/lanshout')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('integrations/CreateLanShout'));
 });
@@ -200,7 +200,7 @@ it('displays the LanHelp create page for admins', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/integrations/create/lanhelp')
+        ->get('/backstage/integrations/create/lanhelp')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('integrations/CreateLanHelp'));
 });
@@ -209,7 +209,7 @@ it('displays the LanEntrance create page for admins', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/integrations/create/lanentrance')
+        ->get('/backstage/integrations/create/lanentrance')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page->component('integrations/CreateLanEntrance'));
 });
@@ -218,7 +218,7 @@ it('creates a LanBrackets integration with prepopulated data', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'LanBrackets',
             'slug' => 'lanbrackets',
             'description' => 'Tournament bracket management system',
@@ -231,7 +231,7 @@ it('creates a LanBrackets integration with prepopulated data', function () {
             'allowed_scopes' => ['user:read', 'user:email', 'user:roles'],
             'is_active' => true,
         ])
-        ->assertRedirect('/integrations');
+        ->assertRedirect('/backstage/integrations');
 
     $app = IntegrationApp::where('slug', 'lanbrackets')->first();
     expect($app)->not->toBeNull();
@@ -246,7 +246,7 @@ it('creates a LanShout integration with prepopulated data', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'LanShout',
             'slug' => 'lanshout',
             'description' => 'Real-time chat and communication platform',
@@ -259,7 +259,7 @@ it('creates a LanShout integration with prepopulated data', function () {
             'allowed_scopes' => ['user:read', 'user:email', 'user:roles'],
             'is_active' => true,
         ])
-        ->assertRedirect('/integrations');
+        ->assertRedirect('/backstage/integrations');
 
     $app = IntegrationApp::where('slug', 'lanshout')->first();
     expect($app)->not->toBeNull();
@@ -273,7 +273,7 @@ it('creates a LanHelp integration with prepopulated data', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'LanHelp',
             'slug' => 'lanhelp',
             'description' => 'Help desk and support ticket system',
@@ -286,7 +286,7 @@ it('creates a LanHelp integration with prepopulated data', function () {
             'allowed_scopes' => ['user:read', 'user:email', 'user:roles'],
             'is_active' => true,
         ])
-        ->assertRedirect('/integrations');
+        ->assertRedirect('/backstage/integrations');
 
     $app = IntegrationApp::where('slug', 'lanhelp')->first();
     expect($app)->not->toBeNull();
@@ -300,7 +300,7 @@ it('creates a LanEntrance integration with prepopulated data', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/integrations', [
+        ->post('/backstage/integrations', [
             'name' => 'LanEntrance',
             'slug' => 'lanentrance',
             'description' => 'Entrance and check-in management system',
@@ -313,7 +313,7 @@ it('creates a LanEntrance integration with prepopulated data', function () {
             'allowed_scopes' => ['user:read', 'user:email', 'user:roles'],
             'is_active' => true,
         ])
-        ->assertRedirect('/integrations');
+        ->assertRedirect('/backstage/integrations');
 
     $app = IntegrationApp::where('slug', 'lanentrance')->first();
     expect($app)->not->toBeNull();

@@ -316,7 +316,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | Req ID | Requirement |
 |--------|------------|
 | CAP-DL-001 | The system shall provide a self-service "delete my account" flow at `/account/delete` that requires the user's current password and produces a `DeletionRequest` row in the `pending_email_confirm` state |
-| CAP-DL-002 | The system shall provide an admin-initiated deletion flow at `/admin/data-lifecycle/deletion-requests` for users holding `RequestUserDeletion`; the resulting request records both the admin and the subject |
+| CAP-DL-002 | The system shall provide an admin-initiated deletion flow at `/backstage/data-lifecycle/deletion-requests` for users holding `RequestUserDeletion`; the resulting request records both the admin and the subject |
 | CAP-DL-003 | After the user clicks the email confirmation link, the request shall transition to `pending_grace` with a 30-day window before automatic anonymization; the user may cancel at any time during the grace via `data-lifecycle.account.cancel-via-link` (signed URL) or while logged in |
 | CAP-DL-004 | At the end of the grace window (or immediately on admin "Anonymize now"), the system shall scrub every PII column on the `users` row in place (name, email, username, phone, address, profile fields, two-factor secrets, remember tokens) and run every registered `DomainAnonymizer` so that no personal data remains in any domain table not under retention |
 | CAP-DL-005 | The system shall maintain admin-editable per-data-class `retention_policies` and shall hold (not anonymize / not purge) data classes whose retention has not yet expired; a nightly scheduler shall purge expired data and ultimately hard-delete the `users` row when no obligations remain |

@@ -15,7 +15,7 @@ it('lists themes for an admin', function () {
     Theme::factory()->withPalette()->create(['name' => 'Retro Classic']);
 
     $this->actingAs($admin)
-        ->get('/themes')
+        ->get('/backstage/themes')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->component('themes/Index')
@@ -28,7 +28,7 @@ it('shows the create theme page with the palette schema', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/themes/create')
+        ->get('/backstage/themes/create')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->component('themes/Create')
@@ -40,13 +40,13 @@ it('stores a palette theme with light + dark configs', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/themes', [
+        ->post('/backstage/themes', [
             'name' => 'Brand Palette',
             'description' => 'Brand colors',
             'light_config' => ['--primary' => '#0a246a', '--accent' => '#f0c419'],
             'dark_config' => ['--primary' => '#1d4ed8'],
         ])
-        ->assertRedirect('/themes');
+        ->assertRedirect('/backstage/themes');
 
     $theme = Theme::where('name', 'Brand Palette')->first();
     expect($theme)->not->toBeNull()
@@ -59,10 +59,10 @@ it('stores a theme with no palette overrides', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/themes', [
+        ->post('/backstage/themes', [
             'name' => 'Minimal',
         ])
-        ->assertRedirect('/themes');
+        ->assertRedirect('/backstage/themes');
 
     expect(Theme::where('name', 'Minimal')->first())
         ->light_config->toBeNull()
@@ -73,7 +73,7 @@ it('rejects palette keys not in the curated allowlist', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/themes', [
+        ->post('/backstage/themes', [
             'name' => 'Sneaky',
             'light_config' => ['--something-not-allowed' => '#000'],
         ])
@@ -84,7 +84,7 @@ it('rejects palette keys that do not look like CSS custom properties', function 
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/themes', [
+        ->post('/backstage/themes', [
             'name' => 'Injection Theme',
             'light_config' => ['primary' => '#000'],
         ])
@@ -95,7 +95,7 @@ it('rejects palette values that contain css-injection characters', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/themes', [
+        ->post('/backstage/themes', [
             'name' => 'Injection Theme',
             'light_config' => ['--primary' => 'red; } </style><script>'],
         ])
@@ -107,7 +107,7 @@ it('enforces unique theme names', function () {
     Theme::factory()->withPalette()->create(['name' => 'Retro Classic']);
 
     $this->actingAs($admin)
-        ->post('/themes', [
+        ->post('/backstage/themes', [
             'name' => 'Retro Classic',
         ])
         ->assertSessionHasErrors(['name']);
@@ -118,11 +118,11 @@ it('updates an existing theme', function () {
     $theme = Theme::factory()->create(['name' => 'Old Name']);
 
     $this->actingAs($admin)
-        ->patch("/themes/{$theme->id}", [
+        ->patch("/backstage/themes/{$theme->id}", [
             'name' => 'New Name',
             'light_config' => ['--accent' => '#abcdef'],
         ])
-        ->assertRedirect('/themes');
+        ->assertRedirect('/backstage/themes');
 
     expect($theme->fresh())
         ->name->toBe('New Name')
@@ -134,8 +134,8 @@ it('deletes a theme', function () {
     $theme = Theme::factory()->withPalette()->create();
 
     $this->actingAs($admin)
-        ->delete("/themes/{$theme->id}")
-        ->assertRedirect('/themes');
+        ->delete("/backstage/themes/{$theme->id}")
+        ->assertRedirect('/backstage/themes');
 
     expect(Theme::find($theme->id))->toBeNull();
 });

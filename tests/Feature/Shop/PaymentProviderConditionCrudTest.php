@@ -17,7 +17,7 @@ it('allows admins to view payment provider conditions index', function () {
     PaymentProviderCondition::factory()->count(2)->create();
 
     $this->actingAs($admin)
-        ->get('/payment-provider-conditions')
+        ->get('/backstage/payment-provider-conditions')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -30,7 +30,7 @@ it('allows admins to store a payment provider condition', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/payment-provider-conditions', [
+        ->post('/backstage/payment-provider-conditions', [
             'payment_method' => PaymentMethod::Stripe->value,
             'name' => 'Stripe Processing Fee Notice',
             'description' => 'Notice about fees',
@@ -41,7 +41,7 @@ it('allows admins to store a payment provider condition', function () {
             'requires_scroll' => true,
             'sort_order' => 0,
         ])
-        ->assertRedirect('/payment-provider-conditions');
+        ->assertRedirect('/backstage/payment-provider-conditions');
 
     $condition = PaymentProviderCondition::where('name', 'Stripe Processing Fee Notice')->first();
     expect($condition)->not->toBeNull()
@@ -55,7 +55,7 @@ it('allows admins to update a payment provider condition', function () {
     $condition = PaymentProviderCondition::factory()->forStripe()->create();
 
     $this->actingAs($admin)
-        ->patch("/payment-provider-conditions/{$condition->id}", [
+        ->patch("/backstage/payment-provider-conditions/{$condition->id}", [
             'payment_method' => PaymentMethod::OnSite->value,
             'name' => 'Updated Condition',
             'description' => $condition->description,
@@ -80,8 +80,8 @@ it('allows admins to delete a payment provider condition', function () {
     $condition = PaymentProviderCondition::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/payment-provider-conditions/{$condition->id}")
-        ->assertRedirect('/payment-provider-conditions');
+        ->delete("/backstage/payment-provider-conditions/{$condition->id}")
+        ->assertRedirect('/backstage/payment-provider-conditions');
 
     expect(PaymentProviderCondition::find($condition->id))->toBeNull();
 });
@@ -90,7 +90,7 @@ it('denies regular users access to payment provider conditions', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/payment-provider-conditions')
+        ->get('/backstage/payment-provider-conditions')
         ->assertForbidden();
 });
 
@@ -98,7 +98,7 @@ it('validates payment method enum on store', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/payment-provider-conditions', [
+        ->post('/backstage/payment-provider-conditions', [
             'payment_method' => 'invalid_method',
             'name' => 'Test',
             'acknowledgement_label' => 'Test label',

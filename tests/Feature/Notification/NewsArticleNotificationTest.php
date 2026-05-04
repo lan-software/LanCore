@@ -112,13 +112,13 @@ it('allows admins to store a new article with notify_users flag', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/news-admin', [
+        ->post('/backstage/news', [
             'title' => 'Notify Users Article',
             'visibility' => 'public',
             'notify_users' => true,
             'published_at' => now()->toDateTimeString(),
         ])
-        ->assertRedirect('/news-admin');
+        ->assertRedirect('/backstage/news');
 
     $article = NewsArticle::where('title', 'Notify Users Article')->first();
     expect($article)->not->toBeNull();

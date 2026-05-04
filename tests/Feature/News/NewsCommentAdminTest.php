@@ -13,7 +13,7 @@ beforeEach(function () {
 });
 
 it('redirects unauthenticated users from comments admin', function () {
-    $this->get('/news-admin/comments')
+    $this->get('/backstage/news/comments')
         ->assertRedirectToRoute('login');
 });
 
@@ -21,7 +21,7 @@ it('forbids regular users from accessing comments admin', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/news-admin/comments')
+        ->get('/backstage/news/comments')
         ->assertForbidden();
 });
 
@@ -30,7 +30,7 @@ it('allows admins to access comments admin', function () {
     NewsComment::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/news-admin/comments')
+        ->get('/backstage/news/comments')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('news/comments/Index')
@@ -47,7 +47,7 @@ it('filters comments by article', function () {
     NewsComment::factory()->create(); // different article
 
     $this->actingAs($admin)
-        ->get('/news-admin/comments?article_id='.$article->id)
+        ->get('/backstage/news/comments?article_id='.$article->id)
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->has('comments.data', 2));
@@ -59,7 +59,7 @@ it('filters comments by approval status', function () {
     NewsComment::factory()->count(3)->unapproved()->create();
 
     $this->actingAs($admin)
-        ->get('/news-admin/comments?is_approved=0')
+        ->get('/backstage/news/comments?is_approved=0')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->has('comments.data', 3));
@@ -73,7 +73,7 @@ it('filters comments by article visibility', function () {
     NewsComment::factory()->create(['news_article_id' => $draftArticle->id]);
 
     $this->actingAs($admin)
-        ->get('/news-admin/comments?visibility=public')
+        ->get('/backstage/news/comments?visibility=public')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->has('comments.data', 2));
@@ -87,7 +87,7 @@ it('filters comments by tag', function () {
     NewsComment::factory()->create(['news_article_id' => $otherArticle->id]);
 
     $this->actingAs($admin)
-        ->get('/news-admin/comments?tag=esports')
+        ->get('/backstage/news/comments?tag=esports')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->has('comments.data', 2));
@@ -99,7 +99,7 @@ it('searches comments by content', function () {
     NewsComment::factory()->create(['content' => 'Something else entirely']);
 
     $this->actingAs($admin)
-        ->get('/news-admin/comments?search=Laravel')
+        ->get('/backstage/news/comments?search=Laravel')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->has('comments.data', 1));
@@ -110,7 +110,7 @@ it('allows admins to edit a comment from admin view', function () {
     $comment = NewsComment::factory()->create(['content' => 'Original content']);
 
     $this->actingAs($admin)
-        ->patch("/news/comments/{$comment->id}", ['content' => 'Updated content'])
+        ->patch("/backstage/news/comments/{$comment->id}", ['content' => 'Updated content'])
         ->assertRedirect();
 
     expect($comment->fresh()->content)->toBe('Updated content');

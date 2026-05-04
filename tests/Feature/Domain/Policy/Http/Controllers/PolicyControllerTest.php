@@ -17,7 +17,7 @@ it('allows admins to view the policies index', function (): void {
     Policy::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/admin/policies')
+        ->get('/backstage/policies')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->component('admin/policies/Index')
@@ -30,12 +30,12 @@ it('forbids non-admin users from the policies index', function (): void {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/admin/policies')
+        ->get('/backstage/policies')
         ->assertForbidden();
 });
 
 it('redirects guests to login from the policies index', function (): void {
-    $this->get('/admin/policies')->assertRedirect('/login');
+    $this->get('/backstage/policies')->assertRedirect('/login');
 });
 
 it('allows admins to create a policy', function (): void {
@@ -43,7 +43,7 @@ it('allows admins to create a policy', function (): void {
     $type = PolicyType::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/admin/policies', [
+        ->post('/backstage/policies', [
             'policy_type_id' => $type->id,
             'key' => 'tos',
             'name' => 'Terms of Service',
@@ -66,7 +66,7 @@ it('rejects duplicate policy keys', function (): void {
     Policy::factory()->create(['key' => 'tos', 'policy_type_id' => $type->id]);
 
     $this->actingAs($admin)
-        ->post('/admin/policies', [
+        ->post('/backstage/policies', [
             'policy_type_id' => $type->id,
             'key' => 'tos',
             'name' => 'Duplicate',
@@ -79,7 +79,7 @@ it('allows admins to update a policy', function (): void {
     $policy = Policy::factory()->create(['name' => 'Original']);
 
     $this->actingAs($admin)
-        ->put("/admin/policies/{$policy->id}", [
+        ->put("/backstage/policies/{$policy->id}", [
             'name' => 'Updated Name',
             'sort_order' => 99,
         ])
@@ -95,8 +95,8 @@ it('allows admins to archive a policy', function (): void {
     $policy = Policy::factory()->create();
 
     $this->actingAs($admin)
-        ->post("/admin/policies/{$policy->id}/archive")
-        ->assertRedirect('/admin/policies');
+        ->post("/backstage/policies/{$policy->id}/archive")
+        ->assertRedirect('/backstage/policies');
 
     expect($policy->fresh()->archived_at)->not->toBeNull();
 });
@@ -106,7 +106,7 @@ it('shows a policy with its versions', function (): void {
     $policy = Policy::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/admin/policies/{$policy->id}")
+        ->get("/backstage/policies/{$policy->id}")
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page
             ->component('admin/policies/Show')

@@ -52,7 +52,7 @@ it('allows admin to confirm payment on an on-site order', function () {
     ]);
 
     $this->actingAs($admin)
-        ->patch("/orders/{$order->id}/confirm-payment")
+        ->patch("/backstage/orders/{$order->id}/confirm-payment")
         ->assertRedirect();
 
     $order->refresh();
@@ -66,7 +66,7 @@ it('prevents non-admin from confirming payment', function () {
     ]);
 
     $this->actingAs($user)
-        ->patch("/orders/{$order->id}/confirm-payment")
+        ->patch("/backstage/orders/{$order->id}/confirm-payment")
         ->assertForbidden();
 });
 
@@ -77,7 +77,7 @@ it('prevents confirming payment on non-on-site orders', function () {
     ]);
 
     $this->actingAs($admin)
-        ->patch("/orders/{$order->id}/confirm-payment")
+        ->patch("/backstage/orders/{$order->id}/confirm-payment")
         ->assertRedirect()
         ->assertSessionHasErrors('order');
 });
@@ -89,7 +89,7 @@ it('prevents confirming payment on already paid orders', function () {
     ]);
 
     $this->actingAs($admin)
-        ->patch("/orders/{$order->id}/confirm-payment")
+        ->patch("/backstage/orders/{$order->id}/confirm-payment")
         ->assertRedirect()
         ->assertSessionHasErrors('order');
 });

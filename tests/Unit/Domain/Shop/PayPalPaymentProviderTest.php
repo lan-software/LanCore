@@ -62,7 +62,7 @@ it('creates a PayPal order and redirects to the payer-action link', function () 
         'id' => 'PAYPAL-ORDER-ABC',
         'status' => 'CREATED',
         'links' => [
-            ['rel' => 'self', 'href' => 'https://api-m.sandbox.paypal.com/orders/PAYPAL-ORDER-ABC'],
+            ['rel' => 'self', 'href' => 'https://api-m.sandbox.paypal.com/backstage/orders/PAYPAL-ORDER-ABC'],
             ['rel' => 'payer-action', 'href' => 'https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL-ORDER-ABC'],
         ],
     ]);

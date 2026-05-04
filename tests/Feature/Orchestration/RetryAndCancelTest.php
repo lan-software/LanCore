@@ -22,7 +22,7 @@ it('allows admins to retry a failed job', function () {
     $job = OrchestrationJob::factory()->failed()->create();
 
     $this->actingAs($admin)
-        ->post("/orchestration-jobs/{$job->id}/retry")
+        ->post("/backstage/orchestration-jobs/{$job->id}/retry")
         ->assertRedirect();
 
     expect($job->fresh()->status)->toBe(OrchestrationJobStatus::Pending);
@@ -36,7 +36,7 @@ it('prevents retrying non-failed jobs', function () {
     $job = OrchestrationJob::factory()->active()->create();
 
     $this->actingAs($admin)
-        ->post("/orchestration-jobs/{$job->id}/retry")
+        ->post("/backstage/orchestration-jobs/{$job->id}/retry")
         ->assertSessionHasErrors('status');
 });
 
@@ -45,7 +45,7 @@ it('allows admins to cancel a pending job', function () {
     $job = OrchestrationJob::factory()->pending()->create();
 
     $this->actingAs($admin)
-        ->post("/orchestration-jobs/{$job->id}/cancel")
+        ->post("/backstage/orchestration-jobs/{$job->id}/cancel")
         ->assertRedirect();
 
     expect($job->fresh()->status)->toBe(OrchestrationJobStatus::Cancelled);
@@ -56,7 +56,7 @@ it('prevents cancelling active jobs', function () {
     $job = OrchestrationJob::factory()->active()->create();
 
     $this->actingAs($admin)
-        ->post("/orchestration-jobs/{$job->id}/cancel")
+        ->post("/backstage/orchestration-jobs/{$job->id}/cancel")
         ->assertSessionHasErrors('status');
 });
 
@@ -66,7 +66,7 @@ it('allows admins to force-release a game server', function () {
     $job = OrchestrationJob::factory()->active()->create(['game_server_id' => $server->id]);
 
     $this->actingAs($admin)
-        ->post("/game-servers/{$server->id}/force-release")
+        ->post("/backstage/game-servers/{$server->id}/force-release")
         ->assertRedirect();
 
     expect($server->fresh()->status->value)->toBe('available');

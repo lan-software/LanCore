@@ -40,7 +40,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <div>
                 <Link
-                    href="/admin/policies"
+                    href="/backstage/policies"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
                     {{ $t('policies.admin.create.back') }}

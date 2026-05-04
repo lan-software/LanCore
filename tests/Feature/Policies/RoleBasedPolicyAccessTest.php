@@ -19,22 +19,22 @@ it('allows superadmin to access all admin routes', function (string $route) {
 
     $this->actingAs($user)->get($route)->assertSuccessful();
 })->with([
-    '/achievements-admin',
-    '/announcements-admin',
-    '/events',
-    '/programs',
-    '/venues',
-    '/games',
-    '/seat-plans',
-    '/ticket-types',
-    '/webhooks-admin',
-    '/integrations',
-    '/users',
-    '/orders',
-    '/news-admin',
-    '/news-admin/comments',
-    '/sponsors',
-    '/sponsor-levels',
+    '/backstage/achievements',
+    '/backstage/announcements',
+    '/backstage/events',
+    '/backstage/programs',
+    '/backstage/venues',
+    '/backstage/games',
+    '/backstage/seat-plans',
+    '/backstage/ticket-types',
+    '/backstage/webhooks',
+    '/backstage/integrations',
+    '/backstage/users',
+    '/backstage/orders',
+    '/backstage/news',
+    '/backstage/news/comments',
+    '/backstage/sponsors',
+    '/backstage/sponsor-levels',
 ]);
 
 // --- Admin can access all admin routes ---
@@ -44,22 +44,22 @@ it('allows admin to access admin routes', function (string $route) {
 
     $this->actingAs($user)->get($route)->assertSuccessful();
 })->with([
-    '/achievements-admin',
-    '/announcements-admin',
-    '/events',
-    '/programs',
-    '/venues',
-    '/games',
-    '/seat-plans',
-    '/ticket-types',
-    '/webhooks-admin',
-    '/integrations',
-    '/users',
-    '/orders',
-    '/news-admin',
-    '/news-admin/comments',
-    '/sponsors',
-    '/sponsor-levels',
+    '/backstage/achievements',
+    '/backstage/announcements',
+    '/backstage/events',
+    '/backstage/programs',
+    '/backstage/venues',
+    '/backstage/games',
+    '/backstage/seat-plans',
+    '/backstage/ticket-types',
+    '/backstage/webhooks',
+    '/backstage/integrations',
+    '/backstage/users',
+    '/backstage/orders',
+    '/backstage/news',
+    '/backstage/news/comments',
+    '/backstage/sponsors',
+    '/backstage/sponsor-levels',
 ]);
 
 // --- Moderator can access content routes ---
@@ -69,8 +69,8 @@ it('allows moderator to access content moderation routes', function (string $rou
 
     $this->actingAs($user)->get($route)->assertSuccessful();
 })->with([
-    '/announcements-admin',
-    '/news-admin/comments',
+    '/backstage/announcements',
+    '/backstage/news/comments',
 ]);
 
 it('blocks moderator from non-content admin routes', function (string $route) {
@@ -78,16 +78,16 @@ it('blocks moderator from non-content admin routes', function (string $route) {
 
     $this->actingAs($user)->get($route)->assertForbidden();
 })->with([
-    '/achievements-admin',
-    '/events',
-    '/venues',
-    '/webhooks-admin',
-    '/integrations',
-    '/users',
-    '/orders',
-    '/seat-plans',
-    '/ticket-types',
-    '/sponsor-levels',
+    '/backstage/achievements',
+    '/backstage/events',
+    '/backstage/venues',
+    '/backstage/webhooks',
+    '/backstage/integrations',
+    '/backstage/users',
+    '/backstage/orders',
+    '/backstage/seat-plans',
+    '/backstage/ticket-types',
+    '/backstage/sponsor-levels',
 ]);
 
 // --- Regular user is blocked from admin routes ---
@@ -97,22 +97,22 @@ it('blocks regular user from admin routes', function (string $route) {
 
     $this->actingAs($user)->get($route)->assertForbidden();
 })->with([
-    '/achievements-admin',
-    '/announcements-admin',
-    '/events',
-    '/programs',
-    '/venues',
-    '/games',
-    '/seat-plans',
-    '/ticket-types',
-    '/webhooks-admin',
-    '/integrations',
-    '/users',
-    '/orders',
-    '/news-admin',
-    '/news-admin/comments',
-    '/sponsors',
-    '/sponsor-levels',
+    '/backstage/achievements',
+    '/backstage/announcements',
+    '/backstage/events',
+    '/backstage/programs',
+    '/backstage/venues',
+    '/backstage/games',
+    '/backstage/seat-plans',
+    '/backstage/ticket-types',
+    '/backstage/webhooks',
+    '/backstage/integrations',
+    '/backstage/users',
+    '/backstage/orders',
+    '/backstage/news',
+    '/backstage/news/comments',
+    '/backstage/sponsors',
+    '/backstage/sponsor-levels',
 ]);
 
 // --- Sponsor manager can access sponsors ---
@@ -120,7 +120,7 @@ it('blocks regular user from admin routes', function (string $route) {
 it('allows sponsor manager to view sponsors list', function () {
     $user = User::factory()->withRole(RoleName::SponsorManager)->create();
 
-    $this->actingAs($user)->get('/sponsors')->assertSuccessful();
+    $this->actingAs($user)->get('/backstage/sponsors')->assertSuccessful();
 });
 
 it('blocks sponsor manager from non-sponsor admin routes', function (string $route) {
@@ -128,11 +128,11 @@ it('blocks sponsor manager from non-sponsor admin routes', function (string $rou
 
     $this->actingAs($user)->get($route)->assertForbidden();
 })->with([
-    '/achievements-admin',
-    '/events',
-    '/venues',
-    '/webhooks-admin',
-    '/integrations',
-    '/users',
-    '/orders',
+    '/backstage/achievements',
+    '/backstage/events',
+    '/backstage/venues',
+    '/backstage/webhooks',
+    '/backstage/integrations',
+    '/backstage/users',
+    '/backstage/orders',
 ]);

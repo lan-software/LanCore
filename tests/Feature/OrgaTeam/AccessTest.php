@@ -12,25 +12,25 @@ beforeEach(function () {
 });
 
 it('redirects unauthenticated users from the orga-teams index', function () {
-    $this->get('/orga-teams')->assertRedirectToRoute('login');
+    $this->get('/backstage/orga-teams')->assertRedirectToRoute('login');
 });
 
 it('forbids users with the user role', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
-    $this->actingAs($user)->get('/orga-teams')->assertForbidden();
+    $this->actingAs($user)->get('/backstage/orga-teams')->assertForbidden();
 });
 
 it('allows admins to view the index', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
-    $this->actingAs($admin)->get('/orga-teams')->assertSuccessful();
+    $this->actingAs($admin)->get('/backstage/orga-teams')->assertSuccessful();
 });
 
 it('allows superadmins to view the index', function () {
     $sa = User::factory()->withRole(RoleName::Superadmin)->create();
 
-    $this->actingAs($sa)->get('/orga-teams')->assertSuccessful();
+    $this->actingAs($sa)->get('/backstage/orga-teams')->assertSuccessful();
 });
 
 it('forbids users from updating an orga-team', function () {
@@ -38,6 +38,6 @@ it('forbids users from updating an orga-team', function () {
     $team = OrgaTeam::factory()->create();
 
     $this->actingAs($user)
-        ->patch("/orga-teams/{$team->id}", ['name' => 'Hacked'])
+        ->patch("/backstage/orga-teams/{$team->id}", ['name' => 'Hacked'])
         ->assertForbidden();
 });

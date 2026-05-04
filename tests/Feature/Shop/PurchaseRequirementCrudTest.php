@@ -18,7 +18,7 @@ it('allows admins to view purchase requirements index', function () {
     PurchaseRequirement::factory()->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/purchase-requirements')
+        ->get('/backstage/purchase-requirements')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -31,7 +31,7 @@ it('allows admins to view create page', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/purchase-requirements/create')
+        ->get('/backstage/purchase-requirements/create')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -47,7 +47,7 @@ it('allows admins to store a purchase requirement', function () {
     $addon = Addon::factory()->create();
 
     $this->actingAs($admin)
-        ->post('/purchase-requirements', [
+        ->post('/backstage/purchase-requirements', [
             'name' => 'Age Verification',
             'description' => 'Must verify age',
             'requirements_content' => '<p>You must be 18+</p>',
@@ -57,7 +57,7 @@ it('allows admins to store a purchase requirement', function () {
             'ticket_type_ids' => [$ticketType->id],
             'addon_ids' => [$addon->id],
         ])
-        ->assertRedirect('/purchase-requirements');
+        ->assertRedirect('/backstage/purchase-requirements');
 
     $requirement = PurchaseRequirement::where('name', 'Age Verification')->first();
     expect($requirement)->not->toBeNull()
@@ -72,7 +72,7 @@ it('allows admins to update a purchase requirement', function () {
     $requirement = PurchaseRequirement::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/purchase-requirements/{$requirement->id}", [
+        ->patch("/backstage/purchase-requirements/{$requirement->id}", [
             'name' => 'Updated Requirement',
             'description' => $requirement->description,
             'acknowledgements' => ['Updated acknowledgement'],
@@ -94,8 +94,8 @@ it('allows admins to delete a purchase requirement', function () {
     $requirement = PurchaseRequirement::factory()->create();
 
     $this->actingAs($admin)
-        ->delete("/purchase-requirements/{$requirement->id}")
-        ->assertRedirect('/purchase-requirements');
+        ->delete("/backstage/purchase-requirements/{$requirement->id}")
+        ->assertRedirect('/backstage/purchase-requirements');
 
     expect(PurchaseRequirement::find($requirement->id))->toBeNull();
 });
@@ -104,6 +104,6 @@ it('denies regular users access to purchase requirements', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/purchase-requirements')
+        ->get('/backstage/purchase-requirements')
         ->assertForbidden();
 });

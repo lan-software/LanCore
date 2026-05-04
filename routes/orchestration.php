@@ -6,7 +6,7 @@ use App\Domain\Orchestration\Http\Controllers\OrchestrationJobController;
 use App\Domain\Orchestration\Http\Controllers\Tmt2WebhookController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('backstage')->group(function () {
     Route::get('game-servers', [GameServerController::class, 'index'])->name('game-servers.index');
     Route::get('game-servers/create', [GameServerController::class, 'create'])->name('game-servers.create');
     Route::post('game-servers', [GameServerController::class, 'store'])->name('game-servers.store');

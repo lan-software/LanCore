@@ -21,7 +21,7 @@ it('forbids non-admins from viewing the dashboard', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/events/dashboard')
+        ->get('/backstage/events/dashboard')
         ->assertForbidden();
 });
 
@@ -29,7 +29,7 @@ it('renders the dashboard with no event when none is published', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->get('/events/dashboard')
+        ->get('/backstage/events/dashboard')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -54,7 +54,7 @@ it('defaults to the currently running event when no session selection', function
     ]);
 
     $this->actingAs($admin)
-        ->get('/events/dashboard')
+        ->get('/backstage/events/dashboard')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -85,7 +85,7 @@ it('falls back to the next upcoming event when none is running', function () {
     ]);
 
     $this->actingAs($admin)
-        ->get('/events/dashboard')
+        ->get('/backstage/events/dashboard')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page->where('stats.event.id', $upcoming->id),
@@ -109,7 +109,7 @@ it('respects the session-selected event over active/upcoming defaults', function
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $pinned->id])
-        ->get('/events/dashboard')
+        ->get('/backstage/events/dashboard')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page->where('stats.event.id', $pinned->id),
@@ -175,7 +175,7 @@ it('computes headline metrics correctly for individual and group tickets', funct
 
     $response = $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event->id])
-        ->get('/events/dashboard')
+        ->get('/backstage/events/dashboard')
         ->assertSuccessful();
 
     $response->assertInertia(
@@ -254,7 +254,7 @@ it('counts seated users distinctly via seat assignments', function () {
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event->id])
-        ->get('/events/dashboard')
+        ->get('/backstage/events/dashboard')
         ->assertInertia(
             fn ($page) => $page->where('stats.headline.seatedUserCount', 2),
         );
@@ -306,7 +306,7 @@ it('returns the last 20 check-ins ordered by most recent first', function () {
 
     $this->actingAs($admin)
         ->withSession(['selected_event_id' => $event->id])
-        ->get('/events/dashboard')
+        ->get('/backstage/events/dashboard')
         ->assertInertia(
             fn ($page) => $page
                 ->has('stats.recentCheckins', 20)

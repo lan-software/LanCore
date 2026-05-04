@@ -24,7 +24,7 @@ it('opens, confirms and anonymizes a user in one admin call', function () {
     $subject = User::factory()->create();
 
     $this->actingAs($admin)
-        ->post("/admin/data-lifecycle/users/{$subject->id}/anonymize-immediately", [
+        ->post("/backstage/data-lifecycle/users/{$subject->id}/anonymize-immediately", [
             'reason' => 'Operator-initiated test cleanup',
         ])
         ->assertRedirect();
@@ -56,7 +56,7 @@ it('rejects anonymize-immediately when an active request already exists', functi
     );
 
     $this->actingAs($admin)
-        ->post("/admin/data-lifecycle/users/{$subject->id}/anonymize-immediately", [
+        ->post("/backstage/data-lifecycle/users/{$subject->id}/anonymize-immediately", [
             'reason' => 'Trying to short-circuit',
         ])
         ->assertStatus(500);
@@ -67,7 +67,7 @@ it('forbids anonymize-immediately for users without RequestUserDeletion', functi
     $subject = User::factory()->create();
 
     $this->actingAs($user)
-        ->post("/admin/data-lifecycle/users/{$subject->id}/anonymize-immediately", [
+        ->post("/backstage/data-lifecycle/users/{$subject->id}/anonymize-immediately", [
             'reason' => 'Should be blocked',
         ])
         ->assertForbidden();
@@ -78,7 +78,7 @@ it('validates that a reason is provided', function () {
     $subject = User::factory()->create();
 
     $this->actingAs($admin)
-        ->post("/admin/data-lifecycle/users/{$subject->id}/anonymize-immediately", [
+        ->post("/backstage/data-lifecycle/users/{$subject->id}/anonymize-immediately", [
             'reason' => '',
         ])
         ->assertSessionHasErrors('reason');
@@ -97,7 +97,7 @@ it('lets anonymize-now fire from pending_email_confirm via the existing endpoint
 
     $this->actingAs($admin)
         ->post(
-            "/admin/data-lifecycle/deletion-requests/{$opened['request']->id}/anonymize-now",
+            "/backstage/data-lifecycle/deletion-requests/{$opened['request']->id}/anonymize-now",
         )
         ->assertRedirect();
 

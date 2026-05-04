@@ -15,7 +15,7 @@ it('returns paginated users with their roles for admins', function () {
     User::factory()->withRole(RoleName::User)->count(3)->create();
 
     $this->actingAs($admin)
-        ->get('/users')
+        ->get('/backstage/users')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -30,7 +30,7 @@ it('forbids the user role from accessing the user list', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->get('/users')
+        ->get('/backstage/users')
         ->assertForbidden();
 });
 
@@ -40,7 +40,7 @@ it('filters users by search term', function () {
     User::factory()->withRole(RoleName::User)->create(['name' => 'Bob Builder', 'email' => 'bob@example.com']);
 
     $this->actingAs($admin)
-        ->get('/users?search=alice')
+        ->get('/backstage/users?search=alice')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -55,7 +55,7 @@ it('filters users by role', function () {
     User::factory()->withRole(RoleName::User)->count(2)->create();
 
     $this->actingAs($admin)
-        ->get('/users?role=user')
+        ->get('/backstage/users?role=user')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -70,7 +70,7 @@ it('sorts users by email ascending', function () {
     User::factory()->withRole(RoleName::User)->create(['email' => 'aaa@example.com']);
 
     $this->actingAs($admin)
-        ->get('/users?sort=email&direction=asc')
+        ->get('/backstage/users?sort=email&direction=asc')
         ->assertSuccessful()
         ->assertInertia(
             fn ($page) => $page
@@ -84,7 +84,7 @@ it('allows superadmin to bulk delete users', function () {
     $users = User::factory()->withRole(RoleName::User)->count(2)->create();
 
     $this->actingAs($superadmin)
-        ->delete('/users', ['ids' => $users->pluck('id')->toArray()])
+        ->delete('/backstage/users', ['ids' => $users->pluck('id')->toArray()])
         ->assertRedirect();
 
     expect(User::whereIn('id', $users->pluck('id'))->count())->toBe(0);
@@ -95,7 +95,7 @@ it('prevents admins from bulk deleting users', function () {
     $users = User::factory()->withRole(RoleName::User)->count(2)->create();
 
     $this->actingAs($admin)
-        ->delete('/users', ['ids' => $users->pluck('id')->toArray()])
+        ->delete('/backstage/users', ['ids' => $users->pluck('id')->toArray()])
         ->assertForbidden();
 });
 
@@ -103,7 +103,7 @@ it('prevents superadmin from deleting their own account in bulk', function () {
     $superadmin = User::factory()->withRole(RoleName::Superadmin)->create();
 
     $this->actingAs($superadmin)
-        ->delete('/users', ['ids' => [$superadmin->id]])
+        ->delete('/backstage/users', ['ids' => [$superadmin->id]])
         ->assertRedirect();
 
     expect(User::find($superadmin->id))->not->toBeNull();
@@ -114,7 +114,7 @@ it('allows admins to bulk assign a role to users', function () {
     $users = User::factory()->withRole(RoleName::User)->count(2)->create();
 
     $this->actingAs($admin)
-        ->patch('/users/roles', [
+        ->patch('/backstage/users/roles', [
             'ids' => $users->pluck('id')->toArray(),
             'role' => RoleName::Admin->value,
         ])
@@ -130,7 +130,7 @@ it('allows superadmin to bulk assign a role', function () {
     $users = User::factory()->withRole(RoleName::User)->count(2)->create();
 
     $this->actingAs($superadmin)
-        ->patch('/users/roles', [
+        ->patch('/backstage/users/roles', [
             'ids' => $users->pluck('id')->toArray(),
             'role' => RoleName::Admin->value,
         ])
@@ -146,7 +146,7 @@ it('prevents the user role from bulk assigning roles', function () {
     $targets = User::factory()->withRole(RoleName::User)->count(2)->create();
 
     $this->actingAs($user)
-        ->patch('/users/roles', [
+        ->patch('/backstage/users/roles', [
             'ids' => $targets->pluck('id')->toArray(),
             'role' => RoleName::Admin->value,
         ])
@@ -158,8 +158,8 @@ it('does not duplicate role when bulk assigning an existing role', function () {
     $target = User::factory()->withRole(RoleName::User)->create();
 
     // Assign twice
-    $this->actingAs($admin)->patch('/users/roles', ['ids' => [$target->id], 'role' => RoleName::Admin->value]);
-    $this->actingAs($admin)->patch('/users/roles', ['ids' => [$target->id], 'role' => RoleName::Admin->value]);
+    $this->actingAs($admin)->patch('/backstage/users/roles', ['ids' => [$target->id], 'role' => RoleName::Admin->value]);
+    $this->actingAs($admin)->patch('/backstage/users/roles', ['ids' => [$target->id], 'role' => RoleName::Admin->value]);
 
     expect($target->fresh()->roles()->where('name', RoleName::Admin->value)->count())->toBe(1);
 });

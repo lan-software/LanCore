@@ -75,7 +75,7 @@ const typesDialogOpen = ref(false);
                         <Tags class="size-4" />
                         {{ $t('policies.admin.index.manage_types') }}
                     </Button>
-                    <Link href="/admin/policies/create">
+                    <Link href="/backstage/policies/create">
                         <Button>
                             <Plus class="size-4" />
                             {{ $t('policies.admin.index.new_policy') }}

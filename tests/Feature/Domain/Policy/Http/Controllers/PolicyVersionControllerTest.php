@@ -21,8 +21,8 @@ it('redirects the legacy versions/create URL to the policy show page', function 
     $policy = Policy::factory()->create();
 
     $this->actingAs($admin)
-        ->get("/admin/policies/{$policy->id}/versions/create")
-        ->assertRedirect("/admin/policies/{$policy->id}");
+        ->get("/backstage/policies/{$policy->id}/versions/create")
+        ->assertRedirect("/backstage/policies/{$policy->id}");
 });
 
 it('publishes an editorial version from drafts', function (): void {
@@ -31,10 +31,10 @@ it('publishes an editorial version from drafts', function (): void {
     PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'en', 'content' => '# v1']);
 
     $this->actingAs($admin)
-        ->post("/admin/policies/{$policy->id}/versions", [
+        ->post("/backstage/policies/{$policy->id}/versions", [
             'is_non_editorial_change' => false,
         ])
-        ->assertRedirect("/admin/policies/{$policy->id}");
+        ->assertRedirect("/backstage/policies/{$policy->id}");
 
     expect($policy->versions()->count())->toBe(1);
     expect($policy->fresh()->required_acceptance_version_number)->toBeNull();
@@ -47,7 +47,7 @@ it('publishes a non-editorial version with required public_statement', function 
     PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'de', 'content' => '# major']);
 
     $this->actingAs($admin)
-        ->post("/admin/policies/{$policy->id}/versions", [
+        ->post("/backstage/policies/{$policy->id}/versions", [
             'is_non_editorial_change' => true,
             'public_statement' => 'We rewrote the data sharing section.',
         ])
@@ -63,7 +63,7 @@ it('rejects non-editorial publish without public_statement', function (): void {
     PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'en', 'content' => '# x']);
 
     $this->actingAs($admin)
-        ->post("/admin/policies/{$policy->id}/versions", [
+        ->post("/backstage/policies/{$policy->id}/versions", [
             'is_non_editorial_change' => true,
         ])
         ->assertSessionHasErrors('public_statement');
@@ -75,7 +75,7 @@ it('forbids non-admin users from publishing', function (): void {
     PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'en', 'content' => '# x']);
 
     $this->actingAs($user)
-        ->post("/admin/policies/{$policy->id}/versions")
+        ->post("/backstage/policies/{$policy->id}/versions")
         ->assertForbidden();
 });
 
@@ -86,7 +86,7 @@ it('shares the same version_number across every locale of one publish', function
     PolicyLocaleDraft::factory()->for($policy)->create(['locale' => 'de', 'content' => '# de']);
 
     $this->actingAs($admin)
-        ->post("/admin/policies/{$policy->id}/versions", [
+        ->post("/backstage/policies/{$policy->id}/versions", [
             'is_non_editorial_change' => false,
         ])
         ->assertRedirect();
