@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
+import { Ticket } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppFooter from '@/components/AppFooter.vue';
 import BannerCarousel from '@/components/BannerCarousel.vue';
 import CountdownTimer from '@/components/countdown/CountdownTimer.vue';
 import NewsletterSignupForm from '@/components/countdown/NewsletterSignupForm.vue';
 import PublicTopbar from '@/components/PublicTopbar.vue';
+import { Button } from '@/components/ui/button';
+import { index as shopIndex } from '@/routes/shop';
 
 const props = defineProps<{
     event: {
@@ -54,6 +57,15 @@ const hasUpcomingEvent = computed(
                     v-if="hasUpcomingEvent && event && event.start_date"
                     :target-iso="event.start_date"
                 />
+
+                <div v-if="hasUpcomingEvent" class="flex justify-center">
+                    <Button as-child size="lg" class="gap-2">
+                        <Link :href="shopIndex().url">
+                            <Ticket class="size-5" />
+                            Get your ticket
+                        </Link>
+                    </Button>
+                </div>
 
                 <NewsletterSignupForm
                     v-if="newsletter"
