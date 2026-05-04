@@ -33,6 +33,8 @@ use App\Domain\News\Models\NewsArticle;
 use App\Domain\News\Models\NewsComment;
 use App\Domain\News\Policies\NewsArticlePolicy;
 use App\Domain\News\Policies\NewsCommentPolicy;
+use App\Domain\Newsletter\Models\NewsletterList;
+use App\Domain\Newsletter\Policies\NewsletterListPolicy;
 use App\Domain\Notification\Events\NotificationPreferencesUpdated;
 use App\Domain\Notification\Events\NotificationsArchived;
 use App\Domain\Notification\Events\ProfileUpdated;
@@ -116,10 +118,13 @@ use App\Policies\UserPolicy;
 use App\Services\ModelCacheService;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -178,6 +183,22 @@ class AppServiceProvider extends ServiceProvider
         $this->configurePolicies();
         $this->configureEvents();
         $this->configurePaypalAutoEnable();
+        $this->configureRateLimiters();
+    }
+
+    /**
+     * Register named rate limiters used by the public API surface
+     * (newsletter signup form on `/countdown` etc.). Mirrors the
+     * `login` / `two-factor` limiters declared in `FortifyServiceProvider`.
+     */
+    protected function configureRateLimiters(): void
+    {
+        RateLimiter::for(
+            'newsletter-signup',
+            fn (Request $request) => Limit::perMinute(5)->by(
+                (string) $request->ip(),
+            ),
+        );
     }
 
     /**
@@ -242,6 +263,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(IntegrationApp::class, IntegrationAppPolicy::class);
         Gate::policy(Event::class, EventPolicy::class);
         Gate::policy(Theme::class, ThemePolicy::class);
+        Gate::policy(NewsletterList::class, NewsletterListPolicy::class);
         Gate::policy(Program::class, ProgramPolicy::class);
         Gate::policy(Sponsor::class, SponsorPolicy::class);
         Gate::policy(SponsorLevel::class, SponsorLevelPolicy::class);

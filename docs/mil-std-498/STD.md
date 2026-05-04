@@ -999,6 +999,9 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | CAP-EVT-007, EVT-F-012 | Event calendar export tests (4.30) |
 | CAP-DL-001..008, DL-F-001..018 | Data Lifecycle test suite (4.31) |
 | CAP-EVT-008, CAP-THM-001..004, THM-F-001..006 | Event Theme test suite (4.32) |
+| CAP-NLT-001..004, NLT-F-001..007 | Newsletter test suite (4.33) |
+| CAP-CTD-001..002, CTD-F-001..002 | Public Countdown tests (4.34) |
+| CAP-ORC-011, EXT-F-001..005 | External API connectivity tests (4.35) |
 
 ---
 
@@ -1062,6 +1065,46 @@ Located under `tests/Feature/Themes/` and `tests/Feature/Architecture/ThemeArchi
 | Test ID | File | Verifies |
 |---------|------|----------|
 | TC-THM-009 | `tests/Feature/Architecture/ThemeArchitectureTest.php` | The Theme model lives under `App\Domain\Theme\Models`; `PaletteVariables` is the sole definition of allowed CSS-variable keys; no `ThemeVendor` or `ThemeKind` enum exists in the codebase (architecture invariant) |
+
+---
+
+### 4.33 Newsletter Test Suite
+
+Located under `tests/Feature/Newsletter/` and `tests/Feature/Architecture/NewsletterArchitectureTest.php`.
+
+| Test ID | File | Verifies |
+|---------|------|---------|
+| TC-NLT-001 | `NewsletterListCrudTest.php` | Admin CRUD on `NewsletterList` via `Admin\NewsletterListController`; non-admin receives 403; `is_user_selectable` and `is_default_public` flags persist correctly. Traces to NLT-F-001, CAP-NLT-001 |
+| TC-NLT-002 | `FetchListsFromListmonkTest.php` | `FetchListsFromListmonk` action calls `ListmonkClient::listLists()` (via `Http::fake()`), upserts local `newsletter_lists` rows by `listmonk_id`, stamps `last_synced_at`; the `POST newsletter-lists/sync/fetch` endpoint is admin-gated. Traces to NLT-F-002, CAP-NLT-001 |
+| TC-NLT-003 | `EmailSettingsTest.php` | `GET settings/email` returns the user's curated lists with correct per-list status; `PATCH settings/email` diff applies subscribe/unsubscribe via `Http::fake()` for Listmonk; `RefreshUserSubscriptionsJob` is dispatched non-blocking on GET. Traces to NLT-F-003, CAP-NLT-002 |
+| TC-NLT-004 | `ReconcileSubscriptionsTest.php` | `ReconcileSubscriptionsJob` fans out `ReconcileListSubscriptionsJob` per list; the per-list job pages through `ListmonkClient::getSubscribersOfList()` and upserts pivot rows; nightly scheduler entry verified via `routes/console.php` scan. Traces to NLT-F-004, CAP-NLT-003 |
+| TC-NLT-005 | `OptInAllUsersTest.php` | `OptInAllUsersToList` subscribes every registered user; the admin endpoint `POST newsletter-lists/sync/opt-in-all/{list}` is gated; verifies Listmonk calls and pivot rows created. Traces to NLT-F-005, CAP-NLT-004 |
+| TC-NLT-006 | `PublicSignupTest.php` | `POST /newsletter/subscribe` with a valid email + `is_default_public` list calls `SubscribeAnonymous` → `ListmonkClient::upsertSubscriber()`; rate-limiter blocks the 6th request within a minute; 422 when no default public list configured. Traces to NLT-F-006, CAP-CTD-002 |
+
+---
+
+### 4.34 Public Countdown Tests
+
+Located under `tests/Feature/Countdown/`.
+
+| Test ID | File | Verifies |
+|---------|------|---------|
+| TC-CTD-001 | `CountdownPageTest.php` | `GET /countdown` (unauthenticated) renders Inertia page with `event` prop populated when an upcoming published event exists; `event` is `null` when no upcoming event; route is accessible without authentication. Traces to CTD-F-001, CAP-CTD-001 |
+| TC-CTD-002 | `CountdownPageTest.php` | `GET /countdown` sets `defaultListId` to the `is_default_public=true` list ID when one exists, and to `null` when none is designated; authenticated users have `email` pre-filled in the signup form props. Traces to CTD-F-002, CAP-CTD-002 |
+
+---
+
+### 4.35 External API Connectivity Tests
+
+Located under `tests/Feature/ExternalApi/`.
+
+| Test ID | File | Verifies |
+|---------|------|---------|
+| TC-EXT-001 | `TestCommandsTest.php` | `external-apis:test:tmt2` exits 0 when `Http::fake()` returns a healthy response, exits 1 on 401/unreachable, exits 2 when `TMT2_ENABLED=false`. Traces to EXT-F-001, CAP-ORC-011 |
+| TC-EXT-002 | `TestCommandsTest.php` | `external-apis:test:stripe` exits 0 on valid test key, 1 on auth error, 2 when `STRIPE_KEY` not configured. Traces to EXT-F-002, CAP-ORC-011 |
+| TC-EXT-003 | `TestCommandsTest.php` | `external-apis:test:paypal` exits 0 on valid credentials, 1 on auth error, 2 when PayPal env keys absent. Traces to EXT-F-003, CAP-ORC-011 |
+| TC-EXT-004 | `TestSteamTest.php` | `ExternalApiController::testSteam()` UI endpoint returns `{status:'connected', account:'gabelogannewell'}` on success; `external-apis:test:steam` command exits 0 / 1 / 2 accordingly; Steam card renders on the External API admin page. Traces to EXT-F-004, CAP-ORC-011 |
+| TC-EXT-005 | `TestListmonkTest.php` | `ExternalApiController::testListmonk()` UI endpoint returns `{status:'connected', account:<version>}` on success; `external-apis:test:listmonk` command exits 0 / 1 / 2 accordingly. Traces to EXT-F-005, CAP-ORC-011 |
 
 ---
 

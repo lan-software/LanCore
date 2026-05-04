@@ -23,6 +23,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('external-apis', [ExternalApiController::class, 'index'])->name('external-apis.index');
     Route::post('external-apis/test-tmt2', [ExternalApiController::class, 'testTmt2'])->name('external-apis.test-tmt2');
     Route::post('external-apis/test-stripe', [ExternalApiController::class, 'testStripe'])->name('external-apis.test-stripe');
+    Route::post('external-apis/test-paypal', [ExternalApiController::class, 'testPaypal'])->name('external-apis.test-paypal');
+    Route::post('external-apis/test-steam', [ExternalApiController::class, 'testSteam'])->name('external-apis.test-steam');
+    Route::post('external-apis/test-listmonk', [ExternalApiController::class, 'testListmonk'])->name('external-apis.test-listmonk');
 });
 
 // TMT2 webhook — no auth middleware, secured by URL secret

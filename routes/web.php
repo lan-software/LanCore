@@ -5,6 +5,7 @@ use App\Domain\Auth\Steam\Http\Controllers\SteamLinkController;
 use App\Domain\Event\Http\Controllers\PublicEventController;
 use App\Domain\Shop\Http\Controllers\PayPalWebhookController;
 use App\Http\Controllers\CookiePreferenceController;
+use App\Http\Controllers\CountdownController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventContextController;
 use App\Http\Controllers\LegalController;
@@ -15,6 +16,8 @@ use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', WelcomeController::class)->name('home');
+
+Route::get('countdown', CountdownController::class)->name('countdown');
 
 Route::get('upcoming-events', [PublicEventController::class, 'index'])->name('events.public');
 Route::get('past-events', [PublicEventController::class, 'past'])->name('events.public.past');
@@ -83,6 +86,7 @@ require __DIR__.'/news.php';
 require __DIR__.'/announcements.php';
 require __DIR__.'/achievements.php';
 require __DIR__.'/notifications.php';
+require __DIR__.'/newsletter.php';
 require __DIR__.'/policies.php';
 require __DIR__.'/webhooks.php';
 require __DIR__.'/integrations.php';

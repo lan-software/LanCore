@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Mail } from 'lucide-vue-next';
 import { update } from '@/actions/App/Domain/Notification/Http/Controllers/NotificationSettingsController';
 import Heading from '@/components/Heading.vue';
 import PushNotificationPrompt from '@/components/PushNotificationPrompt.vue';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
+import { edit as editEmailSettings } from '@/routes/email-settings';
 import { edit } from '@/routes/notifications';
 import type { BreadcrumbItem } from '@/types';
 
@@ -233,6 +235,22 @@ const notificationRows: NotificationRow[] = [
                         </Transition>
                     </div>
                 </form>
+
+                <div
+                    class="flex items-start gap-3 rounded-lg border border-dashed p-4"
+                >
+                    <Mail class="mt-0.5 size-4 text-muted-foreground" />
+                    <div class="flex-1 text-sm">
+                        <p class="font-medium">Looking for newsletter lists?</p>
+                        <p class="text-muted-foreground">
+                            Curated email lists are managed separately on the
+                            <Link :href="editEmailSettings()" class="underline">
+                                E-Mail Settings
+                            </Link>
+                            page.
+                        </p>
+                    </div>
+                </div>
             </div>
         </SettingsLayout>
     </AppLayout>

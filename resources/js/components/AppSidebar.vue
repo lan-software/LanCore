@@ -9,12 +9,14 @@ import {
     FileText,
     Gamepad2,
     Gauge,
+    GaugeCircle,
     Gift,
     Grid2x2,
     Handshake,
     History,
     LayoutGrid,
     Mail,
+    MailPlus,
     MapPin,
     Megaphone,
     MessageSquare,
@@ -85,6 +87,7 @@ import { index as myOrdersIndex } from '@/routes/my-orders';
 import { index as myTeamsIndex } from '@/routes/my-teams';
 import { index as newsIndex } from '@/routes/news';
 import { index as newsCommentsIndex } from '@/routes/news/comments';
+import { index as newsletterListsIndex } from '@/routes/newsletter-lists';
 import { index as orchestrationJobsIndex } from '@/routes/orchestration-jobs';
 import { index as ordersIndex } from '@/routes/orders';
 import { index as orgaTeamsIndex } from '@/routes/orga-teams';
@@ -111,6 +114,11 @@ import type { NavItem } from '@/types';
 const page = usePage();
 const { can, canAny } = usePermissions();
 const { t } = useI18n();
+
+const isSuperadmin = computed<boolean>(() => {
+    const roles = (page.props.auth as { user?: { roles?: { name: string }[] } } | undefined)?.user?.roles ?? [];
+    return roles.some((role) => role.name === 'superadmin');
+});
 
 const mainNavItems = computed<NavItem[]>(() => [
     {
@@ -299,6 +307,15 @@ const allPinnableItems = computed<NavItem[]>(() => {
             title: 'Themes',
             href: themesIndex(),
             icon: PaintBucket,
+        });
+    }
+
+    if (can(Permission.ManageNewsletterLists)) {
+        items.push({
+            id: 'newsletter-lists',
+            title: 'Newsletter Lists',
+            href: newsletterListsIndex(),
+            icon: MailPlus,
         });
     }
 
@@ -492,10 +509,15 @@ function toggleFavorite(itemId: string): void {
             <!-- Platform Settings -->
             <SidebarGroup
                 v-if="
+                    isSuperadmin ||
                     canAny(
                         Permission.ManageUsers,
                         Permission.ManagePolicies,
                         Permission.ViewEmailLog,
+                        Permission.ManageNewsletterLists,
+                        Permission.ManageThemes,
+                        Permission.ManageGameServers,
+                        Permission.ViewOrchestration,
                     )
                 "
             >
@@ -528,6 +550,79 @@ function toggleFavorite(itemId: string): void {
                                     <Mail />
                                     <span>Emails</span>
                                 </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem
+                            v-if="can(Permission.ManageNewsletterLists)"
+                        >
+                            <SidebarMenuButton as-child>
+                                <Link :href="newsletterListsIndex()">
+                                    <MailPlus />
+                                    <span>Newsletter Lists</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('newsletter-lists')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('newsletter-lists')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="can(Permission.ManageThemes)">
+                            <SidebarMenuButton as-child>
+                                <Link :href="themesIndex()">
+                                    <PaintBucket />
+                                    <span>Themes</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('themes')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('themes')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem
+                            v-if="
+                                canAny(
+                                    Permission.ManageGameServers,
+                                    Permission.ViewOrchestration,
+                                )
+                            "
+                        >
+                            <SidebarMenuButton as-child>
+                                <Link :href="externalApisIndex()">
+                                    <PlugZap />
+                                    <span>{{
+                                        $t('navigation.externalApis')
+                                    }}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuAction
+                                :show-on-hover="true"
+                                @click="toggleFavorite('external-apis')"
+                            >
+                                <PinOff
+                                    v-if="isFavorited('external-apis')"
+                                    class="size-4"
+                                />
+                                <Pin v-else class="size-4" />
+                            </SidebarMenuAction>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="isSuperadmin">
+                            <SidebarMenuButton as-child>
+                                <a href="/horizon" target="_blank" rel="noopener">
+                                    <GaugeCircle />
+                                    <span>Queue Monitor</span>
+                                </a>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
@@ -829,24 +924,6 @@ function toggleFavorite(itemId: string): void {
                             >
                                 <PinOff
                                     v-if="isFavorited('orga-teams')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can(Permission.ManageThemes)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="themesIndex()">
-                                    <PaintBucket />
-                                    <span>Themes</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('themes')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('themes')"
                                     class="size-4"
                                 />
                                 <Pin v-else class="size-4" />
@@ -1215,26 +1292,6 @@ function toggleFavorite(itemId: string): void {
                             >
                                 <PinOff
                                     v-if="isFavorited('orchestration-jobs')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="externalApisIndex()">
-                                    <PlugZap />
-                                    <span>{{
-                                        $t('navigation.externalApis')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('external-apis')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('external-apis')"
                                     class="size-4"
                                 />
                                 <Pin v-else class="size-4" />

@@ -1255,6 +1255,7 @@ unrendered.
 | SEC-021 | `app/Http/Controllers/PublicProfileController.php` (privacy enforcement, 404 not 403); `app/Http/Resources/PublicProfileResource.php` (whitelist of public-facing fields); test suite §4.24 |
 | SEC-022 | `app/Domain/Profile/Actions/NormalizeAvatar.php`, `app/Domain/Profile/Actions/NormalizeBanner.php`, `app/Http/Requests/UpdateProfileMediaRequest.php` (size + mime + bomb-protection validation) |
 | EVT-F-008, THM-F-001..006 | app/Domain/Theme/, app/Domain/Theme/Support/PaletteVariables.php, app/Domain/Theme/Http/Requests/ThemeConfigKeysRule.php, app/Http/Middleware/ResolveEventTheme.php, app/Http/Middleware/HandleInertiaRequests.php (activeTheme shared prop), bootstrap/app.php (middleware registration), resources/views/app.blade.php (SSR light/dark style blocks), resources/js/components/theme/ThemeProvider.vue, resources/js/components/theme/{ColorPickerInput,ThemePalettePicker,ThemePreview}.vue, OrganizationSetting (default_theme_id key); see §5.11 |
+| CTD-F-001..002, NLT-F-001..007, EXT-F-001..005 | app/Domain/Newsletter/, config/listmonk.php, app/Http/Controllers/CountdownController.php, app/Console/Commands/ExternalApi/, app/Console/Commands/Newsletter/, resources/js/pages/Countdown.vue, resources/js/pages/newsletter-lists/{Index,Create,Edit}.vue, resources/js/pages/settings/EmailSettings.vue, resources/js/components/countdown/{CountdownTimer,NewsletterSignupForm}.vue, resources/js/pages/orchestration/apis/Index.vue (Steam + Listmonk cards); see §5.12 |
 
 ---
 
@@ -1311,6 +1312,43 @@ Implementation root: `app/Domain/Theme/`. Color-palette only; no vendor styleshe
 | App shell wiring | `resources/js/app.ts` | Wraps `<App>` with `<ThemeProvider>` inside the existing `<DemoShell>` mount. |
 | PageProps types | `resources/js/types/index.d.ts` | Extends Inertia `PageProps` with `activeTheme: ThemeContext \| null` where `ThemeContext = {id, name, lightConfig, darkConfig, source: 'event'\|'organization'}`. |
 | Theme editor UI | `resources/js/pages/themes/{Index,Create,Edit}.vue`, `resources/js/components/theme/{ColorPickerInput,ThemePalettePicker,ThemePreview}.vue` | `ColorPickerInput` wraps a native `<input type="color">` swatch feeding hex values. `ThemePalettePicker` renders two columns (light + dark) over the `PaletteVariables` groups. `ThemePreview` shows a sidebar slice + card + buttons + badges in both light and dark variants side-by-side (stacked on small screens), live-updating as values change. Sidebar nav entry in `AppSidebar.vue` gated by `ManageThemes`. |
+
+---
+
+### 5.12 Newsletter Implementation
+
+Implementation domain: `app/Domain/Newsletter/`. Traces to NLT-F-001..007, CTD-F-001..002, CAP-NLT-001..004, CAP-CTD-001..002, CAP-ORC-011. Mirrors the §5.11 (Theme) component-table shape.
+
+| Component | Path | Notes |
+|-----------|------|-------|
+| Model | `app/Domain/Newsletter/Models/NewsletterList.php` | Columns: `id`, `listmonk_id` (unique), `name`, `description`, `type`, `optin`, `tags` (JSON cast), `is_user_selectable` (bool), `is_default_public` (bool), `last_synced_at` (nullable timestamp). Relation: `BelongsToMany(User::class, 'newsletter_list_user')` using pivot model `NewsletterSubscription`. |
+| Pivot model | `app/Domain/Newsletter/Models/NewsletterSubscription.php` | Pivot on `newsletter_list_user`; columns: `id`, `newsletter_list_id`, `user_id`, `listmonk_subscriber_id` (nullable), `status` (cast to `SubscriptionStatus`), `subscribed_at`, `last_synced_at`. |
+| Enums | `app/Domain/Newsletter/Enums/SubscriptionStatus.php` (`Enabled`, `Unsubscribed`, `Blocklisted`), `app/Domain/Newsletter/Enums/Permission.php` (`ManageNewsletterLists` implementing `PermissionEnum`) | `ManageNewsletterLists` added to Admin role in `RolePermissionMap`. |
+| Policy | `app/Domain/Newsletter/Policies/NewsletterListPolicy.php` | All write abilities gated by `Permission::ManageNewsletterLists`. Registered in `AppServiceProvider`. |
+| Form Requests | `app/Domain/Newsletter/Http/Requests/Admin/StoreNewsletterListRequest.php`, `UpdateNewsletterListRequest.php`, `User/UpdateEmailSettingsRequest.php`, `Public/NewsletterSubscribeRequest.php` | Public request includes email validation; rate-limited via named limiter `newsletter-signup`. |
+| Actions | `app/Domain/Newsletter/Actions/{FetchListsFromListmonk,CreateNewsletterList,UpdateNewsletterList,DeleteNewsletterList,OptInAllUsersToList,SubscribeUserToList,UnsubscribeUserFromList,RefreshUserSubscriptions,ReconcileSubscriptionsForList,SubscribeAnonymous}.php` | Each follows the `execute()` + `DB::transaction` pattern. `SubscribeAnonymous` is the only action that does not produce a pivot row (anonymous subscribers live only in Listmonk). |
+| Admin controllers | `app/Domain/Newsletter/Http/Controllers/Admin/NewsletterListController.php` (CRUD + Inertia `newsletter-lists/{Index,Create,Edit}`), `app/Domain/Newsletter/Http/Controllers/Admin/NewsletterListSyncController.php` (`fetch` POST, `optInAllUsers` POST) | Gated by `ManageNewsletterLists`. |
+| User controller | `app/Domain/Newsletter/Http/Controllers/User/EmailSettingsController.php` | `edit` returns Inertia `settings/EmailSettings` with curated lists + per-list status; dispatches `RefreshUserSubscriptionsJob` non-blocking. `update` PATCH applies diff. |
+| Public controller | `app/Domain/Newsletter/Http/Controllers/Public/NewsletterSubscribeController.php` | `store` POST; accepts `{email, name?}`; delegates to `SubscribeAnonymous`; protected by `throttle:newsletter-signup`. |
+| Client | `app/Domain/Newsletter/Clients/ListmonkClient.php`, `ListmonkException.php` | Thin `Http` facade wrapper. Configuration from `config/listmonk.php`. See SSDD §5.13.1 for method inventory. |
+| Config | `config/listmonk.php` | Mirrors `config/tmt2.php` shape. Keys: `enabled`, `base_url`, `username`, `password`, `timeout`, `retries`, `preconfirm_subscriptions`. |
+| Jobs | `app/Domain/Newsletter/Jobs/RefreshUserSubscriptionsJob.php` (single-user, non-blocking), `ReconcileSubscriptionsJob.php` (fan-out), `ReconcileListSubscriptionsJob.php` (per-list, paginated Listmonk pull + pivot upsert) | All implement `ShouldQueue`. `ReconcileSubscriptionsJob` and `ReconcileListSubscriptionsJob` follow the fan-out pattern from `app/Domain/Policy/Jobs/SendPolicyPublishedEmailJob.php`. |
+| Scheduler | `routes/console.php` | `newsletter:reconcile-subscriptions` scheduled daily at 03:45 with `withoutOverlapping()->onOneServer()`. |
+| Migrations | `database/migrations/2026_05_05_*_create_newsletter_lists_table.php`, `2026_05_05_*_create_newsletter_list_user_table.php` | Two separate migrations. |
+| Factories | `database/factories/NewsletterListFactory.php`, `NewsletterSubscriptionFactory.php` | For test seeding. |
+| Routes | `routes/newsletter.php` (required from `routes/web.php` and `routes/settings.php`) | Admin routes gated by `ManageNewsletterLists` middleware. Public subscribe route uses `throttle:newsletter-signup`. Settings route at `GET/PATCH settings/email` (named `email-settings.edit` / `email-settings.update`). |
+| SSR pages (admin) | `resources/js/pages/newsletter-lists/{Index,Create,Edit}.vue` | Standard admin CRUD pattern mirroring other admin index pages. |
+| SSR pages (user) | `resources/js/pages/settings/EmailSettings.vue` | Receives `lists: {id, name, description, status, last_synced_at}[]`; renders one toggle per list. Linked from `resources/js/layouts/settings/Layout.vue` sidebar directly after "Notifications". |
+| SSR pages (public) | `resources/js/pages/Countdown.vue` | Uses `PublicTopbar` + `AppFooter` (mirrors `Welcome.vue`). Renders `<CountdownTimer>` and `<NewsletterSignupForm>`. |
+| Frontend components | `resources/js/components/countdown/CountdownTimer.vue` (Days/Hours/Minutes/Seconds via `useNow()`), `resources/js/components/countdown/NewsletterSignupForm.vue` (`useForm` posting to `newsletter.subscribe.public`, pre-fills email from `auth.user.email`) | |
+| Sidebar wiring | `resources/js/components/AppSidebar.vue` | "Newsletter Lists" admin nav entry gated by `ManageNewsletterLists` permission. |
+| Notifications.vue callout | `resources/js/pages/settings/Notifications.vue` | Bottom `<Card>` callout: "Looking for newsletter lists? See E-Mail Settings →" linking to `email-settings.edit`. |
+| External API page (Steam + Listmonk) | `resources/js/pages/orchestration/apis/Index.vue` | Steam "coming soon" placeholder replaced with real card (status badge, env-var snippet for `STEAM_API_KEY`, Test connection button). New Listmonk card (status badge, env-var snippets for `LISTMONK_BASE_URL` / `LISTMONK_USERNAME` / `LISTMONK_PASSWORD`, Test connection button, Fetch lists button with `is_user_selectable`/`is_default_public` toggles). |
+| Console commands (External API) | `app/Console/Commands/ExternalApi/{TestTmt2,TestStripe,TestPaypal,TestSteam,TestListmonk}Command.php` | Exit codes 0 / 1 / 2 (connected / auth_failed/unreachable / not_configured). |
+| Console commands (Newsletter) | `app/Console/Commands/Newsletter/{FetchListsCommand,ReconcileSubscriptionsCommand,OptInAllUsersCommand}.php` | `newsletter:lists:fetch`, `newsletter:reconcile-subscriptions`, `newsletter:opt-in-all {list-id}`. |
+| Rate limiter | `App\Providers\AppServiceProvider::boot()` | Registers `RateLimiter::for('newsletter-signup', fn($request) => Limit::perMinute(5)->by($request->ip()))`. |
+
+**Middleware note:** The `/countdown` route is public and requires no authentication; it uses the default `web` middleware group. No changes to the §5.1 middleware pipeline table are required.
 
 ---
 

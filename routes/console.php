@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\DataLifecycle\Jobs\ProcessDueDeletionRequestsJob;
+use App\Domain\Newsletter\Jobs\ReconcileSubscriptionsJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -29,5 +30,20 @@ Schedule::command('lifecycle:purge')
 Schedule::command('email-log:prune-bodies')
     ->dailyAt('03:30')
     ->name('email-log:prune-bodies')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+/*
+ * Newsletter / Listmonk subscription reconciliation.
+ *
+ * Background-on-access refresh covers the active-user path; this nightly
+ * fan-out catches users who never visit `/settings/email` so drift
+ * (someone unsubscribes inside Listmonk) is bounded to <24h.
+ *
+ * @see docs/mil-std-498/SRS.md NLT-F-004
+ */
+Schedule::job(new ReconcileSubscriptionsJob)
+    ->dailyAt('03:45')
+    ->name('newsletter:reconcile-subscriptions')
     ->withoutOverlapping()
     ->onOneServer();

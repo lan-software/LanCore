@@ -699,3 +699,38 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | THM-F-004 | Theme | CAP-EVT-008, CAP-THM-002 | SDD §5.11, SSDD §5.12 | `app/Domain/Event/Models/Event.php` (`theme()` BelongsTo), `routes/events.php` (`events.theme.update`) | `tests/Feature/Themes/EventThemeAssignmentTest.php` (STD §4.32.3) |
 | THM-F-005 | Theme | CAP-THM-003, CAP-THM-004 | SDD §5.11, SSDD §5.12 | `app/Http/Middleware/ResolveEventTheme.php`, `app/Http/Middleware/HandleInertiaRequests.php` (`activeTheme` shared prop), `bootstrap/app.php` (middleware registration), `resources/views/app.blade.php` (SSR light/dark style blocks), `resources/js/components/theme/ThemeProvider.vue`, `resources/js/composables/useEventTheme.ts`, `resources/js/components/theme/{ColorPickerInput,ThemePalettePicker,ThemePreview}.vue` | `tests/Feature/Themes/ResolveEventThemeMiddlewareTest.php` (STD §4.32.4), `tests/Feature/Architecture/ThemeArchitectureTest.php` (STD §4.32.6) |
 | THM-F-006 | Theme | CAP-THM-001, CAP-THM-004 | SDD §5.11, SSDD §5.12 | `app/Http/Middleware/ResolveEventTheme.php` (org fallback), `app/Domain/Theme/Actions/SetDefaultTheme.php`, `routes/themes.php` (`themes.set-default`), `OrganizationSetting` (`default_theme_id` key), cache key `inertia.activeTheme.default_id` | `tests/Feature/Themes/SiteDefaultThemeTest.php` (STD §4.32.5) |
+
+---
+
+## 25. Newsletter Domain (CSCI-NLT)
+
+| Req ID | Domain | Source CAP | Design § | Code path | Test file |
+|--------|--------|------------|----------|-----------|-----------|
+| NLT-F-001 | Newsletter | CAP-NLT-001 | SDD §5.12, SSDD §5.13 | `app/Domain/Newsletter/Http/Controllers/Admin/NewsletterListController.php`, `app/Domain/Newsletter/Models/NewsletterList.php`, `app/Domain/Newsletter/Policies/NewsletterListPolicy.php`, `routes/newsletter.php` | `tests/Feature/Newsletter/NewsletterListCrudTest.php` (STD §4.33 TC-NLT-001) |
+| NLT-F-002 | Newsletter | CAP-NLT-001 | SDD §5.12, SSDD §5.13 | `app/Domain/Newsletter/Actions/FetchListsFromListmonk.php`, `app/Domain/Newsletter/Http/Controllers/Admin/NewsletterListSyncController.php` | `tests/Feature/Newsletter/FetchListsFromListmonkTest.php` (STD §4.33 TC-NLT-002) |
+| NLT-F-003 | Newsletter | CAP-NLT-002 | SDD §5.12, SSDD §5.13 | `app/Domain/Newsletter/Http/Controllers/User/EmailSettingsController.php`, `app/Domain/Newsletter/Actions/{SubscribeUserToList,UnsubscribeUserFromList,RefreshUserSubscriptions}.php`, `resources/js/pages/settings/EmailSettings.vue`, `routes/settings.php` | `tests/Feature/Newsletter/EmailSettingsTest.php` (STD §4.33 TC-NLT-003) |
+| NLT-F-004 | Newsletter | CAP-NLT-003 | SDD §5.12, SSDD §5.13 | `app/Domain/Newsletter/Jobs/{RefreshUserSubscriptionsJob,ReconcileSubscriptionsJob,ReconcileListSubscriptionsJob}.php`, `app/Domain/Newsletter/Actions/ReconcileSubscriptionsForList.php`, `routes/console.php` (scheduler entry) | `tests/Feature/Newsletter/ReconcileSubscriptionsTest.php` (STD §4.33 TC-NLT-004) |
+| NLT-F-005 | Newsletter | CAP-NLT-004 | SDD §5.12, SSDD §5.13 | `app/Domain/Newsletter/Actions/OptInAllUsersToList.php`, `app/Domain/Newsletter/Http/Controllers/Admin/NewsletterListSyncController.php::optInAllUsers` | `tests/Feature/Newsletter/OptInAllUsersTest.php` (STD §4.33 TC-NLT-005) |
+| NLT-F-006 | Newsletter | CAP-CTD-002 | SDD §5.12, SSDD §5.13 | `app/Domain/Newsletter/Http/Controllers/Public/NewsletterSubscribeController.php`, `app/Domain/Newsletter/Actions/SubscribeAnonymous.php`, `app/Domain/Newsletter/Http/Requests/Public/NewsletterSubscribeRequest.php`, `routes/newsletter.php` (`throttle:newsletter-signup`) | `tests/Feature/Newsletter/PublicSignupTest.php` (STD §4.33 TC-NLT-006) |
+| NLT-F-007 | Newsletter | CAP-NLT-001, CAP-NLT-003 | SDD §5.12, SSDD §5.13.1 | `app/Domain/Newsletter/Clients/ListmonkClient.php`, `ListmonkException.php`, `config/listmonk.php`, `.env.example` | `tests/Feature/Newsletter/FetchListsFromListmonkTest.php`, `tests/Feature/Newsletter/ReconcileSubscriptionsTest.php` (Http::fake) |
+
+---
+
+## 26. Public Countdown Page (CSCI-CTD)
+
+| Req ID | Domain | Source CAP | Design § | Code path | Test file |
+|--------|--------|------------|----------|-----------|-----------|
+| CTD-F-001 | Countdown | CAP-CTD-001 | SDD §5.12, SSDD §5.13 | `app/Http/Controllers/CountdownController.php`, `routes/web.php` (`Route::get('countdown', CountdownController::class)->name('countdown')`), `resources/js/pages/Countdown.vue` | `tests/Feature/Countdown/CountdownPageTest.php` (STD §4.34 TC-CTD-001) |
+| CTD-F-002 | Countdown | CAP-CTD-002 | SDD §5.12, SSDD §5.13 | `app/Http/Controllers/CountdownController.php` (`defaultListId` prop), `resources/js/components/countdown/{CountdownTimer,NewsletterSignupForm}.vue` | `tests/Feature/Countdown/CountdownPageTest.php` (STD §4.34 TC-CTD-002) |
+
+---
+
+## 27. External API Connectivity Tests (EXT-F)
+
+| Req ID | Domain | Source CAP | Design § | Code path | Test file |
+|--------|--------|------------|----------|-----------|-----------|
+| EXT-F-001 | Orchestration/Api | CAP-ORC-011 | SDD §5.12, SSDD §5.13.4 | `app/Console/Commands/ExternalApi/TestTmt2Command.php` | `tests/Feature/ExternalApi/TestCommandsTest.php` (STD §4.35 TC-EXT-001) |
+| EXT-F-002 | Orchestration/Api | CAP-ORC-011 | SDD §5.12, SSDD §5.13.4 | `app/Console/Commands/ExternalApi/TestStripeCommand.php` | `tests/Feature/ExternalApi/TestCommandsTest.php` (STD §4.35 TC-EXT-002) |
+| EXT-F-003 | Orchestration/Api | CAP-ORC-011 | SDD §5.12, SSDD §5.13.4 | `app/Console/Commands/ExternalApi/TestPaypalCommand.php` | `tests/Feature/ExternalApi/TestCommandsTest.php` (STD §4.35 TC-EXT-003) |
+| EXT-F-004 | Orchestration/Api | CAP-ORC-011 | SDD §5.12, SSDD §5.13.4 | `app/Console/Commands/ExternalApi/TestSteamCommand.php`, `app/Domain/Orchestration/Http/Controllers/ExternalApiController.php::testSteam`, `routes/orchestration.php` (`external-apis/test-steam`) | `tests/Feature/ExternalApi/TestSteamTest.php` (STD §4.35 TC-EXT-004) |
+| EXT-F-005 | Newsletter/Api | CAP-ORC-011 | SDD §5.12, SSDD §5.13.4 | `app/Console/Commands/ExternalApi/TestListmonkCommand.php`, `app/Domain/Orchestration/Http/Controllers/ExternalApiController.php::testListmonk`, `routes/orchestration.php` (`external-apis/test-listmonk`) | `tests/Feature/ExternalApi/TestListmonkTest.php` (STD §4.35 TC-EXT-005) |

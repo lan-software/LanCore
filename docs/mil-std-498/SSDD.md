@@ -686,6 +686,8 @@ manifest emits pseudonym → hint label, never pseudonym → real id.
 | SEC-022 | Section 5.4.2 (avatar URL resolution), Section 3.2 (S3 storage role for avatars/banners normalized server-side) |
 | CAP-DL-001..008, SEC-DL-001..002 | Section 5.11 (Deletion & Retention Pipeline) |
 | CAP-EVT-008, CAP-THM-001..004 | Section 5.12 (Event Theme Architecture) |
+| CAP-NLT-001..004, CAP-CTD-001..002 | Section 5.13 (Newsletter / Listmonk Architecture) |
+| CAP-ORC-011 | Section 5.13.4 (External API Connectivity Testing Extension) |
 
 ---
 
@@ -760,6 +762,99 @@ The `events` table gains a nullable `theme_id` foreign key (`->nullOnDelete()`);
 | `web` middleware group | hosts `ResolveEventTheme` between `HandleAppearance` and `HandleInertiaRequests` |
 | `HandleInertiaRequests` | shares `activeTheme` prop |
 | `app.blade.php` | server-renders two `<style>` blocks for `:root` and `.dark` overrides |
+
+---
+
+### 5.13 Newsletter / Listmonk Architecture
+
+Traces to: CAP-NLT-001..004, CAP-CTD-001..002, CAP-ORC-011.
+
+The Newsletter subsystem (`app/Domain/Newsletter/`) positions LanCore as the **ingress** layer for subscriber onboarding and list metadata. All newsletter content production (campaigns, templates, deliveries) remains inside Listmonk. LanCore never sends newsletter emails directly.
+
+#### 5.13.1 ListmonkClient
+
+`app/Domain/Newsletter/Clients/ListmonkClient.php` — a thin Laravel `Http` facade wrapper modeled after `app/Domain/Api/Clients/Tmt2Client.php`. Configuration is read from `config/listmonk.php` (env keys: `LISTMONK_ENABLED`, `LISTMONK_BASE_URL`, `LISTMONK_USERNAME`, `LISTMONK_PASSWORD`, `LISTMONK_TIMEOUT`, `LISTMONK_RETRIES`, `LISTMONK_PRECONFIRM`). The client exposes methods:
+
+| Method | Purpose |
+|--------|---------|
+| `health()` | Calls Listmonk's `GET /api/health`; used by `testListmonk()` connectivity endpoint |
+| `listLists(?int $page)` | Paginated list retrieval; used by `FetchListsFromListmonk` |
+| `getList(int $id)` | Single list detail |
+| `upsertSubscriber(string $email, ?string $name, array $listIds, bool $preconfirm)` | Creates or updates a subscriber and assigns them to lists |
+| `getSubscriberByEmail(string $email)` | Looks up an existing Listmonk subscriber |
+| `getSubscriberLists(int $subscriberId)` | Returns per-list subscription status for a subscriber |
+| `addSubscriberToLists(int $subscriberId, array $listIds)` | Subscribes to additional lists |
+| `removeSubscriberFromLists(int $subscriberId, array $listIds)` | Unsubscribes from specific lists |
+| `getSubscribersOfList(int $listId, int $page)` | Paginated subscriber pull for reconciliation |
+
+All non-2xx responses throw `ListmonkException`. The client is bound as an Octane-safe singleton via `AppServiceProvider` (or an optional `NewsletterServiceProvider`).
+
+#### 5.13.2 Database Tables
+
+**`newsletter_lists`** — local mirror of Listmonk list metadata:
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | bigint PK | |
+| `listmonk_id` | integer UNIQUE | Listmonk's internal list ID |
+| `name` | string | |
+| `description` | text nullable | |
+| `type` | string | Listmonk `public` / `private` |
+| `optin` | string | `single` / `double` |
+| `tags` | JSON | |
+| `is_user_selectable` | boolean | Admin-curated; gates E-Mail Settings visibility |
+| `is_default_public` | boolean | At most one row `= true`; used by `/countdown` form |
+| `last_synced_at` | timestamp nullable | |
+| timestamps | | |
+
+**`newsletter_list_user`** (pivot) — authenticated users' per-list state:
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | bigint PK | |
+| `newsletter_list_id` | FK → `newsletter_lists` | |
+| `user_id` | FK → `users` | |
+| `listmonk_subscriber_id` | integer nullable | Listmonk subscriber ID; set after first sync |
+| `status` | enum | `enabled` / `unsubscribed` / `blocklisted` (via `SubscriptionStatus`) |
+| `subscribed_at` | timestamp nullable | |
+| `last_synced_at` | timestamp nullable | |
+
+Anonymous subscribers (from `/countdown` form) live only in Listmonk; they do not produce `User` rows or pivot entries.
+
+#### 5.13.3 Sync Directions
+
+```
+User toggles list on/off (EmailSettingsController::update)
+  └── SubscribeUserToList / UnsubscribeUserFromList actions
+        └── ListmonkClient::addSubscriberToLists / removeSubscriberFromLists
+        └── Update newsletter_list_user pivot immediately
+
+Anonymous /countdown form submission (NewsletterSubscribeController::store)
+  └── SubscribeAnonymous action
+        └── ListmonkClient::upsertSubscriber (preconfirm from config)
+        └── No pivot row created
+
+Background refresh on page open (EmailSettingsController::edit)
+  └── dispatch(RefreshUserSubscriptionsJob) — non-blocking
+        └── RefreshUserSubscriptions action
+              └── ListmonkClient::getSubscriberLists
+              └── Upsert pivot rows
+
+Nightly reconcile (daily 03:45 via routes/console.php)
+  └── ReconcileSubscriptionsJob (fan-out)
+        └── ReconcileListSubscriptionsJob per list
+              └── ListmonkClient::getSubscribersOfList (paginated)
+              └── Upsert pivot rows, mark deltas
+```
+
+#### 5.13.4 External API Connectivity Testing Extension
+
+`app/Domain/Orchestration/Http/Controllers/ExternalApiController.php` gains two new test methods mirroring the existing `testTmt2` / `testStripe` shape:
+
+- **`testSteam()`** — calls `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/` with the sentinel vanity `gabelogannewell` using `STEAM_API_KEY`; returns `{status, account?: 'gabelogannewell', error?}`
+- **`testListmonk()`** — delegates to `ListmonkClient::health()`; `account` field carries the Listmonk version string
+
+The five `external-apis:test:*` console commands (`TestTmt2Command`, `TestStripeCommand`, `TestPaypalCommand`, `TestSteamCommand`, `TestListmonkCommand` under `app/Console/Commands/ExternalApi/`) each delegate to the same controller method logic and return exit code 0 / 1 / 2.
 
 ---
 

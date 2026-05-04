@@ -99,6 +99,10 @@ class HandleInertiaRequests extends Middleware
             'cookiePreferences' => fn () => $user
                 ? ($user->cookie_preferences ?? null)
                 : null,
+            'flash' => [
+                'status' => fn () => $request->session()->get('status'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
             'eventContext' => fn () => $this->eventContext($request),
             'myEventContext' => fn () => $this->myEventContext($request),
             'activeTheme' => fn () => view()->shared('activeTheme'),

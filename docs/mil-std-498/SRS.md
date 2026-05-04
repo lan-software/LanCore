@@ -463,6 +463,11 @@ The LanCore CSCI shall support the following operational states:
 |--------|------------|
 | API-F-001 | The software shall provide an HTTP client for TMT2 REST API with bearer token authentication, retries, and feature flag (tmt2.enabled) |
 | API-F-002 | The software shall support TMT2 match lifecycle operations: create, get, update, delete matches via Tmt2Client |
+| EXT-F-001 | The software shall provide a `external-apis:test:tmt2` Artisan command that calls the TMT2 connectivity test endpoint and exits with code 0 (connected), 1 (auth_failed / unreachable), or 2 (not_configured) |
+| EXT-F-002 | The software shall provide a `external-apis:test:stripe` Artisan command with the same exit-code contract as EXT-F-001, validating the configured Stripe API key |
+| EXT-F-003 | The software shall provide a `external-apis:test:paypal` Artisan command with the same exit-code contract, validating the configured PayPal credentials |
+| EXT-F-004 | The software shall provide a `external-apis:test:steam` Artisan command that calls `ExternalApiController::testSteam()` logic (resolves the sentinel vanity `gabelogannewell` against `STEAM_API_KEY`) and exits with the standard code |
+| EXT-F-005 | The software shall provide a `external-apis:test:listmonk` Artisan command that calls `ListmonkClient::health()` and exits with the standard code |
 
 #### 3.2.18 Organization Settings (CSCI-ORG)
 
@@ -574,6 +579,37 @@ Implementation domain: `app/Domain/Theme/`. Parent SSS rows: `CAP-EVT-008`, `CAP
 | THM-F-004 | The software shall add a nullable `theme_id` foreign-key column to the `events` table (`->nullOnDelete()`), expose a `theme(): BelongsTo` relation on the `Event` model, include `theme_id` in `Event::$fillable`, and provide an `events.theme.update` endpoint that persists or clears the assignment. Theme assignment changes shall be recorded in the existing `Event` audit trail via the `Auditable` trait (parent: CAP-EVT-008, CAP-THM-002) |
 | THM-F-005 | The software shall provide a `ResolveEventTheme` HTTP middleware registered in the `web` group between `HandleAppearance` and `HandleInertiaRequests`. Resolution order: per-event `theme_id` → `OrganizationSetting` key `default_theme_id` → `null`. When a theme resolves, `View::share` shall receive an `activeTheme` payload `{id, name, lightConfig, darkConfig, source: 'event'\|'organization'}`. `HandleInertiaRequests::share()` exposes this as the `activeTheme` shared prop. No `dataTheme`/`vendor`/`kind`/`skin` fields are included. For requests outside the `/events/{event}/...` subtree, or when no theme resolves, the prop shall be `null` (parent: CAP-THM-003, CAP-THM-004) |
 | THM-F-006 | The software shall expose a `PATCH /themes/default` endpoint (named `themes.set-default`) gated by `ManageThemes`. A non-null `theme_id` body parameter persists `OrganizationSetting::set('default_theme_id', $id)` and invalidates the `inertia.activeTheme.default_id` cache; a `null` body parameter clears the setting. The endpoint returns 200 on success and 403 for unauthorized callers (parent: CAP-THM-001, CAP-THM-004) |
+
+#### 3.2.BB Newsletter Domain (CSCI-NLT)
+
+Implementation domain: `app/Domain/Newsletter/`. Parent SSS rows: `CAP-NLT-001..004`, `CAP-CTD-002`, `CAP-ORC-011`. (Section number `BB` follows the `AA` placeholder convention already established in this document.)
+
+**Models:** `NewsletterList`, `NewsletterSubscription` (pivot)
+**Clients:** `ListmonkClient`
+**Enums:** `SubscriptionStatus` (`Enabled`, `Unsubscribed`, `Blocklisted`), `Permission` (`ManageNewsletterLists`)
+**Controllers:** `Admin\NewsletterListController`, `Admin\NewsletterListSyncController`, `User\EmailSettingsController`, `Public\NewsletterSubscribeController`
+**Actions:** `FetchListsFromListmonk`, `CreateNewsletterList`, `UpdateNewsletterList`, `DeleteNewsletterList`, `OptInAllUsersToList`, `SubscribeUserToList`, `UnsubscribeUserFromList`, `RefreshUserSubscriptions`, `ReconcileSubscriptionsForList`, `SubscribeAnonymous`
+**Jobs:** `RefreshUserSubscriptionsJob`, `ReconcileSubscriptionsJob`, `ReconcileListSubscriptionsJob`
+**Policies:** `NewsletterListPolicy`
+
+| Req ID | Requirement |
+|--------|------------|
+| NLT-F-001 | The software shall provide admin CRUD for `NewsletterList` records via `Admin\NewsletterListController` (Inertia pages `newsletter-lists/Index`, `Create`, `Edit`), gated by `Permission::ManageNewsletterLists` |
+| NLT-F-002 | The software shall provide a `FetchListsFromListmonk` action and a `POST newsletter-lists/sync/fetch` admin endpoint that pull Listmonk list metadata, upsert local `newsletter_lists` rows by `listmonk_id`, and stamp `last_synced_at` |
+| NLT-F-003 | The software shall provide a `User\EmailSettingsController` with a `GET settings/email` endpoint (Inertia page `settings/EmailSettings`) returning the user's curated lists (`is_user_selectable=true`) with per-list subscription status, and a `PATCH settings/email` endpoint that applies subscribe / unsubscribe diffs by calling `SubscribeUserToList` / `UnsubscribeUserFromList` actions; the `edit` action shall dispatch `RefreshUserSubscriptionsJob` non-blocking before rendering |
+| NLT-F-004 | The software shall provide `RefreshUserSubscriptionsJob` (single-user, dispatched on `EmailSettingsController::edit`), `ReconcileSubscriptionsJob` (fan-out, dispatched by the scheduler), and `ReconcileListSubscriptionsJob` (per-list, paginated Listmonk pull + pivot upsert); the reconcile job shall be scheduled daily at 03:45 in `routes/console.php` with `withoutOverlapping()->onOneServer()` |
+| NLT-F-005 | The software shall provide an `OptInAllUsersToList` action and a `POST newsletter-lists/sync/opt-in-all/{list}` admin endpoint that subscribes every registered user to the specified list |
+| NLT-F-006 | The software shall provide a `Public\NewsletterSubscribeController` at `POST /newsletter/subscribe` that accepts `{email, name?}`, subscribes to the `is_default_public=true` list via `SubscribeAnonymous`, and is protected by the `throttle:newsletter-signup` rate limiter (registered in `AppServiceProvider::boot`, 5 requests per minute per IP); when no default public list exists the endpoint returns 422 |
+| NLT-F-007 | The software shall provide a `ListmonkClient` HTTP wrapper at `app/Domain/Newsletter/Clients/ListmonkClient.php` (modeled after `app/Domain/Api/Clients/Tmt2Client.php`), a `ListmonkException` error class, and a `config/listmonk.php` configuration file; environment keys: `LISTMONK_ENABLED` (default `false`), `LISTMONK_BASE_URL`, `LISTMONK_USERNAME`, `LISTMONK_PASSWORD`, `LISTMONK_TIMEOUT` (default 10), `LISTMONK_RETRIES` (default 2), `LISTMONK_PRECONFIRM` (default `false`); all keys shall be documented in `.env.example` |
+
+#### 3.2.CC Public Countdown Page (CSCI-CTD)
+
+Implementation: `app/Http/Controllers/CountdownController.php` (single-action invokable); route registered in `routes/web.php` as `Route::get('countdown', CountdownController::class)->name('countdown')`. Parent SSS rows: `CAP-CTD-001..002`. (Section number `CC` follows immediately after `BB`.)
+
+| Req ID | Requirement |
+|--------|------------|
+| CTD-F-001 | The software shall provide an invokable `CountdownController` that queries `Event::published()->upcoming()->orderBy('start_date')->first()` and renders the Inertia page `pages/Countdown.vue` with props `{ event: { id, name, start_date, banner }|null, defaultListId: int|null }`; the route shall require no authentication and shall apply the standard `web` middleware group |
+| CTD-F-002 | The `pages/Countdown.vue` page shall render a `<CountdownTimer>` component (Days / Hours / Minutes / Seconds computed via `useNow()` from `@vueuse/core`), the event banner and name, and a `<NewsletterSignupForm>` component that posts to `newsletter.subscribe.public`; when `defaultListId` is `null` the form shall be hidden and a quiet admin-only note rendered; when `event` is `null` the timer shall be hidden and a "no upcoming event" message shown |
 
 ### 3.3 CSCI External Interface Requirements
 
@@ -726,6 +762,13 @@ Additional CSCI-level requirements:
 | CAP-THM-002 | THM-F-004 |
 | CAP-THM-003 | THM-F-005 |
 | CAP-THM-004 | THM-F-005, THM-F-006 |
+| CAP-ORC-011 | EXT-F-001..005 |
+| CAP-CTD-001 | CTD-F-001 |
+| CAP-CTD-002 | CTD-F-002, NLT-F-006 |
+| CAP-NLT-001 | NLT-F-001, NLT-F-002, NLT-F-007 |
+| CAP-NLT-002 | NLT-F-003 |
+| CAP-NLT-003 | NLT-F-004, NLT-F-007 |
+| CAP-NLT-004 | NLT-F-005 |
 
 ---
 

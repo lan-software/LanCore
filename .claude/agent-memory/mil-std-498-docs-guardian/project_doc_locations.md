@@ -28,8 +28,23 @@ Traceability conventions:
 - STD §5 maps SRS → test files; STD TC-DL-001..009 cover DataLifecycle test suite
 - RTM provides full coverage matrix per domain
 
-Domain modules (17 actual directories under app/Domain/):
-Achievements, Announcement, Api, Competition, Event, Games, Integration, News,
-Notification, Orchestration, Program, Seating, Shop, Sponsoring, Ticketing, Venue, Webhook
+Domain modules (planned 18 after Newsletter feature ships):
+Achievements, Announcement, Api, Competition, Event, Games, Integration, Newsletter, News,
+Notification, Orchestration, Policy, Program, Seating, Shop, Sponsoring, Ticketing, Venue, Webhook
 
-**Why:** SRS says "15 domain modules", SDD §3.1 says "14 modules" and §4.2 says "14" — both are stale; actual count is 17 (including Api and Orchestration which were added later).
+**Why:** SRS says "15 domain modules", SDD §3.1 says "14 modules" and §4.2 says "14" — both are stale; actual count is 17 currently (including Api and Orchestration added later); Newsletter adds the 18th.
+
+Newsletter/Listmonk integration (added 2026-05-04):
+- SSS: CAP-CTD-001..002 (§3.2.24), CAP-NLT-001..004 (§3.2.25), CAP-ORC-011 extension
+- SRS: NLT-F-001..007 (§3.2.BB), CTD-F-001..002 (§3.2.CC), EXT-F-001..005 (§3.2.17 Api extension)
+- SSDD: §5.13 Newsletter/Listmonk Architecture
+- SDD: §5.12 Newsletter Implementation
+- STD: §4.33 TC-NLT-001..006, §4.34 TC-CTD-001..002, §4.35 TC-EXT-001..005
+- RTM: §25 NLT-F-*, §26 CTD-F-*, §27 EXT-F-*
+
+Section number choices:
+- SRS placeholder convention: after §3.2.AA (Theme) → §3.2.BB (Newsletter), §3.2.CC (Countdown)
+- SSS §3.2 numbering: Theme is §3.2.23; Countdown is §3.2.24 (as specified); Newsletter is §3.2.25
+- SSDD §5.13 is the next free integer after §5.12 (Theme)
+- SDD §5.12 is the next free integer after §5.11 (Theme Implementation)
+- RTM §§25–27 follow §24 (Theme)

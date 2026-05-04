@@ -11,6 +11,7 @@ import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { show as deleteAccountShow } from '@/routes/data-lifecycle/account';
+import { edit as editEmailSettings } from '@/routes/email-settings';
 import { edit as editNotifications } from '@/routes/notifications';
 import { edit as editPrivacy } from '@/routes/privacy';
 import { edit as editProfile } from '@/routes/profile';
@@ -40,6 +41,10 @@ const sidebarNavItems = computed<NavItem[]>(() => [
     {
         title: t('settings.notifications.title'),
         href: editNotifications(),
+    },
+    {
+        title: t('settings.emailLists.title'),
+        href: editEmailSettings(),
     },
     {
         title: t('settings.advancedTicketing.title'),

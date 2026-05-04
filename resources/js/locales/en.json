@@ -452,6 +452,9 @@
         "notifications": {
             "title": "Notifications"
         },
+        "emailLists": {
+            "title": "E-Mail Settings"
+        },
         "advancedTicketing": {
             "title": "Advanced ticketing"
         },

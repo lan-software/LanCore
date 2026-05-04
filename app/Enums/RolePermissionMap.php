@@ -12,6 +12,7 @@ use App\Domain\Event\Enums\Permission as EventPermission;
 use App\Domain\Games\Enums\Permission as GamePermission;
 use App\Domain\Integration\Enums\Permission as IntegrationPermission;
 use App\Domain\News\Enums\Permission as NewsPermission;
+use App\Domain\Newsletter\Enums\Permission as NewsletterPermission;
 use App\Domain\Orchestration\Enums\Permission as OrchestrationPermission;
 use App\Domain\OrgaTeam\Enums\Permission as OrgaTeamPermission;
 use App\Domain\Policy\Enums\Permission as PolicyPermission;
@@ -69,6 +70,7 @@ final class RolePermissionMap
                 SponsoringPermission::ManageSponsorLevels,
                 OrgaTeamPermission::ManageOrgaTeams,
                 ThemePermission::ManageThemes,
+                NewsletterPermission::ManageNewsletterLists,
                 IntegrationPermission::ManageIntegrations,
                 WebhookPermission::ManageWebhooks,
                 OrchestrationPermission::ManageGameServers,
@@ -113,6 +115,7 @@ final class RolePermissionMap
             ...OrgaTeamPermission::cases(),
             ...PolicyPermission::cases(),
             ...ThemePermission::cases(),
+            ...NewsletterPermission::cases(),
             ...TicketingPermission::cases(),
             ...VenuePermission::cases(),
             ...WebhookPermission::cases(),

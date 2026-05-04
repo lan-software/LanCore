@@ -267,6 +267,7 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-ORC-008 | The system shall receive TMT2 webhooks and auto-report match results to LanBrackets for automated bracket progression |
 | CAP-ORC-009 | The system shall support admin manual controls: retry failed jobs, cancel pending/failed jobs, force-release in-use servers |
 | CAP-ORC-010 | The system shall display server connection details (IP:port, password) to match participants when the orchestration job is Active |
+| CAP-ORC-011 | All configured external APIs (TMT2, Stripe, PayPal, Steam, Listmonk) shall expose a connectivity test reachable via both a UI button on the External API admin page and a dedicated `external-apis:test:<api>` console command (one command per API); each test shall return a structured status (`connected` / `auth_failed` / `not_configured` / `unreachable`) and exit code (0 = connected, 1 = auth_failed/unreachable, 2 = not_configured) |
 
 #### 3.2.17 Organization Identity and Branding (CAP-ORG)
 
@@ -329,6 +330,22 @@ This document specifies the system-level requirements for LanCore, organized by 
 | SEC-DL-002 | All deletion-request and retention-policy state changes shall be auditable via `owen-it/laravel-auditing`; the dedicated `AnonymizationLogEntry` table shall be append-only at the model layer |
 
 > **Scope note**: `CAP-SHP-006` (checkout-condition acknowledgement) remains scoped to shop checkout and is distinct from `CAP-POL-*`. The two flows do not share storage or middleware.
+
+#### 3.2.24 Public Countdown Page (CAP-CTD)
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-CTD-001 | The system shall render a public `/countdown` page that resolves the next upcoming published event via `Event::published()->upcoming()->orderBy('start_date')->first()` and displays a live countdown timer (Days / Hours / Minutes / Seconds); when no upcoming event exists the timer shall be suppressed and a "no upcoming event" message shall be shown |
+| CAP-CTD-002 | The `/countdown` page shall provide an email signup form that submits to the list designated `is_default_public=true`; the form shall accept anonymous emails, pre-fill the authenticated user's email when present, be rate-limited to prevent abuse, and support both single and double opt-in depending on the list's Listmonk `optin` setting; when no default public list is configured the form shall be hidden |
+
+#### 3.2.25 Newsletter / Listmonk Integration (CAP-NLT)
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-NLT-001 | The system shall mirror Listmonk list metadata in a local `newsletter_lists` table (columns: `listmonk_id`, `name`, `description`, `type`, `optin`, `tags`, `is_user_selectable`, `is_default_public`, `last_synced_at`) and expose admin CRUD for the mirrored records |
+| CAP-NLT-002 | The system shall allow authenticated users to opt in or out of administrator-curated newsletter lists (those marked `is_user_selectable=true`) via a dedicated E-Mail Settings page; subscription status shall be reflected in a `newsletter_list_user` pivot and kept in sync with Listmonk |
+| CAP-NLT-003 | The system shall maintain bidirectional sync between LanCore and Listmonk: LanCore pushes subscription changes to Listmonk immediately on user toggle or anonymous signup; Listmonk state is pulled into LanCore on background-on-access refresh (non-blocking job dispatched when a user opens the E-Mail Settings page) and via a nightly reconciliation job (`newsletter:reconcile-subscriptions` scheduled at 03:45, `withoutOverlapping()->onOneServer()`) |
+| CAP-NLT-004 | The system shall provide an admin "Opt-In All Users" action per newsletter list that subscribes every registered user to the specified list in Listmonk and updates the local pivot accordingly |
 
 #### 3.2.23 Event Theme Library (CAP-THM)
 
@@ -503,6 +520,13 @@ Requirements in this document trace to:
 | CAP-THM-002 | OCD §5.2.1 step 7, OCD §5.2.9 steps 1–2 | THM-F-004, EVT-F-008 |
 | CAP-THM-003 | OCD §5.2.9 steps 2–4 | THM-F-005 |
 | CAP-THM-004 | OCD §5.2.9 steps 2, 5, bullet | THM-F-005, THM-F-006 |
+| CAP-ORC-011 | OCD §5.1.4 (External API test buttons + console commands) | EXT-F-001..005 |
+| CAP-CTD-001 | OCD §5.2.10 (countdown rendering) | CTD-F-001 |
+| CAP-CTD-002 | OCD §5.2.10 (anonymous newsletter signup) | CTD-F-002, NLT-F-006 |
+| CAP-NLT-001 | OCD §5.2.11 (Newsletter Lists admin area), OCD §7.1 glossary "Newsletter List" | NLT-F-001, NLT-F-002, NLT-F-007 |
+| CAP-NLT-002 | OCD §5.2.11 (per-user E-Mail Settings), OCD §7.1 glossary "Subscription" | NLT-F-003 |
+| CAP-NLT-003 | OCD §5.2.11 (sync), OCD §7.1 glossary "Listmonk" | NLT-F-004, NLT-F-007 |
+| CAP-NLT-004 | OCD §5.2.11 (Opt-In All Users), OCD §5.1.4 (admin action) | NLT-F-005 |
 
 ---
 
@@ -530,3 +554,5 @@ Requirements in this document trace to:
 | I18N | Internationalization |
 | L10N | Localization |
 | BCP 47 | IETF standard for language tags (e.g., `en`, `de`, `fr`, `es`) |
+| NLT | Newsletter — capability prefix for Listmonk newsletter integration requirements |
+| CTD | Countdown — capability prefix for the public countdown page requirements |

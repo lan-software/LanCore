@@ -52,6 +52,9 @@ export const Permission = {
     // Themes (app/Domain/Theme/Enums/Permission.php)
     ManageThemes: 'manage_themes',
 
+    // Newsletter (app/Domain/Newsletter/Enums/Permission.php)
+    ManageNewsletterLists: 'manage_newsletter_lists',
+
     // Orga-Team (app/Domain/OrgaTeam/Enums/Permission.php)
     ManageOrgaTeams: 'manage_orga_teams',
 

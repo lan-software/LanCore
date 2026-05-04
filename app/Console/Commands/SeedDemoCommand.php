@@ -20,6 +20,7 @@ use App\Domain\Games\Models\GameMode;
 use App\Domain\Integration\Models\IntegrationApp;
 use App\Domain\News\Enums\ArticleVisibility;
 use App\Domain\News\Models\NewsArticle;
+use App\Domain\Newsletter\Models\NewsletterList;
 use App\Domain\OrgaTeam\Models\OrgaTeam;
 use App\Domain\Program\Models\Program;
 use App\Domain\Program\Models\TimeSlot;
@@ -104,6 +105,7 @@ class SeedDemoCommand extends Command
         $this->attempt('Organization', $results, fn () => $this->seedOrganization());
         $this->attempt('Webhooks', $results, fn () => $this->seedWebhooks());
         $this->attempt('Announcements', $results, fn () => $this->seedDemoAnnouncement());
+        $this->attempt('Newsletter', $results, fn () => $this->seedNewsletter());
 
         $this->newLine();
         $this->info('Seeding summary:');
@@ -1653,6 +1655,47 @@ class SeedDemoCommand extends Command
             ShopSetting::set('invoice_prefix', 'LAN-');
             ShopSetting::set('invoice_notes', "Payment is due upon receipt.\nFor questions about your order, contact us at info@lanparty.example.com.");
             ShopSetting::set('invoice_footer', 'Thank you for attending our LAN party!');
+        });
+
+        return true;
+    }
+
+    /**
+     * Seed two demo newsletter lists. When LISTMONK_ENABLED=false the rows
+     * carry synthetic listmonk_id values so the admin and user UIs are
+     * navigable without a live Listmonk instance; once Listmonk is wired
+     * up, `newsletter:lists:fetch` overwrites them with real IDs.
+     */
+    private function seedNewsletter(): bool
+    {
+        if (NewsletterList::query()->where('name', 'Announcements')->exists()) {
+            return false;
+        }
+
+        $this->components->task('Seeding newsletter lists', function (): void {
+            NewsletterList::create([
+                'listmonk_id' => 9001,
+                'name' => 'Announcements',
+                'description' => 'Important platform-wide announcements and event reminders.',
+                'type' => 'public',
+                'optin' => 'single',
+                'tags' => ['announcements', 'demo'],
+                'is_user_selectable' => true,
+                'is_default_public' => true,
+                'last_synced_at' => now(),
+            ]);
+
+            NewsletterList::create([
+                'listmonk_id' => 9002,
+                'name' => 'Tournaments',
+                'description' => 'New competition openings and tournament results.',
+                'type' => 'public',
+                'optin' => 'single',
+                'tags' => ['tournaments', 'demo'],
+                'is_user_selectable' => true,
+                'is_default_public' => false,
+                'last_synced_at' => now(),
+            ]);
         });
 
         return true;

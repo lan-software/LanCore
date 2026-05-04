@@ -137,6 +137,8 @@ LanCore is a ground-up rewrite providing:
 - Manage users and assign roles
 - Configure purchase requirements and checkout conditions
 - Create and manage named color-palette themes (`name`, `description`, `light_config`, `dark_config`) and assign at most one theme per event — or set a site-wide default — from the Themes admin area
+- Manage the **Newsletter Lists** admin area: mirror Listmonk lists locally, curate which lists are user-selectable, designate a default public list, and trigger bulk "Opt-In All Users" actions
+- Finish and interact with the **Listmonk** card on the External API admin page (test connection, fetch lists, toggle visibility flags); test all configured external APIs (TMT2, Stripe, PayPal, Steam, Listmonk) via UI buttons or `external-apis:test:*` console commands
 
 #### 5.1.5 Superadmin
 
@@ -291,6 +293,24 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 5. When the user navigates away from the `/events/{event}/...` subtree and there is no site-wide default, `activeTheme` becomes `null` and the style blocks are removed, restoring the Tailwind base palette
 - The admin can also designate any Theme as the **site-wide default** via `PATCH /themes/default` (`themes.set-default`), which applies that palette as a fallback across all event-scoped routes that have no per-event assignment
 
+#### 5.2.10 Public Countdown Page
+
+1. A visitor (anonymous or authenticated) navigates to `/countdown`
+2. The system resolves the next published event via `Event::published()->upcoming()->orderBy('start_date')->first()`
+3. The page renders a countdown timer (Days / Hours / Minutes / Seconds) against that event's `start_date`, plus the event banner and name; if no upcoming event exists the timer is hidden and a "no upcoming event" message is shown
+4. An email signup form is rendered below the timer, pre-filled with the authenticated user's email when present; the form is hidden with a quiet admin-only note when no default public list has been designated
+5. The visitor submits their email address; the system rate-limits submissions (`throttle:newsletter-signup`, 5 per minute per IP)
+6. Depending on the list's `optin` setting the system either adds the subscriber directly (single opt-in, `LISTMONK_PRECONFIRM=true`) or queues a confirmation email via Listmonk (double opt-in, default)
+7. Anonymous subscribers exist only in Listmonk; no `User` row is created
+
+#### 5.2.11 Per-User E-Mail Settings
+
+1. An authenticated user navigates to `/settings/email` (listed directly below "Notifications" in the settings sidebar)
+2. The page loads the curated set of `is_user_selectable=true` newsletter lists, each with the user's current subscription status (`enabled` / `unsubscribed` / `blocklisted`) sourced from the local `newsletter_list_user` pivot
+3. A non-blocking `RefreshUserSubscriptionsJob` is dispatched in the background to sync the displayed status with Listmonk before the user interacts
+4. The user toggles one or more lists on or off; the PATCH request applies the diff — subscribe or unsubscribe — by calling Listmonk immediately
+5. Subscription state is kept in sync by a nightly `newsletter:reconcile-subscriptions` scheduled job (daily at 03:45, `withoutOverlapping()->onOneServer()`) that pulls Listmonk subscriber data and updates the local pivot, catching any drift from bounces or admin-side changes inside Listmonk
+
 ### 5.3 System Context
 
 ```
@@ -420,3 +440,6 @@ Retention windows per data class are configurable from `/admin/data-lifecycle/re
 | Weblate | Self-hosted translation management system at `https://weblate.sxcs.de` used to maintain translation strings; organised as one project (`lan-software`) with five components (one per app); translator commits arrive via a dedicated `weblate` branch per app repository and are fast-forwarded onto `main` by the `.github/workflows/weblate-merge.yml` workflow; Weblate reads source strings directly from the existing `resources/js/locales/{en,de,fr,es}.json` files |
 | Theme | A named palette of CSS-variable color overrides managed by admins, comprising a unique `name`, an optional `description`, an optional `light_config` JSON map (applied to `:root`), and an optional `dark_config` JSON map (applied to `.dark`). A Theme may be assigned per-event via the nullable `theme_id` FK on `events`, or designated as the site-wide default via `OrganizationSetting` key `default_theme_id`; multiple events may share the same Theme. Distinct from `appearance` (`dark` / `light` / `system`), which is a per-user personal preference |
 | Theme Library | The admin-managed collection of available Themes, surfaced under `/themes` and gated by the `ManageThemes` permission; the source of truth from which an Event's `theme_id` is selected |
+| Listmonk | A self-hostable, open-source newsletter and mailing-list manager. In the LanCore context, Listmonk is the content-side authority — it manages subscriber data, list configuration, campaign delivery, and bounce/blocklist tracking. LanCore acts as the ingress layer (subscriber onboarding, list mirroring) and does not produce newsletter content |
+| Newsletter List | A local mirror of a Listmonk mailing list, persisted in `newsletter_lists`. Carries `listmonk_id`, display metadata, opt-in type (`single` / `double`), a boolean `is_user_selectable` (admin-curated visibility in the E-Mail Settings page), and a boolean `is_default_public` (at most one row — used by the `/countdown` signup form) |
+| Subscription | A user's per-list newsletter status, stored in the `newsletter_list_user` pivot as a `SubscriptionStatus` enum: `enabled`, `unsubscribed`, or `blocklisted` (mirroring Listmonk's per-list states) |

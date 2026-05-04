@@ -28,8 +28,8 @@ services:
             - lanparty
         depends_on:
             - garage
-    queue:
-        container_name: 'lancore-queue'
+    horizon:
+        container_name: 'lancore-horizon'
         build:
             context: ./vendor/laravel/sail/runtimes/8.5
             dockerfile: Dockerfile
@@ -46,7 +46,9 @@ services:
             - lanparty
         depends_on:
             - laravel.test
-        command: 'php artisan queue:work --sleep=3 --tries=3 --max-time=3600'
+        command: 'php artisan horizon'
+        stop_signal: SIGTERM
+        stop_grace_period: 3600s
         restart: unless-stopped
     garage:
         image: 'dxflrs/garage:v2.2.0'

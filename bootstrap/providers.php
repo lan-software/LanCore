@@ -11,6 +11,7 @@ use App\Providers\IntegrationServiceProvider;
 use App\Providers\PrometheusServiceProvider;
 use App\Providers\TelescopeServiceProvider;
 use Laravel\Horizon\HorizonApplicationServiceProvider;
+use Laravel\Horizon\HorizonServiceProvider as HorizonPackageServiceProvider;
 use Laravel\Telescope\TelescopeApplicationServiceProvider;
 
 return array_values(array_filter([
@@ -19,6 +20,9 @@ return array_values(array_filter([
     EmailLogServiceProvider::class,
     FortifyServiceProvider::class,
     GdprServiceProvider::class,
+    class_exists(HorizonPackageServiceProvider::class)
+        ? HorizonPackageServiceProvider::class
+        : null,
     class_exists(HorizonApplicationServiceProvider::class)
         ? HorizonServiceProvider::class
         : null,

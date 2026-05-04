@@ -7,6 +7,8 @@ use App\Actions\User\DeleteUser;
 use App\Actions\User\UpdateUserAttributes;
 use App\Domain\Auth\Steam\Enums\SteamLinkStatus;
 use App\Domain\DataLifecycle\Models\DeletionRequest;
+use App\Domain\Newsletter\Enums\SubscriptionStatus;
+use App\Domain\Newsletter\Models\NewsletterList;
 use App\Enums\RoleName;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Users\UserBulkRoleRequest;
@@ -100,7 +102,34 @@ class UserController extends Controller
                 ->latest()
                 ->limit(50)
                 ->get()),
+            'newsletterLists' => Inertia::defer(fn () => $this->collectNewsletterLists($user)),
         ]);
+    }
+
+    /**
+     * Build the per-list status snapshot for the admin Newsletter tab.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function collectNewsletterLists(User $user): array
+    {
+        return NewsletterList::query()
+            ->where('is_user_selectable', true)
+            ->orderBy('name')
+            ->get()
+            ->map(function (NewsletterList $list) use ($user): array {
+                $pivot = $list->subscribers()->where('users.id', $user->id)->first()?->pivot;
+
+                return [
+                    'id' => $list->id,
+                    'name' => $list->name,
+                    'description' => $list->description,
+                    'status' => $pivot?->status?->value ?? SubscriptionStatus::Unsubscribed->value,
+                    'subscribed_at' => $pivot?->subscribed_at?->toIso8601String(),
+                    'last_synced_at' => $pivot?->last_synced_at?->toIso8601String(),
+                ];
+            })
+            ->all();
     }
 
     /**

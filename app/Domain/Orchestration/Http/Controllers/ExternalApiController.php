@@ -2,29 +2,35 @@
 
 namespace App\Domain\Orchestration\Http\Controllers;
 
-use App\Domain\Api\Clients\Tmt2Client;
 use App\Domain\Orchestration\Models\GameServer;
+use App\Domain\Orchestration\Services\ExternalApiTester;
 use App\Domain\Shop\Support\CurrencyResolver;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Stripe\Balance;
-use Stripe\Exception\AuthenticationException;
-use Stripe\Stripe;
 
 /**
- * Admin page for managing external API connections (TMT2, future: Pelican, Steam).
+ * Admin page for managing external API connections (TMT2, Stripe, PayPal,
+ * Steam, Listmonk). Each card surfaces a connectivity test that mirrors the
+ * `external-apis:test:*` console commands; both delegate to
+ * {@see ExternalApiTester} so the result shape stays uniform.
+ *
+ * @see docs/mil-std-498/SSS.md CAP-ORC-011
+ * @see docs/mil-std-498/SRS.md EXT-F-001..005
  */
 class ExternalApiController extends Controller
 {
+    public function __construct(private readonly ExternalApiTester $tester) {}
+
     public function index(): Response
     {
         $this->authorize('viewAny', GameServer::class);
 
         $stripeKey = (string) config('cashier.key');
         $stripeSecret = (string) config('cashier.secret');
+        $steamKey = (string) config('services.steam.client_secret');
 
         return Inertia::render('orchestration/apis/Index', [
             'connections' => [
@@ -44,6 +50,18 @@ class ExternalApiController extends Controller
                     'currency_locale' => config('cashier.currency_locale', 'en'),
                 ],
                 'paypal' => $this->paypalStatus(),
+                'steam' => [
+                    'enabled' => $steamKey !== '',
+                    'has_api_key' => $steamKey !== '',
+                    'has_redirect_uri' => ((string) config('services.steam.redirect', '')) !== '',
+                ],
+                'listmonk' => [
+                    'enabled' => (bool) config('listmonk.enabled'),
+                    'base_url' => (string) config('listmonk.base_url', ''),
+                    'has_username' => ((string) config('listmonk.username', '')) !== '',
+                    'has_password' => ((string) config('listmonk.password', '')) !== '',
+                    'preconfirm_subscriptions' => (bool) config('listmonk.preconfirm_subscriptions'),
+                ],
             ],
         ]);
     }
@@ -72,44 +90,49 @@ class ExternalApiController extends Controller
     {
         $this->authorize('viewAny', GameServer::class);
 
-        try {
-            $client = app(Tmt2Client::class);
-            $result = $client->login();
-
-            if ($result) {
-                return response()->json(['status' => 'connected']);
-            }
-
-            return response()->json(['status' => 'auth_failed'], 401);
-        } catch (\Throwable $e) {
-            return response()->json(['status' => 'unreachable', 'error' => $e->getMessage()], 503);
-        }
+        return $this->respond($this->tester->tmt2());
     }
 
     public function testStripe(Request $request): JsonResponse
     {
         $this->authorize('viewAny', GameServer::class);
 
-        $secret = (string) config('cashier.secret');
+        return $this->respond($this->tester->stripe());
+    }
 
-        if ($secret === '') {
-            return response()->json(['status' => 'not_configured', 'error' => 'STRIPE_SECRET is not set.'], 422);
-        }
+    public function testPaypal(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', GameServer::class);
 
-        try {
-            Stripe::setApiKey($secret);
-            $balance = Balance::retrieve();
+        return $this->respond($this->tester->paypal());
+    }
 
-            return response()->json([
-                'status' => 'connected',
-                'account' => count($balance->available) > 0
-                    ? strtoupper($balance->available[0]->currency).' account'
-                    : 'OK',
-            ]);
-        } catch (AuthenticationException) {
-            return response()->json(['status' => 'auth_failed', 'error' => 'Invalid API key.'], 401);
-        } catch (\Throwable $e) {
-            return response()->json(['status' => 'unreachable', 'error' => $e->getMessage()], 503);
-        }
+    public function testSteam(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', GameServer::class);
+
+        return $this->respond($this->tester->steam());
+    }
+
+    public function testListmonk(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', GameServer::class);
+
+        return $this->respond($this->tester->listmonk());
+    }
+
+    /**
+     * @param  array{status: string, account?: string, error?: string}  $result
+     */
+    private function respond(array $result): JsonResponse
+    {
+        $status = match ($result['status']) {
+            ExternalApiTester::STATUS_CONNECTED => 200,
+            ExternalApiTester::STATUS_AUTH_FAILED => 401,
+            ExternalApiTester::STATUS_NOT_CONFIGURED => 422,
+            default => 503,
+        };
+
+        return response()->json($result, $status);
     }
 }

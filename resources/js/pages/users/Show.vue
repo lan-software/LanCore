@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Deferred, Form, Head, Link, useForm } from '@inertiajs/vue3';
 import { Gamepad2 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { update as updateUserSubscriptions } from '@/actions/App/Domain/Newsletter/Http/Controllers/Admin/UserSubscriptionsController';
 import OrderController from '@/actions/App/Domain/Shop/Http/Controllers/OrderController';
 import { show as adminTicketShow } from '@/actions/App/Domain/Ticketing/Http/Controllers/AdminTicketController';
 import UserController from '@/actions/App/Http/Controllers/Users/UserController';
@@ -10,6 +11,7 @@ import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -55,6 +57,15 @@ type CommentRow = {
     article: { id: number; title: string; slug: string } | null;
 };
 
+type NewsletterListRow = {
+    id: number;
+    name: string;
+    description: string | null;
+    status: 'enabled' | 'unsubscribed' | 'blocklisted';
+    subscribed_at: string | null;
+    last_synced_at: string | null;
+};
+
 type AdminUser = User & {
     pending_deletion_at: string | null;
     anonymized_at: string | null;
@@ -83,6 +94,7 @@ const props = defineProps<{
     orders?: Order[];
     tickets?: AdminTicket[];
     comments?: CommentRow[];
+    newsletterLists?: NewsletterListRow[];
 }>();
 
 const { can } = usePermissions();
@@ -266,6 +278,58 @@ const showLifecycleTab = computed(
         props.deletionRequests.length > 0,
 );
 
+const newsletterForm = useForm<{ subscribed_list_ids: number[] }>({
+    subscribed_list_ids: [],
+});
+
+let newsletterFormSeeded = false;
+
+function seedNewsletterForm(rows: NewsletterListRow[]) {
+    newsletterForm.subscribed_list_ids = rows
+        .filter((r) => r.status === 'enabled')
+        .map((r) => r.id);
+    newsletterForm.defaults({
+        subscribed_list_ids: [...newsletterForm.subscribed_list_ids],
+    });
+    newsletterFormSeeded = true;
+}
+
+watch(
+    () => props.newsletterLists,
+    (rows) => {
+        if (rows && !newsletterFormSeeded) {
+            seedNewsletterForm(rows);
+        }
+    },
+    { immediate: true },
+);
+
+function isNewsletterSubscribed(listId: number): boolean {
+    return newsletterForm.subscribed_list_ids.includes(listId);
+}
+
+function toggleNewsletterSubscription(listId: number, enabled: boolean) {
+    if (enabled) {
+        if (!newsletterForm.subscribed_list_ids.includes(listId)) {
+            newsletterForm.subscribed_list_ids.push(listId);
+        }
+    } else {
+        newsletterForm.subscribed_list_ids =
+            newsletterForm.subscribed_list_ids.filter((id) => id !== listId);
+    }
+}
+
+function submitNewsletterSubscriptions() {
+    newsletterForm.patch(updateUserSubscriptions(props.user.id).url, {
+        preserveScroll: true,
+        onSuccess: () => {
+            newsletterForm.defaults({
+                subscribed_list_ids: [...newsletterForm.subscribed_list_ids],
+            });
+        },
+    });
+}
+
 function truncate(value: string, length = 80): string {
     return value.length > length ? value.slice(0, length) + '…' : value;
 }
@@ -329,6 +393,7 @@ function truncate(value: string, length = 80): string {
                     <TabsTrigger value="tickets">Tickets</TabsTrigger>
                     <TabsTrigger value="purchases">Purchases</TabsTrigger>
                     <TabsTrigger value="comments">Comments</TabsTrigger>
+                    <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
                     <TabsTrigger value="audit">Audit</TabsTrigger>
                     <TabsTrigger v-if="showLifecycleTab" value="lifecycle"
                         >Lifecycle</TabsTrigger
@@ -979,6 +1044,175 @@ function truncate(value: string, length = 80): string {
                             </CardContent>
                         </Card>
                     </Deferred>
+                </TabsContent>
+
+                <!-- Newsletter -->
+                <TabsContent value="newsletter">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Newsletter subscriptions</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Deferred data="newsletterLists">
+                                <template #fallback>
+                                    <Skeleton class="h-32 w-full" />
+                                </template>
+
+                                <p
+                                    v-if="
+                                        !newsletterLists ||
+                                        newsletterLists.length === 0
+                                    "
+                                    class="text-sm text-muted-foreground"
+                                >
+                                    No user-selectable newsletter lists are
+                                    currently configured.
+                                </p>
+
+                                <form
+                                    v-else
+                                    class="space-y-4"
+                                    @submit.prevent="
+                                        submitNewsletterSubscriptions
+                                    "
+                                >
+                                    <div
+                                        class="overflow-hidden rounded-lg border"
+                                    >
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>List</TableHead>
+                                                    <TableHead
+                                                        class="w-32 text-center"
+                                                        >Status</TableHead
+                                                    >
+                                                    <TableHead
+                                                        class="w-24 text-center"
+                                                        >Subscribed</TableHead
+                                                    >
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                <TableRow
+                                                    v-for="list in newsletterLists"
+                                                    :key="list.id"
+                                                >
+                                                    <TableCell>
+                                                        <div
+                                                            class="font-medium"
+                                                        >
+                                                            {{ list.name }}
+                                                        </div>
+                                                        <p
+                                                            v-if="
+                                                                list.description
+                                                            "
+                                                            class="text-xs text-muted-foreground"
+                                                        >
+                                                            {{
+                                                                list.description
+                                                            }}
+                                                        </p>
+                                                    </TableCell>
+                                                    <TableCell
+                                                        class="text-center text-xs"
+                                                    >
+                                                        <Badge
+                                                            v-if="
+                                                                list.status ===
+                                                                'enabled'
+                                                            "
+                                                            variant="default"
+                                                            >Enabled</Badge
+                                                        >
+                                                        <Badge
+                                                            v-else-if="
+                                                                list.status ===
+                                                                'blocklisted'
+                                                            "
+                                                            variant="destructive"
+                                                            >Blocklisted</Badge
+                                                        >
+                                                        <Badge
+                                                            v-else
+                                                            variant="outline"
+                                                            >Unsubscribed</Badge
+                                                        >
+                                                    </TableCell>
+                                                    <TableCell
+                                                        class="text-center"
+                                                    >
+                                                        <div
+                                                            class="flex justify-center"
+                                                        >
+                                                            <Checkbox
+                                                                :id="`user-list-${list.id}`"
+                                                                :model-value="
+                                                                    isNewsletterSubscribed(
+                                                                        list.id,
+                                                                    )
+                                                                "
+                                                                :disabled="
+                                                                    list.status ===
+                                                                    'blocklisted'
+                                                                "
+                                                                @update:model-value="
+                                                                    (val) =>
+                                                                        toggleNewsletterSubscription(
+                                                                            list.id,
+                                                                            val ===
+                                                                                true,
+                                                                        )
+                                                                "
+                                                            />
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+
+                                    <p class="text-xs text-muted-foreground">
+                                        Toggling a list pushes the change to
+                                        Listmonk on save. Lists are managed
+                                        under Administration → Newsletter Lists.
+                                    </p>
+
+                                    <div class="flex items-center gap-3">
+                                        <Button
+                                            type="submit"
+                                            :disabled="
+                                                newsletterForm.processing ||
+                                                !newsletterForm.isDirty
+                                            "
+                                        >
+                                            {{
+                                                newsletterForm.processing
+                                                    ? 'Saving…'
+                                                    : 'Save subscriptions'
+                                            }}
+                                        </Button>
+                                        <Transition
+                                            enter-active-class="transition ease-in-out"
+                                            enter-from-class="opacity-0"
+                                            leave-active-class="transition ease-in-out"
+                                            leave-to-class="opacity-0"
+                                        >
+                                            <p
+                                                v-if="
+                                                    newsletterForm.recentlySuccessful
+                                                "
+                                                class="text-sm text-muted-foreground"
+                                            >
+                                                Saved.
+                                            </p>
+                                        </Transition>
+                                    </div>
+                                </form>
+                            </Deferred>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
 
                 <!-- Audit -->
