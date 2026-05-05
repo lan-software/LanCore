@@ -34,20 +34,20 @@ const props = defineProps<{
 const { t } = useI18n();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: t('policies.admin.index.title'), href: '/admin/policies' },
+    { title: t('policies.admin.index.title'), href: '/backstage/policies' },
     {
         title: props.policy.name,
-        href: `/admin/policies/${props.policy.id}`,
+        href: `/backstage/policies/${props.policy.id}`,
     },
     {
         title: t('common.edit'),
-        href: `/admin/policies/${props.policy.id}/edit`,
+        href: `/backstage/policies/${props.policy.id}/edit`,
     },
 ];
 
 function archive(): void {
     if (confirm(t('policies.admin.edit.archive_confirm'))) {
-        router.post(`/admin/policies/${props.policy.id}/archive`);
+        router.post(`/backstage/policies/${props.policy.id}/archive`);
     }
 }
 </script>
@@ -59,7 +59,7 @@ function archive(): void {
         <div class="flex h-full max-w-2xl flex-1 flex-col gap-8 p-4">
             <div>
                 <Link
-                    :href="`/admin/policies/${policy.id}`"
+                    :href="`/backstage/policies/${policy.id}`"
                     class="text-sm text-muted-foreground hover:text-foreground"
                 >
                     {{ $t('policies.admin.edit.back') }}
@@ -72,7 +72,7 @@ function archive(): void {
             />
 
             <Form
-                :action="`/admin/policies/${policy.id}`"
+                :action="`/backstage/policies/${policy.id}`"
                 method="put"
                 class="space-y-4"
                 v-slot="{ errors, processing }"

@@ -44,7 +44,7 @@ const formFor = (id: number) => forms.get(id)!;
 
 const save = (policy: Policy) => {
     formFor(policy.id).patch(
-        `/admin/data-lifecycle/retention-policies/${policy.id}`,
+        `/backstage/data-lifecycle/retention-policies/${policy.id}`,
         { preserveScroll: true },
     );
 };

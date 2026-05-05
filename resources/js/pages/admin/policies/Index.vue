@@ -49,8 +49,8 @@ const props = defineProps<{
 const { t } = useI18n();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: t('navigation.admin'), href: '/admin/policies' },
-    { title: t('policies.admin.index.title'), href: '/admin/policies' },
+    { title: t('navigation.admin'), href: '/backstage/policies' },
+    { title: t('policies.admin.index.title'), href: '/backstage/policies' },
 ];
 
 const typesDialogOpen = ref(false);
@@ -115,7 +115,7 @@ const typesDialogOpen = ref(false);
                             :key="policy.id"
                             class="cursor-pointer"
                             @click="
-                                router.visit(`/admin/policies/${policy.id}`)
+                                router.visit(`/backstage/policies/${policy.id}`)
                             "
                         >
                             <TableCell>

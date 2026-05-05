@@ -37,12 +37,12 @@ const forceForm = useForm({ reason: '', confirmation: '' });
 
 const anonymizeNow = () =>
     anonymizeForm.post(
-        `/admin/data-lifecycle/deletion-requests/${props.deletionRequest.id}/anonymize-now`,
+        `/backstage/data-lifecycle/deletion-requests/${props.deletionRequest.id}/anonymize-now`,
     );
 
 const cancel = () =>
     cancelForm.post(
-        `/admin/data-lifecycle/deletion-requests/${props.deletionRequest.id}/cancel`,
+        `/backstage/data-lifecycle/deletion-requests/${props.deletionRequest.id}/cancel`,
     );
 
 const forceDelete = () => {
@@ -51,7 +51,7 @@ const forceDelete = () => {
     }
 
     forceForm.post(
-        `/admin/data-lifecycle/users/${props.deletionRequest.user.id}/force-delete`,
+        `/backstage/data-lifecycle/users/${props.deletionRequest.user.id}/force-delete`,
         { preserveScroll: true },
     );
 };

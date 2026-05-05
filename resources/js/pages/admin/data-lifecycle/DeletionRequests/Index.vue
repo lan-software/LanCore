@@ -88,7 +88,7 @@ const statusBadge = (status: string): string => {
                         </td>
                         <td class="p-2">
                             <Link
-                                :href="`/admin/data-lifecycle/deletion-requests/${r.id}`"
+                                :href="`/backstage/data-lifecycle/deletion-requests/${r.id}`"
                                 class="text-primary hover:underline"
                             >
                                 View

@@ -56,7 +56,7 @@ function saveEdit(): void {
 
     submitting.value = true;
     router.put(
-        `/admin/policies/types/${editing.value.id}`,
+        `/backstage/policies/types/${editing.value.id}`,
         {
             key: editing.value.key,
             label: editing.value.label,
@@ -83,7 +83,7 @@ function deleteType(type: PolicyType): void {
         return;
     }
 
-    router.delete(`/admin/policies/types/${type.id}`, {
+    router.delete(`/backstage/policies/types/${type.id}`, {
         preserveScroll: true,
     });
 }
@@ -91,7 +91,7 @@ function deleteType(type: PolicyType): void {
 function createType(): void {
     submitting.value = true;
     router.post(
-        '/admin/policies/types',
+        '/backstage/policies/types',
         {
             key: newType.value.key,
             label: newType.value.label,

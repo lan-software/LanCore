@@ -156,7 +156,7 @@ const submitPersonalData = () => {
 };
 
 const submitRequestDeletion = () => {
-    requestDeletionForm.post('/admin/data-lifecycle/deletion-requests', {
+    requestDeletionForm.post('/backstage/data-lifecycle/deletion-requests', {
         preserveScroll: true,
         onSuccess: () => {
             showRequestDeletion.value = false;
@@ -167,7 +167,7 @@ const submitRequestDeletion = () => {
 
 const submitForceDelete = () => {
     forceDeleteForm.post(
-        `/admin/data-lifecycle/users/${props.user.id}/force-delete`,
+        `/backstage/data-lifecycle/users/${props.user.id}/force-delete`,
         {
             preserveScroll: true,
             onSuccess: () => {
@@ -187,7 +187,7 @@ const submitAnonymizeImmediately = () => {
 
     anonymizeImmediatelyForm.transform((data) => ({ reason: data.reason }));
     anonymizeImmediatelyForm.post(
-        `/admin/data-lifecycle/users/${props.user.id}/anonymize-immediately`,
+        `/backstage/data-lifecycle/users/${props.user.id}/anonymize-immediately`,
         {
             preserveScroll: true,
             onSuccess: () => {
@@ -1346,7 +1346,7 @@ function truncate(value: string, length = 80): string {
 
                             <form
                                 v-if="showGdprExport"
-                                :action="`/admin/data-lifecycle/users/${user.id}/gdpr-export`"
+                                :action="`/backstage/data-lifecycle/users/${user.id}/gdpr-export`"
                                 method="POST"
                                 target="_blank"
                                 class="space-y-3 rounded border p-4"

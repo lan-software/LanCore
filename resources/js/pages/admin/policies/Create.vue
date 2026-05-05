@@ -25,10 +25,10 @@ defineProps<{
 const { t } = useI18n();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: t('policies.admin.index.title'), href: '/admin/policies' },
+    { title: t('policies.admin.index.title'), href: '/backstage/policies' },
     {
         title: t('policies.admin.create.title'),
-        href: '/admin/policies/create',
+        href: '/backstage/policies/create',
     },
 ];
 </script>
@@ -53,7 +53,7 @@ const breadcrumbs: BreadcrumbItem[] = [
             />
 
             <Form
-                action="/admin/policies"
+                action="/backstage/policies"
                 method="post"
                 class="space-y-4"
                 v-slot="{ errors, processing }"

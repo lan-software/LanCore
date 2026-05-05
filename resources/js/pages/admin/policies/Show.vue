@@ -135,7 +135,7 @@ function isDirty(locale: string): boolean {
 function saveDraft(locale: string): void {
     savingLocale.value = locale;
     router.put(
-        `/admin/policies/${props.policy.id}/drafts/${locale}`,
+        `/backstage/policies/${props.policy.id}/drafts/${locale}`,
         { content: editorContent[locale] ?? '' },
         {
             preserveScroll: true,
@@ -156,7 +156,7 @@ function discardDraft(locale: string): void {
 }
 
 function removeLocale(locale: string): void {
-    router.delete(`/admin/policies/${props.policy.id}/drafts/${locale}`, {
+    router.delete(`/backstage/policies/${props.policy.id}/drafts/${locale}`, {
         preserveScroll: true,
     });
 }
@@ -167,7 +167,7 @@ function addLocale(): void {
     }
 
     router.post(
-        `/admin/policies/${props.policy.id}/drafts`,
+        `/backstage/policies/${props.policy.id}/drafts`,
         { locale: newLocale.value },
         {
             preserveScroll: true,
@@ -207,7 +207,7 @@ function attemptPublish(): void {
 }
 
 function publishNow(): void {
-    publishForm.post(`/admin/policies/${props.policy.id}/versions`);
+    publishForm.post(`/backstage/policies/${props.policy.id}/versions`);
 }
 
 function eventLabel(event: string): string {
@@ -229,8 +229,8 @@ function formatChanges(values: AuditRow['new_values']): string {
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: t('policies.admin.index.title'), href: '/admin/policies' },
-    { title: props.policy.name, href: `/admin/policies/${props.policy.id}` },
+    { title: t('policies.admin.index.title'), href: '/backstage/policies' },
+    { title: props.policy.name, href: `/backstage/policies/${props.policy.id}` },
 ];
 </script>
 
@@ -268,7 +268,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <Link :href="`/admin/policies/${policy.id}/edit`">
+                    <Link :href="`/backstage/policies/${policy.id}/edit`">
                         <Button variant="outline">
                             <Pencil class="size-4" />
                             {{ $t('policies.admin.show.edit_metadata') }}

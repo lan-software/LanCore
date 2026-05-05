@@ -212,7 +212,7 @@ function pickerUrl(userId: number): string {
                             : $t('ticketCard.showQrCode')
                     }}
                 </Button>
-                <a :href="`/tickets/${ticket.id}/download`">
+                <a :href="TicketController.download(ticket.id).url">
                     <Button variant="outline" size="sm" class="gap-1.5">
                         <Download class="size-4" />
                         {{ $t('ticketCard.downloadPdf') }}
@@ -241,7 +241,7 @@ function pickerUrl(userId: number): string {
                 class="flex flex-col items-center gap-3 rounded-lg border bg-white p-6 dark:bg-gray-950"
             >
                 <img
-                    :src="`/tickets/${ticket.id}/qr`"
+                    :src="TicketController.qrCode(ticket.id).url"
                     :alt="$t('ticketCard.qrAlt', { id: ticket.id })"
                     class="size-48"
                 />

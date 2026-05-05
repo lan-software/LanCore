@@ -84,7 +84,7 @@ function removeMember(member: Member) {
         return;
     }
 
-    router.delete(`/admin/teams/${props.team.id}/members/${member.id}`, {
+    router.delete(`/backstage/teams/${props.team.id}/members/${member.id}`, {
         preserveScroll: true,
     });
 }

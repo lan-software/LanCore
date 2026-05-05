@@ -544,7 +544,7 @@ function toggleFavorite(itemId: string): void {
                         </SidebarMenuItem>
                         <SidebarMenuItem v-if="can(Permission.ManagePolicies)">
                             <SidebarMenuButton as-child>
-                                <Link href="/admin/policies">
+                                <Link href="/backstage/policies">
                                     <FileText />
                                     <span>{{ $t('navigation.policies') }}</span>
                                 </Link>
