@@ -49,7 +49,7 @@ function notificationUrl(notification: AppNotification): string | null {
         type === 'TicketTokenRotatedNotification' &&
         typeof data.ticket_id === 'number'
     ) {
-        return `/tickets/${data.ticket_id}`;
+        return `/portal/tickets/${data.ticket_id}`;
     }
 
     if (

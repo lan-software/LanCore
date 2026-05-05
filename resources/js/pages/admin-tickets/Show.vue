@@ -36,7 +36,7 @@ function rotateToken(): void {
     }
 
     router.post(
-        `/admin-tickets/${props.ticket.id}/rotate-token`,
+        `/backstage/admin-tickets/${props.ticket.id}/rotate-token`,
         {},
         { preserveScroll: true },
     );
