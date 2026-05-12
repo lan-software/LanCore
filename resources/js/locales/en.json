@@ -1313,7 +1313,14 @@
             "close": "Close room",
             "reopen": "Reopen room",
             "minutes": "Mute duration (minutes)",
-            "reason": "Reason (optional)"
+            "reason": "Reason (optional)",
+            "mutedRemaining": "Mute remaining",
+            "muteModal": {
+                "title": "Mute {user}",
+                "description": "The mute duration is visible to everyone in this room. The reason is only recorded in the moderation audit log.",
+                "reasonPlaceholder": "Why is this user being muted?",
+                "reasonHint": "Visible only to moderators in the audit log — not to other chat members."
+            }
         },
         "member": {
             "adminBadge": "Admin",
