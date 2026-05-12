@@ -104,8 +104,8 @@ test('private seat is visible to a viewer who also has a ticket for the same eve
                 ->component('u/Show')
                 ->where('upcomingEvents.0.seat.seat_title', 'A-7')
                 ->where(
-                    'upcomingEvents.0.seat.picker_url',
-                    route('events.seats.picker', ['event' => $event->id]).'?focus_user='.$user->id,
+                    'upcomingEvents.0.seat.event_url',
+                    route('events.public.show', ['event' => $event->id]).'?focus_user='.$user->id,
                 )
         );
 });

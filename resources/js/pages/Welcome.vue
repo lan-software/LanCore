@@ -11,7 +11,7 @@ import {
     X,
     Trophy,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import AppFooter from '@/components/AppFooter.vue';
 import BannerCarousel from '@/components/BannerCarousel.vue';
 import OrgaTeamCard from '@/components/event/OrgaTeamCard.vue';
@@ -48,6 +48,7 @@ const props = withDefaults(
             registration_closes_at: string | null;
             starts_at: string | null;
         }[];
+        focusSeatId?: number | null;
     }>(),
     {
         canRegister: true,
@@ -56,6 +57,7 @@ const props = withDefaults(
         announcements: () => [],
         dismissedAnnouncementIds: () => [],
         openCompetitions: () => [],
+        focusSeatId: null,
     },
 );
 
@@ -171,6 +173,67 @@ function onSeatClick(payload: unknown): void {
     if (taken?.username) {
         router.visit(profileShow({ username: taken.username }).url);
     }
+}
+
+const seatMapWrapperRef = ref<HTMLDivElement | null>(null);
+let focusAnimationApplied = false;
+
+/**
+ * When the page is opened from a profile's "find on seat plan" quick action
+ * with `?focus_user=<id>` (resolved server-side to {@link focusSeatId}), scroll
+ * the seat-map section into view once the canvas has finished rendering and
+ * pulse the matching seat with an SVG circle so the visitor can spot their
+ * friend at a glance. We guard with `focusAnimationApplied` because the
+ * underlying canvas may re-emit `ready` on layout/data changes — replaying
+ * the animation each time would be jarring.
+ */
+function onSeatMapReady(): void {
+    if (focusAnimationApplied || !props.focusSeatId) {
+        return;
+    }
+
+    const wrapper = seatMapWrapperRef.value;
+
+    if (!wrapper) {
+        return;
+    }
+
+    nextTick(() => {
+        wrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        const seatNode = wrapper.querySelector<SVGGElement>(
+            `g.seat[id="${CSS.escape(String(props.focusSeatId))}"]`,
+        );
+
+        if (!seatNode) {
+            return;
+        }
+
+        const circle = seatNode.querySelector<SVGElement>(
+            '.seat-circle,.seat-rect,.seat-path',
+        );
+        const cx = parseFloat(circle?.getAttribute('cx') ?? '0');
+        const cy = parseFloat(circle?.getAttribute('cy') ?? '0');
+        const r = parseFloat(circle?.getAttribute('r') ?? '12');
+
+        const ns = 'http://www.w3.org/2000/svg';
+        const pulse = document.createElementNS(ns, 'circle');
+        pulse.setAttribute('class', 'seat-focus-pulse');
+        pulse.setAttribute('cx', String(cx));
+        pulse.setAttribute('cy', String(cy));
+        pulse.setAttribute('r', String(r));
+        pulse.setAttribute('fill', 'none');
+        pulse.setAttribute('stroke', '#f59e0b');
+        pulse.setAttribute('stroke-width', '3');
+        pulse.style.pointerEvents = 'none';
+
+        seatNode.appendChild(pulse);
+        focusAnimationApplied = true;
+
+        window.setTimeout(() => {
+            pulse.remove();
+        }, 4500);
+    });
 }
 
 function dismissAnnouncement(announcementId: number) {
@@ -581,6 +644,7 @@ function dismissAnnouncement(announcementId: number) {
                         <div v-if="seatPlanData" class="space-y-4">
                             <h2 class="text-2xl font-semibold">Seat Map</h2>
                             <div
+                                ref="seatMapWrapperRef"
                                 class="rounded-xl border"
                                 style="height: 500px"
                             >
@@ -599,6 +663,7 @@ function dismissAnnouncement(announcementId: number) {
                                     @seat-click="onSeatClick"
                                     @seat-hover-enter="onSeatHoverEnter"
                                     @seat-hover-leave="onSeatHoverLeave"
+                                    @ready="onSeatMapReady"
                                 />
                             </div>
                         </div>
@@ -826,3 +891,26 @@ function dismissAnnouncement(announcementId: number) {
         />
     </div>
 </template>
+
+<style>
+@keyframes seat-focus-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+    70% {
+        transform: scale(3.2);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(3.2);
+        opacity: 0;
+    }
+}
+
+.seat-focus-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: seat-focus-pulse 1.5s ease-out 3;
+}
+</style>

@@ -24,7 +24,7 @@ type Achievement = {
 
 type EventSeatInfo = {
     seat_title: string | null;
-    picker_url: string | null;
+    event_url: string | null;
 };
 
 type EventHistoryItem = {
@@ -273,12 +273,12 @@ function rarityClass(percentage: number): string {
                                     }}</span>
                                 </p>
                                 <component
-                                    :is="event.seat?.picker_url ? 'a' : 'span'"
+                                    :is="event.seat?.event_url ? 'a' : 'span'"
                                     v-if="event.seat"
-                                    :href="event.seat.picker_url ?? undefined"
+                                    :href="event.seat.event_url ?? undefined"
                                     class="mt-1 inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-800 dark:bg-sky-900/40 dark:text-sky-200"
                                     :class="
-                                        event.seat.picker_url
+                                        event.seat.event_url
                                             ? 'hover:bg-sky-200 dark:hover:bg-sky-900/60'
                                             : ''
                                     "

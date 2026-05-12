@@ -169,18 +169,14 @@ class PublicProfileController extends Controller
             ->get()
             ->keyBy(fn (SeatAssignment $a): int => (int) $a->seatPlan->event_id);
 
-        $canVisitPicker = $viewer !== null && $viewer->hasVerifiedEmail();
-
-        return $events->map(function (Event $event) use ($user, $viewer, $assignmentsByEvent, $canVisitPicker): array {
+        return $events->map(function (Event $event) use ($user, $viewer, $assignmentsByEvent): array {
             $item = $this->eventListItem($event);
             $assignment = $assignmentsByEvent->get($event->id);
 
             if ($assignment !== null && $user->isSeatNameVisibleTo($viewer, $event)) {
                 $item['seat'] = [
                     'seat_title' => $assignment->seat_title,
-                    'picker_url' => $canVisitPicker
-                        ? route('events.seats.picker', ['event' => $event->id]).'?focus_user='.$user->getKey()
-                        : null,
+                    'event_url' => route('events.public.show', ['event' => $event->id]).'?focus_user='.$user->getKey(),
                 ];
             }
 
