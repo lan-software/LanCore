@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { store } from '@/actions/App/Domain/Achievements/Http/Controllers/AchievementController';
 import { create as achievementCreate } from '@/actions/App/Domain/Achievements/Http/Controllers/AchievementController';
+import GrantableEventPicker from '@/components/achievements/GrantableEventPicker.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import LucideIconPreview from '@/components/LucideIconPreview.vue';
@@ -37,16 +38,6 @@ const form = useForm({
     is_active: true,
     event_classes: [] as string[],
 });
-
-function toggleEvent(eventClass: string) {
-    const index = form.event_classes.indexOf(eventClass);
-
-    if (index === -1) {
-        form.event_classes.push(eventClass);
-    } else {
-        form.event_classes.splice(index, 1);
-    }
-}
 
 function submit() {
     form.post(store().url);
@@ -183,29 +174,10 @@ function submit() {
                         "
                     />
 
-                    <div class="space-y-3">
-                        <div
-                            v-for="event in grantableEvents"
-                            :key="event.value"
-                            class="flex items-center gap-2"
-                        >
-                            <input
-                                type="checkbox"
-                                :id="`event-${event.value}`"
-                                :checked="
-                                    form.event_classes.includes(event.value)
-                                "
-                                class="mt-0.5 size-4 shrink-0 rounded-[4px] border border-input accent-primary"
-                                @change="toggleEvent(event.value)"
-                            />
-                            <Label
-                                :for="`event-${event.value}`"
-                                class="text-sm font-normal"
-                            >
-                                {{ event.label }}
-                            </Label>
-                        </div>
-                    </div>
+                    <GrantableEventPicker
+                        v-model="form.event_classes"
+                        :options="grantableEvents"
+                    />
                     <InputError :message="form.errors.event_classes" />
                 </div>
 

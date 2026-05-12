@@ -4,17 +4,27 @@ namespace App\Domain\Achievements\Listeners;
 
 use App\Domain\Achievements\Actions\GrantAchievement;
 use App\Domain\Achievements\Models\AchievementEvent;
-use App\Models\User;
-use Illuminate\Auth\Events\Registered;
+use App\Domain\Achievements\Support\GrantableEventRegistry;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+/**
+ * Queued listener that grants achievements when a grantable event fires.
+ *
+ * Eligibility and user resolution are delegated to {@see GrantableEventRegistry}
+ * so adding a new user-bound event needs no listener changes here.
+ *
+ * @see docs/mil-std-498/SRS.md ACH-F-006
+ */
 class ProcessAchievements implements ShouldQueue
 {
-    public function __construct(private readonly GrantAchievement $grantAchievement) {}
+    public function __construct(
+        private readonly GrantAchievement $grantAchievement,
+        private readonly GrantableEventRegistry $registry,
+    ) {}
 
     public function handle(object $event): void
     {
-        $user = $this->resolveUser($event);
+        $user = $this->registry->userFor($event);
 
         if (! $user) {
             return;
@@ -32,24 +42,5 @@ class ProcessAchievements implements ShouldQueue
                 $this->grantAchievement->execute($user, $achievementEvent->achievement);
             }
         }
-    }
-
-    private function resolveUser(object $event): ?User
-    {
-        if ($event instanceof Registered) {
-            return $event->user instanceof User ? $event->user : null;
-        }
-
-        if (property_exists($event, 'user') && $event->user instanceof User) {
-            return $event->user;
-        }
-
-        if (method_exists($event, 'user')) {
-            $user = $event->user();
-
-            return $user instanceof User ? $user : null;
-        }
-
-        return null;
     }
 }

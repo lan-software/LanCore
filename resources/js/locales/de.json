@@ -494,6 +494,12 @@
         "submitCreate": "Erfolg erstellen",
         "earnedBy": "Dieser Erfolg wurde von {count} Nutzer(n) erreicht.",
         "notificationText": "Benachrichtigungstext",
+        "trigger": {
+            "searchPlaceholder": "Auslöser-Ereignisse durchsuchen…",
+            "countSummary": "{selected} von {total} ausgewählt",
+            "clearSelection": "Zurücksetzen",
+            "noMatches": "Keine Ereignisse entsprechen deiner Suche."
+        },
         "form": {
             "headingInfo": "Erfolg-Informationen",
             "headingInfoDescriptionCreate": "Konfiguriere die Details des Erfolgsabzeichens",

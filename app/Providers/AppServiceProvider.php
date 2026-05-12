@@ -5,8 +5,8 @@ namespace App\Providers;
 use App\Domain\Achievements\Listeners\ProcessAchievements;
 use App\Domain\Achievements\Models\Achievement;
 use App\Domain\Achievements\Policies\AchievementPolicy;
+use App\Domain\Achievements\Support\GrantableEventRegistry;
 use App\Domain\Announcement\Events\AnnouncementPublished;
-use App\Domain\Announcement\Events\AnnouncementsViewed;
 use App\Domain\Announcement\Listeners\HandleAnnouncementPublishedWebhooks;
 use App\Domain\Announcement\Listeners\SendAnnouncementNotification;
 use App\Domain\Announcement\Models\Announcement;
@@ -37,7 +37,6 @@ use App\Domain\Integration\Listeners\HandleIntegrationAccessedWebhooks;
 use App\Domain\Integration\Models\IntegrationApp;
 use App\Domain\Integration\Policies\IntegrationAppPolicy;
 use App\Domain\News\Events\NewsArticlePublished;
-use App\Domain\News\Events\NewsArticleRead;
 use App\Domain\News\Listeners\HandleNewsArticlePublishedWebhooks;
 use App\Domain\News\Listeners\SendNewsNotification;
 use App\Domain\News\Models\NewsArticle;
@@ -47,10 +46,7 @@ use App\Domain\News\Policies\NewsCommentPolicy;
 use App\Domain\Newsletter\Models\NewsletterList;
 use App\Domain\Newsletter\Policies\NewsletterListPolicy;
 use App\Domain\Notification\Channels\WebPushChannel;
-use App\Domain\Notification\Events\NotificationPreferencesUpdated;
-use App\Domain\Notification\Events\NotificationsArchived;
 use App\Domain\Notification\Events\ProfileUpdated;
-use App\Domain\Notification\Events\TicketDiscoverySettingsUpdated;
 use App\Domain\Notification\Events\UserAttributesUpdated;
 use App\Domain\Notification\Events\UserRolesChanged;
 use App\Domain\Notification\Listeners\BroadcastDatabaseNotification;
@@ -88,7 +84,6 @@ use App\Domain\Seating\Listeners\NotifyAffectedAssignees;
 use App\Domain\Seating\Models\SeatPlan;
 use App\Domain\Seating\Policies\SeatPlanPolicy;
 use App\Domain\Shop\Actions\FulfillOrder;
-use App\Domain\Shop\Events\CartItemAdded;
 use App\Domain\Shop\Events\TicketPurchased;
 use App\Domain\Shop\Http\Controllers\PayPalWebhookController;
 use App\Domain\Shop\Listeners\HandleStripeCheckoutCompleted;
@@ -160,6 +155,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ModelCacheService::class);
         $this->app->singleton(PolicyResolver::class);
         $this->app->singleton(ChatService::class);
+        $this->app->singleton(GrantableEventRegistry::class);
 
         $this->app->singleton(PaymentProviderManager::class, function ($app): PaymentProviderManager {
             $manager = new PaymentProviderManager;
@@ -396,20 +392,11 @@ class AppServiceProvider extends ServiceProvider
         EventFacade::listen(MatchReadyForOrchestration::class, OrchestrationHandleMatchReady::class);
         EventFacade::listen(MatchCompleted::class, OrchestrationHandleMatchCompleted::class);
 
-        // Achievement processing — listen to all grantable events
-        EventFacade::listen(Registered::class, ProcessAchievements::class);
-        EventFacade::listen(AnnouncementPublished::class, ProcessAchievements::class);
-        EventFacade::listen(AnnouncementsViewed::class, ProcessAchievements::class);
-        EventFacade::listen(CartItemAdded::class, ProcessAchievements::class);
-        EventFacade::listen(EventPublished::class, ProcessAchievements::class);
-        EventFacade::listen(IntegrationAccessed::class, ProcessAchievements::class);
-        EventFacade::listen(NewsArticlePublished::class, ProcessAchievements::class);
-        EventFacade::listen(NewsArticleRead::class, ProcessAchievements::class);
-        EventFacade::listen(NotificationPreferencesUpdated::class, ProcessAchievements::class);
-        EventFacade::listen(NotificationsArchived::class, ProcessAchievements::class);
-        EventFacade::listen(ProfileUpdated::class, ProcessAchievements::class);
-        EventFacade::listen(TicketDiscoverySettingsUpdated::class, ProcessAchievements::class);
-        EventFacade::listen(TicketPurchased::class, ProcessAchievements::class);
-        EventFacade::listen(UserRolesChanged::class, ProcessAchievements::class);
+        // Achievement processing — attach ProcessAchievements to every event
+        // the GrantableEventRegistry discovers. New user-bound events are
+        // picked up automatically without manual edits here.
+        foreach ($this->app->make(GrantableEventRegistry::class)->eventClasses() as $eventClass) {
+            EventFacade::listen($eventClass, ProcessAchievements::class);
+        }
     }
 }

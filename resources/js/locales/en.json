@@ -661,6 +661,12 @@
         "submitCreate": "Create Achievement",
         "earnedBy": "This achievement has been earned by {count} user(s).",
         "notificationText": "Notification Text",
+        "trigger": {
+            "searchPlaceholder": "Search trigger events…",
+            "countSummary": "{selected} of {total} selected",
+            "clearSelection": "Clear",
+            "noMatches": "No events match your search."
+        },
         "form": {
             "headingInfo": "Achievement Information",
             "headingInfoDescriptionCreate": "Configure the achievement badge details",

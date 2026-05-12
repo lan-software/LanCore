@@ -89,7 +89,7 @@ it('allows admins to update an achievement', function () {
             'color' => '#ef4444',
             'icon' => 'medal',
             'is_active' => true,
-            'event_classes' => [GrantableEvent::AnnouncementPublished->value],
+            'event_classes' => [GrantableEvent::UserRegistered->value],
         ])
         ->assertRedirect();
 

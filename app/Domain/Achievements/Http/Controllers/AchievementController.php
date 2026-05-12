@@ -5,10 +5,10 @@ namespace App\Domain\Achievements\Http\Controllers;
 use App\Domain\Achievements\Actions\CreateAchievement;
 use App\Domain\Achievements\Actions\DeleteAchievement;
 use App\Domain\Achievements\Actions\UpdateAchievement;
-use App\Domain\Achievements\Enums\GrantableEvent;
 use App\Domain\Achievements\Http\Requests\StoreAchievementRequest;
 use App\Domain\Achievements\Http\Requests\UpdateAchievementRequest;
 use App\Domain\Achievements\Models\Achievement;
+use App\Domain\Achievements\Support\GrantableEventRegistry;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,6 +25,7 @@ class AchievementController extends Controller
         private readonly CreateAchievement $createAchievement,
         private readonly UpdateAchievement $updateAchievement,
         private readonly DeleteAchievement $deleteAchievement,
+        private readonly GrantableEventRegistry $grantableEvents,
     ) {}
 
     public function index(Request $request): Response
@@ -54,10 +55,7 @@ class AchievementController extends Controller
         $this->authorize('create', Achievement::class);
 
         return Inertia::render('achievements/Create', [
-            'grantableEvents' => collect(GrantableEvent::cases())->map(fn (GrantableEvent $e) => [
-                'value' => $e->value,
-                'label' => $e->label(),
-            ])->all(),
+            'grantableEvents' => $this->grantableEvents->options(),
         ]);
     }
 
@@ -85,10 +83,7 @@ class AchievementController extends Controller
             'achievement' => $achievement->toArray() + [
                 'event_classes' => $achievement->achievementEvents->pluck('event_class')->all(),
             ],
-            'grantableEvents' => collect(GrantableEvent::cases())->map(fn (GrantableEvent $e) => [
-                'value' => $e->value,
-                'label' => $e->label(),
-            ])->all(),
+            'grantableEvents' => $this->grantableEvents->options(),
         ]);
     }
 

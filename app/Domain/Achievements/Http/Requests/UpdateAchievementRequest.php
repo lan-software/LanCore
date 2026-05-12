@@ -2,7 +2,7 @@
 
 namespace App\Domain\Achievements\Http\Requests;
 
-use App\Domain\Achievements\Enums\GrantableEvent;
+use App\Domain\Achievements\Support\GrantableEventRegistry;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -34,7 +34,7 @@ class UpdateAchievementRequest extends FormRequest
             'icon' => ['required', 'string', 'max:50'],
             'is_active' => ['sometimes', 'boolean'],
             'event_classes' => ['sometimes', 'array'],
-            'event_classes.*' => ['string', Rule::in(array_column(GrantableEvent::cases(), 'value'))],
+            'event_classes.*' => ['string', Rule::in(app(GrantableEventRegistry::class)->eventClasses())],
         ];
     }
 }
