@@ -3,6 +3,7 @@
 namespace App\Domain\Shop\Listeners;
 
 use App\Domain\Shop\Actions\FulfillOrder;
+use App\Domain\Shop\Actions\PersistProviderFee;
 use App\Domain\Shop\Enums\OrderStatus;
 use App\Domain\Shop\Models\Order;
 use Laravel\Cashier\Events\WebhookReceived;
@@ -11,6 +12,7 @@ class HandleStripeCheckoutCompleted
 {
     public function __construct(
         private readonly FulfillOrder $fulfillOrder,
+        private readonly PersistProviderFee $persistProviderFee,
     ) {}
 
     public function handle(WebhookReceived $event): void
@@ -38,5 +40,7 @@ class HandleStripeCheckoutCompleted
         ]);
 
         $this->fulfillOrder->execute($order);
+
+        $this->persistProviderFee->execute($order->fresh());
     }
 }

@@ -190,6 +190,84 @@ const statusVariant: Record<
                 </CardContent>
             </Card>
 
+            <!-- Provider Fee -->
+            <Card>
+                <CardHeader>
+                    <CardTitle>Provider Fee</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <dl
+                        v-if="order.fee_amount !== null"
+                        class="grid grid-cols-1 gap-4 sm:grid-cols-3"
+                    >
+                        <div>
+                            <dt
+                                class="text-sm font-medium text-muted-foreground"
+                            >
+                                Gross
+                            </dt>
+                            <dd class="mt-1 text-sm font-semibold">
+                                {{ formatCurrency(order.total) }}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt
+                                class="text-sm font-medium text-muted-foreground"
+                            >
+                                Fee
+                            </dt>
+                            <dd class="mt-1 flex items-center gap-2 text-sm">
+                                <span class="font-semibold">{{
+                                    formatCurrency(order.fee_amount)
+                                }}</span>
+                                <Badge
+                                    v-if="order.fee_source"
+                                    variant="outline"
+                                    class="capitalize"
+                                >
+                                    {{ order.fee_source }}
+                                </Badge>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt
+                                class="text-sm font-medium text-muted-foreground"
+                            >
+                                Net
+                            </dt>
+                            <dd class="mt-1 text-sm font-semibold">
+                                {{
+                                    order.net_amount !== null
+                                        ? formatCurrency(order.net_amount)
+                                        : '—'
+                                }}
+                            </dd>
+                        </div>
+                        <div
+                            v-if="order.fees_fetched_at"
+                            class="sm:col-span-3"
+                        >
+                            <dt
+                                class="text-sm font-medium text-muted-foreground"
+                            >
+                                Fee fetched
+                            </dt>
+                            <dd class="mt-1 text-xs text-muted-foreground">
+                                {{ formatDate(order.fees_fetched_at) }}
+                            </dd>
+                        </div>
+                    </dl>
+                    <p v-else class="text-sm text-muted-foreground">
+                        Provider fee has not been reported for this order yet.
+                        Run
+                        <code class="font-mono text-xs"
+                            >php artisan shop:backfill-fees</code
+                        >
+                        to backfill historic orders.
+                    </p>
+                </CardContent>
+            </Card>
+
             <!-- Customer -->
             <Card v-if="order.user">
                 <CardHeader>

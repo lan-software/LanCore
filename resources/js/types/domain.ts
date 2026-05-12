@@ -374,6 +374,10 @@ export type Order = {
     subtotal: number;
     discount: number;
     total: number;
+    fee_amount: number | null;
+    net_amount: number | null;
+    fee_source: 'provider' | 'estimated' | null;
+    fees_fetched_at: string | null;
     currency: string;
     user_id: number;
     event_id: number;

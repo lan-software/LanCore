@@ -3,6 +3,7 @@
 namespace App\Domain\Shop\Http\Controllers;
 
 use App\Domain\Shop\Actions\FulfillOrder;
+use App\Domain\Shop\Actions\PersistProviderFee;
 use App\Domain\Shop\Enums\OrderStatus;
 use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Models\Order;
@@ -26,6 +27,7 @@ class PayPalWebhookController extends Controller
     public function __construct(
         private readonly Closure $clientFactory,
         private readonly FulfillOrder $fulfillOrder,
+        private readonly PersistProviderFee $persistProviderFee,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -96,6 +98,8 @@ class PayPalWebhookController extends Controller
         }
 
         $this->fulfillOrder->execute($order->fresh());
+
+        $this->persistProviderFee->execute($order->fresh());
 
         return response()->json(['status' => 'fulfilled']);
     }

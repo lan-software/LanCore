@@ -5,15 +5,17 @@ namespace App\Domain\Shop\PaymentProviders;
 use App\Domain\Shop\Actions\FulfillOrder;
 use App\Domain\Shop\Contracts\PaymentProvider;
 use App\Domain\Shop\Contracts\PaymentResult;
+use App\Domain\Shop\Contracts\ResolvesProviderFees;
 use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Models\Order;
+use App\Domain\Shop\Support\ProviderFee;
 use App\Models\User;
 
 /**
  * @see docs/mil-std-498/SSS.md CAP-SHP-003
  * @see docs/mil-std-498/SRS.md SHP-F-004
  */
-class OnSitePaymentProvider implements PaymentProvider
+class OnSitePaymentProvider implements PaymentProvider, ResolvesProviderFees
 {
     public function __construct(
         private readonly FulfillOrder $fulfillOrder,
@@ -36,6 +38,19 @@ class OnSitePaymentProvider implements PaymentProvider
         // until an admin confirms payment was received.
         $this->fulfillOrder->execute($order);
 
+        // Cash payments have no platform fee — record a zero snapshot now so
+        // the orders table never shows "—" for on-site orders.
+        $fee = $this->fetchFeeFor($order->fresh());
+        if ($fee !== null) {
+            $fresh = $order->fresh();
+            $fresh->forceFill([
+                'fee_amount' => $fee->feeCents,
+                'net_amount' => max(0, ((int) $fresh->total) - $fee->feeCents),
+                'fee_source' => $fee->source,
+                'fees_fetched_at' => now(),
+            ])->save();
+        }
+
         return PaymentResult::completed(
             redirect()->route('cart.checkout.success', ['order' => $order->id]),
         );
@@ -50,5 +65,17 @@ class OnSitePaymentProvider implements PaymentProvider
     public function handleCancellation(Order $order): void
     {
         // No external provider to clean up.
+    }
+
+    /**
+     * On-site (cash) payments incur no platform fee, so we always report zero
+     * with provider-confirmed source — there's nothing further to reconcile.
+     */
+    public function fetchFeeFor(Order $order): ?ProviderFee
+    {
+        return ProviderFee::provider(
+            feeCents: 0,
+            currency: (string) ($order->currency ?: 'eur'),
+        );
     }
 }

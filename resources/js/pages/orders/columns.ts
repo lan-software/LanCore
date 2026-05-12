@@ -158,6 +158,38 @@ export const columns: ColumnDef<Order>[] = [
             ),
     },
     {
+        accessorKey: 'fee_amount',
+        header: () => h('span', 'Fee'),
+        cell: ({ row }) => {
+            const order = row.original;
+            if (order.fee_amount === null || order.fee_amount === undefined) {
+                return h(
+                    'span',
+                    { class: 'text-muted-foreground text-xs' },
+                    '—',
+                );
+            }
+
+            const currency = currencyFromCode(order.currency);
+            const feeLabel = formatCents(order.fee_amount, currency);
+            const netLabel =
+                order.net_amount !== null && order.net_amount !== undefined
+                    ? formatCents(order.net_amount, currency)
+                    : null;
+
+            return h('div', { class: 'flex flex-col leading-tight' }, [
+                h('span', { class: 'font-medium' }, feeLabel),
+                netLabel
+                    ? h(
+                          'span',
+                          { class: 'text-[10px] text-muted-foreground' },
+                          `net ${netLabel}`,
+                      )
+                    : null,
+            ]);
+        },
+    },
+    {
         accessorKey: 'created_at',
         header: sortableHeader('Date'),
         cell: ({ row }) =>

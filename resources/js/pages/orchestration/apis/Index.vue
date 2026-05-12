@@ -17,6 +17,7 @@ import {
 import NewsletterListSyncController from '@/actions/App/Domain/Newsletter/Http/Controllers/Admin/NewsletterListSyncController';
 import ExternalApiController from '@/actions/App/Domain/Orchestration/Http/Controllers/ExternalApiController';
 import Heading from '@/components/Heading.vue';
+import FeeScheduleBlock from '@/components/orchestration/FeeScheduleBlock.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useExternalApiTest } from '@/composables/useExternalApiTest';
@@ -33,6 +34,13 @@ interface ApiConnection {
     retries: number;
 }
 
+interface FeeSchedule {
+    percentage: number;
+    fixed_cents: number;
+    currency: string;
+    note: string | null;
+}
+
 interface StripeConnection {
     enabled: boolean;
     has_publishable_key: boolean;
@@ -40,6 +48,7 @@ interface StripeConnection {
     has_webhook_secret: boolean;
     currency: string;
     currency_locale: string;
+    fee_schedule: FeeSchedule;
 }
 
 interface PayPalConnection {
@@ -48,6 +57,7 @@ interface PayPalConnection {
     has_client_id: boolean;
     has_client_secret: boolean;
     has_webhook_id: boolean;
+    fee_schedule: FeeSchedule;
 }
 
 interface SteamConnection {
@@ -423,6 +433,8 @@ function fetchListmonkLists() {
                     </span>
                 </div>
 
+                <FeeScheduleBlock :schedule="connections.stripe.fee_schedule" />
+
                 <div
                     class="mt-4 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground"
                 >
@@ -577,6 +589,8 @@ function fetchListmonkLists() {
                         {{ paypalTest.error.value }}
                     </span>
                 </div>
+
+                <FeeScheduleBlock :schedule="connections.paypal.fee_schedule" />
 
                 <div
                     class="mt-4 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground"

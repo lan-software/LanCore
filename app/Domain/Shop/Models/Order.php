@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'payment_method', 'provider_session_id', 'provider_transaction_id',
     'status', 'invoice_number', 'paid_at', 'confirmed_by', 'subtotal', 'discount', 'total', 'currency',
     'user_id', 'event_id', 'voucher_id', 'metadata',
+    'fee_amount', 'net_amount', 'fee_source', 'fees_fetched_at',
 ])]
 class Order extends Model
 {
@@ -45,6 +46,9 @@ class Order extends Model
             'subtotal' => 'integer',
             'discount' => 'integer',
             'total' => 'integer',
+            'fee_amount' => 'integer',
+            'net_amount' => 'integer',
+            'fees_fetched_at' => 'datetime',
         ];
     }
 

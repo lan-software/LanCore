@@ -7,6 +7,7 @@
 
 use App\Domain\Event\Models\Event;
 use App\Domain\Shop\Actions\FulfillOrder;
+use App\Domain\Shop\Actions\PersistProviderFee;
 use App\Domain\Shop\Enums\OrderStatus;
 use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Http\Controllers\PayPalWebhookController;
@@ -49,6 +50,7 @@ function bindPayPalWebhookController(bool $signatureValid = true): void
     app()->bind(PayPalWebhookController::class, fn ($app) => new PayPalWebhookController(
         fn () => new StubPayPalClient($signatureValid),
         $app->make(FulfillOrder::class),
+        $app->make(PersistProviderFee::class),
     ));
 }
 

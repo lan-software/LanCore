@@ -5,6 +5,7 @@ namespace App\Domain\Orchestration\Http\Controllers;
 use App\Domain\Orchestration\Models\GameServer;
 use App\Domain\Orchestration\Services\ExternalApiTester;
 use App\Domain\Shop\Support\CurrencyResolver;
+use App\Domain\Shop\Support\ProviderFeeSchedule;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -48,8 +49,11 @@ class ExternalApiController extends Controller
                     'has_webhook_secret' => ((string) config('cashier.webhook.secret')) !== '',
                     'currency' => CurrencyResolver::upperCode(),
                     'currency_locale' => config('cashier.currency_locale', 'en'),
+                    'fee_schedule' => ProviderFeeSchedule::fromConfig('stripe')->toDisplayArray(),
                 ],
-                'paypal' => $this->paypalStatus(),
+                'paypal' => $this->paypalStatus() + [
+                    'fee_schedule' => ProviderFeeSchedule::fromConfig('paypal')->toDisplayArray(),
+                ],
                 'steam' => [
                     'enabled' => $steamKey !== '',
                     'has_api_key' => $steamKey !== '',
