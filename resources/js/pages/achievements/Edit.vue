@@ -8,6 +8,7 @@ import {
 import { edit as achievementEdit } from '@/actions/App/Domain/Achievements/Http/Controllers/AchievementController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import LucideIconPreview from '@/components/LucideIconPreview.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -171,13 +172,21 @@ function deleteAchievement() {
 
                         <div class="grid gap-2">
                             <Label for="icon">{{ $t('common.icon') }}</Label>
-                            <Input
-                                id="icon"
-                                v-model="form.icon"
-                                :placeholder="
-                                    $t('achievements.form.iconPlaceholder')
-                                "
-                            />
+                            <div class="flex items-center gap-2">
+                                <Input
+                                    id="icon"
+                                    v-model="form.icon"
+                                    :placeholder="
+                                        $t('achievements.form.iconPlaceholder')
+                                    "
+                                />
+                                <LucideIconPreview
+                                    :name="form.icon"
+                                    size-class="size-8"
+                                    with-tooltip
+                                    class="shrink-0 text-foreground"
+                                />
+                            </div>
                             <InputError :message="form.errors.icon" />
                         </div>
                     </div>

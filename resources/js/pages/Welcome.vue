@@ -176,16 +176,17 @@ function onSeatClick(payload: unknown): void {
 }
 
 const seatMapWrapperRef = ref<HTMLDivElement | null>(null);
+const seatMapCanvasRef = ref<{ zoomToBlock: (id: string) => void } | null>(null);
 let focusAnimationApplied = false;
 
 /**
  * When the page is opened from a profile's "find on seat plan" quick action
  * with `?focus_user=<id>` (resolved server-side to {@link focusSeatId}), scroll
- * the seat-map section into view once the canvas has finished rendering and
- * pulse the matching seat with an SVG circle so the visitor can spot their
- * friend at a glance. We guard with `focusAnimationApplied` because the
- * underlying canvas may re-emit `ready` on layout/data changes — replaying
- * the animation each time would be jarring.
+ * the seat-map section into view, zoom the canvas onto the block holding
+ * that seat, and pulse the seat itself so the visitor can spot their friend
+ * at a glance. Guard with `focusAnimationApplied` because the underlying
+ * canvas may re-emit `ready` on layout/data changes — replaying the whole
+ * flow each time would be jarring.
  */
 function onSeatMapReady(): void {
     if (focusAnimationApplied || !props.focusSeatId) {
@@ -215,6 +216,16 @@ function onSeatMapReady(): void {
         const cx = parseFloat(circle?.getAttribute('cx') ?? '0');
         const cy = parseFloat(circle?.getAttribute('cy') ?? '0');
         const r = parseFloat(circle?.getAttribute('r') ?? '12');
+        const blockId = circle?.getAttribute('block-id');
+
+        // Zoom the underlying d3-zoom transform onto the seat's block so the
+        // pulse renders at a useful size. zoomToBlock animates over ~500ms,
+        // which we want running concurrently with the pulse — the <circle>
+        // we append below is a child of the seat's <g>, so it transforms
+        // along with the rest of the canvas.
+        if (blockId) {
+            seatMapCanvasRef.value?.zoomToBlock(blockId);
+        }
 
         const ns = 'http://www.w3.org/2000/svg';
         const pulse = document.createElementNS(ns, 'circle');
@@ -649,6 +660,7 @@ function dismissAnnouncement(announcementId: number) {
                                 style="height: 500px"
                             >
                                 <SeatMapCanvas
+                                    ref="seatMapCanvasRef"
                                     :data="seatPlanData"
                                     :options="{
                                         legend: true,

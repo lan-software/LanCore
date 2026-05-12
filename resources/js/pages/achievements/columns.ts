@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
 import { h } from 'vue';
+import LucideIconPreview from '@/components/LucideIconPreview.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Achievement } from '@/types/domain';
@@ -50,7 +51,12 @@ export const columns: ColumnDef<Achievement>[] = [
         accessorKey: 'icon',
         header: () => h('span', 'Icon'),
         cell: ({ row }) =>
-            h('span', { class: 'text-muted-foreground' }, row.getValue('icon')),
+            h(LucideIconPreview, {
+                name: row.getValue('icon') as string,
+                sizeClass: 'size-5',
+                withTooltip: true,
+                class: 'text-foreground',
+            }),
     },
     {
         accessorKey: 'is_active',

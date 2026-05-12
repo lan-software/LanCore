@@ -30,7 +30,8 @@ final class PolicyVersionDiff
     /**
      * Structured rows for client-side rendering — same diff content as
      * `render()` but as a flat array of `{op, line}` so the frontend can
-     * choose between a compact (changed lines + context) and a full view.
+     * choose between a compact (changed lines + minimal context) and a
+     * full view.
      *
      * @return list<array{op:'eq'|'add'|'del', line:string}>
      */
