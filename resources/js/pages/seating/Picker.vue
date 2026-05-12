@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { Armchair, ChevronLeft, Maximize, Target } from 'lucide-vue-next';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
     destroy as releaseAction,
     store as assignAction,
 } from '@/actions/App/Domain/Seating/Http/Controllers/SeatPickerController';
 import Heading from '@/components/Heading.vue';
+import SeatPlanViewer from '@/components/seat-plan/SeatPlanViewer.vue';
+import {
+    notifyReady,
+    useSeatPlanViewer,
+} from '@/components/seat-plan/useSeatPlanViewer';
 import SeatedUserHoverCard from '@/components/seating/SeatedUserHoverCard.vue';
-import SeatMapCanvas from '@/components/SeatMapCanvas.vue';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,6 +28,7 @@ interface SeatPlan {
     id: number;
     name: string;
     background_image_url?: string | null;
+    labels?: { id?: number; title: string; x: number; y: number }[];
     blocks: SeatPlanBlock[];
 }
 
@@ -62,20 +67,6 @@ interface TakenSeat {
     banner_url: string | null;
 }
 
-/**
- * Shape of the `seat_click` payload emitted by @alisaitteke/seatmap-canvas —
- * the library hands back the seat's own methods so callers can apply visual
- * selection themselves (see lib README §"Event Handling").
- */
-interface LibrarySeat {
-    id: string | number;
-    title?: string;
-    salable?: boolean;
-    isSelected?: () => boolean;
-    select?: () => void;
-    unSelect?: () => void;
-}
-
 const props = defineProps<{
     event: { id: number; name: string; banner_image_urls: string[] };
     seatPlans: SeatPlan[];
@@ -101,13 +92,10 @@ const selectedSeat = ref<{
     title: string;
 } | null>(null);
 const clickHint = ref<string | null>(null);
-const canvasRef = ref<InstanceType<typeof SeatMapCanvas> | null>(null);
+const viewerRef = ref<InstanceType<typeof SeatPlanViewer> | null>(null);
+const viewer = useSeatPlanViewer(viewerRef);
 const hoveredTaken = ref<TakenSeat | null>(null);
 const hoverAnchor = ref<DOMRect | null>(null);
-// Track the seat object the user most recently highlighted on the canvas so we
-// can un-select it when they pick a different one (library allows multi-select
-// by default; we only want single).
-let highlightedSeat: LibrarySeat | null = null;
 
 const form = useForm<{
     ticket_id: number | null;
@@ -198,16 +186,16 @@ function blockAcceptsCategory(
 }
 
 /**
- * Given a library-synthesised seat payload, find whether its block is
- * currently blocked by the category filter. Used to distinguish "seat taken"
- * from "category forbidden" at click time.
+ * Whether the block holding `seatId` is currently forbidden to the active
+ * assignee's ticket category. Used to distinguish "seat taken" from
+ * "category forbidden" at click time so we surface the right hint.
  */
-function isBlockBlockedByCategory(
-    seat: LibrarySeat,
+function isSeatBlockedByCategory(
+    seatId: number | string,
     plan: SeatPlan,
     categoryId: number | null,
 ): boolean {
-    const seatIdStr = String(seat.id);
+    const seatIdStr = String(seatId);
 
     for (const block of plan.blocks ?? []) {
         if (block.seats.some((s) => String(s.id) === seatIdStr)) {
@@ -259,6 +247,7 @@ const decoratedPlanData = computed<SeatPlanData | null>(() => {
 
     return {
         background_image_url: activePlan.value.background_image_url ?? null,
+        labels: activePlan.value.labels ?? [],
         blocks,
     } as SeatPlanData;
 });
@@ -272,6 +261,24 @@ const submitError = computed<string | null>(() => {
     );
 });
 
+/* Seats highlighted on the viewer: either the in-progress local pick or the
+ * persisted assignment for the currently-focused person. Single-select by
+ * design; the picker has never supported multi-seat selection. */
+const selectedSeatIds = computed<(number | string)[]>(() => {
+    if (selectedSeat.value) {
+        return [selectedSeat.value.seatId];
+    }
+
+    if (
+        activeAssignee.value?.assignment &&
+        activeAssignee.value.assignment.seat_plan_id === activePlanId.value
+    ) {
+        return [activeAssignee.value.assignment.seat_id];
+    }
+
+    return [];
+});
+
 function flashHint(message: string): void {
     clickHint.value = message;
     window.setTimeout(() => {
@@ -281,7 +288,28 @@ function flashHint(message: string): void {
     }, 4000);
 }
 
-function onSeatHoverEnter(payload: { id: string; rect: DOMRect }): void {
+function findSeatTitle(seatId: number | string): string | null {
+    if (!activePlan.value) {
+        return null;
+    }
+
+    const seatIdStr = String(seatId);
+
+    for (const block of activePlan.value.blocks ?? []) {
+        const seat = block.seats.find((s) => String(s.id) === seatIdStr);
+
+        if (seat) {
+            return (block.seat_title_prefix ?? '') + seat.title;
+        }
+    }
+
+    return null;
+}
+
+function onSeatHoverEnter(payload: {
+    id: number | string;
+    rect: DOMRect;
+}): void {
     if (!activePlan.value) {
         return;
     }
@@ -307,8 +335,6 @@ function onSeatHoverLeave(): void {
 }
 
 function clearHighlight(): void {
-    highlightedSeat?.unSelect?.();
-    highlightedSeat = null;
     selectedSeat.value = null;
 }
 
@@ -319,36 +345,20 @@ function selectContext(ticketId: number, userId: number): void {
     clearHighlight();
 }
 
-function onSeatClick(payload: unknown): void {
-    const seat = payload as LibrarySeat;
-
-    console.info('[Picker] onSeatClick', {
-        seatId: seat.id,
-        salable: seat.salable,
-        activePlan: activePlan.value?.id ?? null,
-        activeTicketId: activeTicketId.value,
-        activeUserId: activeUserId.value,
-        activeAssignee: activeAssignee.value
-            ? {
-                  user_id: activeAssignee.value.user_id,
-                  can_pick: activeAssignee.value.can_pick,
-              }
-            : null,
-    });
-
-    // Guard: must have a plan on screen.
+function onSeatClick(payload: {
+    id: number | string;
+    salable: boolean;
+    rect: DOMRect;
+}): void {
     if (!activePlan.value) {
-        console.warn('[Picker] click rejected: no activePlan');
-
         return;
     }
 
-    // If this seat is taken AND we're allowed to see the occupant's profile,
-    // navigate there instead of running the pick flow. Hidden occupants fall
-    // through to the existing salable=false branch and render the "seat
-    // taken" hint as before.
+    /* Taken seat owned by a visible user → navigate to their profile instead
+     * of running the pick flow. Hidden occupants fall through to the
+     * salable=false branch and get the "seat taken" hint. */
     const takenAtClick = takenByPlanAndSeat.value.get(
-        `${activePlan.value.id}::${Number(seat.id)}`,
+        `${activePlan.value.id}::${Number(payload.id)}`,
     );
 
     if (takenAtClick?.username) {
@@ -357,77 +367,44 @@ function onSeatClick(payload: unknown): void {
         return;
     }
 
-    // Guard: if the clicked seat landed in a block that the active assignee's
-    // ticket category is forbidden from, explain the rejection explicitly.
-    // The seat's `salable` is already false (decoratedPlanData forces it), so
-    // without this branch the user would get the generic "seat is taken"
-    // message, which is misleading.
     if (
-        seat.salable === false &&
+        !payload.salable &&
         activeAssignee.value &&
-        activePlan.value &&
-        isBlockBlockedByCategory(
-            seat,
+        isSeatBlockedByCategory(
+            payload.id,
             activePlan.value,
             activeAssignee.value.ticket_category_id,
         )
     ) {
-        console.warn(
-            '[Picker] click rejected: block does not accept this ticket category',
-        );
         flashHint(t('seating.picker.hint.blockNotForCategory'));
 
         return;
     }
 
-    // Guard: taken seat — tell the user why nothing happens.
-    if (seat.salable === false) {
-        console.warn('[Picker] click rejected: seat not salable');
+    if (!payload.salable) {
         flashHint(t('seating.picker.hint.seatTaken'));
 
         return;
     }
 
-    // Guard: no person chosen yet — point the user to the sidebar.
     if (!activeAssignee.value) {
-        console.warn(
-            '[Picker] click rejected: no activeAssignee (choose someone on the right first)',
-        );
         flashHint(t('seating.picker.hint.chooseAssigneeFirst'));
 
         return;
     }
 
-    // Guard: policy denies — typically because the viewer isn't owner/manager
-    // and the assignee isn't themselves.
     if (!activeAssignee.value.can_pick) {
-        console.warn(
-            '[Picker] click rejected: can_pick=false for assignee',
-            activeAssignee.value.user_id,
-        );
         flashHint(t('seating.picker.hint.cannotPickForPerson'));
 
         return;
     }
 
-    // All guards passed: apply visual selection exactly once.
-    if (highlightedSeat && highlightedSeat !== seat) {
-        highlightedSeat.unSelect?.();
-    }
-
-    if (!seat.isSelected?.()) {
-        seat.select?.();
-    }
-
-    highlightedSeat = seat;
-
     selectedSeat.value = {
         planId: activePlan.value.id,
-        seatId: Number(seat.id),
-        title: seat.title ?? String(seat.id),
+        seatId: Number(payload.id),
+        title: findSeatTitle(payload.id) ?? String(payload.id),
     };
     clickHint.value = null;
-    console.info('[Picker] seat accepted & selected', selectedSeat.value);
 }
 
 function confirmSeat(): void {
@@ -479,72 +456,11 @@ function releaseSeat(): void {
     );
 }
 
-/**
- * When the active assignee already has a saved seat, highlight it on the canvas
- * so the user can see their current seat at a glance. Runs after the canvas
- * async-init completes.
- */
-async function highlightSavedSeat(): Promise<void> {
-    const assignment = activeAssignee.value?.assignment;
-
-    if (!assignment || !activePlan.value) {
-        return;
-    }
-
-    if (assignment.seat_plan_id !== activePlan.value.id) {
-        return;
-    }
-
-    await nextTick();
-    // Library init is async — poll briefly for the instance.
-    const instance = await waitForInstance();
-
-    if (!instance) {
-        return;
-    }
-
-    // getSeat signature: (seatId, blockId). We have to search blocks for the match.
-    const assignmentSeatId = String(assignment.seat_id);
-
-    for (const block of activePlan.value.blocks ?? []) {
-        if (block.seats.some((s) => String(s.id) === assignmentSeatId)) {
-            const seat = instance.getSeat?.(assignmentSeatId, String(block.id));
-
-            if (seat && typeof seat === 'object' && 'select' in seat) {
-                (seat as LibrarySeat).select?.();
-                highlightedSeat = seat as LibrarySeat;
-            }
-
-            return;
-        }
-    }
-}
-
-async function waitForInstance(): Promise<{
-    getSeat?: (seatId: string, blockId: string) => unknown;
-} | null> {
-    for (let i = 0; i < 20; i++) {
-        const instance = canvasRef.value?.getInstance?.();
-
-        if (instance) {
-            return instance as unknown as {
-                getSeat?: (seatId: string, blockId: string) => unknown;
-            };
-        }
-
-        await new Promise((r) => setTimeout(r, 50));
-    }
-
-    return null;
-}
-
 // Auto-select the only pickable assignee when no context was provided
 // (user landed on the bare /events/{id}/seats URL but holds a single ticket
 // with a single attendee — a common case for solo tickets).
 onMounted(() => {
     if (activeTicketId.value !== null && activeUserId.value !== null) {
-        highlightSavedSeat();
-
         return;
     }
 
@@ -557,45 +473,28 @@ onMounted(() => {
     if (pickable.length === 1) {
         activeTicketId.value = pickable[0].ticketId;
         activeUserId.value = pickable[0].userId;
-        highlightSavedSeat();
     }
 });
 
-// Re-highlight when the assignment context changes (e.g., user clicks a
-// different person in the sidebar and that person already has a saved seat).
-// Note: we DON'T rely only on this watcher after an assign/release — the
-// canvas re-inits asynchronously (destroy + new instance), so by the time
-// this watcher runs, the new library seat objects may not exist yet.
-// The `@ready` handler (see `onCanvasReady`) is the authoritative re-highlight.
+/* The saved-seat selection ring is driven by `selectedSeatIds` (derived from
+ * the active assignee's persisted assignment), so picking a new assignee
+ * implicitly re-highlights their seat. We still drop any in-progress local
+ * pick so the user starts fresh for the newly-focused person. */
 watch(activeAssignee, () => {
     clearHighlight();
 });
 
-/**
- * Called by SeatMapCanvas after each (re-)init completes. This is the reliable
- * moment to re-apply any visual selection tied to the assignee's saved seat,
- * because the canvas has just rebuilt and any seat references we had cached
- * are now stale.
- */
-function onCanvasReady(): void {
-    console.info('[Picker] canvas ready — re-applying saved-seat highlight');
-    highlightedSeat = null;
-    highlightSavedSeat();
-}
-
 function resetCanvasView(): void {
-    canvasRef.value?.resetView?.();
+    viewer.fitToVenue({ animated: true });
 }
 
 function zoomToMySeat(): void {
-    // Prefer the library's zoomToSelection (respects the seats we've marked
-    // as selected via highlight). Falls back to resetting the view.
-    const api = canvasRef.value;
+    const savedSeatId = activeAssignee.value?.assignment?.seat_id;
 
-    if (api?.zoomToSelection) {
-        api.zoomToSelection();
+    if (typeof savedSeatId === 'number') {
+        viewer.zoomToSeat(savedSeatId, { animated: true });
     } else {
-        api?.resetView?.();
+        viewer.fitToVenue({ animated: true });
     }
 }
 </script>
@@ -662,24 +561,16 @@ function zoomToMySeat(): void {
                         class="overflow-hidden rounded-xl border bg-card"
                         style="height: 520px"
                     >
-                        <SeatMapCanvas
-                            ref="canvasRef"
-                            :data="decoratedPlanData"
-                            :options="{
-                                legend: true,
-                                style: {
-                                    seat: {
-                                        hover: '#8fe100',
-                                        color: '#6796ff',
-                                        not_salable: '#424747',
-                                        selected: '#56aa45',
-                                    },
-                                },
-                            }"
+                        <SeatPlanViewer
+                            ref="viewerRef"
+                            :plan="decoratedPlanData"
+                            :selected-seat-ids="selectedSeatIds"
+                            show-legend
+                            show-tooltip
                             @seat-click="onSeatClick"
                             @seat-hover-enter="onSeatHoverEnter"
                             @seat-hover-leave="onSeatHoverLeave"
-                            @ready="onCanvasReady"
+                            @ready="notifyReady(viewer)"
                         />
                     </div>
                     <p

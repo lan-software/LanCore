@@ -357,7 +357,7 @@ The LanCore CSCI shall support the following operational states:
 **Models:** Competition, CompetitionTeam, CompetitionTeamMember, MatchResultProof
 **Controllers:** CompetitionController, UserCompetitionController, TeamController, MatchResultController, LanBracketsWebhookController
 **Actions:** CreateCompetition, UpdateCompetition, DeleteCompetition, CreateTeam, JoinTeam, LeaveTeam, SubmitMatchResult, HandleLanBracketsWebhook
-**Jobs:** SyncCompetitionToLanBrackets, SyncTeamsToLanBrackets
+**Jobs:** SyncCompetitionToLanBrackets, SyncTeamsToLanBrackets, GenerateLanBracketsStages
 **Policies:** CompetitionPolicy, CompetitionTeamPolicy, MatchResultProofPolicy
 **Services:** LanBracketsClient
 
@@ -365,7 +365,7 @@ The LanCore CSCI shall support the following operational states:
 |--------|------------|
 | COMP-F-001 | The software shall support competition creation with: name, type, stage_type, team_size, max_teams, event/game references |
 | COMP-F-002 | The software shall enforce CompetitionPolicy with ManageCompetitions permission for admin CRUD |
-| COMP-F-003 | The software shall support competition lifecycle transitions: Draft → RegistrationOpen → RegistrationClosed → Running → Finished → Archived |
+| COMP-F-003 | The software shall support competition lifecycle transitions: Draft ↔ Published → RegistrationOpen ↔ RegistrationClosed → Running → Finished → Archived. Published competitions appear on the public event page but reject team-registration attempts (preheat phase). The Published ↔ Draft and RegistrationClosed ↔ RegistrationOpen edges are reversible; existing teams and sign-ups are preserved across reversals. |
 | COMP-F-004 | The software shall support competition deletion (draft/archived only) |
 | COMP-F-005 | The software shall support team creation with captain assignment during registration |
 | COMP-F-006 | The software shall support team joining with capacity validation |
@@ -380,6 +380,10 @@ The LanCore CSCI shall support the following operational states:
 | COMP-F-015 | The software shall prevent duplicate join requests from the same user to the same team, and reject requests when the team is at capacity |
 | COMP-F-016 | When a competition transitions to `RegistrationClosed`, the software shall trigger LanBrackets bracket / match generation by calling `POST /api/v1/competitions/{id}/stages/{stage}/generate` for every stage, chained after `SyncTeamsToLanBrackets`. The chain is implemented via `Bus::chain([SyncTeamsToLanBrackets, GenerateLanBracketsStages])`. |
 | COMP-F-017 | The software shall provide an artisan command `competitions:generate-matches {id} [--sync]` that manually replays the post-registration LanBrackets pipeline (team sync + bracket generation) for recovery scenarios. |
+| COMP-F-018 | When syncing teams for a `RegistrationClosed` competition, the software shall upsert each `CompetitionTeam` to LanBrackets via `POST /api/v1/teams` (carrying `name`, `tag`, `external_reference_id = (string) $team->id`, `source_system = "lancore"`) and persist the returned LanBrackets team id into `CompetitionTeam.lanbrackets_id` BEFORE invoking `POST /api/v1/competitions/{id}/participants/bulk`. The upsert is idempotent on `(source_system, external_reference_id)`. |
+| COMP-F-019 | The software shall handle the inbound LanBrackets `stage.completed` webhook by locating the next pending stage (via `LanBracketsClient::getStages()`, ordered by the `order` field) and dispatching `GenerateLanBracketsStages` for the same competition. If no further pending stage exists, the handler is a no-op. |
+| COMP-F-020 | `UserMatchController` shall resolve a match participant's local team identity from the enriched `CompetitionMatchResource` payload (`participant_type`, `participant_id`, `participant_name`, `external_reference_id`, `source_system` per slot) by mapping `external_reference_id` → local `CompetitionTeam.id`. The controller shall fall back to `team_id = null` plus `team_name = participants[].participant_name ?? null` (no exception) for legacy payloads that omit `external_reference_id`. |
+| COMP-F-021 | LanCore shall declare the LanBrackets webhook events it subscribes to in `config/integrations.php` under `apps.lanbrackets.subscribed_webhooks`. Initial set: `bracket.generated`, `stage.completed`, `match.result_reported`, `competition.completed`. The `integrations:sync` reconciler shall read and surface this declaration (manifest-only; no DB row written today; extends INT-F-011 / INT-F-012). |
 | COM-F-MATCH-FINAL-001 | The software shall dispatch a `MatchFinalized` event whenever a match transitions to a finalized state, carrying the competition, the LanBrackets match id, and a `MatchFinalizationSource` enum value identifying the trigger source |
 | COM-F-MATCH-FINAL-002 | The `MatchFinalizationSource` enum shall include cases `SubmittedByParticipants` (derived from the participant-confirm path) and `ForcedByAdmin` (derived from a `forced_by_admin` flag on the LanBrackets webhook payload) |
 | COM-F-MATCH-FINAL-003 | The software shall dispatch `MatchFinalized` at most once per `(competition_id, lanbrackets_match_id)` tuple, regardless of webhook re-emits or admin re-confirmations, via an atomic cache marker with a 30-day TTL |

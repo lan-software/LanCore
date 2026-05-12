@@ -19,7 +19,7 @@ use Illuminate\Console\Command;
  *   php artisan competitions:generate-matches 2
  *   php artisan competitions:generate-matches 2 --sync
  *
- * @see docs/mil-std-498/SRS.md COMP-F-017
+ * @see docs/mil-std-498/SRS.md COMP-F-017, COMP-F-018
  */
 class GenerateLanBracketsMatchesCommand extends Command
 {

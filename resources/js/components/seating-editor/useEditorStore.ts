@@ -59,6 +59,68 @@ export function useEditorStore(initial: EditorPlan) {
     const canUndo = computed(() => past.value.length > 0);
     const canRedo = computed(() => future.value.length > 0);
 
+    /**
+     * Lower bound for `view.zoom`, derived from the plan's content extent:
+     * the zoom at which everything just fits the 1600×1000 viewport with a
+     * 1.2 padding factor. Capped at 1× from above so a tiny/empty plan can
+     * still be edited at 100 %, and floored at 0.05× so degenerate plans
+     * don't yield zero. Reactive on the plan, so adding/removing blocks
+     * relaxes or tightens the limit automatically.
+     */
+    const minZoom = computed<number>(() => {
+        const ABSOLUTE_MIN = 0.05;
+        let minX = Number.POSITIVE_INFINITY;
+        let maxX = Number.NEGATIVE_INFINITY;
+        let minY = Number.POSITIVE_INFINITY;
+        let maxY = Number.NEGATIVE_INFINITY;
+
+        function accumulate(x: number, y: number): void {
+            if (x < minX) {
+                minX = x;
+            }
+
+            if (x > maxX) {
+                maxX = x;
+            }
+
+            if (y < minY) {
+                minY = y;
+            }
+
+            if (y > maxY) {
+                maxY = y;
+            }
+        }
+
+        for (const block of plan.value.blocks) {
+            for (const seat of block.seats) {
+                accumulate(seat.x, seat.y);
+            }
+
+            for (const label of block.labels) {
+                accumulate(label.x, label.y);
+            }
+        }
+
+        for (const label of plan.value.labels ?? []) {
+            accumulate(label.x, label.y);
+        }
+
+        if (!Number.isFinite(minX)) {
+            return ABSOLUTE_MIN;
+        }
+
+        const width = Math.max(maxX - minX, 200);
+        const height = Math.max(maxY - minY, 200);
+        const margin = 1.2;
+        const fitZoom = Math.min(
+            1600 / (width * margin),
+            1000 / (height * margin),
+        );
+
+        return Math.max(ABSOLUTE_MIN, Math.min(fitZoom, 1));
+    });
+
     function clone<T>(value: T): T {
         return JSON.parse(JSON.stringify(value)) as T;
     }
@@ -270,6 +332,7 @@ export function useEditorStore(initial: EditorPlan) {
         isDirty,
         canUndo,
         canRedo,
+        minZoom,
         applyMutation,
         undo,
         redo,

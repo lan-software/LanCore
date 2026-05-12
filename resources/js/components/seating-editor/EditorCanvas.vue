@@ -420,8 +420,17 @@ function commitMarquee(rect: Rect): void {
 
 function startPan(event: PointerEvent): void {
     panning.value = true;
-    const start = svgPoint(event);
+    /* CRITICAL: track cursor in raw SVG viewBox coords (which `svgPointRaw`
+     * returns), not world coords. `svgPoint` reads `store.view.panX/Y` via
+     * the inverse world transform, so each rAF flush shifts the reference
+     * frame and the next pointermove computes its delta against the new
+     * frame — under-correcting by exactly one frame's pan and producing
+     * per-frame oscillation that reads as jitter. Raw viewBox coords are
+     * pan-independent; divide the delta by the captured zoom to convert to
+     * world units. */
+    const startSvg = svgPointRaw(event);
     const startPan = { x: store.view.panX, y: store.view.panY };
+    const panZoom = store.view.zoom;
     (event.target as Element).setPointerCapture(event.pointerId);
 
     /* Every pointermove re-evaluates the viewBox computed, which re-renders
@@ -440,9 +449,9 @@ function startPan(event: PointerEvent): void {
     }
 
     function onMove(ev: PointerEvent): void {
-        const cur = svgPoint(ev);
-        pendingX = startPan.x - (cur.x - start.x);
-        pendingY = startPan.y - (cur.y - start.y);
+        const curSvg = svgPointRaw(ev);
+        pendingX = startPan.x - (curSvg.x - startSvg.x) / panZoom;
+        pendingY = startPan.y - (curSvg.y - startSvg.y) / panZoom;
 
         if (rafId === null) {
             rafId = requestAnimationFrame(flush);
@@ -471,12 +480,17 @@ function startPan(event: PointerEvent): void {
     document.addEventListener('pointerup', onUp);
 }
 
+const MAX_ZOOM = 5;
+
 function onWheel(event: WheelEvent): void {
     event.preventDefault();
     const { x: cx, y: cy } = svgPoint(event);
     const k = event.deltaY > 0 ? 0.9 : 1.1;
     const oldZoom = store.view.zoom;
-    const newZoom = Math.min(Math.max(oldZoom * k, 0.1), 5);
+    const newZoom = Math.min(
+        Math.max(oldZoom * k, store.minZoom.value),
+        MAX_ZOOM,
+    );
     const actualK = newZoom / oldZoom;
 
     if (actualK === 1) {

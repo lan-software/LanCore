@@ -140,6 +140,42 @@ class LanBracketsClient
     }
 
     /**
+     * Upsert a team on LanBrackets keyed on `(source_system, external_reference_id)`.
+     *
+     * Called per `CompetitionTeam` before the bulk participant call so that
+     * participants reference the canonical LanBrackets team id, not whatever
+     * collides with the local CompetitionTeam id.
+     *
+     * @param  array{name: string, tag?: string|null, description?: string|null, external_reference_id: string, source_system?: string, status?: string}  $data
+     * @return array<string, mixed>
+     *
+     * @throws LanBracketsDisabledException
+     * @throws LanBracketsRequestException
+     *
+     * @see docs/mil-std-498/SRS.md COMP-F-018
+     * @see docs/mil-std-498/IDD.md §3.8.1
+     */
+    public function upsertTeam(array $data): array
+    {
+        $this->ensureEnabled();
+
+        $data['source_system'] = $data['source_system'] ?? 'lancore';
+
+        $response = $this->withRetries(
+            fn () => $this->apiClient()->post('/api/v1/teams', $data)
+        );
+
+        if (! $response->successful()) {
+            throw new LanBracketsRequestException(
+                $response->json('message') ?? 'Failed to upsert team.',
+                $response->status()
+            );
+        }
+
+        return $response->json('data', $response->json() ?? []);
+    }
+
+    /**
      * @param  array{participant_type: string, participant_id: int, seed?: int|null}  $data
      * @return array<string, mixed>
      *

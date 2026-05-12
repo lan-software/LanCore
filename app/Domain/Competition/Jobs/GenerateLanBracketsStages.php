@@ -15,7 +15,11 @@ use Throwable;
  * given competition. Idempotent on the LanBrackets side (already-generated
  * stages return success), so safe to retry.
  *
- * @see docs/mil-std-498/SRS.md COMP-F-016
+ * Dispatched both from `Bus::chain` in `UpdateCompetition` (RegistrationClosed
+ * transition) and from the `stage.completed` branch in `HandleLanBracketsWebhook`
+ * (multi-stage progression).
+ *
+ * @see docs/mil-std-498/SRS.md COMP-F-016, COMP-F-019
  */
 class GenerateLanBracketsStages implements ShouldQueue
 {

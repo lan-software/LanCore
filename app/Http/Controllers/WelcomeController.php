@@ -84,7 +84,7 @@ class WelcomeController extends Controller
             'announcements' => $nextEvent ? $this->getActiveAnnouncements($nextEvent, $request) : [],
             'dismissedAnnouncementIds' => $nextEvent ? $this->getDismissedAnnouncementIds($nextEvent, $request) : [],
             'openCompetitions' => Competition::query()
-                ->where('status', CompetitionStatus::RegistrationOpen)
+                ->whereIn('status', [CompetitionStatus::Published, CompetitionStatus::RegistrationOpen])
                 ->with(['game:id,name,slug', 'event:id,name'])
                 ->withCount('teams')
                 ->orderBy('registration_closes_at')
@@ -94,6 +94,8 @@ class WelcomeController extends Controller
                     'name' => $c->name,
                     'slug' => $c->slug,
                     'description' => $c->description,
+                    'status' => $c->status->value,
+                    'registration_open' => $c->status === CompetitionStatus::RegistrationOpen,
                     'type' => $c->type->value,
                     'stage_type' => $c->stage_type?->value,
                     'team_size' => $c->team_size,

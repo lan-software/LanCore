@@ -66,7 +66,7 @@ class UserCompetitionController extends Controller
             ->first();
 
         $chatPayload = null;
-        if ($competitionChatRoom !== null) {
+        if ($competitionChatRoom !== null && $userTeam !== null) {
             $chatPayload = $this->serializeRoomPayload($competitionChatRoom, $request->user());
         }
 

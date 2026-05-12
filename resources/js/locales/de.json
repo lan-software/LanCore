@@ -236,6 +236,13 @@
                     }
                 }
             }
+        },
+        "viewer": {
+            "legend": {
+                "available": "Verfügbar",
+                "taken": "Belegt",
+                "selected": "Ausgewählt"
+            }
         }
     },
     "settings": {
@@ -587,9 +594,13 @@
             "groupStage": "Gruppenphase"
         },
         "transition": {
+            "publish": "Veröffentlichen",
+            "unpublish": "Zurück zu Entwurf",
             "openRegistration": "Anmeldung öffnen",
             "closeRegistration": "Anmeldung schließen",
             "closeRegistrationConfirm": "Damit können sich keine neuen Teams mehr anmelden. Fortfahren?",
+            "reopenRegistration": "Anmeldung wieder öffnen",
+            "reopenRegistrationConfirm": "Damit wird die Anmeldung erneut geöffnet. Bestehende Teams und Anmeldungen bleiben erhalten. Fortfahren?",
             "goLive": "Starten",
             "goLiveConfirm": "Damit wird der Wettbewerb gestartet. Teams werden zu LanBrackets synchronisiert. Fortfahren?",
             "markFinished": "Als beendet markieren",
@@ -600,6 +611,7 @@
         },
         "lifecycle": {
             "draft": "Entwurf",
+            "published": "Veröffentlicht",
             "registrationOpen": "Anmeldung",
             "registrationClosed": "Anm. geschlossen",
             "running": "Läuft",

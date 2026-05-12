@@ -9,6 +9,7 @@ use App\Domain\Chat\Services\ChatService;
 use App\Domain\Competition\Chat\CompetitionRoomAutoJoin;
 use App\Domain\Competition\Chat\MatchRoomPolicy;
 use App\Domain\Competition\Models\Competition;
+use App\Domain\Competition\Models\CompetitionTeam;
 use App\Domain\Competition\Models\CompetitionTeamMember;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -24,7 +25,7 @@ use Throwable;
  * LanBrackets (source of truth for matches) and merges per-match chat room
  * ids from the local DB so participants can jump into a match chat.
  *
- * @see docs/mil-std-498/SRS.md COMP-F-018
+ * @see docs/mil-std-498/SRS.md COMP-F-012, COMP-F-020
  */
 class UserMatchController extends Controller
 {
@@ -79,10 +80,7 @@ class UserMatchController extends Controller
             }
         }
 
-        $participantIdToTeamId = $competition->teams
-            ->pluck('id', 'lanbrackets_id')
-            ->filter()
-            ->all();
+        $teamsByLocalId = $competition->teams->keyBy('id');
 
         $teamIdsByUserId = $this->teamIdsForUser($competition->id, $user->id);
 
@@ -110,7 +108,7 @@ class UserMatchController extends Controller
                     fn (array $match) => $this->serializeMatch(
                         $match,
                         $competition,
-                        $participantIdToTeamId,
+                        $teamsByLocalId,
                         $teamIdsByUserId,
                         $chatRoomsByMatchId,
                         $user,
@@ -171,7 +169,7 @@ class UserMatchController extends Controller
 
     /**
      * @param  array<string, mixed>  $match
-     * @param  array<int, int>  $participantIdToTeamId
+     * @param  Collection<int, CompetitionTeam>  $teamsByLocalId
      * @param  array<int, int>  $teamIdsByUserId
      * @param  Collection<int, ChatRoom>  $chatRoomsByMatchId
      * @return array<string, mixed>
@@ -179,7 +177,7 @@ class UserMatchController extends Controller
     private function serializeMatch(
         array $match,
         Competition $competition,
-        array $participantIdToTeamId,
+        Collection $teamsByLocalId,
         array $teamIdsByUserId,
         $chatRoomsByMatchId,
         $user,
@@ -187,11 +185,19 @@ class UserMatchController extends Controller
         $matchId = (int) ($match['id'] ?? 0);
         $participants = collect($match['match_participants'] ?? $match['participants'] ?? []);
 
-        $userOnMatch = $participants->contains(function ($p) use ($participantIdToTeamId, $teamIdsByUserId) {
-            $participantId = (int) ($p['competition_participant_id'] ?? 0);
-            $teamId = $participantIdToTeamId[$participantId] ?? null;
+        $userOnMatch = $participants->contains(function ($p) use ($teamsByLocalId, $teamIdsByUserId) {
+            if (($p['participant_type'] ?? null) !== 'team') {
+                return false;
+            }
 
-            return $teamId !== null && in_array($teamId, $teamIdsByUserId, true);
+            $externalRef = $p['external_reference_id'] ?? null;
+            if (empty($externalRef)) {
+                return false;
+            }
+
+            $team = $teamsByLocalId->get((int) $externalRef);
+
+            return $team !== null && in_array($team->id, $teamIdsByUserId, true);
         });
 
         $room = $chatRoomsByMatchId->get($matchId);
@@ -202,17 +208,21 @@ class UserMatchController extends Controller
             'sequence' => $match['sequence'] ?? null,
             'status' => $match['status'] ?? null,
             'participants' => $participants
-                ->map(function ($p) use ($competition, $participantIdToTeamId) {
+                ->map(function ($p) use ($teamsByLocalId) {
                     $participantId = (int) ($p['competition_participant_id'] ?? 0);
-                    $teamId = $participantIdToTeamId[$participantId] ?? null;
-                    $team = $teamId !== null
-                        ? $competition->teams->firstWhere('id', $teamId)
-                        : null;
+
+                    $team = null;
+                    if (($p['participant_type'] ?? null) === 'team') {
+                        $externalRef = $p['external_reference_id'] ?? null;
+                        if (! empty($externalRef)) {
+                            $team = $teamsByLocalId->get((int) $externalRef);
+                        }
+                    }
 
                     return [
                         'participant_id' => $participantId,
-                        'team_id' => $teamId,
-                        'team_name' => $team?->name,
+                        'team_id' => $team?->id,
+                        'team_name' => $team?->name ?? ($p['participant_name'] ?? null),
                         'score' => $p['score'] ?? null,
                         'result' => $p['result'] ?? null,
                     ];

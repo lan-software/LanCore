@@ -5,6 +5,11 @@ import { computed, ref, watch } from 'vue';
 import SeatPlanController from '@/actions/App/Domain/Seating/Http/Controllers/SeatPlanController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import SeatPlanViewer from '@/components/seat-plan/SeatPlanViewer.vue';
+import {
+    notifyReady,
+    useSeatPlanViewer,
+} from '@/components/seat-plan/useSeatPlanViewer';
 import { celebrateSave } from '@/components/seating-editor/celebrate';
 import type {
     EditorPlan,
@@ -12,7 +17,6 @@ import type {
 } from '@/components/seating-editor/editor-types';
 import EditorShell from '@/components/seating-editor/EditorShell.vue';
 import type { SaveStatus } from '@/components/seating-editor/EditorToolbar.vue';
-import SeatMapCanvas from '@/components/SeatMapCanvas.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -59,14 +63,13 @@ function executeDelete() {
 }
 
 const activeTab = ref<'editor' | 'preview' | 'categories' | 'json'>('editor');
-const previewCanvasRef = ref<InstanceType<typeof SeatMapCanvas> | null>(null);
+const previewViewerRef = ref<InstanceType<typeof SeatPlanViewer> | null>(null);
+const previewViewer = useSeatPlanViewer(previewViewerRef);
 
 /*
- * The preview tab uses v-show, so the canvas is mounted while display:none.
- * The library's `calculateZoomLevels` divides by container width/height —
- * both 0 while hidden — which yields a zero-scale VENUE zoom and parks the
- * viewport at (0, 0). When the tab becomes visible, re-run the reset path
- * so it re-measures against the now-real container and fits the plan.
+ * The preview tab uses v-show; the viewer's auto-fit ran while the
+ * container was display:none and saw a zero-pixel bounding rect. Re-fit
+ * when the tab becomes visible so the plan fills the now-real container.
  */
 watch(
     () => activeTab.value,
@@ -79,7 +82,7 @@ watch(
          * to lay out the container so clientWidth / clientHeight are real. */
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                previewCanvasRef.value?.resetView?.();
+                previewViewer.fitToVenue({ animated: false });
             });
         });
     },
@@ -153,39 +156,14 @@ function dismissError(): void {
     errorMessage.value = null;
 }
 
-/**
- * Shape the editor's working copy the same way `SeatPlanResource` does on
- * the server for the public Picker/Welcome canvases:
- *
- *   1. Drop blocks with no seats — an empty block has degenerate bbox, which
- *      breaks the library's venue-fit zoom.
- *   2. Flatten plan-level labels into the first non-empty block — the
- *      @alisaitteke/seatmap-canvas library requires labels to live under a
- *      block (BlockModel.labels: LabelModel[]).
- *   3. Bake `block.seat_title_prefix` into each seat's title so the library
- *      renders "VIP-A1" rather than "A1".
- *
- * Mirrors `app/Domain/Seating/Http/Resources/SeatPlanResource.php`.
- */
-const previewData = computed<SeatPlanData>(() => {
-    const visibleBlocks = workingPlan.value.blocks.filter(
-        (b) => (b.seats?.length ?? 0) > 0,
-    );
-    const planLabels = workingPlan.value.labels ?? [];
-
-    return {
-        background_image_url: workingPlan.value.background_image_url ?? null,
-        blocks: visibleBlocks.map((block, index) => ({
-            ...block,
-            seats: block.seats.map((seat) => ({
-                ...seat,
-                title: (block.seat_title_prefix ?? '') + seat.title,
-            })),
-            labels:
-                index === 0 ? [...block.labels, ...planLabels] : block.labels,
-        })),
-    };
-});
+/* SeatPlanScene consumes the editor wire shape verbatim — plan-level labels,
+ * empty blocks and per-block `seat_title_prefix` are all rendered natively,
+ * so the preview previously needed-server-mirroring transformations are gone. */
+const previewData = computed<SeatPlanData>(() => ({
+    background_image_url: workingPlan.value.background_image_url ?? null,
+    blocks: workingPlan.value.blocks,
+    labels: workingPlan.value.labels ?? [],
+}));
 
 const page = usePage<{
     flash: { invalidations?: InvalidationRow[]; id_map?: IdMap };
@@ -324,10 +302,11 @@ function onCategoryEditorUpdate(next: SeatPlanData): void {
     };
 }
 
-/* Preview tab consumes `previewData` through `SeatMapCanvas.vue` the same
- * way the Welcome/Picker canvases do. Let the library auto-fit on init —
- * with empty blocks filtered out of `previewData` the venue bbox is clean
- * and zoom works identically to the public-facing pages. */
+/* Preview tab consumes `previewData` through SeatPlanViewer — the same
+ * viewer the public Picker / Welcome pages use. The viewer auto-fits on
+ * first mount; the `watch(activeTab)` hook above re-fits when the user
+ * switches into the preview tab because the auto-fit ran while the
+ * container was hidden. */
 
 const jsonValue = computed<string>({
     get() {
@@ -444,26 +423,16 @@ const jsonValue = computed<string>({
                 v-show="activeTab === 'preview'"
                 class="flex-1 overflow-hidden rounded-md border"
             >
-                <!-- Matches the public Welcome canvas verbatim (same style
-                     overrides and same SeatMapCanvas wrapper). The
-                     server-side transformations that Welcome benefits from
-                     are replicated on `previewData` above. A ref lets us
-                     trigger a re-fit when the tab becomes visible (the
-                     container has `display:none` while hidden, so the
-                     library's initial measurement is all zeros). -->
-                <SeatMapCanvas
-                    ref="previewCanvasRef"
-                    :data="previewData"
-                    :options="{
-                        legend: true,
-                        style: {
-                            seat: {
-                                hover: '#8fe100',
-                                color: '#6796ff',
-                                not_salable: '#424747',
-                            },
-                        },
-                    }"
+                <!-- Uses the same SeatPlanViewer the public Picker / Welcome
+                     consume. A ref + composable lets us re-fit when the tab
+                     becomes visible (the container has `display:none` while
+                     hidden, so the viewer's initial auto-fit measures zero). -->
+                <SeatPlanViewer
+                    ref="previewViewerRef"
+                    :plan="previewData"
+                    show-legend
+                    show-tooltip
+                    @ready="notifyReady(previewViewer)"
                 />
             </div>
 

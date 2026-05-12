@@ -89,11 +89,11 @@ it('allows admins to transition competition status', function () {
 
     $this->actingAs($admin)
         ->patch("/backstage/competitions/{$competition->id}", [
-            'status' => 'registration_open',
+            'status' => 'published',
         ])
         ->assertRedirect();
 
-    expect($competition->fresh()->status->value)->toBe('registration_open');
+    expect($competition->fresh()->status->value)->toBe('published');
 });
 
 it('rejects invalid status transitions', function () {

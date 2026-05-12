@@ -429,6 +429,7 @@ LanCore communicates with LanBrackets via `LanBracketsClient` (REST API, bearer 
 - `POST /api/v1/competitions/{id}/participants/bulk` — Sync teams as participants
 - `GET /api/v1/competitions/{id}/stages/{stageId}/matches` — Fetch stage matches
 - `POST /api/v1/competitions/{id}/matches/{matchId}/result` — Report match result
+- `POST /api/v1/teams` — Upsert a team (`name`, `tag`, `external_reference_id`, `source_system`); returns `{id, name, tag, external_reference_id, source_system}`. Called per team before the bulk participant call. *(COMP-F-018)*
 
 **Configuration:** `config/lanbrackets.php` — base_url, token, webhook_secret, timeout, retries
 
@@ -440,6 +441,13 @@ LanBrackets sends webhooks to `POST /webhooks/lanbrackets` with HMAC-SHA256 sign
 - `competition.completed` — Marks competition as Finished
 - `match.result_reported` — Resolves match result proofs, triggers orchestration for next-round matches
 - `bracket.generated` — Triggers orchestration for first-round matches with all participants set
+- `stage.completed` — Locates next pending stage and dispatches `GenerateLanBracketsStages`; no-op if last stage. *(COMP-F-019)*
+
+`CompetitionMatchResource` now exposes `participant_type`, `participant_id`, `participant_name`, `external_reference_id`, `source_system` per slot, consumed by `UserMatchController` *(COMP-F-020)*.
+
+#### 3.8.3 Subscribed webhook declaration
+
+The set of LanBrackets webhook events LanCore subscribes to is declared in `config/integrations.php` under `apps.lanbrackets.subscribed_webhooks` and surfaced by `integrations:sync`. *(COMP-F-021)*
 
 ### 3.9 TMT2 Integration
 

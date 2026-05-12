@@ -45,7 +45,6 @@
         "wait-on": "^9.0.4"
     },
     "dependencies": {
-        "@alisaitteke/seatmap-canvas": "^2.7.1",
         "@inertiajs/vue3": "^2.3.7",
         "@laravel/echo-vue": "^2.3.4",
         "@tanstack/vue-table": "^8.21.3",

@@ -2,6 +2,8 @@
 
 namespace App\Domain\Event\Http\Controllers;
 
+use App\Domain\Competition\Enums\CompetitionStatus;
+use App\Domain\Competition\Models\Competition;
 use App\Domain\Event\Actions\BuildEventIcal;
 use App\Domain\Event\Enums\EventStatus;
 use App\Domain\Event\Models\Event;
@@ -128,7 +130,30 @@ class PublicEventController extends Controller
             'latestNews' => [],
             'announcements' => [],
             'dismissedAnnouncementIds' => [],
-            'openCompetitions' => [],
+            'openCompetitions' => Competition::query()
+                ->where('event_id', $event->id)
+                ->whereIn('status', [CompetitionStatus::Published, CompetitionStatus::RegistrationOpen])
+                ->with(['game:id,name,slug', 'event:id,name'])
+                ->withCount('teams')
+                ->orderBy('registration_closes_at')
+                ->get()
+                ->map(fn (Competition $c) => [
+                    'id' => $c->id,
+                    'name' => $c->name,
+                    'slug' => $c->slug,
+                    'description' => $c->description,
+                    'status' => $c->status->value,
+                    'registration_open' => $c->status === CompetitionStatus::RegistrationOpen,
+                    'type' => $c->type->value,
+                    'stage_type' => $c->stage_type?->value,
+                    'team_size' => $c->team_size,
+                    'max_teams' => $c->max_teams,
+                    'teams_count' => $c->teams_count,
+                    'game' => $c->game ? ['name' => $c->game->name] : null,
+                    'event' => $c->event ? ['name' => $c->event->name] : null,
+                    'registration_closes_at' => $c->registration_closes_at?->toIso8601String(),
+                    'starts_at' => $c->starts_at?->toIso8601String(),
+                ]),
             'focusSeatId' => $this->resolveFocusSeatId($event, $request),
         ]);
     }

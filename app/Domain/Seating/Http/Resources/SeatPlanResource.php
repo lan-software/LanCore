@@ -10,19 +10,14 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * Wire-shape compatible projection of a seat plan for the Picker and any
- * consumer of the seatmap-canvas blocks/seats shape. The output preserves the
- * pre-normalization JSON contract so `SeatMapCanvas.vue` does not need to
- * change.
+ * Wire-shape projection of a seat plan for the read-side Picker / Welcome /
+ * editor-preview consumers. Mirrors the normalized database schema directly:
+ * blocks contain seats and per-block labels; plan-level labels live at the
+ * top level alongside `blocks`. The frontend `SeatPlanScene` renders this
+ * shape as-is without any zone↔block translation.
  *
  * Callers should eager-load `blocks.seats`, `blocks.labels`,
  * `blocks.categoryRestrictions`, and `globalLabels` to avoid N+1.
- *
- * The resource strips blocks with zero seats (empty admin placeholders) and
- * flattens plan-level labels into the first remaining block, because the
- * `@alisaitteke/seatmap-canvas` library (a) breaks its venue-fit bbox when a
- * block has no seats and (b) requires labels to live under a block
- * (BlockModel.labels: LabelModel[]).
  *
  * @mixin SeatPlan
  *
@@ -35,37 +30,32 @@ class SeatPlanResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        /** @var list<array{id: int|null, title: string, x: int, y: int}> $globalLabelRows */
-        $globalLabelRows = $this->resource->relationLoaded('globalLabels')
-            ? $this->globalLabels->map(fn ($label): array => [
-                'id' => $label->id,
-                'title' => $label->title,
-                'x' => $label->x,
-                'y' => $label->y,
-            ])->values()->all()
-            : [];
-
-        /* Drop blocks with no seats — they have nothing to render and their
-         * empty bbox poisons the library's venue-fit zoom, making the whole
-         * canvas appear blank. */
-        $visibleBlocks = $this->blocks
-            ->filter(fn (SeatPlanBlock $block) => $block->seats->isNotEmpty())
-            ->values();
-
         return [
             'id' => $this->id,
             'name' => $this->name,
             'event_id' => $this->event_id,
             'background_image_url' => $this->background_image_url,
-            'blocks' => $visibleBlocks->map(fn (SeatPlanBlock $block, int $index): array => [
+            'labels' => $this->resource->relationLoaded('globalLabels')
+                ? $this->globalLabels->map(fn (SeatPlanLabel $label): array => [
+                    'id' => $label->id,
+                    'title' => $label->title,
+                    'x' => $label->x,
+                    'y' => $label->y,
+                ])->values()->all()
+                : [],
+            'blocks' => $this->blocks->map(fn (SeatPlanBlock $block): array => [
                 'id' => $block->id,
                 'title' => $block->title,
                 'color' => $block->color,
+                /* Exposed raw so the renderer can prepend it at display time;
+                 * the picker UI also reads it to format seat titles in the
+                 * action bar and zoom hints. */
+                'seat_title_prefix' => $block->seat_title_prefix,
                 'background_image_url' => $block->background_image_url,
                 'sort_order' => $block->sort_order,
                 'seats' => $block->seats->map(fn (SeatPlanSeat $seat): array => [
                     'id' => $seat->id,
-                    'title' => ($block->seat_title_prefix ?? '').$seat->title,
+                    'title' => $seat->title,
                     'x' => $seat->x,
                     'y' => $seat->y,
                     'salable' => $seat->salable,
@@ -73,18 +63,12 @@ class SeatPlanResource extends JsonResource
                     'note' => $seat->note,
                     'custom_data' => $seat->custom_data,
                 ])->values()->all(),
-                'labels' => [
-                    ...$block->labels->map(fn (SeatPlanLabel $label): array => [
-                        'id' => $label->id,
-                        'title' => $label->title,
-                        'x' => $label->x,
-                        'y' => $label->y,
-                    ])->values()->all(),
-                    /* Attach plan-level labels to the first non-empty block
-                     * so they reach the library while staying visually
-                     * associated with the canvas. */
-                    ...($index === 0 ? $globalLabelRows : []),
-                ],
+                'labels' => $block->labels->map(fn (SeatPlanLabel $label): array => [
+                    'id' => $label->id,
+                    'title' => $label->title,
+                    'x' => $label->x,
+                    'y' => $label->y,
+                ])->values()->all(),
                 'allowed_ticket_category_ids' => $block->categoryRestrictions
                     ->pluck('id')
                     ->map(fn ($id): int => (int) $id)

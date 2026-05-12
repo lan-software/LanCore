@@ -11,13 +11,17 @@ import {
     X,
     Trophy,
 } from 'lucide-vue-next';
-import { computed, nextTick, ref } from 'vue';
+import { computed, ref } from 'vue';
 import AppFooter from '@/components/AppFooter.vue';
 import BannerCarousel from '@/components/BannerCarousel.vue';
 import OrgaTeamCard from '@/components/event/OrgaTeamCard.vue';
 import PublicTopbar from '@/components/PublicTopbar.vue';
+import SeatPlanViewer from '@/components/seat-plan/SeatPlanViewer.vue';
+import {
+    notifyReady,
+    useSeatPlanViewer,
+} from '@/components/seat-plan/useSeatPlanViewer';
 import SeatedUserHoverCard from '@/components/seating/SeatedUserHoverCard.vue';
-import SeatMapCanvas from '@/components/SeatMapCanvas.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ical as eventIcal } from '@/routes/events/public';
@@ -38,6 +42,8 @@ const props = withDefaults(
             name: string;
             slug: string | null;
             description: string | null;
+            status: string;
+            registration_open: boolean;
             type: string;
             stage_type: string | null;
             team_size: number | null;
@@ -147,7 +153,7 @@ function formatDateTime(dateString: string): string {
     });
 }
 
-function onSeatHoverEnter(payload: { id: string; rect: DOMRect }): void {
+function onSeatHoverEnter(payload: { id: string | number; rect: DOMRect }): void {
     const taken = takenLookup.value.get(String(payload.id));
 
     if (!taken?.username) {
@@ -166,9 +172,8 @@ function onSeatHoverLeave(): void {
     hoverAnchor.value = null;
 }
 
-function onSeatClick(payload: unknown): void {
-    const seat = payload as { id: string | number };
-    const taken = takenLookup.value.get(String(seat.id));
+function onSeatClick(payload: { id: string | number }): void {
+    const taken = takenLookup.value.get(String(payload.id));
 
     if (taken?.username) {
         router.visit(profileShow({ username: taken.username }).url);
@@ -176,24 +181,39 @@ function onSeatClick(payload: unknown): void {
 }
 
 const seatMapWrapperRef = ref<HTMLDivElement | null>(null);
-const seatMapCanvasRef = ref<{ zoomToBlock: (id: string) => void } | null>(null);
+const seatMapViewerRef = ref<InstanceType<typeof SeatPlanViewer> | null>(null);
+const seatMapViewer = useSeatPlanViewer(seatMapViewerRef);
 let focusAnimationApplied = false;
+
+/* Find which block owns the focused seat so we can zoom to it before
+ * pulsing. */
+function findBlockIdForSeat(seatId: number): string | null {
+    const plan = props.nextEvent?.seat_plans?.[0];
+
+    if (!plan) {
+        return null;
+    }
+
+    for (const block of plan.blocks ?? []) {
+        if (block.seats.some((s) => Number(s.id) === seatId)) {
+            return String(block.id);
+        }
+    }
+
+    return null;
+}
 
 /**
  * When the page is opened from a profile's "find on seat plan" quick action
- * with `?focus_user=<id>` (resolved server-side to {@link focusSeatId}), scroll
- * the seat-map section into view, zoom the canvas onto the block holding
- * that seat, and pulse the seat itself so the visitor can spot their friend
- * at a glance. Guard with `focusAnimationApplied` because the underlying
- * canvas may re-emit `ready` on layout/data changes — replaying the whole
- * flow each time would be jarring.
+ * with `?focus_user=<id>` (resolved server-side to {@link focusSeatId}),
+ * scroll the seat-map section into view, zoom the viewer onto the block
+ * holding that seat, and pulse the seat itself so the visitor can spot
+ * their friend at a glance.
+ *
+ * The viewer's `ready` event re-fires after deep plan changes, so we guard
+ * with `focusAnimationApplied` to keep the animation a one-shot.
  */
-function onSeatMapReady(): void {
-    console.info('[Welcome] seatmap ready', {
-        focusSeatId: props.focusSeatId,
-        focusAnimationApplied,
-    });
-
+seatMapViewer.onReady(() => {
     if (focusAnimationApplied || !props.focusSeatId) {
         return;
     }
@@ -201,73 +221,22 @@ function onSeatMapReady(): void {
     const wrapper = seatMapWrapperRef.value;
 
     if (!wrapper) {
-        console.warn('[Welcome] seatmap wrapper missing — focus aborted');
         return;
     }
 
-    nextTick(() => {
-        wrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    wrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-        const seatNode = wrapper.querySelector<SVGGElement>(
-            `g.seat[id="${CSS.escape(String(props.focusSeatId))}"]`,
-        );
+    const blockId = findBlockIdForSeat(props.focusSeatId);
 
-        if (!seatNode) {
-            console.warn(
-                '[Welcome] focus seat node not found in DOM',
-                {
-                    focusSeatId: props.focusSeatId,
-                    selector: `g.seat[id="${CSS.escape(String(props.focusSeatId))}"]`,
-                    totalSeatNodes: wrapper.querySelectorAll('g.seat').length,
-                },
-            );
-            return;
-        }
+    if (blockId) {
+        seatMapViewer.zoomToBlock(blockId, { animated: true });
+    } else {
+        seatMapViewer.zoomToSeat(props.focusSeatId, { animated: true });
+    }
 
-        const circle = seatNode.querySelector<SVGElement>(
-            '.seat-circle,.seat-rect,.seat-path',
-        );
-        const cx = parseFloat(circle?.getAttribute('cx') ?? '0');
-        const cy = parseFloat(circle?.getAttribute('cy') ?? '0');
-        const r = parseFloat(circle?.getAttribute('r') ?? '12');
-        const blockId = circle?.getAttribute('block-id');
-
-        console.info('[Welcome] focus seat located', {
-            focusSeatId: props.focusSeatId,
-            blockId,
-            cx,
-            cy,
-            r,
-        });
-
-        // Zoom the underlying d3-zoom transform onto the seat's block so the
-        // pulse renders at a useful size. zoomToBlock animates over ~500ms,
-        // which we want running concurrently with the pulse — the <circle>
-        // we append below is a child of the seat's <g>, so it transforms
-        // along with the rest of the canvas.
-        if (blockId) {
-            seatMapCanvasRef.value?.zoomToBlock(blockId);
-        }
-
-        const ns = 'http://www.w3.org/2000/svg';
-        const pulse = document.createElementNS(ns, 'circle');
-        pulse.setAttribute('class', 'seat-focus-pulse');
-        pulse.setAttribute('cx', String(cx));
-        pulse.setAttribute('cy', String(cy));
-        pulse.setAttribute('r', String(r));
-        pulse.setAttribute('fill', 'none');
-        pulse.setAttribute('stroke', '#f59e0b');
-        pulse.setAttribute('stroke-width', '3');
-        pulse.style.pointerEvents = 'none';
-
-        seatNode.appendChild(pulse);
-        focusAnimationApplied = true;
-
-        window.setTimeout(() => {
-            pulse.remove();
-        }, 4500);
-    });
-}
+    seatMapViewer.pulseSeat(props.focusSeatId, { durationMs: 4500 });
+    focusAnimationApplied = true;
+});
 
 function dismissAnnouncement(announcementId: number) {
     router.post(
@@ -681,23 +650,15 @@ function dismissAnnouncement(announcementId: number) {
                                 class="rounded-xl border"
                                 style="height: 500px"
                             >
-                                <SeatMapCanvas
-                                    ref="seatMapCanvasRef"
-                                    :data="seatPlanData"
-                                    :options="{
-                                        legend: true,
-                                        style: {
-                                            seat: {
-                                                hover: '#8fe100',
-                                                color: '#6796ff',
-                                                not_salable: '#424747',
-                                            },
-                                        },
-                                    }"
+                                <SeatPlanViewer
+                                    ref="seatMapViewerRef"
+                                    :plan="seatPlanData"
+                                    show-legend
+                                    show-tooltip
                                     @seat-click="onSeatClick"
                                     @seat-hover-enter="onSeatHoverEnter"
                                     @seat-hover-leave="onSeatHoverLeave"
-                                    @ready="onSeatMapReady"
+                                    @ready="notifyReady(seatMapViewer)"
                                 />
                             </div>
                         </div>
@@ -729,11 +690,19 @@ function dismissAnnouncement(announcementId: number) {
                                     <div
                                         class="mb-2 flex items-center justify-between"
                                     >
-                                        <Badge
-                                            variant="secondary"
-                                            class="text-[10px] capitalize"
-                                            >{{ comp.type }}</Badge
-                                        >
+                                        <div class="flex items-center gap-1">
+                                            <Badge
+                                                variant="secondary"
+                                                class="text-[10px] capitalize"
+                                                >{{ comp.type }}</Badge
+                                            >
+                                            <Badge
+                                                v-if="!comp.registration_open"
+                                                variant="outline"
+                                                class="text-[10px]"
+                                                >Coming soon</Badge
+                                            >
+                                        </div>
                                         <span
                                             v-if="comp.game"
                                             class="text-xs text-muted-foreground"
@@ -782,13 +751,33 @@ function dismissAnnouncement(announcementId: number) {
                                         >
                                     </div>
                                     <div
-                                        v-if="comp.registration_closes_at"
+                                        v-if="
+                                            comp.registration_open &&
+                                            comp.registration_closes_at
+                                        "
                                         class="mt-2 text-[11px] text-muted-foreground"
                                     >
                                         Registration closes
                                         {{
                                             new Date(
                                                 comp.registration_closes_at,
+                                            ).toLocaleDateString(undefined, {
+                                                month: 'short',
+                                                day: 'numeric',
+                                            })
+                                        }}
+                                    </div>
+                                    <div
+                                        v-else-if="
+                                            !comp.registration_open &&
+                                            comp.starts_at
+                                        "
+                                        class="mt-2 text-[11px] text-muted-foreground"
+                                    >
+                                        Starts
+                                        {{
+                                            new Date(
+                                                comp.starts_at,
                                             ).toLocaleDateString(undefined, {
                                                 month: 'short',
                                                 day: 'numeric',

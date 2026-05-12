@@ -49,7 +49,9 @@ function zoomIn(): void {
 }
 
 function zoomOut(): void {
-    store.view.zoom = Math.max(store.view.zoom * 0.8, 0.1);
+    /* Lower bound is content-derived (`store.minZoom`) so the button stops
+     * shrinking the canvas once the whole plan already fits the viewport. */
+    store.view.zoom = Math.max(store.view.zoom * 0.8, store.minZoom.value);
 }
 
 /**

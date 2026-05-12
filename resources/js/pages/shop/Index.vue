@@ -292,12 +292,15 @@ function updateCartQuantity(
 
                                     <CardHeader>
                                         <div
-                                            class="flex items-center justify-between"
+                                            class="flex items-start justify-between gap-2"
                                         >
                                             <CardTitle>{{ tt.name }}</CardTitle>
-                                            <span class="text-lg font-bold">{{
-                                                formatPrice(tt.price)
-                                            }}</span>
+                                            <span
+                                                class="shrink-0 whitespace-nowrap text-lg font-bold"
+                                                >{{
+                                                    formatPrice(tt.price)
+                                                }}</span
+                                            >
                                         </div>
                                         <CardDescription
                                             v-if="tt.description"
@@ -431,10 +434,10 @@ function updateCartQuantity(
                                 <Card v-for="addon in addons" :key="addon.id">
                                     <CardHeader>
                                         <div
-                                            class="flex items-center justify-between"
+                                            class="flex items-start justify-between gap-2"
                                         >
                                             <div
-                                                class="flex items-center gap-1.5"
+                                                class="flex items-start gap-1.5"
                                             >
                                                 <CardTitle class="text-base">{{
                                                     addon.name
@@ -447,7 +450,7 @@ function updateCartQuantity(
                                                             as-child
                                                         >
                                                             <Info
-                                                                class="size-4 text-muted-foreground"
+                                                                class="mt-0.5 size-4 shrink-0 text-muted-foreground"
                                                             />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
@@ -462,9 +465,12 @@ function updateCartQuantity(
                                                     </Tooltip>
                                                 </TooltipProvider>
                                             </div>
-                                            <span class="font-bold">{{
-                                                formatPrice(addon.price)
-                                            }}</span>
+                                            <span
+                                                class="shrink-0 whitespace-nowrap font-bold"
+                                                >{{
+                                                    formatPrice(addon.price)
+                                                }}</span
+                                            >
                                         </div>
                                         <CardDescription
                                             v-if="addon.description"

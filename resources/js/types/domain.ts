@@ -513,6 +513,12 @@ export type SeatPlanLabel = {
 
 export type SeatPlanData = {
     blocks: SeatPlanBlock[];
+    /**
+     * Plan-level labels (SET-F-020). Both the editor and the public
+     * SeatPlanResource emit these at the top level; the renderer treats them
+     * as siblings of `blocks`.
+     */
+    labels?: SeatPlanLabel[];
 } & Record<string, unknown>;
 
 export type SeatPlan = {
@@ -520,11 +526,7 @@ export type SeatPlan = {
     name: string;
     event_id: number;
     background_image_url?: string | null;
-    /**
-     * Plan-level labels (SET-F-020). On the editor payload these live here;
-     * the public SeatPlanResource flattens them into the first block for
-     * seatmap-canvas compatibility, so the Picker never sees this field.
-     */
+    /** Plan-level labels (SET-F-020). */
     labels?: SeatPlanLabel[];
     blocks: SeatPlanBlock[];
     event?: { id: number; name: string };

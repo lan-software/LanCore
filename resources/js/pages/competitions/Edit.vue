@@ -69,6 +69,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Status lifecycle
 const allStatuses = computed(() => [
     { key: 'draft', label: t('competitions.lifecycle.draft') },
+    { key: 'published', label: t('competitions.lifecycle.published') },
     {
         key: 'registration_open',
         label: t('competitions.lifecycle.registrationOpen'),
@@ -86,13 +87,20 @@ const currentStatusIndex = computed(() =>
     allStatuses.value.findIndex((s) => s.key === props.competition.status),
 );
 
-const statusTransitions = computed<
-    Record<
-        string,
-        { label: string; target: string; variant: string; confirm?: string }
-    >
->(() => ({
+type TransitionAction = {
+    label: string;
+    target: string;
+    variant: string;
+    confirm?: string;
+};
+
+const statusTransitions = computed<Record<string, TransitionAction>>(() => ({
     draft: {
+        label: t('competitions.transition.publish'),
+        target: 'published',
+        variant: 'default',
+    },
+    published: {
         label: t('competitions.transition.openRegistration'),
         target: 'registration_open',
         variant: 'default',
@@ -122,20 +130,35 @@ const statusTransitions = computed<
     },
 }));
 
+const backwardTransitions = computed<Record<string, TransitionAction>>(() => ({
+    published: {
+        label: t('competitions.transition.unpublish'),
+        target: 'draft',
+        variant: 'outline',
+    },
+    registration_closed: {
+        label: t('competitions.transition.reopenRegistration'),
+        target: 'registration_open',
+        variant: 'outline',
+        confirm: t('competitions.transition.reopenRegistrationConfirm'),
+    },
+}));
+
 const transition = computed(
     () => statusTransitions.value[props.competition.status] ?? null,
+);
+const backwardTransition = computed(
+    () => backwardTransitions.value[props.competition.status] ?? null,
 );
 const transitionForm = useForm({ status: transition.value?.target ?? '' });
 const transitioning = ref(false);
 
-function submitTransition() {
-    if (
-        transition.value?.confirm &&
-        !window.confirm(transition.value.confirm)
-    ) {
+function runTransition(action: TransitionAction) {
+    if (action.confirm && !window.confirm(action.confirm)) {
         return;
     }
 
+    transitionForm.status = action.target;
     transitioning.value = true;
     transitionForm.patch(
         CompetitionController.update(props.competition.id).url,
@@ -143,6 +166,18 @@ function submitTransition() {
             onFinish: () => (transitioning.value = false),
         },
     );
+}
+
+function submitTransition() {
+    if (transition.value) {
+        runTransition(transition.value);
+    }
+}
+
+function submitBackwardTransition() {
+    if (backwardTransition.value) {
+        runTransition(backwardTransition.value);
+    }
 }
 
 // Teams
@@ -170,7 +205,9 @@ const lanbracketsAdminUrl = computed(() =>
 
 // Can edit fields
 const canEditDetails = computed(() =>
-    ['draft', 'registration_open'].includes(props.competition.status),
+    ['draft', 'published', 'registration_open'].includes(
+        props.competition.status,
+    ),
 );
 
 // Signup rules editor
@@ -598,6 +635,17 @@ function statusColor(status: string): string {
                                           )
                                 }}
                             </p>
+                        </div>
+                        <div v-if="backwardTransition" class="mt-2">
+                            <Button
+                                size="sm"
+                                class="w-full"
+                                :variant="backwardTransition.variant as any"
+                                :disabled="transitioning"
+                                @click="submitBackwardTransition"
+                            >
+                                {{ backwardTransition.label }}
+                            </Button>
                         </div>
                     </div>
 

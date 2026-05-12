@@ -8,13 +8,15 @@ use App\Domain\Competition\Enums\MatchFinalizationSource;
 use App\Domain\Competition\Events\MatchCompleted;
 use App\Domain\Competition\Events\MatchFinalized;
 use App\Domain\Competition\Events\MatchReadyForOrchestration;
+use App\Domain\Competition\Jobs\GenerateLanBracketsStages;
 use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\MatchResultProof;
 use App\Domain\Orchestration\Models\OrchestrationJob;
 use Illuminate\Support\Facades\Cache;
+use Throwable;
 
 /**
- * @see docs/mil-std-498/SRS.md COMP-F-009
+ * @see docs/mil-std-498/SRS.md COMP-F-009, COMP-F-019
  */
 class HandleLanBracketsWebhook
 {
@@ -31,6 +33,7 @@ class HandleLanBracketsWebhook
             'competition.completed' => $this->handleCompetitionCompleted($payload),
             'match.result_reported' => $this->handleMatchResultReported($payload),
             'bracket.generated' => $this->handleBracketGenerated($payload),
+            'stage.completed' => $this->handleStageCompleted($payload),
             default => null,
         };
     }
@@ -130,6 +133,71 @@ class HandleLanBracketsWebhook
     }
 
     /**
+     * Handles stage.completed — locates the next pending stage on LanBrackets
+     * and dispatches `GenerateLanBracketsStages` so multi-stage tournaments
+     * progress without operator intervention. No-op when this was the last
+     * stage or when LanBrackets is unreachable (the operator can re-trigger
+     * via `competitions:generate-matches`).
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function handleStageCompleted(array $payload): void
+    {
+        $data = $payload['data'] ?? $payload;
+        $externalReferenceId = $data['external_reference_id'] ?? null;
+        $completedStageId = $data['stage_id'] ?? $data['stage']['id'] ?? null;
+
+        if ($externalReferenceId === null || $completedStageId === null) {
+            return;
+        }
+
+        $competition = Competition::find((int) $externalReferenceId);
+
+        if ($competition === null || ! $competition->isSyncedToLanBrackets()) {
+            return;
+        }
+
+        try {
+            $stages = $this->lanBracketsClient->getStages($competition->lanbrackets_id);
+        } catch (Throwable) {
+            return;
+        }
+
+        if (empty($stages)) {
+            return;
+        }
+
+        // Sort by `order` (fallback to `id`) so "next" is deterministic.
+        usort($stages, function (array $a, array $b): int {
+            $ao = $a['order'] ?? $a['id'] ?? 0;
+            $bo = $b['order'] ?? $b['id'] ?? 0;
+
+            return $ao <=> $bo;
+        });
+
+        $completedStageId = (int) $completedStageId;
+        $completedPosition = null;
+        foreach ($stages as $index => $stage) {
+            if ((int) ($stage['id'] ?? 0) === $completedStageId) {
+                $completedPosition = $index;
+                break;
+            }
+        }
+
+        if ($completedPosition === null) {
+            return;
+        }
+
+        for ($i = $completedPosition + 1; $i < count($stages); $i++) {
+            if (($stages[$i]['status'] ?? null) === 'pending') {
+                GenerateLanBracketsStages::dispatch($competition);
+
+                return;
+            }
+        }
+    }
+
+    /**
      * Fetches matches for a stage and dispatches orchestration events
      * for matches where all participants are set.
      */
@@ -144,7 +212,7 @@ class HandleLanBracketsWebhook
                 $competition->lanbrackets_id,
                 $stageId
             );
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return;
         }
 

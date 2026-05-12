@@ -27,7 +27,7 @@ use RuntimeException;
  * Helm umbrella chart's shared seed Secret). This class does not generate
  * either.
  *
- * @see docs/mil-std-498/SRS.md INT-F-011, INT-F-012, INT-F-013, INT-F-014
+ * @see docs/mil-std-498/SRS.md INT-F-011, INT-F-012, INT-F-013, INT-F-014, COMP-F-021
  * @see docs/mil-std-498/SSDD.md §5.4.5
  * @see docs/mil-std-498/IRS.md  §3.5a IF-INTCFG
  */
@@ -86,6 +86,7 @@ class LancoreIntegrationsReconciler
                 'created' => $outcome['created'],
                 'token_rotated' => $outcome['token_rotated'],
                 'webhooks_refreshed' => $outcome['webhooks_refreshed'],
+                'subscribed_webhooks_count' => count($resolved['subscribed_webhooks']),
                 'dry_run' => $dryRun,
                 'release' => $releaseContext,
             ]);
@@ -146,6 +147,10 @@ class LancoreIntegrationsReconciler
             'token' => $definition['token'] ?? null,
             'announcement_webhook_secret' => $definition['announcement_webhook_secret'] ?? null,
             'roles_webhook_secret' => $definition['roles_webhook_secret'] ?? null,
+            // Manifest-only (COMP-F-021): surfaced in the reconcile log so
+            // operators can confirm the satellite-side handshake. No DB row
+            // is written today.
+            'subscribed_webhooks' => $definition['subscribed_webhooks'] ?? [],
         ];
     }
 

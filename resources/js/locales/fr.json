@@ -388,9 +388,13 @@
             "groupStage": "Phase de groupes"
         },
         "transition": {
+            "publish": "Publier",
+            "unpublish": "Revenir au brouillon",
             "openRegistration": "Ouvrir les inscriptions",
             "closeRegistration": "Fermer les inscriptions",
             "closeRegistrationConfirm": "Cela empêchera les nouvelles équipes de s'inscrire. Continuer ?",
+            "reopenRegistration": "Rouvrir les inscriptions",
+            "reopenRegistrationConfirm": "Cela rouvrira les inscriptions. Les équipes et inscriptions existantes sont préservées. Continuer ?",
             "goLive": "Lancer",
             "goLiveConfirm": "Cela démarrera le tournoi. Les équipes seront synchronisées avec LanBrackets. Continuer ?",
             "markFinished": "Marquer comme terminé",
@@ -401,6 +405,7 @@
         },
         "lifecycle": {
             "draft": "Brouillon",
+            "published": "Publié",
             "registrationOpen": "Inscriptions",
             "registrationClosed": "Inscr. fermées",
             "running": "En cours",

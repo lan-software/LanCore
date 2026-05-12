@@ -61,7 +61,7 @@ const hasSlot = computed<boolean>(() => !!slots.default);
 </script>
 
 <template>
-    <SidebarGroup v-if="visible && matchesSearch && hasSlot">
+    <SidebarGroup v-if="visible && matchesSearch && hasSlot" class="py-1">
         <button
             type="button"
             class="group/collapse flex w-full items-center justify-between rounded-md px-2 py-1 text-left transition-colors hover:bg-sidebar-accent/40"

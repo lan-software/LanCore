@@ -3,7 +3,7 @@
 /*
  * Declarative integration-app configuration.
  *
- * @see docs/mil-std-498/SRS.md INT-F-011, INT-F-012, INT-F-013, INT-F-014
+ * @see docs/mil-std-498/SRS.md INT-F-011, INT-F-012, INT-F-013, INT-F-014, COMP-F-021
  * @see docs/mil-std-498/SSDD.md §5.4.5
  * @see docs/mil-std-498/IRS.md  §3.5a IF-INTCFG
  *
@@ -54,6 +54,12 @@ return [
             'token' => env('LANBRACKETS_LANCORE_TOKEN'),
             'announcement_webhook_secret' => env('LANBRACKETS_ANNOUNCEMENT_WEBHOOK_SECRET'),
             'roles_webhook_secret' => env('LANBRACKETS_ROLES_WEBHOOK_SECRET'),
+            'subscribed_webhooks' => [
+                'bracket.generated',
+                'stage.completed',
+                'match.result_reported',
+                'competition.completed',
+            ],
         ],
 
         'lanentrance' => [

@@ -362,6 +362,13 @@
                 "unsavedLeaveWarning": "You have unsaved changes. Leave the page anyway?",
                 "emptyCanvasHint": "Select a seat, row, block, or label to edit its properties. Add a block to get started."
             }
+        },
+        "viewer": {
+            "legend": {
+                "available": "Available",
+                "taken": "Taken",
+                "selected": "Selected"
+            }
         }
     },
     "settings": {
@@ -803,9 +810,13 @@
             "groupStage": "Group Stage"
         },
         "transition": {
+            "publish": "Publish",
+            "unpublish": "Move back to Draft",
             "openRegistration": "Open Registration",
             "closeRegistration": "Close Registration",
             "closeRegistrationConfirm": "This will prevent new teams from joining. Continue?",
+            "reopenRegistration": "Reopen Registration",
+            "reopenRegistrationConfirm": "This will reopen registration. Existing teams and sign-ups are preserved. Continue?",
             "goLive": "Go Live",
             "goLiveConfirm": "This will start the competition. Teams will be synced to LanBrackets. Continue?",
             "markFinished": "Mark Finished",
@@ -816,6 +827,7 @@
         },
         "lifecycle": {
             "draft": "Draft",
+            "published": "Published",
             "registrationOpen": "Registration",
             "registrationClosed": "Reg. Closed",
             "running": "Running",

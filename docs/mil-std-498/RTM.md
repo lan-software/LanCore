@@ -443,14 +443,18 @@ No gaps identified.
 | COMP-F-007 | Team leaving via `LeaveTeam::execute(): bool`; captain succession, team deletion when last member, redirect to my-competitions.show, flash success | `Domain/Competition/Actions/LeaveTeam.php` | `Competition/LeaveTeamTest.php`, `Unit/Domain/Competition/LeaveTeamActionTest.php` | Covered |
 | COMP-F-008 | Match result submission with proof | `Domain/Competition/Actions/SubmitMatchResult.php` | — | Pending |
 | COMP-F-009 | LanBrackets webhook handling | `Domain/Competition/Actions/HandleLanBracketsWebhook.php` | `Competition/LanBracketsWebhookTest.php` | Covered |
-| COMP-F-010 | Competition sync to LanBrackets | `Domain/Competition/Jobs/SyncCompetitionToLanBrackets.php` | — | Pending |
-| COMP-F-011 | Teams sync to LanBrackets | `Domain/Competition/Jobs/SyncTeamsToLanBrackets.php` | — | Pending |
+| COMP-F-010 | Competition sync to LanBrackets | `Domain/Competition/Jobs/SyncCompetitionToLanBrackets.php` | `Competition/SyncTeamsToLanBracketsTest.php` | Covered |
+| COMP-F-011 | Teams sync to LanBrackets | `Domain/Competition/Jobs/SyncTeamsToLanBrackets.php` | `Competition/SyncTeamsToLanBracketsTest.php` | Covered |
 | COMP-F-012 | User-facing competition views | `Domain/Competition/Http/Controllers/UserCompetitionController.php` | `Competition/UserCompetitionTest.php` | Covered |
 | COMP-F-013 | Submit join request via `RequestToJoinTeam`; `TeamJoinRequestNotification` dispatched to captain | `Domain/Competition/Actions/RequestToJoinTeam.php` | — | **Gap** |
 | COMP-F-014 | Captain resolves join request (approve/reject) via `ResolveJoinRequest`; `JoinRequestResolvedNotification` dispatched | `Domain/Competition/Actions/ResolveJoinRequest.php` | — | **Gap** |
 | COMP-F-015 | Prevent duplicate join requests and requests when team at capacity | `Domain/Competition/Actions/RequestToJoinTeam.php` | — | **Gap** |
-| COMP-F-016 | RegistrationClosed transition triggers LanBrackets bracket generation via `Bus::chain([SyncTeamsToLanBrackets, GenerateLanBracketsStages])` | `Domain/Competition/Actions/UpdateCompetition.php`, `Domain/Competition/Jobs/GenerateLanBracketsStages.php` | — | **Gap** |
+| COMP-F-016 | RegistrationClosed transition triggers LanBrackets bracket generation via `Bus::chain([SyncTeamsToLanBrackets, GenerateLanBracketsStages])` | `Domain/Competition/Actions/UpdateCompetition.php`, `Domain/Competition/Jobs/GenerateLanBracketsStages.php` | `Competition/SyncTeamsToLanBracketsTest.php` | Covered |
 | COMP-F-017 | Manual recovery via `competitions:generate-matches {id} [--sync]` artisan command | `Console/Commands/Competition/GenerateLanBracketsMatchesCommand.php` | — | **Gap** |
+| COMP-F-018 | Per-team upsert to LanBrackets via `POST /api/v1/teams`; persist returned id into `CompetitionTeam.lanbrackets_id` before bulk participant call | `Domain/Api/Clients/LanBracketsClient.php`, `Domain/Competition/Jobs/SyncTeamsToLanBrackets.php` | `Competition/SyncTeamsToLanBracketsTest.php` | Pending |
+| COMP-F-019 | Handle `stage.completed` webhook — locate next pending stage and dispatch `GenerateLanBracketsStages`; no-op on last stage | `Domain/Competition/Actions/HandleLanBracketsWebhook.php`, `Domain/Competition/Jobs/GenerateLanBracketsStages.php` | `Competition/StageCompletedWebhookTest.php` | Pending |
+| COMP-F-020 | `UserMatchController` resolves participant team identity via `external_reference_id`; falls back to `team_name = participant_name` for legacy payloads | `Domain/Competition/Http/Controllers/UserMatchController.php` | `Competition/UserMatchControllerTest.php` | Pending |
+| COMP-F-021 | Declarative `subscribed_webhooks` manifest under `apps.lanbrackets`; surfaced by `integrations:sync` (manifest-only) | `config/integrations.php`, `Domain/Integration/Services/LancoreIntegrationsReconciler.php` | — | Pending |
 
 ---
 
