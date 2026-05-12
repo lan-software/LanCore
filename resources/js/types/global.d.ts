@@ -22,6 +22,7 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             sidebarFavorites: string[];
+            sidebarCollapsedGroups: string[];
             eventContext: EventContext | null;
             myEventContext: {
                 selectedEventId: number | null;

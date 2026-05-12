@@ -48,7 +48,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 #[Fillable([
     'name', 'email', 'password', 'phone', 'street', 'city', 'zip_code', 'country', 'locale',
     'is_ticket_discoverable', 'ticket_discovery_allowlist', 'is_seat_visible_publicly',
-    'sidebar_favorites', 'cookie_preferences',
+    'sidebar_favorites', 'sidebar_collapsed_groups', 'cookie_preferences',
     'username', 'short_bio', 'profile_description', 'profile_emoji',
     'avatar_source', 'avatar_path', 'banner_path', 'profile_visibility', 'profile_updated_at',
     'steam_id_64', 'steam_linked_at',
@@ -70,6 +70,7 @@ class User extends Authenticatable implements AuditableContract
         'two_factor_confirmed_at',
         'email_hash',
         'sidebar_favorites',
+        'sidebar_collapsed_groups',
         'cookie_preferences',
     ];
 
@@ -113,6 +114,7 @@ class User extends Authenticatable implements AuditableContract
             'ticket_discovery_allowlist' => 'array',
             'is_seat_visible_publicly' => 'boolean',
             'sidebar_favorites' => 'array',
+            'sidebar_collapsed_groups' => 'array',
             'cookie_preferences' => 'array',
             'avatar_source' => AvatarSource::class,
             'profile_visibility' => ProfileVisibility::class,

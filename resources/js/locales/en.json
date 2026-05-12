@@ -587,9 +587,15 @@
         "past": "Past",
         "favorites": "Favorites",
         "unpinItem": "Unpin {name}",
+        "search": {
+            "placeholder": "Search menu…",
+            "label": "Search navigation",
+            "clear": "Clear search"
+        },
         "groups": {
             "platform": "Platform",
             "administration": "Administration",
+            "dataLifecycle": "Data lifecycle",
             "news": "News",
             "achievements": "Achievements",
             "announcement": "Announcement",

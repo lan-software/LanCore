@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import {
     Activity,
     Calendar,
@@ -22,10 +22,8 @@ import {
     Megaphone,
     MessageSquare,
     Newspaper,
-    Palette,
     PaintBucket,
-    Pin,
-    PinOff,
+    Palette,
     PlugZap,
     Puzzle,
     Radio,
@@ -44,24 +42,22 @@ import {
     UsersRound,
     Webhook,
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { toggle as toggleFavoriteAction } from '@/actions/App/Http/Controllers/Settings/SidebarFavoriteController';
 import AppLogo from '@/components/AppLogo.vue';
+import CollapsibleSidebarGroup from '@/components/CollapsibleSidebarGroup.vue';
 import EventSelector from '@/components/EventSelector.vue';
 import NavFavorites from '@/components/NavFavorites.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
+import SidebarLink from '@/components/SidebarLink.vue';
+import SidebarSearch from '@/components/SidebarSearch.vue';
 import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
-    SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
@@ -116,6 +112,8 @@ const page = usePage();
 const { can, canAny } = usePermissions();
 const { t } = useI18n();
 
+const search = ref<string>('');
+
 const isSuperadmin = computed<boolean>(() => {
     const roles =
         (
@@ -157,339 +155,275 @@ const mainNavItems = computed<NavItem[]>(() => [
 
 const allPinnableItems = computed<NavItem[]>(() => {
     const items: NavItem[] = [
-        {
-            id: 'dashboard',
-            title: t('navigation.dashboard'),
-            href: dashboard(),
-            icon: LayoutGrid,
-        },
-        {
-            id: 'my-tickets',
-            title: t('navigation.myTickets'),
-            href: ticketsIndex(),
-            icon: Ticket,
-        },
-        {
-            id: 'my-orders',
-            title: t('navigation.myOrders'),
-            href: myOrdersIndex(),
-            icon: ShoppingCart,
-        },
-        {
-            id: 'my-competitions',
-            title: t('navigation.myCompetitions'),
-            href: myCompetitionsIndex(),
-            icon: Swords,
-        },
+        { id: 'dashboard', title: t('navigation.dashboard'), href: dashboard(), icon: LayoutGrid },
+        { id: 'my-tickets', title: t('navigation.myTickets'), href: ticketsIndex(), icon: Ticket },
+        { id: 'my-orders', title: t('navigation.myOrders'), href: myOrdersIndex(), icon: ShoppingCart },
+        { id: 'my-competitions', title: t('navigation.myCompetitions'), href: myCompetitionsIndex(), icon: Swords },
     ];
 
     if (can(Permission.ManageUsers)) {
-        items.push({
-            id: 'users',
-            title: t('navigation.users'),
-            href: usersIndex(),
-            icon: Users,
-        });
+        items.push({ id: 'organization', title: t('navigation.organization'), href: organizationSettingsIndex(), icon: Cog });
+        items.push({ id: 'users', title: t('navigation.users'), href: usersIndex(), icon: Users });
     }
-
-    if (
-        canAny(Permission.ManageNewsArticles, Permission.ModerateNewsComments)
-    ) {
+    if (can(Permission.ManagePolicies)) {
+        items.push({ id: 'policies', title: t('navigation.policies'), href: { url: '/backstage/policies', method: 'get' as const }, icon: FileText });
+    }
+    if (can(Permission.ViewEmailLog)) {
+        items.push({ id: 'emails', title: 'Emails', href: adminEmailsIndex(), icon: Mail });
+    }
+    if (can(Permission.ManageNewsletterLists)) {
+        items.push({ id: 'newsletter-lists', title: 'Newsletter Lists', href: newsletterListsIndex(), icon: MailPlus });
+    }
+    if (can(Permission.ManageThemes)) {
+        items.push({ id: 'themes', title: 'Themes', href: themesIndex(), icon: PaintBucket });
+    }
+    if (canAny(Permission.ManageGameServers, Permission.ViewOrchestration)) {
+        items.push({ id: 'external-apis', title: t('navigation.externalApis'), href: externalApisIndex(), icon: PlugZap });
+    }
+    if (canAny(Permission.ManageNewsArticles, Permission.ModerateNewsComments)) {
         items.push(
-            {
-                id: 'news-articles',
-                title: t('navigation.articles'),
-                href: newsIndex(),
-                icon: Newspaper,
-            },
-            {
-                id: 'news-comments',
-                title: t('navigation.comments'),
-                href: newsCommentsIndex(),
-                icon: MessageSquare,
-            },
+            { id: 'news-articles', title: t('navigation.articles'), href: newsIndex(), icon: Newspaper },
+            { id: 'news-comments', title: t('navigation.comments'), href: newsCommentsIndex(), icon: MessageSquare },
         );
     }
-
     if (can(Permission.ManageAchievements)) {
-        items.push({
-            id: 'achievements',
-            title: t('navigation.achievements'),
-            href: achievementsIndex(),
-            icon: Trophy,
-        });
+        items.push({ id: 'achievements', title: t('navigation.achievements'), href: achievementsIndex(), icon: Trophy });
     }
-
     if (can(Permission.ManageAnnouncements)) {
-        items.push({
-            id: 'announcements',
-            title: t('navigation.announcements'),
-            href: announcementsIndex(),
-            icon: Megaphone,
-        });
+        items.push({ id: 'announcements', title: t('navigation.announcements'), href: announcementsIndex(), icon: Megaphone });
     }
-
     if (can(Permission.ManageEvents)) {
-        items.push({
-            id: 'events',
-            title: t('navigation.events'),
-            href: eventsIndex(),
-            icon: Calendar,
-        });
+        items.push({ id: 'events', title: t('navigation.events'), href: eventsIndex(), icon: Calendar });
+        items.push({ id: 'event-dashboard', title: t('navigation.eventDashboard'), href: eventsDashboard(), icon: Gauge });
     }
-
     if (can(Permission.ManagePrograms)) {
-        items.push({
-            id: 'programs',
-            title: t('navigation.programs'),
-            href: programsIndex(),
-            icon: ClipboardList,
-        });
+        items.push({ id: 'programs', title: t('navigation.programs'), href: programsIndex(), icon: ClipboardList });
     }
-
     if (can(Permission.ManageVenues)) {
-        items.push({
-            id: 'venues',
-            title: t('navigation.venues'),
-            href: venuesIndex(),
-            icon: MapPin,
-        });
+        items.push({ id: 'venues', title: t('navigation.venues'), href: venuesIndex(), icon: MapPin });
     }
-
     if (can(Permission.ManageCompetitions)) {
         items.push(
-            {
-                id: 'competitions',
-                title: t('navigation.competitions'),
-                href: competitionsIndex(),
-                icon: Swords,
-            },
-            {
-                id: 'admin-teams',
-                title: t('navigation.teams'),
-                href: adminTeamsIndex(),
-                icon: Users,
-            },
+            { id: 'competitions', title: t('navigation.competitions'), href: competitionsIndex(), icon: Swords },
+            { id: 'admin-teams', title: t('navigation.teams'), href: adminTeamsIndex(), icon: Users },
         );
     }
-
     if (can(Permission.ManageGames)) {
-        items.push({
-            id: 'games',
-            title: t('navigation.games'),
-            href: gamesIndex(),
-            icon: Gamepad2,
-        });
+        items.push({ id: 'games', title: t('navigation.games'), href: gamesIndex(), icon: Gamepad2 });
     }
-
     if (can(Permission.ManageSponsors)) {
         items.push(
-            {
-                id: 'sponsors',
-                title: t('navigation.sponsors'),
-                href: sponsorsIndex(),
-                icon: Handshake,
-            },
-            {
-                id: 'sponsor-levels',
-                title: t('navigation.sponsorLevels'),
-                href: sponsorLevelsIndex(),
-                icon: Palette,
-            },
+            { id: 'sponsors', title: t('navigation.sponsors'), href: sponsorsIndex(), icon: Handshake },
+            { id: 'sponsor-levels', title: t('navigation.sponsorLevels'), href: sponsorLevelsIndex(), icon: Palette },
         );
     }
-
     if (can(Permission.ManageOrgaTeams)) {
-        items.push({
-            id: 'orga-teams',
-            title: 'Orga-Teams',
-            href: orgaTeamsIndex(),
-            icon: UsersRound,
-        });
+        items.push({ id: 'orga-teams', title: 'Orga-Teams', href: orgaTeamsIndex(), icon: UsersRound });
     }
-
-    if (can(Permission.ManageThemes)) {
-        items.push({
-            id: 'themes',
-            title: 'Themes',
-            href: themesIndex(),
-            icon: PaintBucket,
-        });
+    if (!can(Permission.ManageSponsors) && can(Permission.ManageAssignedSponsors)) {
+        items.push({ id: 'my-sponsors', title: t('navigation.mySponsors'), href: sponsorsIndex(), icon: Handshake });
     }
-
-    if (can(Permission.ManageNewsletterLists)) {
-        items.push({
-            id: 'newsletter-lists',
-            title: 'Newsletter Lists',
-            href: newsletterListsIndex(),
-            icon: MailPlus,
-        });
+    if (can(Permission.ManageSponsorLevels) && !can(Permission.ManageSponsors)) {
+        items.push({ id: 'sponsor-levels-only', title: t('navigation.sponsorLevels'), href: sponsorLevelsIndex(), icon: Palette });
     }
-
-    if (
-        !can(Permission.ManageSponsors) &&
-        can(Permission.ManageAssignedSponsors)
-    ) {
-        items.push({
-            id: 'my-sponsors',
-            title: t('navigation.mySponsors'),
-            href: sponsorsIndex(),
-            icon: Handshake,
-        });
-    }
-
-    if (
-        can(Permission.ManageSponsorLevels) &&
-        !can(Permission.ManageSponsors)
-    ) {
-        items.push({
-            id: 'sponsor-levels',
-            title: t('navigation.sponsorLevels'),
-            href: sponsorLevelsIndex(),
-            icon: Palette,
-        });
-    }
-
     if (can(Permission.ManageTicketing)) {
         items.push(
-            {
-                id: 'ticket-types',
-                title: t('navigation.ticketTypes'),
-                href: ticketTypesIndex(),
-                icon: Rows3,
-            },
-            {
-                id: 'ticket-categories',
-                title: t('navigation.ticketCategories'),
-                href: ticketCategoriesIndex(),
-                icon: Tag,
-            },
-            {
-                id: 'ticket-addons',
-                title: t('navigation.ticketAddons'),
-                href: ticketAddonsIndex(),
-                icon: Puzzle,
-            },
-            {
-                id: 'vouchers',
-                title: t('navigation.vouchers'),
-                href: vouchersIndex(),
-                icon: Gift,
-            },
+            { id: 'ticket-types', title: t('navigation.ticketTypes'), href: ticketTypesIndex(), icon: Rows3 },
+            { id: 'ticket-categories', title: t('navigation.ticketCategories'), href: ticketCategoriesIndex(), icon: Tag },
+            { id: 'ticket-addons', title: t('navigation.ticketAddons'), href: ticketAddonsIndex(), icon: Puzzle },
+            { id: 'vouchers', title: t('navigation.vouchers'), href: vouchersIndex(), icon: Gift },
         );
     }
-
     if (can(Permission.ManageSeatPlans)) {
-        items.push({
-            id: 'seat-plans',
-            title: t('navigation.seatPlans'),
-            href: seatPlansIndex(),
-            icon: Grid2x2,
-        });
+        items.push({ id: 'seat-plans', title: t('navigation.seatPlans'), href: seatPlansIndex(), icon: Grid2x2 });
     }
-
     if (can(Permission.ManageWebhooks)) {
-        items.push({
-            id: 'webhooks',
-            title: t('navigation.webhooks'),
-            href: webhooksIndex(),
-            icon: Webhook,
-        });
+        items.push({ id: 'webhooks', title: t('navigation.webhooks'), href: webhooksIndex(), icon: Webhook });
     }
-
     if (can(Permission.ManageIntegrations)) {
-        items.push({
-            id: 'integrations',
-            title: t('navigation.integrations'),
-            href: integrationsIndex(),
-            icon: Cog,
-        });
+        items.push({ id: 'integrations', title: t('navigation.integrations'), href: integrationsIndex(), icon: Cog });
     }
-
     if (canAny(Permission.ViewOrders, Permission.ManageOrders)) {
         items.push(
-            {
-                id: 'orders',
-                title: t('navigation.orders'),
-                href: ordersIndex(),
-                icon: ShoppingCart,
-            },
-            {
-                id: 'admin-tickets',
-                title: t('navigation.ticketsAdmin'),
-                href: adminTicketsIndex(),
-                icon: TicketCheck,
-            },
+            { id: 'shop-settings', title: t('navigation.settings'), href: shopSettingsIndex(), icon: Cog },
+            { id: 'orders', title: t('navigation.orders'), href: ordersIndex(), icon: ShoppingCart },
+            { id: 'admin-tickets', title: t('navigation.ticketsAdmin'), href: adminTicketsIndex(), icon: TicketCheck },
         );
     }
-
     if (can(Permission.ManageShopConditions)) {
         items.push(
-            {
-                id: 'purchase-requirements',
-                title: t('navigation.purchaseRequirements'),
-                href: purchaseRequirementsIndex(),
-                icon: ShieldCheck,
-            },
-            {
-                id: 'purchase-conditions',
-                title: t('navigation.purchaseConditions'),
-                href: globalPurchaseConditionsIndex(),
-                icon: FileCheck,
-            },
-            {
-                id: 'payment-conditions',
-                title: t('navigation.paymentConditions'),
-                href: paymentProviderConditionsIndex(),
-                icon: CreditCard,
-            },
+            { id: 'purchase-requirements', title: t('navigation.purchaseRequirements'), href: purchaseRequirementsIndex(), icon: ShieldCheck },
+            { id: 'purchase-conditions', title: t('navigation.purchaseConditions'), href: globalPurchaseConditionsIndex(), icon: FileCheck },
+            { id: 'payment-conditions', title: t('navigation.paymentConditions'), href: paymentProviderConditionsIndex(), icon: CreditCard },
         );
     }
-
     if (can(Permission.ManageGameServers)) {
-        items.push({
-            id: 'game-servers',
-            title: t('navigation.gameServers'),
-            href: gameServersIndex(),
-            icon: Server,
-        });
+        items.push({ id: 'game-servers', title: t('navigation.gameServers'), href: gameServersIndex(), icon: Server });
     }
-
     if (canAny(Permission.ViewOrchestration, Permission.ManageGameServers)) {
-        items.push(
-            {
-                id: 'orchestration-jobs',
-                title: t('navigation.orchestration'),
-                href: orchestrationJobsIndex(),
-                icon: Radio,
-            },
-            {
-                id: 'external-apis',
-                title: t('navigation.externalApis'),
-                href: externalApisIndex(),
-                icon: PlugZap,
-            },
-        );
+        items.push({ id: 'orchestration-jobs', title: t('navigation.orchestration'), href: orchestrationJobsIndex(), icon: Radio });
+    }
+    if (can('view_deletion_requests')) {
+        items.push({ id: 'deletion-requests', title: 'Deletion requests', href: dataLifecycleRoutes.deletionRequests.index(), icon: Trash2 });
+        items.push({ id: 'anonymization-log', title: 'Anonymization log', href: dataLifecycleRoutes.anonymizationLog.index(), icon: History });
+    }
+    if (can('manage_retention_policies')) {
+        items.push({ id: 'retention-policies', title: 'Retention policies', href: dataLifecycleRoutes.retentionPolicies.index(), icon: Timer });
+    }
+    if (isSuperadmin.value) {
+        items.push({ id: 'horizon', title: 'Queue Monitor', href: { url: '/horizon', method: 'get' as const }, icon: GaugeCircle });
+        items.push({ id: 'pulse', title: 'Pulse', href: { url: '/pulse', method: 'get' as const }, icon: Activity });
     }
 
     return items;
 });
 
-const sidebarFavorites = computed<string[]>(
-    () => page.props.sidebarFavorites ?? [],
+// Helpers for visibility predicates that mirror the prior hardcoded outer
+// `v-if` on each SidebarGroup. Keeps the template terse.
+const showPlatform = computed(
+    () =>
+        isSuperadmin.value ||
+        canAny(
+            Permission.ManageUsers,
+            Permission.ManagePolicies,
+            Permission.ViewEmailLog,
+            Permission.ManageNewsletterLists,
+            Permission.ManageThemes,
+            Permission.ManageGameServers,
+            Permission.ViewOrchestration,
+        ),
+);
+const showAdministration = computed(() =>
+    canAny(Permission.ManageUsers, Permission.ManageAchievements),
+);
+const showDataLifecycle = computed(() =>
+    canAny('view_deletion_requests', 'manage_retention_policies'),
+);
+const showNews = computed(() =>
+    canAny(Permission.ManageNewsArticles, Permission.ModerateNewsComments),
+);
+const showAnnouncements = computed(() => can(Permission.ManageAnnouncements));
+const showEvents = computed(() =>
+    canAny(
+        Permission.ManageEvents,
+        Permission.ManageOrgaTeams,
+        Permission.ManagePrograms,
+        Permission.ManageVenues,
+        Permission.ManageSeatPlans,
+    ),
+);
+const showGames = computed(() => can(Permission.ManageGames));
+const showSponsoring = computed(() =>
+    canAny(Permission.ManageSponsors, Permission.ManageAssignedSponsors),
+);
+const showTicketing = computed(() => can(Permission.ManageTicketing));
+const showCompetition = computed(() => can(Permission.ManageCompetitions));
+const showOrchestration = computed(() =>
+    canAny(Permission.ManageGameServers, Permission.ViewOrchestration),
+);
+const showIntegrations = computed(() =>
+    canAny(Permission.ManageIntegrations, Permission.ManageWebhooks),
+);
+const showShop = computed(() =>
+    canAny(
+        Permission.ViewOrders,
+        Permission.ManageOrders,
+        Permission.ManageVouchers,
+        Permission.ManageShopConditions,
+    ),
 );
 
-function isFavorited(itemId: string): boolean {
-    return sidebarFavorites.value.includes(itemId);
-}
-
-function toggleFavorite(itemId: string): void {
-    router.post(
-        toggleFavoriteAction().url,
-        { item_id: itemId },
-        { preserveScroll: true, preserveState: true },
-    );
-}
+// Each group exposes the labels of its rendered items so
+// CollapsibleSidebarGroup can decide whether the search query matches.
+const labels = {
+    platform: computed(() => {
+        const out: string[] = [];
+        if (can(Permission.ManageUsers)) out.push(t('navigation.organization'));
+        if (can(Permission.ManagePolicies)) out.push(t('navigation.policies'));
+        if (can(Permission.ViewEmailLog)) out.push('Emails');
+        if (can(Permission.ManageNewsletterLists)) out.push('Newsletter Lists');
+        if (can(Permission.ManageThemes)) out.push('Themes');
+        if (canAny(Permission.ManageGameServers, Permission.ViewOrchestration))
+            out.push(t('navigation.externalApis'));
+        if (isSuperadmin.value) {
+            out.push('Queue Monitor', 'Pulse');
+        }
+        return out;
+    }),
+    administration: computed(() => {
+        const out: string[] = [];
+        if (can(Permission.ManageUsers)) out.push(t('navigation.users'));
+        if (can(Permission.ManageAchievements))
+            out.push(t('navigation.achievements'));
+        return out;
+    }),
+    dataLifecycle: computed(() => {
+        const out: string[] = [];
+        if (can('view_deletion_requests'))
+            out.push('Deletion requests', 'Anonymization log');
+        if (can('manage_retention_policies')) out.push('Retention policies');
+        return out;
+    }),
+    news: computed(() => [
+        t('navigation.articles'),
+        t('navigation.comments'),
+    ]),
+    announcements: computed(() => [t('navigation.announcements')]),
+    events: computed(() => {
+        const out: string[] = [];
+        if (can(Permission.ManageEvents))
+            out.push(t('navigation.events'), t('navigation.eventDashboard'));
+        if (can(Permission.ManagePrograms)) out.push(t('navigation.programs'));
+        if (can(Permission.ManageVenues)) out.push(t('navigation.venues'));
+        if (can(Permission.ManageSeatPlans)) out.push(t('navigation.seatPlans'));
+        if (can(Permission.ManageOrgaTeams)) out.push('Orga-Teams');
+        return out;
+    }),
+    games: computed(() => [t('navigation.games')]),
+    sponsoring: computed(() => {
+        const out: string[] = [];
+        if (can(Permission.ManageSponsors)) out.push(t('navigation.sponsors'));
+        if (
+            !can(Permission.ManageSponsors) &&
+            can(Permission.ManageAssignedSponsors)
+        )
+            out.push(t('navigation.mySponsors'));
+        if (can(Permission.ManageSponsorLevels))
+            out.push(t('navigation.sponsorLevels'));
+        return out;
+    }),
+    ticketing: computed(() => [
+        t('navigation.ticketTypes'),
+        t('navigation.ticketCategories'),
+        t('navigation.ticketAddons'),
+        t('navigation.vouchers'),
+    ]),
+    competition: computed(() => [
+        t('navigation.competitions'),
+        t('navigation.teams'),
+    ]),
+    orchestration: computed(() => {
+        const out: string[] = [];
+        if (can(Permission.ManageGameServers))
+            out.push(t('navigation.gameServers'));
+        out.push(t('navigation.orchestration'));
+        return out;
+    }),
+    integrations: computed(() => {
+        const out: string[] = [];
+        if (can(Permission.ManageIntegrations)) out.push(t('navigation.lanApps'));
+        if (can(Permission.ManageWebhooks)) out.push(t('navigation.webhooks'));
+        return out;
+    }),
+    shop: computed(() => [
+        t('navigation.settings'),
+        t('navigation.orders'),
+        t('navigation.ticketsAdmin'),
+        t('navigation.purchaseRequirements'),
+        t('navigation.purchaseConditions'),
+        t('navigation.paymentConditions'),
+    ]),
+};
 </script>
 
 <template>
@@ -509,1003 +443,481 @@ function toggleFavorite(itemId: string): void {
         <EventSelector />
 
         <SidebarContent>
+            <SidebarSearch v-model="search" />
+
             <NavMain :items="mainNavItems" />
 
             <NavFavorites :all-items="allPinnableItems" />
 
-            <!-- Platform Settings -->
-            <SidebarGroup
-                v-if="
-                    isSuperadmin ||
-                    canAny(
-                        Permission.ManageUsers,
-                        Permission.ManagePolicies,
-                        Permission.ViewEmailLog,
-                        Permission.ManageNewsletterLists,
-                        Permission.ManageThemes,
-                        Permission.ManageGameServers,
-                        Permission.ViewOrchestration,
-                    )
-                "
+            <CollapsibleSidebarGroup
+                group-id="platform"
+                :label="t('navigation.groups.platform')"
+                :item-labels="labels.platform.value"
+                :visible="showPlatform"
+                :search-query="search"
             >
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.platform')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem v-if="can(Permission.ManageUsers)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="organizationSettingsIndex()">
-                                    <Cog />
-                                    <span>{{
-                                        $t('navigation.organization')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can(Permission.ManagePolicies)">
-                            <SidebarMenuButton as-child>
-                                <Link href="/backstage/policies">
-                                    <FileText />
-                                    <span>{{ $t('navigation.policies') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can(Permission.ViewEmailLog)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="adminEmailsIndex()">
-                                    <Mail />
-                                    <span>Emails</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem
-                            v-if="can(Permission.ManageNewsletterLists)"
-                        >
-                            <SidebarMenuButton as-child>
-                                <Link :href="newsletterListsIndex()">
-                                    <MailPlus />
-                                    <span>Newsletter Lists</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('newsletter-lists')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('newsletter-lists')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can(Permission.ManageThemes)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="themesIndex()">
-                                    <PaintBucket />
-                                    <span>Themes</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('themes')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('themes')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem
-                            v-if="
-                                canAny(
-                                    Permission.ManageGameServers,
-                                    Permission.ViewOrchestration,
-                                )
-                            "
-                        >
-                            <SidebarMenuButton as-child>
-                                <Link :href="externalApisIndex()">
-                                    <PlugZap />
-                                    <span>{{
-                                        $t('navigation.externalApis')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('external-apis')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('external-apis')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="isSuperadmin">
-                            <SidebarMenuButton as-child>
-                                <a
-                                    href="/horizon"
-                                    target="_blank"
-                                    rel="noopener"
-                                >
-                                    <GaugeCircle />
-                                    <span>Queue Monitor</span>
-                                </a>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="isSuperadmin">
-                            <SidebarMenuButton as-child>
-                                <a
-                                    href="/pulse"
-                                    target="_blank"
-                                    rel="noopener"
-                                >
-                                    <Activity />
-                                    <span>Pulse</span>
-                                </a>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
+                <SidebarMenu>
+                    <SidebarLink
+                        v-if="can(Permission.ManageUsers)"
+                        favorite-id="organization"
+                        :label="t('navigation.organization')"
+                        :icon="Cog"
+                        :href="organizationSettingsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ManagePolicies)"
+                        favorite-id="policies"
+                        :label="t('navigation.policies')"
+                        :icon="FileText"
+                        href="/backstage/policies"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ViewEmailLog)"
+                        favorite-id="emails"
+                        label="Emails"
+                        :icon="Mail"
+                        :href="adminEmailsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ManageNewsletterLists)"
+                        favorite-id="newsletter-lists"
+                        label="Newsletter Lists"
+                        :icon="MailPlus"
+                        :href="newsletterListsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ManageThemes)"
+                        favorite-id="themes"
+                        label="Themes"
+                        :icon="PaintBucket"
+                        :href="themesIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="
+                            canAny(
+                                Permission.ManageGameServers,
+                                Permission.ViewOrchestration,
+                            )
+                        "
+                        favorite-id="external-apis"
+                        :label="t('navigation.externalApis')"
+                        :icon="PlugZap"
+                        :href="externalApisIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="isSuperadmin"
+                        favorite-id="horizon"
+                        label="Queue Monitor"
+                        :icon="GaugeCircle"
+                        external-href="/horizon"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="isSuperadmin"
+                        favorite-id="pulse"
+                        label="Pulse"
+                        :icon="Activity"
+                        external-href="/pulse"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
 
-            <!-- Administration -->
-            <SidebarGroup
-                v-if="
-                    canAny(
-                        Permission.ManageUsers,
-                        Permission.ManageAchievements,
-                    )
-                "
+            <CollapsibleSidebarGroup
+                group-id="administration"
+                :label="t('navigation.groups.administration')"
+                :item-labels="labels.administration.value"
+                :visible="showAdministration"
+                :search-query="search"
             >
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.administration')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem v-if="can(Permission.ManageUsers)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="usersIndex()">
-                                    <Users />
-                                    <span>{{ $t('navigation.users') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('users')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('users')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem
-                            v-if="can(Permission.ManageAchievements)"
-                        >
-                            <SidebarMenuButton as-child>
-                                <Link :href="achievementsIndex()">
-                                    <Trophy />
-                                    <span>{{
-                                        $t('navigation.achievements')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('achievements')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('achievements')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
+                <SidebarMenu>
+                    <SidebarLink
+                        v-if="can(Permission.ManageUsers)"
+                        favorite-id="users"
+                        :label="t('navigation.users')"
+                        :icon="Users"
+                        :href="usersIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ManageAchievements)"
+                        favorite-id="achievements"
+                        :label="t('navigation.achievements')"
+                        :icon="Trophy"
+                        :href="achievementsIndex().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
 
-            <!-- Data Lifecycle (GDPR Art. 17) -->
-            <SidebarGroup
-                v-if="
-                    canAny(
-                        'view_deletion_requests',
-                        'manage_retention_policies',
-                    )
-                "
+            <CollapsibleSidebarGroup
+                group-id="data-lifecycle"
+                :label="t('navigation.groups.dataLifecycle')"
+                :item-labels="labels.dataLifecycle.value"
+                :visible="showDataLifecycle"
+                :search-query="search"
             >
-                <SidebarGroupLabel>Data lifecycle</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem v-if="can('view_deletion_requests')">
-                            <SidebarMenuButton as-child>
-                                <Link
-                                    :href="
-                                        dataLifecycleRoutes.deletionRequests.index()
-                                            .url
-                                    "
-                                >
-                                    <Trash2 />
-                                    <span>Deletion requests</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('deletion-requests')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('deletion-requests')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem
-                            v-if="can('manage_retention_policies')"
-                        >
-                            <SidebarMenuButton as-child>
-                                <Link
-                                    :href="
-                                        dataLifecycleRoutes.retentionPolicies.index()
-                                            .url
-                                    "
-                                >
-                                    <Timer />
-                                    <span>Retention policies</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('retention-policies')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('retention-policies')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can('view_deletion_requests')">
-                            <SidebarMenuButton as-child>
-                                <Link
-                                    :href="
-                                        dataLifecycleRoutes.anonymizationLog.index()
-                                            .url
-                                    "
-                                >
-                                    <History />
-                                    <span>Anonymization log</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('anonymization-log')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('anonymization-log')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
+                <SidebarMenu>
+                    <SidebarLink
+                        v-if="can('view_deletion_requests')"
+                        favorite-id="deletion-requests"
+                        label="Deletion requests"
+                        :icon="Trash2"
+                        :href="dataLifecycleRoutes.deletionRequests.index().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can('manage_retention_policies')"
+                        favorite-id="retention-policies"
+                        label="Retention policies"
+                        :icon="Timer"
+                        :href="dataLifecycleRoutes.retentionPolicies.index().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can('view_deletion_requests')"
+                        favorite-id="anonymization-log"
+                        label="Anonymization log"
+                        :icon="History"
+                        :href="dataLifecycleRoutes.anonymizationLog.index().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
 
-            <!-- News Domain -->
-            <SidebarGroup
-                v-if="
-                    canAny(
-                        Permission.ManageNewsArticles,
-                        Permission.ModerateNewsComments,
-                    )
-                "
+            <CollapsibleSidebarGroup
+                group-id="news"
+                :label="t('navigation.groups.news')"
+                :item-labels="labels.news.value"
+                :visible="showNews"
+                :search-query="search"
             >
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.news')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="newsIndex()">
-                                    <Newspaper />
-                                    <span>{{ $t('navigation.articles') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('news-articles')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('news-articles')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="newsCommentsIndex()">
-                                    <MessageSquare />
-                                    <span>{{ $t('navigation.comments') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('news-comments')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('news-comments')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
+                <SidebarMenu>
+                    <SidebarLink
+                        favorite-id="news-articles"
+                        :label="t('navigation.articles')"
+                        :icon="Newspaper"
+                        :href="newsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="news-comments"
+                        :label="t('navigation.comments')"
+                        :icon="MessageSquare"
+                        :href="newsCommentsIndex().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
 
-            <!-- Announcement Domain -->
-            <SidebarGroup v-if="can(Permission.ManageAnnouncements)">
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.announcement')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="announcementsIndex()">
-                                    <Megaphone />
-                                    <span>{{
-                                        $t('navigation.announcements')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('announcements')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('announcements')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
-
-            <!-- Events Domain -->
-            <SidebarGroup
-                v-if="
-                    canAny(
-                        Permission.ManageEvents,
-                        Permission.ManageOrgaTeams,
-                        Permission.ManagePrograms,
-                        Permission.ManageVenues,
-                        Permission.ManageSeatPlans,
-                    )
-                "
+            <CollapsibleSidebarGroup
+                group-id="announcements"
+                :label="t('navigation.groups.announcement')"
+                :item-labels="labels.announcements.value"
+                :visible="showAnnouncements"
+                :search-query="search"
             >
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.event')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem v-if="can(Permission.ManageEvents)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="eventsIndex()">
-                                    <Calendar />
-                                    <span>{{ $t('navigation.events') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('events')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('events')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can(Permission.ManageEvents)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="eventsDashboard()">
-                                    <Gauge />
-                                    <span>{{
-                                        $t('navigation.eventDashboard')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('event-dashboard')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('event-dashboard')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can(Permission.ManagePrograms)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="programsIndex()">
-                                    <ClipboardList />
-                                    <span>{{ $t('navigation.programs') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('programs')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('programs')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can(Permission.ManageVenues)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="venuesIndex()">
-                                    <MapPin />
-                                    <span>{{ $t('navigation.venues') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('venues')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('venues')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can(Permission.ManageSeatPlans)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="seatPlansIndex()">
-                                    <Grid2x2 />
-                                    <span>{{
-                                        $t('navigation.seatPlans')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('seat-plans')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('seat-plans')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can(Permission.ManageOrgaTeams)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="orgaTeamsIndex()">
-                                    <UsersRound />
-                                    <span>Orga-Teams</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('orga-teams')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('orga-teams')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
+                <SidebarMenu>
+                    <SidebarLink
+                        favorite-id="announcements"
+                        :label="t('navigation.announcements')"
+                        :icon="Megaphone"
+                        :href="announcementsIndex().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
 
-            <!-- Games Domain -->
-            <SidebarGroup v-if="can(Permission.ManageGames)">
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.games')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="gamesIndex()">
-                                    <Gamepad2 />
-                                    <span>{{ $t('navigation.games') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('games')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('games')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
-
-            <!-- Sponsoring Domain -->
-            <SidebarGroup
-                v-if="
-                    canAny(
-                        Permission.ManageSponsors,
-                        Permission.ManageAssignedSponsors,
-                    )
-                "
+            <CollapsibleSidebarGroup
+                group-id="events"
+                :label="t('navigation.groups.event')"
+                :item-labels="labels.events.value"
+                :visible="showEvents"
+                :search-query="search"
             >
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.sponsoring')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem v-if="can(Permission.ManageSponsors)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="sponsorsIndex()">
-                                    <Handshake />
-                                    <span>{{ $t('navigation.sponsors') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('sponsors')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('sponsors')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem
-                            v-if="
-                                !can(Permission.ManageSponsors) &&
-                                can(Permission.ManageAssignedSponsors)
-                            "
-                        >
-                            <SidebarMenuButton as-child>
-                                <Link :href="sponsorsIndex()">
-                                    <Handshake />
-                                    <span>{{
-                                        $t('navigation.mySponsors')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('my-sponsors')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('my-sponsors')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem
-                            v-if="can(Permission.ManageSponsorLevels)"
-                        >
-                            <SidebarMenuButton as-child>
-                                <Link :href="sponsorLevelsIndex()">
-                                    <Palette />
-                                    <span>{{
-                                        $t('navigation.sponsorLevels')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('sponsor-levels')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('sponsor-levels')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
+                <SidebarMenu>
+                    <SidebarLink
+                        v-if="can(Permission.ManageEvents)"
+                        favorite-id="events"
+                        :label="t('navigation.events')"
+                        :icon="Calendar"
+                        :href="eventsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ManageEvents)"
+                        favorite-id="event-dashboard"
+                        :label="t('navigation.eventDashboard')"
+                        :icon="Gauge"
+                        :href="eventsDashboard().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ManagePrograms)"
+                        favorite-id="programs"
+                        :label="t('navigation.programs')"
+                        :icon="ClipboardList"
+                        :href="programsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ManageVenues)"
+                        favorite-id="venues"
+                        :label="t('navigation.venues')"
+                        :icon="MapPin"
+                        :href="venuesIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ManageSeatPlans)"
+                        favorite-id="seat-plans"
+                        :label="t('navigation.seatPlans')"
+                        :icon="Grid2x2"
+                        :href="seatPlansIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ManageOrgaTeams)"
+                        favorite-id="orga-teams"
+                        label="Orga-Teams"
+                        :icon="UsersRound"
+                        :href="orgaTeamsIndex().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
 
-            <!-- Ticketing Domain -->
-            <SidebarGroup v-if="can(Permission.ManageTicketing)">
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.ticketing')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="ticketTypesIndex()">
-                                    <Rows3 />
-                                    <span>{{
-                                        $t('navigation.ticketTypes')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('ticket-types')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('ticket-types')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="ticketCategoriesIndex()">
-                                    <Tag />
-                                    <span>{{
-                                        $t('navigation.ticketCategories')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('ticket-categories')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('ticket-categories')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="ticketAddonsIndex()">
-                                    <Puzzle />
-                                    <span>{{
-                                        $t('navigation.ticketAddons')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('ticket-addons')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('ticket-addons')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="vouchersIndex()">
-                                    <Gift />
-                                    <span>{{ $t('navigation.vouchers') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('vouchers')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('vouchers')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
-
-            <!-- Competition Domain -->
-            <SidebarGroup v-if="can(Permission.ManageCompetitions)">
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.competition')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="competitionsIndex()">
-                                    <Swords />
-                                    <span>{{
-                                        $t('navigation.competitions')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('competitions')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('competitions')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="adminTeamsIndex()">
-                                    <Users />
-                                    <span>{{ $t('navigation.teams') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('admin-teams')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('admin-teams')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
-
-            <!-- Orchestration Domain -->
-            <SidebarGroup
-                v-if="
-                    canAny(
-                        Permission.ManageGameServers,
-                        Permission.ViewOrchestration,
-                    )
-                "
+            <CollapsibleSidebarGroup
+                group-id="games"
+                :label="t('navigation.groups.games')"
+                :item-labels="labels.games.value"
+                :visible="showGames"
+                :search-query="search"
             >
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.orchestration')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem
-                            v-if="can(Permission.ManageGameServers)"
-                        >
-                            <SidebarMenuButton as-child>
-                                <Link :href="gameServersIndex()">
-                                    <Server />
-                                    <span>{{
-                                        $t('navigation.gameServers')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('game-servers')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('game-servers')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="orchestrationJobsIndex()">
-                                    <Radio />
-                                    <span>{{
-                                        $t('navigation.orchestration')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('orchestration-jobs')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('orchestration-jobs')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
+                <SidebarMenu>
+                    <SidebarLink
+                        favorite-id="games"
+                        :label="t('navigation.games')"
+                        :icon="Gamepad2"
+                        :href="gamesIndex().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
 
-            <!-- Integrations Domain -->
-            <SidebarGroup
-                v-if="
-                    canAny(
-                        Permission.ManageIntegrations,
-                        Permission.ManageWebhooks,
-                    )
-                "
+            <CollapsibleSidebarGroup
+                group-id="sponsoring"
+                :label="t('navigation.groups.sponsoring')"
+                :item-labels="labels.sponsoring.value"
+                :visible="showSponsoring"
+                :search-query="search"
             >
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.integrations')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem
-                            v-if="can(Permission.ManageIntegrations)"
-                        >
-                            <SidebarMenuButton as-child>
-                                <Link :href="integrationsIndex()">
-                                    <Cog />
-                                    <span>{{ $t('navigation.lanApps') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('integrations')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('integrations')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem v-if="can(Permission.ManageWebhooks)">
-                            <SidebarMenuButton as-child>
-                                <Link :href="webhooksIndex()">
-                                    <Webhook />
-                                    <span>{{ $t('navigation.webhooks') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('webhooks')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('webhooks')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
+                <SidebarMenu>
+                    <SidebarLink
+                        v-if="can(Permission.ManageSponsors)"
+                        favorite-id="sponsors"
+                        :label="t('navigation.sponsors')"
+                        :icon="Handshake"
+                        :href="sponsorsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="
+                            !can(Permission.ManageSponsors) &&
+                            can(Permission.ManageAssignedSponsors)
+                        "
+                        favorite-id="my-sponsors"
+                        :label="t('navigation.mySponsors')"
+                        :icon="Handshake"
+                        :href="sponsorsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ManageSponsorLevels)"
+                        favorite-id="sponsor-levels"
+                        :label="t('navigation.sponsorLevels')"
+                        :icon="Palette"
+                        :href="sponsorLevelsIndex().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
 
-            <!-- Shop Domain -->
-            <SidebarGroup
-                v-if="
-                    canAny(
-                        Permission.ViewOrders,
-                        Permission.ManageOrders,
-                        Permission.ManageVouchers,
-                        Permission.ManageShopConditions,
-                    )
-                "
+            <CollapsibleSidebarGroup
+                group-id="ticketing"
+                :label="t('navigation.groups.ticketing')"
+                :item-labels="labels.ticketing.value"
+                :visible="showTicketing"
+                :search-query="search"
             >
-                <SidebarGroupLabel>{{
-                    $t('navigation.groups.shop')
-                }}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="shopSettingsIndex()">
-                                    <Cog />
-                                    <span>{{ $t('navigation.settings') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="ordersIndex()">
-                                    <ShoppingCart />
-                                    <span>{{ $t('navigation.orders') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('orders')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('orders')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="adminTicketsIndex()">
-                                    <TicketCheck />
-                                    <span>{{
-                                        $t('navigation.ticketsAdmin')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('admin-tickets')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('admin-tickets')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="purchaseRequirementsIndex()">
-                                    <ShieldCheck />
-                                    <span>{{
-                                        $t('navigation.purchaseRequirements')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('purchase-requirements')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('purchase-requirements')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="globalPurchaseConditionsIndex()">
-                                    <FileCheck />
-                                    <span>{{
-                                        $t('navigation.purchaseConditions')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('purchase-conditions')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('purchase-conditions')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child>
-                                <Link :href="paymentProviderConditionsIndex()">
-                                    <CreditCard />
-                                    <span>{{
-                                        $t('navigation.paymentConditions')
-                                    }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                            <SidebarMenuAction
-                                :show-on-hover="true"
-                                @click="toggleFavorite('payment-conditions')"
-                            >
-                                <PinOff
-                                    v-if="isFavorited('payment-conditions')"
-                                    class="size-4"
-                                />
-                                <Pin v-else class="size-4" />
-                            </SidebarMenuAction>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
+                <SidebarMenu>
+                    <SidebarLink
+                        favorite-id="ticket-types"
+                        :label="t('navigation.ticketTypes')"
+                        :icon="Rows3"
+                        :href="ticketTypesIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="ticket-categories"
+                        :label="t('navigation.ticketCategories')"
+                        :icon="Tag"
+                        :href="ticketCategoriesIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="ticket-addons"
+                        :label="t('navigation.ticketAddons')"
+                        :icon="Puzzle"
+                        :href="ticketAddonsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="vouchers"
+                        :label="t('navigation.vouchers')"
+                        :icon="Gift"
+                        :href="vouchersIndex().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
+
+            <CollapsibleSidebarGroup
+                group-id="competition"
+                :label="t('navigation.groups.competition')"
+                :item-labels="labels.competition.value"
+                :visible="showCompetition"
+                :search-query="search"
+            >
+                <SidebarMenu>
+                    <SidebarLink
+                        favorite-id="competitions"
+                        :label="t('navigation.competitions')"
+                        :icon="Swords"
+                        :href="competitionsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="admin-teams"
+                        :label="t('navigation.teams')"
+                        :icon="Users"
+                        :href="adminTeamsIndex().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
+
+            <CollapsibleSidebarGroup
+                group-id="orchestration"
+                :label="t('navigation.groups.orchestration')"
+                :item-labels="labels.orchestration.value"
+                :visible="showOrchestration"
+                :search-query="search"
+            >
+                <SidebarMenu>
+                    <SidebarLink
+                        v-if="can(Permission.ManageGameServers)"
+                        favorite-id="game-servers"
+                        :label="t('navigation.gameServers')"
+                        :icon="Server"
+                        :href="gameServersIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="orchestration-jobs"
+                        :label="t('navigation.orchestration')"
+                        :icon="Radio"
+                        :href="orchestrationJobsIndex().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
+
+            <CollapsibleSidebarGroup
+                group-id="integrations"
+                :label="t('navigation.groups.integrations')"
+                :item-labels="labels.integrations.value"
+                :visible="showIntegrations"
+                :search-query="search"
+            >
+                <SidebarMenu>
+                    <SidebarLink
+                        v-if="can(Permission.ManageIntegrations)"
+                        favorite-id="integrations"
+                        :label="t('navigation.lanApps')"
+                        :icon="Cog"
+                        :href="integrationsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        v-if="can(Permission.ManageWebhooks)"
+                        favorite-id="webhooks"
+                        :label="t('navigation.webhooks')"
+                        :icon="Webhook"
+                        :href="webhooksIndex().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
+
+            <CollapsibleSidebarGroup
+                group-id="shop"
+                :label="t('navigation.groups.shop')"
+                :item-labels="labels.shop.value"
+                :visible="showShop"
+                :search-query="search"
+            >
+                <SidebarMenu>
+                    <SidebarLink
+                        favorite-id="shop-settings"
+                        :label="t('navigation.settings')"
+                        :icon="Cog"
+                        :href="shopSettingsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="orders"
+                        :label="t('navigation.orders')"
+                        :icon="ShoppingCart"
+                        :href="ordersIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="admin-tickets"
+                        :label="t('navigation.ticketsAdmin')"
+                        :icon="TicketCheck"
+                        :href="adminTicketsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="purchase-requirements"
+                        :label="t('navigation.purchaseRequirements')"
+                        :icon="ShieldCheck"
+                        :href="purchaseRequirementsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="purchase-conditions"
+                        :label="t('navigation.purchaseConditions')"
+                        :icon="FileCheck"
+                        :href="globalPurchaseConditionsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="payment-conditions"
+                        :label="t('navigation.paymentConditions')"
+                        :icon="CreditCard"
+                        :href="paymentProviderConditionsIndex().url"
+                        :search-query="search"
+                    />
+                </SidebarMenu>
+            </CollapsibleSidebarGroup>
         </SidebarContent>
 
         <SidebarFooter>

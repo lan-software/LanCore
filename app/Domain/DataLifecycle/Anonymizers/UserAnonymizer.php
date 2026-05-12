@@ -62,6 +62,7 @@ final class UserAnonymizer implements DomainAnonymizer
             'remember_token' => null,
             'ticket_discovery_allowlist' => null,
             'sidebar_favorites' => null,
+            'sidebar_collapsed_groups' => null,
             'cookie_preferences' => null,
             'password' => Hash::make(Str::random(64)),
             'anonymized_at' => $now,

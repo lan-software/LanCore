@@ -79,6 +79,7 @@ class HandleInertiaRequests extends Middleware
             ) : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'sidebarFavorites' => $user ? ($user->sidebar_favorites ?? []) : [],
+            'sidebarCollapsedGroups' => $user ? ($user->sidebar_collapsed_groups ?? []) : [],
             'organization' => fn () => Cache::remember('inertia.organization', 3600, function () {
                 $logoPath = OrganizationSetting::get('logo');
 

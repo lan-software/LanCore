@@ -10,6 +10,7 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\ProfileMediaController;
 use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Controllers\Settings\SidebarFavoriteController;
+use App\Http\Controllers\Settings\SidebarGroupStateController;
 use App\Http\Controllers\Settings\TicketDiscoveryController;
 use App\Http\Controllers\Settings\UserAchievementsController;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('settings/privacy', [PrivacyController::class, 'update'])->name('privacy.update');
 
     Route::post('settings/sidebar-favorites/toggle', [SidebarFavoriteController::class, 'toggle'])->name('sidebar-favorites.toggle');
+    Route::post('settings/sidebar-groups/toggle', [SidebarGroupStateController::class, 'toggle'])->name('sidebar-groups.toggle');
 
     Route::get('settings/linked-accounts', [LinkedAccountsController::class, 'edit'])->name('settings.linked-accounts.edit');
 
