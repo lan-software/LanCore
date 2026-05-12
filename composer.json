@@ -19,6 +19,7 @@
         "laravel/octane": "^2.17",
         "laravel/prompts": "^0.3.16",
         "laravel/pulse": "^1.7",
+        "laravel/reverb": "^1.10",
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",

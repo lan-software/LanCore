@@ -230,7 +230,10 @@ function formatChanges(values: AuditRow['new_values']): string {
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: t('policies.admin.index.title'), href: '/backstage/policies' },
-    { title: props.policy.name, href: `/backstage/policies/${props.policy.id}` },
+    {
+        title: props.policy.name,
+        href: `/backstage/policies/${props.policy.id}`,
+    },
 ];
 </script>
 

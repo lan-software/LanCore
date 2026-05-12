@@ -9,6 +9,7 @@ use App\Domain\Auth\Steam\Enums\SteamLinkStatus;
 use App\Domain\DataLifecycle\Models\DeletionRequest;
 use App\Domain\Newsletter\Enums\SubscriptionStatus;
 use App\Domain\Newsletter\Models\NewsletterList;
+use App\Domain\Presence\Services\PresenceTracker;
 use App\Enums\RoleName;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Users\UserBulkRoleRequest;
@@ -63,9 +64,17 @@ class UserController extends Controller
             return $row;
         });
 
+        $presenceMap = app(PresenceTracker::class)
+            ->bulkStatusFor($users->getCollection()->pluck('id')->all());
+        $presence = [];
+        foreach ($presenceMap as $userId => $status) {
+            $presence[$userId] = $status->value;
+        }
+
         return Inertia::render('users/Index', [
             'users' => $users,
             'filters' => $request->only(['search', 'sort', 'direction', 'role', 'steam_status', 'per_page']),
+            'presence' => $presence,
         ]);
     }
 

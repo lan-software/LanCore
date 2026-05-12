@@ -351,6 +351,7 @@ Every Inertia response includes shared data:
 - `flash` — Session flash messages
 - `ziggy` — Route definitions for client-side URL generation
 - `appearance` — Theme/appearance preferences
+- `presence` — `{ status: 'active' | 'idle' | 'offline' } | null`. The current user's presence status derived from a Redis heartbeat written on every `web` request by the `TrackPresence` middleware. Always `null` for guests (no existence-leak). Frontend consumers should read this via `useMyPresence()` (`resources/js/composables/usePresence.ts`). See SRS §3.2.DD (PRS-F-005) and SDD §5.1 (middleware row 6 + 7).
 
 #### 3.5.3 Form Submissions
 

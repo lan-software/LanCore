@@ -1,10 +1,18 @@
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ArrowDown, ArrowUp, ArrowUpDown, Gamepad2 } from 'lucide-vue-next';
 import { h } from 'vue';
+import PresenceIndicator from '@/components/PresenceIndicator.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import type { PresenceStatus } from '@/composables/usePresence';
 import type { User } from '@/types/auth';
+
+const presencePriority: Record<PresenceStatus, number> = {
+    active: 0,
+    idle: 1,
+    offline: 2,
+};
 
 type SteamStatus = 'linked' | 'steam_only' | 'not_linked';
 
@@ -45,100 +53,126 @@ function sortableHeader(label: string) {
         );
 }
 
-export const columns: ColumnDef<User>[] = [
-    {
-        id: 'select',
-        enableSorting: false,
-        enableHiding: false,
-        header: ({ table }) =>
-            h(Checkbox, {
-                modelValue: table.getIsAllPageRowsSelected()
-                    ? true
-                    : table.getIsSomePageRowsSelected()
-                      ? 'indeterminate'
-                      : false,
-                'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-                    table.toggleAllPageRowsSelected(value === true),
-                'aria-label': 'Select all',
-            }),
-        cell: ({ row }) =>
-            h(Checkbox, {
-                modelValue: row.getIsSelected(),
-                'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-                    row.toggleSelected(value === true),
-                'aria-label': 'Select row',
-            }),
-    },
-    {
-        accessorKey: 'name',
-        enableSorting: true,
-        header: sortableHeader('Name'),
-        cell: ({ row }) =>
-            h('span', { class: 'font-medium' }, row.getValue<string>('name')),
-    },
-    {
-        accessorKey: 'email',
-        enableSorting: true,
-        header: sortableHeader('Email'),
-        cell: ({ row }) =>
-            h(
-                'span',
-                { class: 'text-muted-foreground' },
-                row.getValue<string>('email'),
-            ),
-    },
-    {
-        id: 'steam_status',
-        accessorFn: (row) => row.steam_status,
-        enableSorting: false,
-        header: () => h('span', 'Steam'),
-        cell: ({ row }) => {
-            const status = row.getValue<SteamStatus | undefined>(
-                'steam_status',
-            );
-            const meta = status
-                ? steamStatusMeta[status]
-                : steamStatusMeta.not_linked;
-            const isLinked = status === 'linked' || status === 'steam_only';
-
-            return h(Badge, { variant: meta.variant, class: 'gap-1' }, () => [
-                isLinked ? h(Gamepad2, { class: 'size-3' }) : null,
-                meta.label,
-            ]);
+export function buildColumns(
+    presence: Record<number, PresenceStatus>,
+): ColumnDef<User>[] {
+    return [
+        {
+            id: 'select',
+            enableSorting: false,
+            enableHiding: false,
+            header: ({ table }) =>
+                h(Checkbox, {
+                    modelValue: table.getIsAllPageRowsSelected()
+                        ? true
+                        : table.getIsSomePageRowsSelected()
+                          ? 'indeterminate'
+                          : false,
+                    'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+                        table.toggleAllPageRowsSelected(value === true),
+                    'aria-label': 'Select all',
+                }),
+            cell: ({ row }) =>
+                h(Checkbox, {
+                    modelValue: row.getIsSelected(),
+                    'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+                        row.toggleSelected(value === true),
+                    'aria-label': 'Select row',
+                }),
         },
-    },
-    {
-        id: 'roles',
-        accessorFn: (row) => row.roles,
-        enableSorting: false,
-        header: () => h('span', 'Roles'),
-        cell: ({ row }) => {
-            const roles = row.getValue<User['roles']>('roles');
-
-            return h(
-                'div',
-                { class: 'flex flex-wrap gap-1' },
-                roles.map((role) =>
-                    h(
-                        Badge,
-                        { key: role.id, variant: 'outline' },
-                        () => role.label,
-                    ),
+        {
+            accessorKey: 'name',
+            enableSorting: true,
+            header: sortableHeader('Name'),
+            cell: ({ row }) =>
+                h(
+                    'span',
+                    { class: 'font-medium' },
+                    row.getValue<string>('name'),
                 ),
-            );
         },
-    },
-    {
-        accessorKey: 'created_at',
-        enableSorting: true,
-        header: sortableHeader('Joined'),
-        cell: ({ row }) =>
-            h(
-                'span',
-                { class: 'text-muted-foreground text-xs' },
-                new Date(
-                    row.getValue<string>('created_at'),
-                ).toLocaleDateString(),
-            ),
-    },
-];
+        {
+            accessorKey: 'email',
+            enableSorting: true,
+            header: sortableHeader('Email'),
+            cell: ({ row }) =>
+                h(
+                    'span',
+                    { class: 'text-muted-foreground' },
+                    row.getValue<string>('email'),
+                ),
+        },
+        {
+            id: 'steam_status',
+            accessorFn: (row) => row.steam_status,
+            enableSorting: false,
+            header: () => h('span', 'Steam'),
+            cell: ({ row }) => {
+                const status = row.getValue<SteamStatus | undefined>(
+                    'steam_status',
+                );
+                const meta = status
+                    ? steamStatusMeta[status]
+                    : steamStatusMeta.not_linked;
+                const isLinked = status === 'linked' || status === 'steam_only';
+
+                return h(
+                    Badge,
+                    { variant: meta.variant, class: 'gap-1' },
+                    () => [
+                        isLinked ? h(Gamepad2, { class: 'size-3' }) : null,
+                        meta.label,
+                    ],
+                );
+            },
+        },
+        {
+            id: 'roles',
+            accessorFn: (row) => row.roles,
+            enableSorting: false,
+            header: () => h('span', 'Roles'),
+            cell: ({ row }) => {
+                const roles = row.getValue<User['roles']>('roles');
+
+                return h(
+                    'div',
+                    { class: 'flex flex-wrap gap-1' },
+                    roles.map((role) =>
+                        h(
+                            Badge,
+                            { key: role.id, variant: 'outline' },
+                            () => role.label,
+                        ),
+                    ),
+                );
+            },
+        },
+        {
+            accessorKey: 'created_at',
+            enableSorting: true,
+            header: sortableHeader('Joined'),
+            cell: ({ row }) =>
+                h(
+                    'span',
+                    { class: 'text-muted-foreground text-xs' },
+                    new Date(
+                        row.getValue<string>('created_at'),
+                    ).toLocaleDateString(),
+                ),
+        },
+        {
+            id: 'presence',
+            accessorFn: (row) => presence[row.id] ?? 'offline',
+            enableSorting: true,
+            sortingFn: (a, b) =>
+                presencePriority[a.getValue<PresenceStatus>('presence')] -
+                presencePriority[b.getValue<PresenceStatus>('presence')],
+            header: sortableHeader('Status'),
+            cell: ({ row }) =>
+                h(PresenceIndicator, {
+                    status: row.getValue<PresenceStatus>('presence'),
+                    size: 'sm',
+                }),
+        },
+    ];
+}

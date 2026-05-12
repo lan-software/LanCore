@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Event\Enums\EventStatus;
 use App\Domain\Event\Models\Event;
+use App\Domain\Presence\Services\PresenceTracker;
 use App\Domain\Profile\Enums\ProfileVisibility;
 use App\Http\Resources\PublicProfileResource;
 use App\Models\User;
@@ -36,6 +37,7 @@ class PublicProfileController extends Controller
             'achievements' => $this->achievementsPayload($user),
             'upcomingEvents' => $this->upcomingEventsPayload($user),
             'eventHistory' => $this->eventHistoryPayload($user),
+            'presence' => app(PresenceTracker::class)->statusFor($user)->value,
             'isPreview' => false,
             'isOwner' => $request->user()?->getKey() === $user->getKey(),
         ]);
@@ -54,6 +56,7 @@ class PublicProfileController extends Controller
             'achievements' => $this->achievementsPayload($user),
             'upcomingEvents' => $this->upcomingEventsPayload($user),
             'eventHistory' => $this->eventHistoryPayload($user),
+            'presence' => app(PresenceTracker::class)->statusFor($user)->value,
             'isPreview' => true,
             'isOwner' => true,
         ]);

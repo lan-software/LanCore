@@ -378,6 +378,9 @@ The LanCore CSCI shall support the following operational states:
 | COMP-F-013 | The software shall allow authenticated users to submit a join request for a team via `RequestToJoinTeam` action; a `TeamJoinRequestNotification` shall be dispatched to the team captain |
 | COMP-F-014 | The software shall allow the team captain to resolve a join request (approve or reject) via `ResolveJoinRequest` action; a `JoinRequestResolvedNotification` shall be dispatched to the requesting user |
 | COMP-F-015 | The software shall prevent duplicate join requests from the same user to the same team, and reject requests when the team is at capacity |
+| COM-F-MATCH-FINAL-001 | The software shall dispatch a `MatchFinalized` event whenever a match transitions to a finalized state, carrying the competition, the LanBrackets match id, and a `MatchFinalizationSource` enum value identifying the trigger source |
+| COM-F-MATCH-FINAL-002 | The `MatchFinalizationSource` enum shall include cases `SubmittedByParticipants` (derived from the participant-confirm path) and `ForcedByAdmin` (derived from a `forced_by_admin` flag on the LanBrackets webhook payload) |
+| COM-F-MATCH-FINAL-003 | The software shall dispatch `MatchFinalized` at most once per `(competition_id, lanbrackets_match_id)` tuple, regardless of webhook re-emits or admin re-confirmations, via an atomic cache marker with a 30-day TTL |
 
 #### 3.2.15 Venue Domain (CSCI-VEN)
 
@@ -616,6 +619,25 @@ Implementation: `app/Http/Controllers/CountdownController.php` (single-action in
 |--------|------------|
 | CTD-F-001 | The software shall provide an invokable `CountdownController` that queries `Event::published()->upcoming()->orderBy('start_date')->first()` and renders the Inertia page `pages/Countdown.vue` with props `{ event: { id, name, start_date, banner }|null, defaultListId: int|null }`; the route shall require no authentication and shall apply the standard `web` middleware group |
 | CTD-F-002 | The `pages/Countdown.vue` page shall render a `<CountdownTimer>` component (Days / Hours / Minutes / Seconds computed via `useNow()` from `@vueuse/core`), the event banner and name, and a `<NewsletterSignupForm>` component that posts to `newsletter.subscribe.public`; when `defaultListId` is `null` the form shall be hidden and a quiet admin-only note rendered; when `event` is `null` the timer shall be hidden and a "no upcoming event" message shown |
+
+#### 3.2.DD Presence Domain (CSCI-PRS)
+
+Implementation: `app/Domain/Presence/Services/PresenceTracker.php`, `app/Domain/Presence/Enums/PresenceStatus.php`, `app/Http/Middleware/TrackPresence.php`, `resources/js/components/PresenceIndicator.vue`, `resources/js/composables/usePresence.ts`. Redis-only — no schema (see DBDD §4.19).
+
+| Req ID | Requirement |
+|--------|------------|
+| PRS-F-001 | The software shall expose a `PresenceStatus` enum with cases `Active`, `Idle`, `Offline`; a status of `Active` corresponds to a heartbeat newer than `presence.idle_after` (default 300s), `Idle` to a heartbeat between `idle_after` and `presence.offline_after` (default 1800s), and `Offline` to a missing heartbeat or one older than `offline_after` |
+| PRS-F-002 | The software shall persist presence heartbeats in Redis under key `presence:user:{id}` with a TTL equal to `presence.offline_after`, so that offline users self-clean from the store |
+| PRS-F-003 | The software shall provide a `PresenceTracker::bulkStatusFor(iterable $userIds)` API that issues a single Redis round-trip regardless of input size, for use by table/index views |
+| PRS-F-004 | The software shall heartbeat presence on every authenticated `web`-group request via a `TrackPresence` middleware, and shall not heartbeat for guest, API, integration, or broadcast routes |
+| PRS-F-005 | The software shall expose the current user's presence status to the frontend via an Inertia shared prop `presence: { status: 'active'\|'idle'\|'offline' } \| null`; the prop shall be `null` for guests |
+| PRS-F-006 | The software shall provide a `<PresenceIndicator>` Vue component rendering a translated, color-coded dot (green/yellow/grey) with optional inline label, sized via a `size` prop (`sm`\|`md`) and with theme-correct rendering in both light and dark themes |
+| PRS-F-007 | The software shall provide a `useMyPresence()` composable returning the current user's status reactively from Inertia shared props |
+| PRS-F-008 | The admin users index shall render a per-row presence indicator, bulk-loaded via `PresenceTracker::bulkStatusFor()` (single Redis call regardless of page size) |
+| PRS-F-009 | The admin users index "Status" column shall be sortable client-side by presence priority (Active > Idle > Offline) |
+| PRS-F-010 | The public user profile shall render a labelled presence indicator next to the display name, but only when the viewer is permitted to see the profile under existing profile-visibility rules |
+| PRS-F-011 | The software shall not compute or leak presence for a profile whose visibility mode forbids viewing — presence and existence must be hidden together to prevent existence-leak via the indicator |
+| PRS-F-012 | The Presence CSCI shall introduce no database tables, migrations, or schema changes; state is ephemeral in Redis by design |
 
 ### 3.3 CSCI External Interface Requirements
 

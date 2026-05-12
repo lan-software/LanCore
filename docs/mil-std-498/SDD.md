@@ -260,6 +260,12 @@ Each domain module follows a consistent internal structure:
 | Competition | 4 | 8 | 5 | 2 | 0 |
 | Orchestration | 3 | 12 | 3 | 0 | 2 |
 | Api | 0 | 0 | 0 | 0 | 0 |
+| Presence | 0 | 0 | 0 | 0 | 0 |
+| Chat | TBD | TBD | TBD | TBD | TBD |
+
+> **Presence** has 1 service (`PresenceTracker`), 1 enum (`PresenceStatus`), and 1 middleware (`TrackPresence`); it has no models, actions, controllers, events, or listeners because state is read-through Redis without persistence. See §5.3d.
+
+> **Chat** counts will be backfilled as `CHT-001`..`CHT-008` land. The realtime transport is **Laravel Reverb** (running as the dedicated `lancore-reverb` container — see PLATFORM-CHT-001 and `docs/deployment/reverb.md`). The cross-domain coupling point is the `App\Domain\Chat\Contracts\RoomPolicy` interface; consuming domains (Competition first, others later) supply their own implementations.
 
 #### 4.2.2 Orchestration Architecture
 
@@ -445,13 +451,14 @@ show({ id: 1 })
 | 3 | HandleAppearance | Reads the per-user `light` / `dark` / `system` preference (cookie + localStorage). Personal display preference only — distinct from event-scoped Theme Library, which is resolved one slot later by `ResolveEventTheme`. Traces to USR-F-010. |
 | 4 | ResolveEventTheme | If the resolved route binding includes an `Event`, resolves the active palette in priority order: per-event `theme_id` → `OrganizationSetting` key `default_theme_id` (cached 1h under `inertia.activeTheme.default_id`) → `null`. When a theme resolves, `View::share`s an `activeTheme` payload `{id, name, lightConfig, darkConfig, source: 'event'\|'organization'}`. No `dataTheme`, `vendor`, `kind`, or `skin` fields. Must run after `SubstituteBindings`, after `HandleAppearance`, and before `HandleInertiaRequests`. Traces to THM-F-005, THM-F-006, CAP-THM-003, CAP-THM-004. |
 | 5 | SetLocale | Applies the authenticated user's stored `locale` (from `users.locale`) via `app()->setLocale()`; for unauthenticated requests, parses `Accept-Language` and maps to the nearest supported locale (`en`, `de`, `fr`, `es`), falling back to `en`. Must run after `StartSession` so the authenticated user is available; runs before `HandleInertiaRequests` so the active locale is set when Inertia builds its shared props. Traces to I18N-F-002. |
-| 6 | HandleInertiaRequests | Shares global data with Inertia (auth, flash, push prompt dismissal, permissions, `organization`, `myEventContext`, `locale`, `availableLocales`, `activeTheme`, etc.). The `organization` prop is read from cache key `inertia.organization` (1h TTL, invalidated by `OrganizationSettingsController::update/uploadLogo/removeLogo`). The `myEventContext` prop resolves the user's currently selected event from session key `my_selected_event_id`, validates participation via `Event::scopeForUser`, and auto-clears a stale selection. The `locale` prop is `app()->getLocale()` after `SetLocale` has run; `availableLocales` is `['en', 'de', 'fr', 'es']`. The `activeTheme` prop is `view()->shared('activeTheme')` — the payload populated by `ResolveEventTheme`, or `null` outside event-scoped routes. Traces to I18N-F-003, THM-F-005. |
-| 7 | EncryptCookies | Cookie encryption |
-| 8 | StartSession | Session initialization |
-| 9 | VerifyCsrfToken | CSRF protection |
-| 10 | EnsureUserHasRole | Role-based route protection (alias: `role`) |
-| 11 | AuthenticateIntegration | Bearer token validation for API routes |
-| 12 | RequireUsername | After `auth`, redirects authenticated users with `username = null` to `/onboarding/username`. Allowlist: `/onboarding/username`, logout, language switch, asset and Inertia version routes, telescope/horizon admin paths. Stores intended URL in session for post-onboarding redirect. Traces to USR-F-022 |
+| 6 | TrackPresence | Heartbeats the authenticated user's presence on every `web`-group request by calling `PresenceTracker::touch($request->user())`; no-op for guests. Runs after `Authenticate` and the demo/locale stack but **before** `HandleInertiaRequests`, so the `presence` shared prop in the next step reads the just-written heartbeat. Best-effort: Redis failures are logged at debug and swallowed. Not applied to integration/API or broadcast routes. Traces to PRS-F-004, PRS-F-005. |
+| 7 | HandleInertiaRequests | Shares global data with Inertia (auth, flash, push prompt dismissal, permissions, `organization`, `myEventContext`, `locale`, `availableLocales`, `activeTheme`, `presence`, etc.). The `organization` prop is read from cache key `inertia.organization` (1h TTL, invalidated by `OrganizationSettingsController::update/uploadLogo/removeLogo`). The `myEventContext` prop resolves the user's currently selected event from session key `my_selected_event_id`, validates participation via `Event::scopeForUser`, and auto-clears a stale selection. The `locale` prop is `app()->getLocale()` after `SetLocale` has run; `availableLocales` is `['en', 'de', 'fr', 'es']`. The `activeTheme` prop is `view()->shared('activeTheme')` — the payload populated by `ResolveEventTheme`, or `null` outside event-scoped routes. The `presence` prop is `{ status: 'active'\|'idle'\|'offline' } \| null` derived via `PresenceTracker::statusFor`. Traces to I18N-F-003, THM-F-005, PRS-F-005. |
+| 8 | EncryptCookies | Cookie encryption |
+| 9 | StartSession | Session initialization |
+| 10 | VerifyCsrfToken | CSRF protection |
+| 11 | EnsureUserHasRole | Role-based route protection (alias: `role`) |
+| 12 | AuthenticateIntegration | Bearer token validation for API routes |
+| 13 | RequireUsername | After `auth`, redirects authenticated users with `username = null` to `/onboarding/username`. Allowlist: `/onboarding/username`, logout, language switch, asset and Inertia version routes, telescope/horizon admin paths. Stores intended URL in session for post-onboarding redirect. Traces to USR-F-022 |
 
 ### 5.2 Service Layer
 
@@ -600,7 +607,44 @@ Built on **reka-ui** (headless) + **Tailwind CSS v4**:
 | @alisaitteke/seatmap-canvas | ^2.7.1 | Seating visualization |
 | tailwindcss | ^4.2 | Utility CSS |
 
+### 5.3d Design Notes — Presence Domain
+
+#### Heartbeat & State Derivation (PRS-F-001, PRS-F-002)
+
+State is a single Redis key per user, `presence:user:{id}`, holding the UNIX timestamp of the most recent heartbeat. The TTL equals `config('presence.offline_after')` (default 1800s), so an offline user's key self-deletes; "offline" is therefore equivalent to "no record." `PresenceTracker::statusFor` derives the enum from the delta between now and the stored timestamp using two thresholds (`presence.idle_after` default 300s, `presence.offline_after` default 1800s). All Redis interaction is wrapped in try/catch — failures are logged at debug and swallowed; presence is a best-effort signal and a Redis outage must not break web requests.
+
+#### Bulk Reads (PRS-F-003)
+
+`PresenceTracker::bulkStatusFor(iterable $userIds)` issues a single `MGET` against the Redis connection regardless of input size, dedupes ids, and returns a map keyed by user id. Required by the admin users index (PRS-004) so a 50-row page is one round-trip, not 50.
+
+#### `<PresenceIndicator>` Component (PRS-F-006, PRS-F-007)
+
+`resources/js/components/PresenceIndicator.vue` renders a colored dot (`bg-green-500` / `bg-yellow-500` / `bg-zinc-400`, dark-mode mirrored) with an optional inline label and an accessible `role="img"` + translated `aria-label` derived from the `presence.status.*` i18n keys. The Active state additionally renders a Lucide `Check` glyph inside the dot. Sizes: `sm` (8px dot) and `md` (12px dot, default). Theme support comes from Tailwind dark-variant classes; no JS theme branching.
+
+#### `usePresence` Composable (PRS-F-005, PRS-F-007)
+
+`useMyPresence()` returns a `ComputedRef<PresenceStatus>` reading the current user's status from the Inertia shared `presence` prop (always reactive via `usePage().props`). `useUsersPresence(userIds)` v1 reads a page-rendered `presence: Record<number, PresenceStatus>` prop and returns a reactive map. The real-time variant of `useUsersPresence` (subscribing to a Reverb channel) is reserved for the Chat phase when the broadcast transport exists.
+
+#### Admin Users Index Integration (PRS-F-008, PRS-F-009)
+
+`UserController@index` bulk-loads presence for the paginated page's user ids via a single `PresenceTracker::bulkStatusFor` call (one Redis `MGET` round-trip regardless of page size) and passes the resulting `Record<number, 'active'|'idle'|'offline'>` as a page-scoped `presence` prop. The Vue page uses a `buildColumns(presence)` factory rather than a static `columns` array; the new "Status" column renders `<PresenceIndicator size="sm">` per row and is client-sortable via a priority map (`active < idle < offline`).
+
+#### Public Profile Integration (PRS-F-010, PRS-F-011)
+
+`PublicProfileController@show` adds a `presence` prop (string-valued `PresenceStatus`) to the Inertia render — but **only after** the visibility gate (`ProfileVisibility::isVisibleTo`) has passed. If the gate rejects the viewer, the controller throws `NotFoundHttpException` *before* any presence lookup, so a forbidden profile cannot be probed for presence (no existence-leak via the indicator). The Vue page renders `<PresenceIndicator with-label>` next to the display name. The decision for own-profile indicator visibility defaults to "show" per the spec; revisit on user feedback.
+
 ### 5.3a Design Notes — Competition Domain
+
+#### MatchFinalized Event (COM-F-MATCH-FINAL-001..003)
+
+`App\Domain\Competition\Events\MatchFinalized` is dispatched from `HandleLanBracketsWebhook::handleMatchResultReported` alongside the existing `MatchCompleted` event. Both finalization paths converge here:
+
+- **Participant-confirmed:** LanBrackets posts back `match.result_reported` after `SubmitMatchResult` → `LanBracketsClient::reportMatchResult`. The webhook payload omits `forced_by_admin` (or sets it false). Resulting source: `MatchFinalizationSource::SubmittedByParticipants`.
+- **Admin-forced:** LanBrackets posts the same webhook with `data.match.forced_by_admin = true`. Resulting source: `MatchFinalizationSource::ForcedByAdmin`.
+
+**Idempotency** is enforced via `Cache::add("match-finalized:competition:{cid}:match:{mid}", true, 30 days)`. `Cache::add` is atomic and returns `false` if the key already exists, so re-emits of the same webhook (LanBrackets retry storms, manual re-trigger) never re-fire the event. The 30-day TTL is comfortably larger than any plausible competition lifecycle.
+
+**No webhook contract change** to LanBrackets — the `forced_by_admin` flag is read defensively (`! empty($matchData['forced_by_admin'])`) so legacy payloads without the flag default to `SubmittedByParticipants`.
 
 #### LeaveTeam Action Contract
 

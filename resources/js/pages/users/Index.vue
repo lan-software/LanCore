@@ -48,6 +48,7 @@ import {
 } from '@/components/ui/table';
 import { useDataTable } from '@/composables/useDataTable';
 import type { DataTableFilters } from '@/composables/useDataTable';
+import type { PresenceStatus } from '@/composables/usePresence';
 import AppLayout from '@/layouts/AppLayout.vue';
 import {
     index as usersRoute,
@@ -56,7 +57,7 @@ import {
 } from '@/routes/users';
 import type { BreadcrumbItem } from '@/types';
 import type { User } from '@/types/auth';
-import { columns } from './columns';
+import { buildColumns } from './columns';
 
 interface PaginatedUsers {
     data: User[];
@@ -71,7 +72,10 @@ interface PaginatedUsers {
 const props = defineProps<{
     users: PaginatedUsers;
     filters: DataTableFilters;
+    presence: Record<number, PresenceStatus>;
 }>();
+
+const columns = computed(() => buildColumns(props.presence));
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: usersRoute().url },
@@ -106,7 +110,9 @@ const table = useVueTable({
     get data() {
         return props.users.data;
     },
-    columns,
+    get columns() {
+        return columns.value;
+    },
     getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
     manualFiltering: true,

@@ -740,3 +740,33 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | EXT-F-003 | Orchestration/Api | CAP-ORC-011 | SDD §5.12, SSDD §5.13.4 | `app/Console/Commands/ExternalApi/TestPaypalCommand.php` | `tests/Feature/ExternalApi/TestCommandsTest.php` (STD §4.35 TC-EXT-003) |
 | EXT-F-004 | Orchestration/Api | CAP-ORC-011 | SDD §5.12, SSDD §5.13.4 | `app/Console/Commands/ExternalApi/TestSteamCommand.php`, `app/Domain/Orchestration/Http/Controllers/ExternalApiController.php::testSteam`, `routes/orchestration.php` (`external-apis/test-steam`) | `tests/Feature/ExternalApi/TestSteamTest.php` (STD §4.35 TC-EXT-004) |
 | EXT-F-005 | Newsletter/Api | CAP-ORC-011 | SDD §5.12, SSDD §5.13.4 | `app/Console/Commands/ExternalApi/TestListmonkCommand.php`, `app/Domain/Orchestration/Http/Controllers/ExternalApiController.php::testListmonk`, `routes/orchestration.php` (`external-apis/test-listmonk`) | `tests/Feature/ExternalApi/TestListmonkTest.php` (STD §4.35 TC-EXT-005) |
+
+---
+
+## 28. Presence Domain (CSCI-PRS)
+
+| Req ID | Domain | Source CAP | Design § | Code path | Test file |
+|--------|--------|------------|----------|-----------|-----------|
+| PRS-F-001 | Presence | CAP-PRS-001 | SDD §5.3d | `app/Domain/Presence/Enums/PresenceStatus.php`, `app/Domain/Presence/Services/PresenceTracker.php` (`statusFor`, `deriveStatus`) | `tests/Unit/Domain/Presence/PresenceTrackerTest.php` |
+| PRS-F-002 | Presence | CAP-PRS-001 | SDD §5.3d | `app/Domain/Presence/Services/PresenceTracker.php` (`touch`), `config/presence.php` | `tests/Unit/Domain/Presence/PresenceTrackerTest.php` |
+| PRS-F-003 | Presence | CAP-PRS-001 | SDD §5.3d | `app/Domain/Presence/Services/PresenceTracker.php` (`bulkStatusFor`) | `tests/Unit/Domain/Presence/PresenceTrackerTest.php` |
+| PRS-F-004 | Presence | CAP-PRS-001 | SDD §5.1 row 6 | `app/Http/Middleware/TrackPresence.php`, `bootstrap/app.php` (web group registration) | `tests/Feature/Presence/TrackPresenceMiddlewareTest.php` |
+| PRS-F-005 | Presence | CAP-PRS-001 | SDD §5.1 row 7, IDD §3.5.2 | `app/Http/Middleware/HandleInertiaRequests.php` (`presence` shared prop) | `tests/Feature/Presence/TrackPresenceMiddlewareTest.php` |
+| PRS-F-006 | Presence | CAP-PRS-001 | SDD §5.3d | `resources/js/components/PresenceIndicator.vue`, `resources/js/locales/en.json` (`presence.status.*`), `lang/en/presence.php` | `resources/js/components/PresenceIndicator.test.ts` |
+| PRS-F-007 | Presence | CAP-PRS-001 | SDD §5.3d | `resources/js/composables/usePresence.ts` (`useMyPresence`, `useUsersPresence`) | (covered indirectly by PRS-004/005 integration tests) |
+| PRS-F-008 | Presence | CAP-PRS-001 | SDD §5.3d | `app/Http/Controllers/Users/UserController.php@index`, `resources/js/pages/users/Index.vue`, `resources/js/pages/users/columns.ts` (`buildColumns`) | `tests/Feature/Users/UserListPresenceTest.php` |
+| PRS-F-009 | Presence | CAP-PRS-001 | SDD §5.3d | `resources/js/pages/users/columns.ts` (`presencePriority`, `sortingFn`) | `tests/Feature/Users/UserListPresenceTest.php` |
+| PRS-F-010 | Presence | CAP-PRS-001 | SDD §5.3d | `app/Http/Controllers/PublicProfileController.php@show` (`presence` prop), `resources/js/pages/u/Show.vue` | `tests/Feature/Profile/PublicProfilePresenceTest.php` |
+| PRS-F-011 | Presence | CAP-PRS-001 | SDD §5.3d (existence-leak prevention) | `app/Http/Controllers/PublicProfileController.php@show` (visibility gate before presence lookup) | `tests/Feature/Profile/PublicProfilePresenceTest.php` (private / logged_in cases) |
+| PRS-F-012 | Presence | CAP-PRS-001 | DBDD §4.19 | (no schema — Redis-only) | `tests/Unit/Domain/Presence/PresenceTrackerTest.php` |
+| COM-F-MATCH-FINAL-001 | Competition | CAP-COMP-001 | SDD §5.3a (MatchFinalized Event) | `app/Domain/Competition/Events/MatchFinalized.php`, `app/Domain/Competition/Actions/HandleLanBracketsWebhook.php` | `tests/Feature/Competition/MatchFinalizedEventTest.php` |
+| COM-F-MATCH-FINAL-002 | Competition | CAP-COMP-001 | SDD §5.3a (MatchFinalized Event) | `app/Domain/Competition/Enums/MatchFinalizationSource.php`, `HandleLanBracketsWebhook` source-derivation logic | `tests/Feature/Competition/MatchFinalizedEventTest.php` |
+| COM-F-MATCH-FINAL-003 | Competition | CAP-COMP-001 | SDD §5.3a (MatchFinalized Event, idempotency) | `HandleLanBracketsWebhook` `Cache::add` marker | `tests/Feature/Competition/MatchFinalizedEventTest.php` ("re-emits" case) |
+
+---
+
+## 29. Chat Platform (Reverb) — PLATFORM-CHT-001
+
+| Req ID | Domain | Source CAP | Design § | Code path | Test file |
+|--------|--------|------------|----------|-----------|-----------|
+| PLATFORM-CHT-001 | Chat / Platform | CAP-CHT-001 | SDD §4.2.1 (Chat domain row), `docs/deployment/reverb.md` | `composer.json` (laravel/reverb), `package.json` (@laravel/echo-vue, laravel-echo, pusher-js), `config/reverb.php`, `config/broadcasting.php`, `routes/channels.php`, `compose.yaml` (reverb service), `resources/js/app.ts` (Echo config), `.env.example` (`REVERB_*` + `VITE_REVERB_*`) | `tests/Unit/Broadcasting/ReverbConfigTest.php` |

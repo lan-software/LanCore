@@ -1139,6 +1139,10 @@ Standard Laravel Cashier tables for subscription management with metered billing
 > The `audits` table (laravel-auditing) is reused for the Policy audit
 > trail; no new audit-specific tables.
 
+### 4.19 Presence Domain (CSCI-PRS)
+
+The Presence CSCI introduces **no schema changes**. Heartbeat state is stored exclusively in Redis under keys of the form `presence:user:{id}`, with a TTL equal to `config('presence.offline_after')` (default 1800s) so the store self-cleans for offline users. Status derivation (Active / Idle / Offline) is computed from the heartbeat timestamp delta in `App\Domain\Presence\Services\PresenceTracker`. See SRS §3.2.DD (PRS-F-002, PRS-F-012) and SDD §5.3d.
+
 ---
 
 ## 5. Entity Relationship Summary

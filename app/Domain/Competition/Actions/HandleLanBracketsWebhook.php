@@ -4,11 +4,14 @@ namespace App\Domain\Competition\Actions;
 
 use App\Domain\Api\Clients\LanBracketsClient;
 use App\Domain\Competition\Enums\CompetitionStatus;
+use App\Domain\Competition\Enums\MatchFinalizationSource;
 use App\Domain\Competition\Events\MatchCompleted;
+use App\Domain\Competition\Events\MatchFinalized;
 use App\Domain\Competition\Events\MatchReadyForOrchestration;
 use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\MatchResultProof;
 use App\Domain\Orchestration\Models\OrchestrationJob;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @see docs/mil-std-498/SRS.md COMP-F-009
@@ -76,6 +79,23 @@ class HandleLanBracketsWebhook
 
         if ($competition !== null) {
             MatchCompleted::dispatch($competition, (int) $matchId, $matchData);
+
+            // Idempotency: Cache::add is atomic and returns false if the key
+            // already exists, so a re-emit for the same match never re-fires
+            // MatchFinalized. Handles both finalization paths uniformly
+            // (participant-confirmed and admin-forced).
+            $marker = "match-finalized:competition:{$competition->id}:match:{$matchId}";
+
+            if (Cache::add($marker, true, now()->addDays(30))) {
+                $forced = ! empty($matchData['forced_by_admin']);
+                MatchFinalized::dispatch(
+                    $competition,
+                    (int) $matchId,
+                    $forced
+                        ? MatchFinalizationSource::ForcedByAdmin
+                        : MatchFinalizationSource::SubmittedByParticipants,
+                );
+            }
 
             $this->dispatchReadyMatchesForOrchestration(
                 $competition,

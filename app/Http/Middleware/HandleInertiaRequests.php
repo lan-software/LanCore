@@ -7,6 +7,7 @@ use App\Domain\Announcement\Services\ActiveAnnouncementsProvider;
 use App\Domain\Event\Enums\Permission as EventPermission;
 use App\Domain\Event\Models\Event;
 use App\Domain\Integration\Models\IntegrationApp;
+use App\Domain\Presence\Services\PresenceTracker;
 use App\Domain\Program\Enums\Permission as ProgramPermission;
 use App\Domain\Seating\Enums\Permission as SeatingPermission;
 use App\Domain\Shop\Support\CurrencyResolver;
@@ -133,6 +134,9 @@ class HandleInertiaRequests extends Middleware
                     'symbol' => CurrencyResolver::symbol(),
                 ],
             ],
+            'presence' => fn () => $user
+                ? ['status' => app(PresenceTracker::class)->statusFor($user)->value]
+                : null,
             'unreadNotificationsCount' => fn () => $user ? $user->unreadNotifications()->whereNull('archived_at')->count() : 0,
             'recentNotifications' => fn () => $user
                 ? $user->notifications()->whereNull('archived_at')->latest()->limit(5)->get()->map(fn ($n) => [

@@ -47,6 +47,7 @@
     "dependencies": {
         "@alisaitteke/seatmap-canvas": "^2.7.1",
         "@inertiajs/vue3": "^2.3.7",
+        "@laravel/echo-vue": "^2.3.4",
         "@tanstack/vue-table": "^8.21.3",
         "@tiptap/extension-image": "^3.20.4",
         "@tiptap/extension-link": "^3.20.4",
@@ -58,8 +59,10 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "flag-icons": "^7.2.3",
+        "laravel-echo": "^2.3.4",
         "laravel-vite-plugin": "^3.0.0",
         "lucide-vue-next": "^0.468.0",
+        "pusher-js": "^8.5.0",
         "reka-ui": "^2.9.2",
         "tailwind-merge": "^3.2.0",
         "tailwindcss": "^4.1.1",

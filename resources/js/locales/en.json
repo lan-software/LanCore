@@ -1266,5 +1266,12 @@
             "changeSeat": "Change seat",
             "addAttendeeHint": "Add an attendee to pick a seat."
         }
+    },
+    "presence": {
+        "status": {
+            "active": "Active",
+            "idle": "Idle",
+            "offline": "Offline"
+        }
     }
 }

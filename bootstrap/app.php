@@ -13,6 +13,7 @@ use App\Http\Middleware\RequireUsername;
 use App\Http\Middleware\ResolveEventTheme;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackHttpMetrics;
+use App\Http\Middleware\TrackPresence;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
+        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
         then: function () {
             Route::middleware([])->group(base_path('routes/api-integrations.php'));
@@ -52,6 +54,7 @@ return Application::configure(basePath: dirname(__DIR__))
             SetLocale::class,
             EnforceDemoGuardrails::class,
             RecordDemoActivity::class,
+            TrackPresence::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
             RequirePolicyAcceptance::class,

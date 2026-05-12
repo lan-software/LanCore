@@ -5,7 +5,9 @@ import { computed, defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import AppFooter from '@/components/AppFooter.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import PresenceIndicator from '@/components/PresenceIndicator.vue';
 import PublicTopbar from '@/components/PublicTopbar.vue';
+import type { PresenceStatus } from '@/composables/usePresence';
 import { edit as profileEdit } from '@/routes/profile';
 import type { BreadcrumbItem } from '@/types';
 
@@ -46,6 +48,7 @@ const props = defineProps<{
     achievements: Achievement[];
     upcomingEvents: EventHistoryItem[];
     eventHistory: EventHistoryItem[];
+    presence: PresenceStatus;
     isPreview: boolean;
     isOwner: boolean;
 }>();
@@ -184,6 +187,7 @@ function rarityClass(percentage: number): string {
                                 profile.profile_emoji
                             }}</span>
                             <span>{{ profile.username }}</span>
+                            <PresenceIndicator :status="presence" with-label />
                         </h1>
                         <p
                             v-if="profile.short_bio"
