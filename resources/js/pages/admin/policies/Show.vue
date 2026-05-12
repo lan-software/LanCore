@@ -5,6 +5,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Heading from '@/components/Heading.vue';
 import NonEditorialChangeConfirmDialog from '@/components/policies/NonEditorialChangeConfirmDialog.vue';
+import PolicyDiffViewer from '@/components/policies/PolicyDiffViewer.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -59,11 +60,17 @@ interface AuditRow {
     created_at: string;
 }
 
+interface DiffLineRow {
+    op: 'eq' | 'add' | 'del';
+    line: string;
+}
+
 interface DiffRow {
     from_version: number;
     to_version: number;
     locale: string;
     html: string;
+    rows: DiffLineRow[];
 }
 
 const props = defineProps<{
@@ -699,10 +706,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                             {{ diff.locale }}
                         </span>
                     </div>
-                    <div
-                        v-if="diff.html.trim()"
-                        class="max-h-96 overflow-auto p-2 font-mono text-xs"
-                        v-html="diff.html"
+                    <PolicyDiffViewer
+                        v-if="diff.rows.length > 0"
+                        :rows="diff.rows"
                     />
                     <p v-else class="p-4 text-sm text-muted-foreground italic">
                         {{ $t('policies.admin.show.diff_empty') }}

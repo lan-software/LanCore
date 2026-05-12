@@ -207,7 +207,7 @@ class PolicyController extends Controller
      * (within the same locale) so the Show page can render them inline
      * without an extra round-trip.
      *
-     * @return list<array{from_version:int,to_version:int,locale:string,html:string}>
+     * @return list<array{from_version:int,to_version:int,locale:string,html:string,rows:list<array{op:string,line:string}>}>
      */
     private function diffsFor(Policy $policy): array
     {
@@ -228,6 +228,7 @@ class PolicyController extends Controller
                     'to_version' => $to->version_number,
                     'locale' => (string) $locale,
                     'html' => PolicyVersionDiff::render($from->content, $to->content),
+                    'rows' => PolicyVersionDiff::rows($from->content, $to->content),
                 ];
             }
         }

@@ -28,6 +28,24 @@ final class PolicyVersionDiff
     }
 
     /**
+     * Structured rows for client-side rendering — same diff content as
+     * `render()` but as a flat array of `{op, line}` so the frontend can
+     * choose between a compact (changed lines + context) and a full view.
+     *
+     * @return list<array{op:'eq'|'add'|'del', line:string}>
+     */
+    public static function rows(string $from, string $to): array
+    {
+        $a = preg_split("/\r\n|\n|\r/", $from) ?: [];
+        $b = preg_split("/\r\n|\n|\r/", $to) ?: [];
+
+        return array_map(
+            fn (array $tuple): array => ['op' => $tuple[0], 'line' => $tuple[1]],
+            self::diff($a, $b),
+        );
+    }
+
+    /**
      * Hunt-McIlroy LCS-based diff producing a flat op stream.
      *
      * @param  list<string>  $a
