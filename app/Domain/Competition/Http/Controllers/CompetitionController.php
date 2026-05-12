@@ -12,9 +12,15 @@ use App\Domain\Competition\Http\Requests\CompetitionIndexRequest;
 use App\Domain\Competition\Http\Requests\StoreCompetitionRequest;
 use App\Domain\Competition\Http\Requests\UpdateCompetitionRequest;
 use App\Domain\Competition\Models\Competition;
+use App\Domain\Competition\SignupRules\Rules\HasAddonRule;
+use App\Domain\Competition\SignupRules\Rules\HasSeatRule;
+use App\Domain\Competition\SignupRules\Rules\HasSteamAccountLinkedRule;
+use App\Domain\Competition\SignupRules\Rules\HasTicketOfTypeRule;
 use App\Domain\Event\Models\Event;
 use App\Domain\Games\Models\Game;
 use App\Domain\Presence\Services\PresenceTracker;
+use App\Domain\Ticketing\Models\Addon;
+use App\Domain\Ticketing\Models\TicketType;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -109,6 +115,25 @@ class CompetitionController extends Controller
             'lanbracketsEnabled' => config('lanbrackets.enabled'),
             'lanbracketsBaseUrl' => config('lanbrackets.base_url'),
             'chat' => $chatPayload,
+            'signupRuleCatalog' => [
+                'ruleTypes' => [
+                    HasSteamAccountLinkedRule::key(),
+                    HasTicketOfTypeRule::key(),
+                    HasSeatRule::key(),
+                    HasAddonRule::key(),
+                ],
+                'ticketTypes' => TicketType::query()
+                    ->when($competition->event_id, fn ($q) => $q->where('event_id', $competition->event_id))
+                    ->orderBy('name')
+                    ->get(['id', 'name'])
+                    ->all(),
+                'addons' => Addon::query()
+                    ->when($competition->event_id, fn ($q) => $q->where('event_id', $competition->event_id))
+                    ->orderBy('name')
+                    ->get(['id', 'name'])
+                    ->all(),
+                'gameSignupRules' => $competition->game?->signup_rules,
+            ],
         ]);
     }
 

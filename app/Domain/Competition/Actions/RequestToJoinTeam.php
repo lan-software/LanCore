@@ -2,17 +2,23 @@
 
 namespace App\Domain\Competition\Actions;
 
+use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\CompetitionTeam;
 use App\Domain\Competition\Models\TeamJoinRequest;
 use App\Domain\Competition\Notifications\TeamJoinRequestNotification;
+use App\Domain\Competition\SignupRules\Support\SignupRuleEnforcer;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
 class RequestToJoinTeam
 {
+    public function __construct(private readonly SignupRuleEnforcer $signupRules) {}
+
     public function execute(CompetitionTeam $team, User $user, ?string $message = null): TeamJoinRequest
     {
         $competition = $team->competition;
+
+        $this->signupRules->enforce($user, $competition);
 
         if (! $this->hasValidTicketForEvent($user, $competition)) {
             throw ValidationException::withMessages([
@@ -45,7 +51,7 @@ class RequestToJoinTeam
         return $request;
     }
 
-    private function hasValidTicketForEvent(User $user, \App\Domain\Competition\Models\Competition $competition): bool
+    private function hasValidTicketForEvent(User $user, Competition $competition): bool
     {
         if (! $competition->event_id) {
             return true;

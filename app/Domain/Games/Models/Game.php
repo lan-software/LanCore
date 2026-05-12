@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'slug', 'publisher', 'description', 'is_active'])]
+#[Fillable(['name', 'slug', 'publisher', 'description', 'is_active', 'signup_rules'])]
 class Game extends Model
 {
     /** @use HasFactory<GameFactory> */
@@ -26,6 +26,7 @@ class Game extends Model
     {
         return [
             'is_active' => 'boolean',
+            'signup_rules' => 'array',
         ];
     }
 

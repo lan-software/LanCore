@@ -39,6 +39,7 @@ class UpdateCompetitionRequest extends FormRequest
             'ends_at' => ['nullable', 'date'],
             'settings' => ['nullable', 'array'],
             'settings.result_submission_mode' => ['nullable', Rule::enum(ResultSubmissionMode::class)],
+            'signup_rules' => ['nullable', 'array'],
         ];
     }
 }

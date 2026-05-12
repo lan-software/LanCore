@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'type', 'stage_type', 'status', 'team_size', 'max_teams',
     'registration_opens_at', 'registration_closes_at', 'starts_at', 'ends_at',
     'lanbrackets_id', 'lanbrackets_share_token', 'settings', 'metadata',
+    'signup_rules',
 ])]
 class Competition extends Model
 {
@@ -53,7 +54,32 @@ class Competition extends Model
             'lanbrackets_id' => 'integer',
             'settings' => 'array',
             'metadata' => 'array',
+            'signup_rules' => 'array',
         ];
+    }
+
+    /**
+     * The signup-rules tree that actually applies to this competition.
+     * A competition-level tree always wins; otherwise we fall back to the
+     * tree configured on the game. Either side may be `null` (= no rules).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function effectiveSignupRules(): ?array
+    {
+        $own = $this->signup_rules;
+        if (is_array($own) && $own !== []) {
+            return $own;
+        }
+
+        $game = $this->game;
+        if ($game === null) {
+            return null;
+        }
+
+        $gameRules = $game->signup_rules;
+
+        return is_array($gameRules) && $gameRules !== [] ? $gameRules : null;
     }
 
     /** @return BelongsTo<Event, $this> */

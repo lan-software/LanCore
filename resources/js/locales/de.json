@@ -508,6 +508,38 @@
         }
     },
     "competitions": {
+        "signupRules": {
+            "blockedTitle": "Anmeldung noch nicht möglich",
+            "blockedExplanation": "Für diesen Wettbewerb gelten Anmeldebedingungen, die dein Konto noch nicht erfüllt. Erledige die folgenden Punkte, um teilnehmen zu können.",
+            "fixThis": "Beheben →",
+            "reasons": {
+                "has_steam_account_linked": "Dein Konto muss mit Steam verknüpft sein.",
+                "has_ticket_of_type": "Du benötigst ein Ticket vom Typ: {types}.",
+                "has_seat": "Du benötigst einen zugewiesenen Sitzplatz für dieses Event.",
+                "has_addon": "Du benötigst folgendes Add-on: {addons}."
+            },
+            "adminHeading": "Anmelderegeln",
+            "adminDescription": "Schränke ein, wer sich für diesen Wettbewerb anmelden darf. Regeln werden geprüft, wenn jemand ein Team erstellt oder beitritt – sie können nicht umgangen werden.",
+            "adminGameFallbackHint": "Wenn dieses Feld leer bleibt, gelten die auf dem Spiel hinterlegten Regeln.",
+            "adminEffectiveFromGame": "Regeln werden vom Spiel übernommen (kein Wettbewerbs-Override).",
+            "groupAll": "Alle von",
+            "groupAny": "Eines von",
+            "addRule": "Regel hinzufügen",
+            "addGroup": "Gruppe hinzufügen",
+            "removeRule": "Entfernen",
+            "noRules": "Keine Regeln – jede:r mit gültiger Anmeldung kann teilnehmen.",
+            "selectRuleType": "Regeltyp wählen",
+            "ticketTypeIds": "Erforderliche Tickettypen",
+            "ticketTypeIdsHint": "Komma-getrennte IDs der Tickettypen.",
+            "addonIds": "Erforderliche Add-ons",
+            "addonIdsHint": "Komma-getrennte Add-on-IDs.",
+            "ruleTypes": {
+                "has_steam_account_linked": "Steam-Konto verknüpft",
+                "has_ticket_of_type": "Ticket vom Typ vorhanden",
+                "has_seat": "Sitzplatz zugewiesen",
+                "has_addon": "Add-on vorhanden"
+            }
+        },
         "createTitle": "Wettbewerb erstellen",
         "editTitle": "Bearbeiten: {name}",
         "backToList": "← Zurück zu den Wettbewerben",

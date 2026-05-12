@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { ExternalLink, ListOrdered, Users } from 'lucide-vue-next';
-import { ref } from 'vue';
+import {
+    AlertTriangle,
+    ExternalLink,
+    ListOrdered,
+    Users,
+} from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import TeamController from '@/actions/App/Domain/Competition/Http/Controllers/TeamController';
 import UserCompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/UserCompetitionController';
@@ -24,6 +29,13 @@ import type { Competition, CompetitionTeam } from '@/types/domain';
 
 const { t } = useI18n();
 
+type SignupRuleReason = {
+    rule_key: string;
+    message_key: string;
+    params: Record<string, string | number | boolean | null>;
+    action_url: string | null;
+};
+
 const props = defineProps<{
     competition: Competition;
     userTeam: CompetitionTeam | null;
@@ -34,7 +46,18 @@ const props = defineProps<{
         members: ChatMemberDto[];
         memberPresence: MemberPresenceMap;
     } | null;
+    signupGate: {
+        allowed: boolean;
+        unmetReasons: SignupRuleReason[];
+    };
 }>();
+
+const signupBlocked = computed(
+    () =>
+        !props.userTeam &&
+        props.competition.status === 'registration_open' &&
+        !props.signupGate.allowed,
+);
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: t('navigation.myCompetitions'), href: myCompetitionsRoute().url },
@@ -251,9 +274,68 @@ function requestJoin(teamId: number) {
                         </div>
                     </div>
 
-                    <!-- Create Team (if no team and registration open) -->
+                    <!-- Signup blocked notice -->
                     <div
-                        v-else-if="competition.status === 'registration_open'"
+                        v-if="signupBlocked"
+                        class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-100"
+                    >
+                        <div class="flex items-start gap-2">
+                            <AlertTriangle class="mt-0.5 size-4 shrink-0" />
+                            <div class="space-y-2">
+                                <h3 class="text-sm font-semibold">
+                                    {{
+                                        $t(
+                                            'competitions.signupRules.blockedTitle',
+                                        )
+                                    }}
+                                </h3>
+                                <p class="text-sm">
+                                    {{
+                                        $t(
+                                            'competitions.signupRules.blockedExplanation',
+                                        )
+                                    }}
+                                </p>
+                                <ul
+                                    class="ml-5 list-disc space-y-1 text-sm marker:text-amber-600 dark:marker:text-amber-300"
+                                >
+                                    <li
+                                        v-for="reason in signupGate.unmetReasons"
+                                        :key="
+                                            reason.rule_key +
+                                            JSON.stringify(reason.params)
+                                        "
+                                    >
+                                        {{
+                                            $t(
+                                                reason.message_key,
+                                                reason.params,
+                                            )
+                                        }}
+                                        <Link
+                                            v-if="reason.action_url"
+                                            :href="reason.action_url"
+                                            class="ml-1 underline hover:no-underline"
+                                        >
+                                            {{
+                                                $t(
+                                                    'competitions.signupRules.fixThis',
+                                                )
+                                            }}
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Create Team (if no team and registration open and signup allowed) -->
+                    <div
+                        v-if="
+                            !userTeam &&
+                            !signupBlocked &&
+                            competition.status === 'registration_open'
+                        "
                         class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
                         <h3 class="mb-3 text-sm font-semibold">
@@ -344,6 +426,7 @@ function requestJoin(teamId: number) {
                                 <Button
                                     v-if="
                                         !userTeam &&
+                                        !signupBlocked &&
                                         competition.status ===
                                             'registration_open'
                                     "

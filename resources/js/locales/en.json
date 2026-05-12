@@ -675,6 +675,38 @@
         }
     },
     "competitions": {
+        "signupRules": {
+            "blockedTitle": "You can't sign up yet",
+            "blockedExplanation": "This competition has signup requirements that aren't met for your account. Resolve the items below to participate.",
+            "fixThis": "Fix this →",
+            "reasons": {
+                "has_steam_account_linked": "Your account needs to be linked to Steam.",
+                "has_ticket_of_type": "You need a ticket of type: {types}.",
+                "has_seat": "You need a seat assigned for this event.",
+                "has_addon": "You need the following add-on: {addons}."
+            },
+            "adminHeading": "Signup Rules",
+            "adminDescription": "Restrict who can sign up for this competition. Rules are evaluated when a user tries to create or join a team — they cannot bypass the check.",
+            "adminGameFallbackHint": "Leaving this empty falls back to the rules configured on the game.",
+            "adminEffectiveFromGame": "Inheriting rules from the game (no competition override).",
+            "groupAll": "All of",
+            "groupAny": "Any of",
+            "addRule": "Add rule",
+            "addGroup": "Add group",
+            "removeRule": "Remove",
+            "noRules": "No rules — anyone meeting registration eligibility can sign up.",
+            "selectRuleType": "Select rule type",
+            "ticketTypeIds": "Required ticket types",
+            "ticketTypeIdsHint": "Comma-separated ticket type IDs.",
+            "addonIds": "Required add-ons",
+            "addonIdsHint": "Comma-separated add-on IDs.",
+            "ruleTypes": {
+                "has_steam_account_linked": "Has Steam account linked",
+                "has_ticket_of_type": "Has ticket of type",
+                "has_seat": "Has a seat assigned",
+                "has_addon": "Has add-on"
+            }
+        },
         "createTitle": "Create Competition",
         "editTitle": "Edit: {name}",
         "backToList": "← Back to Competitions",

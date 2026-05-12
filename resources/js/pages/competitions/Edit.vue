@@ -14,6 +14,9 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/CompetitionController';
 import ChatRoom from '@/components/chat/ChatRoom.vue';
+import SignupRuleEditor, {
+    type RuleGroup,
+} from '@/components/competitions/SignupRuleEditor.vue';
 import type {
     ChatMemberDto,
     ChatMessageDto,
@@ -35,7 +38,7 @@ import type { Competition, Game } from '@/types/domain';
 const { t } = useI18n();
 
 const props = defineProps<{
-    competition: Competition;
+    competition: Competition & { signup_rules?: RuleGroup | null };
     games: Game[];
     events: { id: number; name: string; start_date: string }[];
     lanbracketsEnabled: boolean;
@@ -46,6 +49,12 @@ const props = defineProps<{
         members: ChatMemberDto[];
         memberPresence: MemberPresenceMap;
     } | null;
+    signupRuleCatalog: {
+        ruleTypes: string[];
+        ticketTypes: { id: number; name: string }[];
+        addons: { id: number; name: string }[];
+        gameSignupRules: RuleGroup | null;
+    };
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -162,6 +171,24 @@ const lanbracketsAdminUrl = computed(() =>
 // Can edit fields
 const canEditDetails = computed(() =>
     ['draft', 'registration_open'].includes(props.competition.status),
+);
+
+// Signup rules editor
+const signupRulesForm = useForm<{ signup_rules: RuleGroup | null }>({
+    signup_rules: (props.competition.signup_rules as RuleGroup | null) ?? null,
+});
+
+function saveSignupRules() {
+    signupRulesForm.patch(
+        CompetitionController.update(props.competition.id).url,
+        { preserveScroll: true },
+    );
+}
+
+const usesGameFallback = computed(
+    () =>
+        signupRulesForm.signup_rules === null &&
+        props.signupRuleCatalog.gameSignupRules !== null,
 );
 
 // Delete
@@ -468,6 +495,65 @@ function statusColor(status: string): string {
                             </Button>
                         </div>
                     </Form>
+
+                    <!-- Signup rules -->
+                    <div
+                        class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
+                    >
+                        <Heading
+                            variant="small"
+                            :title="$t('competitions.signupRules.adminHeading')"
+                            :description="
+                                $t(
+                                    'competitions.signupRules.adminDescription',
+                                )
+                            "
+                        />
+
+                        <p
+                            v-if="usesGameFallback"
+                            class="mt-2 text-xs text-muted-foreground"
+                        >
+                            {{
+                                $t(
+                                    'competitions.signupRules.adminEffectiveFromGame',
+                                )
+                            }}
+                        </p>
+
+                        <div class="mt-3">
+                            <SignupRuleEditor
+                                v-model="signupRulesForm.signup_rules"
+                                :rule-types="signupRuleCatalog.ruleTypes"
+                                :ticket-types="signupRuleCatalog.ticketTypes"
+                                :addons="signupRuleCatalog.addons"
+                                :disabled="!canEditDetails"
+                            />
+                        </div>
+
+                        <p class="mt-2 text-xs text-muted-foreground">
+                            {{
+                                $t(
+                                    'competitions.signupRules.adminGameFallbackHint',
+                                )
+                            }}
+                        </p>
+
+                        <div v-if="canEditDetails" class="mt-3">
+                            <Button
+                                type="button"
+                                size="sm"
+                                :disabled="signupRulesForm.processing"
+                                @click="saveSignupRules"
+                            >
+                                {{
+                                    signupRulesForm.processing
+                                        ? $t('common.saving')
+                                        : $t('common.saveChanges')
+                                }}
+                            </Button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Sidebar -->

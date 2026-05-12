@@ -62,6 +62,7 @@ export type Competition = {
     lanbrackets_share_token: string | null;
     settings: Record<string, unknown> | null;
     metadata: Record<string, unknown> | null;
+    signup_rules?: Record<string, unknown> | null;
     created_at: string;
     updated_at: string;
 };

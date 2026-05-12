@@ -6,6 +6,7 @@ use App\Domain\Chat\Models\ChatRoom;
 use App\Domain\Chat\Services\PolicyResolver;
 use App\Domain\Competition\Chat\CompetitionMemberAnnotator;
 use App\Domain\Competition\Models\Competition;
+use App\Domain\Competition\SignupRules\Support\SignupRuleEnforcer;
 use App\Domain\Presence\Services\PresenceTracker;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -21,6 +22,7 @@ class UserCompetitionController extends Controller
         private readonly PolicyResolver $policyResolver,
         private readonly PresenceTracker $presenceTracker,
         private readonly CompetitionMemberAnnotator $competitionMemberAnnotator,
+        private readonly SignupRuleEnforcer $signupRuleEnforcer,
     ) {}
 
     public function index(Request $request): Response
@@ -68,12 +70,32 @@ class UserCompetitionController extends Controller
             $chatPayload = $this->serializeRoomPayload($competitionChatRoom, $request->user());
         }
 
+        $signupGate = $this->buildSignupGate($competition, $request->user());
+
         return Inertia::render('competitions/user/Show', [
             'competition' => $competition,
             'userTeam' => $userTeam,
             'bracketUrl' => $competition->lanBracketsViewUrl(),
             'chat' => $chatPayload,
+            'signupGate' => $signupGate,
         ]);
+    }
+
+    /**
+     * Evaluate the competition's signup rules for the authenticated user and
+     * package the result for the frontend. Returns `null` when the user is
+     * already on a team (gate doesn't apply once joined).
+     *
+     * @return array{allowed: bool, unmetReasons: list<array{rule_key: string, message_key: string, params: array<string, scalar|null>, action_url: string|null}>}
+     */
+    private function buildSignupGate(Competition $competition, $user): array
+    {
+        $result = $this->signupRuleEnforcer->evaluate($user, $competition);
+
+        return [
+            'allowed' => $result->satisfied,
+            'unmetReasons' => $result->reasonsArray(),
+        ];
     }
 
     /**

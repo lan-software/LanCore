@@ -22,6 +22,10 @@ class CompetitionPolicy
             return true;
         }
 
+        if ($competition->isRegistrationOpen()) {
+            return true;
+        }
+
         return $competition->teams()
             ->whereHas('activeMembers', fn ($q) => $q->where('user_id', $user->id))
             ->exists();
