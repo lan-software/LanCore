@@ -8,20 +8,28 @@ use App\Domain\Chat\Services\PolicyResolver;
 use App\Models\User;
 
 /**
- * Channel-join authorization for `chat.room.{roomId}` private channels.
+ * Channel-join authorization for `chat.room.{roomId}` *presence* channels.
  *
  * Archived rooms reject subscription outright; WriteLocked rooms still allow
  * subscription so read-only viewers can see the historical thread. Post
  * authorization is enforced separately by the `PostMessage` action.
  *
- * @see docs/mil-std-498/SRS.md CHT-F-008
+ * Returns `false` to deny, or a small user descriptor to admit + advertise
+ * the user to other subscribers (presence-channel semantics). The descriptor
+ * is the payload other clients see in `.here()` / `.joining()` events and
+ * drives the "active in chat" checkmark overlay on the presence indicator.
+ *
+ * @see docs/mil-std-498/SRS.md CHT-F-008, CHT-F-036
  * @see docs/mil-std-498/IDD.md §3.14
  */
 class ChatRoomChannel
 {
     public function __construct(private readonly PolicyResolver $resolver) {}
 
-    public function join(User $user, int $roomId): bool
+    /**
+     * @return array{id: int, name: ?string, username: ?string}|false
+     */
+    public function join(User $user, int $roomId): array|false
     {
         $room = ChatRoom::find($roomId);
 
@@ -33,6 +41,14 @@ class ChatRoomChannel
             return false;
         }
 
-        return $this->resolver->resolve($room)->canView($user, $room);
+        if (! $this->resolver->resolve($room)->canView($user, $room)) {
+            return false;
+        }
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'username' => $user->username,
+        ];
     }
 }

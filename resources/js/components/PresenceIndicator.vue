@@ -9,26 +9,45 @@ type Props = {
     status: PresenceStatus;
     size?: 'sm' | 'md';
     withLabel?: boolean;
+    /**
+     * When true, render a check glyph inside the green dot to signal the
+     * user is *currently active in this chat room*, as opposed to just
+     * active on LanCore in general (plain green dot). See SRS CHT-F-036.
+     */
+    inChat?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
     size: 'md',
     withLabel: false,
+    inChat: false,
 });
 
 const { t } = useI18n();
 
-const label = computed(() => t(`presence.status.${props.status}`));
+const label = computed(() => {
+    if (props.inChat) {
+return t('presence.status.activeInChat');
+}
+
+    return t(`presence.status.${props.status}`);
+});
+
+// In-chat trumps LanCore presence visually — if a user is in the chat we
+// always show the green-with-check dot (they're definitionally active).
+const effectiveStatus = computed<PresenceStatus>(() =>
+    props.inChat ? 'active' : props.status,
+);
 
 const dotSizeClass = computed(() =>
-    props.size === 'sm' ? 'h-2 w-2' : 'h-3 w-3',
+    props.size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4',
 );
 const iconSizeClass = computed(() =>
-    props.size === 'sm' ? 'h-1.5 w-1.5' : 'h-2 w-2',
+    props.size === 'sm' ? 'h-2.5 w-2.5' : 'h-3 w-3',
 );
 
 const colorClass = computed(() => {
-    switch (props.status) {
+    switch (effectiveStatus.value) {
         case 'active':
             return 'bg-green-500 dark:bg-green-400';
         case 'idle':
@@ -52,7 +71,7 @@ const colorClass = computed(() => {
             role="img"
         >
             <Check
-                v-if="status === 'active'"
+                v-if="inChat"
                 :class="[iconSizeClass, 'stroke-[3] text-white']"
                 aria-hidden="true"
             />

@@ -2,7 +2,9 @@
 
 namespace App\Domain\Presence\Services;
 
+use App\Domain\Chat\Models\ChatRoomMembership;
 use App\Domain\Presence\Enums\PresenceStatus;
+use App\Domain\Presence\Events\UserPresenceChanged;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -35,6 +37,11 @@ class PresenceTracker
                 'error' => $e->getMessage(),
             ]);
         }
+
+        // Touching always yields Active by definition. The dedupe inside
+        // `broadcastChange` (via `presence:last_broadcast:user:{id}`) makes
+        // this a no-op when the status hasn't actually changed.
+        $this->broadcastChange($user->id, PresenceStatus::Active);
     }
 
     /**
@@ -49,6 +56,49 @@ class PresenceTracker
         } catch (Throwable $e) {
             Log::debug('[presence] failed to forget heartbeat', [
                 'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        $this->broadcastChange($user->id, PresenceStatus::Offline);
+    }
+
+    /**
+     * Broadcast a presence transition onto every chat presence channel the
+     * user is a member of. Bounded fan-out — heartbeats only emit on actual
+     * status flips (see `touch()`), so cardinality stays low. The
+     * `last_broadcast_status:user:{id}` Redis key dedupes against the sweep
+     * command (PresenceSweepCommand) so we never fire twice for the same
+     * transition.
+     */
+    public function broadcastChange(int $userId, PresenceStatus $status): void
+    {
+        try {
+            $previousBroadcastKey = 'presence:last_broadcast:user:'.$userId;
+            $previous = $this->connection()->get($previousBroadcastKey);
+
+            if ($previous === $status->value) {
+                return;
+            }
+
+            $roomIds = ChatRoomMembership::query()
+                ->where('user_id', $userId)
+                ->pluck('room_id')
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values()
+                ->all();
+
+            $this->connection()->set($previousBroadcastKey, $status->value);
+
+            if ($roomIds === []) {
+                return;
+            }
+
+            UserPresenceChanged::dispatch($userId, $status, $roomIds);
+        } catch (Throwable $e) {
+            Log::debug('[presence] failed to broadcast change', [
+                'user_id' => $userId,
                 'error' => $e->getMessage(),
             ]);
         }

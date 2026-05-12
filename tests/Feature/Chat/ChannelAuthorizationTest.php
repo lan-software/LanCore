@@ -62,7 +62,10 @@ beforeEach(function (): void {
 it('grants subscription when the bound policy allows viewing', function (): void {
     $room = $this->service->ensureRoom('chat:test:allow', new GrantingStubPolicy);
 
-    expect($this->channel->join($this->user, $room->id))->toBeTrue();
+    $result = $this->channel->join($this->user, $room->id);
+
+    expect($result)->toBeArray()
+        ->and($result['id'])->toBe($this->user->id);
 });
 
 it('rejects subscription when the bound policy denies viewing', function (): void {
@@ -82,7 +85,10 @@ it('still allows subscription when the room is WriteLocked (read-only viewers)',
     $room = $this->service->ensureRoom('chat:test:writelocked', new GrantingStubPolicy);
     $this->service->writeLock($room);
 
-    expect($this->channel->join($this->user, $room->fresh()->id))->toBeTrue();
+    $result = $this->channel->join($this->user, $room->fresh()->id);
+
+    expect($result)->toBeArray()
+        ->and($result['id'])->toBe($this->user->id);
 });
 
 it('rejects subscription for unknown rooms', function (): void {

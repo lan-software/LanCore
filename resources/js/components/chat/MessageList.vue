@@ -1,9 +1,9 @@
 <script setup lang="ts">
 // @see docs/mil-std-498/SRS.md CHT-F-026, CHT-F-027
-import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import MessageItem from './MessageItem.vue';
 import type { ChatMessageDto } from './types';
 
@@ -29,6 +29,7 @@ watch(
         if (!scroller.value) {
             return;
         }
+
         // Only auto-scroll if a new message was appended at the bottom
         if (oldLen === 0 || newLen > oldLen) {
             await nextTick();

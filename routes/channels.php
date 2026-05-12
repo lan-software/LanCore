@@ -9,11 +9,13 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 /**
- * Chat private channel — delegates to ChatRoomChannel for testability.
+ * Chat presence channel — delegates to ChatRoomChannel for testability.
+ * Returns a user descriptor (array) on accept, or false on reject; the
+ * descriptor is broadcast as the presence-channel join payload.
  *
- * @see docs/mil-std-498/SRS.md CHT-F-008
+ * @see docs/mil-std-498/SRS.md CHT-F-008, CHT-F-036
  * @see docs/mil-std-498/IDD.md §3.14
  */
-Broadcast::channel('chat.room.{roomId}', function (User $user, int $roomId): bool {
+Broadcast::channel('chat.room.{roomId}', function (User $user, int $roomId): array|false {
     return app(ChatRoomChannel::class)->join($user, $roomId);
 });

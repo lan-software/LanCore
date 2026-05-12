@@ -63,3 +63,17 @@ Schedule::command('notifications:dispatch-ticket-sale')
     ->name('ticketing:dispatch-sale-notifications')
     ->withoutOverlapping()
     ->onOneServer();
+
+/*
+ * Presence transition sweeper. Active → Idle and Idle → Offline transitions
+ * are passive (heartbeat TTL decay), so nothing else broadcasts them. Runs
+ * every minute; broadcasts are deduped against
+ * `presence:last_broadcast:user:{id}` so only actual transitions hit the bus.
+ *
+ * @see docs/mil-std-498/SRS.md PRS-F-015
+ */
+Schedule::command('presence:sweep')
+    ->everyMinute()
+    ->name('presence:sweep')
+    ->withoutOverlapping()
+    ->onOneServer();

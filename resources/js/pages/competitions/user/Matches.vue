@@ -64,6 +64,7 @@ const hasAnyMatch = computed(() =>
 function openChat(match: Match): void {
     if (match.chat_room_id) {
         router.visit(`/chat/rooms/${match.chat_room_id}`);
+
         return;
     }
 

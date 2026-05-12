@@ -1281,7 +1281,8 @@
         "status": {
             "active": "Active",
             "idle": "Idle",
-            "offline": "Offline"
+            "offline": "Offline",
+            "activeInChat": "Active in this chat"
         }
     },
     "chat": {

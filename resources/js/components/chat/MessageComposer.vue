@@ -1,11 +1,11 @@
 <script setup lang="ts">
 // @see docs/mil-std-498/SRS.md CHT-F-018, CHT-F-026
-import ChatMentionSearchController from '@/actions/App/Domain/Chat/Http/Controllers/ChatMentionSearchController';
-import ChatMessageController from '@/actions/App/Domain/Chat/Http/Controllers/ChatMessageController';
-import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import ChatMentionSearchController from '@/actions/App/Domain/Chat/Http/Controllers/ChatMentionSearchController';
+import ChatMessageController from '@/actions/App/Domain/Chat/Http/Controllers/ChatMessageController';
+import { Button } from '@/components/ui/button';
 import type { ChatUserRef } from './types';
 
 const props = defineProps<{
@@ -36,6 +36,7 @@ async function runMentionSearch(q: string): Promise<void> {
     const ac = new AbortController();
     mentionAbort.value = ac;
     mentionLoading.value = true;
+
     try {
         const url =
             ChatMentionSearchController({ room: props.roomId }).url +
@@ -45,6 +46,7 @@ async function runMentionSearch(q: string): Promise<void> {
             headers: { Accept: 'application/json' },
             credentials: 'same-origin',
         });
+
         if (res.ok) {
             const data = (await res.json()) as { users: ChatUserRef[] };
             mentionResults.value = data.users;
@@ -59,8 +61,10 @@ async function runMentionSearch(q: string): Promise<void> {
 watch([mentionOpen, mentionQuery], ([isOpen, q]) => {
     if (!isOpen) {
         mentionResults.value = [];
+
         return;
     }
+
     runMentionSearch(q);
 });
 
@@ -78,6 +82,7 @@ function detectMentionTrigger(target: HTMLTextAreaElement): void {
     const caret = target.selectionStart ?? target.value.length;
     const before = target.value.slice(0, caret);
     const match = before.match(/(?:^|\s)@([A-Za-z0-9_]{0,32})$/);
+
     if (match) {
         mentionTokenStart.value = caret - match[1].length - 1;
         mentionQuery.value = match[1];
@@ -93,11 +98,15 @@ function applyMention(user: ChatUserRef): void {
     if (!textareaEl.value || mentionTokenStart.value < 0) {
         return;
     }
+
     const username = user.username ?? '';
+
     if (username === '') {
         mentionOpen.value = false;
+
         return;
     }
+
     const value = form.body;
     const caret =
         textareaEl.value.selectionStart ?? value.length;
@@ -109,7 +118,10 @@ function applyMention(user: ChatUserRef): void {
     form.body = next;
     mentionOpen.value = false;
     nextTick(() => {
-        if (!textareaEl.value) return;
+        if (!textareaEl.value) {
+return;
+}
+
         const pos = mentionTokenStart.value + replacement.length;
         textareaEl.value.focus();
         textareaEl.value.setSelectionRange(pos, pos);
@@ -120,6 +132,7 @@ function onSubmit(): void {
     if (props.disabled || form.body.trim() === '') {
         return;
     }
+
     form.post(
         ChatMessageController.store({ room: props.roomId }).url,
         {

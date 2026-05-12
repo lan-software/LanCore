@@ -1,6 +1,10 @@
 <script setup lang="ts">
 // @see docs/mil-std-498/SRS.md CHT-F-026
 // @see docs/mil-std-498/IDD.md §3.14
+import { router, usePage } from '@inertiajs/vue3';
+import { useEchoPresence } from '@laravel/echo-vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import ChatMessageController from '@/actions/App/Domain/Chat/Http/Controllers/ChatMessageController';
 import ChatModerationController from '@/actions/App/Domain/Chat/Http/Controllers/ChatModerationController';
 import { Button } from '@/components/ui/button';
@@ -11,10 +15,6 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { router, usePage } from '@inertiajs/vue3';
-import { useEcho } from '@laravel/echo-vue';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import MemberList from './MemberList.vue';
 import MessageComposer from './MessageComposer.vue';
 import MessageList from './MessageList.vue';
@@ -63,13 +63,22 @@ interface BroadcastPayload {
     created_at: string;
 }
 
-useEcho<BroadcastPayload>(
+interface PresenceMember {
+    id: number;
+    name: string | null;
+    username: string | null;
+}
+
+const presentUserIds = ref<Set<number>>(new Set());
+
+const { channel: getPresenceChannel } = useEchoPresence<BroadcastPayload>(
     `chat.room.${props.room.id}`,
     '.message.posted',
     (payload) => {
         if (liveMessages.value.some((m) => m.id === payload.id)) {
             return;
         }
+
         const member = props.members.find(
             (m) => m.user_id === payload.user_id,
         );
@@ -93,12 +102,41 @@ useEcho<BroadcastPayload>(
     [props.room.id],
 );
 
+// Track who else is currently subscribed to this presence channel. Drives the
+// green-dot-with-checkmark overlay on the indicator (SRS CHT-F-036). Register
+// synchronously (NOT in onMounted) so the callbacks are wired before Pusher's
+// async `subscription_succeeded` resolves and fires the initial `here` event.
+const presenceChannel = getPresenceChannel();
+presenceChannel
+    .here((members: PresenceMember[]) => {
+         
+        console.info('[ChatRoom] presence here', members);
+        presentUserIds.value = new Set(members.map((m) => m.id));
+    })
+    .joining((member: PresenceMember) => {
+         
+        console.info('[ChatRoom] presence joining', member);
+        const next = new Set(presentUserIds.value);
+        next.add(member.id);
+        presentUserIds.value = next;
+    })
+    .leaving((member: PresenceMember) => {
+         
+        console.info('[ChatRoom] presence leaving', member);
+        const next = new Set(presentUserIds.value);
+        next.delete(member.id);
+        presentUserIds.value = next;
+    });
+
 function observerJoinUrl(): string {
     return `/chat/rooms/${props.room.id}/observer`;
 }
 
 function leaveObserverViaBeacon(): void {
-    if (!props.observerMode) return;
+    if (!props.observerMode) {
+return;
+}
+
     // DELETE via fetch with keepalive so the request still completes during
     // page unload. sendBeacon only does POST, so we fall back to fetch.
     try {
@@ -122,7 +160,10 @@ function leaveObserverViaBeacon(): void {
 }
 
 onMounted(async () => {
-    if (!props.observerMode) return;
+    if (!props.observerMode) {
+return;
+}
+
     try {
         await fetch(observerJoinUrl(), {
             method: 'POST',
@@ -139,6 +180,7 @@ onMounted(async () => {
         // Best-effort; the policy already permits the admin to view, so missing
         // the membership row only hides them from the member list.
     }
+
     window.addEventListener('pagehide', leaveObserverViaBeacon);
     window.addEventListener('beforeunload', leaveObserverViaBeacon);
 });
@@ -151,8 +193,13 @@ onBeforeUnmount(() => {
 
 async function onLoadMore(): Promise<void> {
     const oldest = liveMessages.value[0];
-    if (!oldest || loadingHistory.value) return;
+
+    if (!oldest || loadingHistory.value) {
+return;
+}
+
     loadingHistory.value = true;
+
     try {
         const url =
             ChatMessageController.index({ room: props.room.id }).url +
@@ -161,6 +208,7 @@ async function onLoadMore(): Promise<void> {
             headers: { Accept: 'application/json' },
             credentials: 'same-origin',
         });
+
         if (res.ok) {
             const data = (await res.json()) as {
                 messages: ChatMessageDto[];
@@ -186,6 +234,7 @@ function onDeleteMessage(messageId: number): void {
                 const idx = liveMessages.value.findIndex(
                     (m) => m.id === messageId,
                 );
+
                 if (idx >= 0) {
                     liveMessages.value[idx] = {
                         ...liveMessages.value[idx],
@@ -198,7 +247,10 @@ function onDeleteMessage(messageId: number): void {
 }
 
 function closeRoom(): void {
-    if (!window.confirm(t('chat.moderation.close'))) return;
+    if (!window.confirm(t('chat.moderation.close'))) {
+return;
+}
+
     router.post(
         ChatModerationController.close({ room: props.room.id }).url,
         {},
@@ -207,7 +259,10 @@ function closeRoom(): void {
 }
 
 function reopenRoom(): void {
-    if (!window.confirm(t('chat.moderation.reopen'))) return;
+    if (!window.confirm(t('chat.moderation.reopen'))) {
+return;
+}
+
     router.post(
         ChatModerationController.reopen({ room: props.room.id }).url,
         {},
@@ -216,9 +271,18 @@ function reopenRoom(): void {
 }
 
 const disabledReason = computed<string | null>(() => {
-    if (props.room.is_archived) return t('chat.room.archived');
-    if (props.room.is_write_locked) return t('chat.room.writeLocked');
-    if (!props.room.can_post) return t('chat.room.writeLocked');
+    if (props.room.is_archived) {
+return t('chat.room.archived');
+}
+
+    if (props.room.is_write_locked) {
+return t('chat.room.writeLocked');
+}
+
+    if (!props.room.can_post) {
+return t('chat.room.writeLocked');
+}
+
     return null;
 });
 </script>
@@ -300,6 +364,7 @@ const disabledReason = computed<string | null>(() => {
                 :room-id="room.id"
                 :members="members"
                 :presence="memberPresence"
+                :present-user-ids="presentUserIds"
                 :can-moderate="room.can_moderate"
             />
         </aside>

@@ -4,7 +4,7 @@ namespace App\Domain\Chat\Events;
 
 use App\Domain\Chat\Models\ChatMessage;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -22,11 +22,15 @@ class MessagePosted implements ShouldBroadcastNow
     public function __construct(public readonly ChatMessage $message) {}
 
     /**
-     * @return array<int, PrivateChannel>
+     * Presence channel so subscribers can observe who else is "in the chat"
+     * right now (used by `PresenceIndicator` to render the green dot with
+     * checkmark for participants actively viewing this room).
+     *
+     * @return array<int, PresenceChannel>
      */
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('chat.room.'.$this->message->room_id)];
+        return [new PresenceChannel('chat.room.'.$this->message->room_id)];
     }
 
     public function broadcastAs(): string

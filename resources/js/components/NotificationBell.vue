@@ -69,23 +69,26 @@ interface NotificationReceivedPayload {
 // rejects and Echo no-ops. Calling useEcho inside a conditional has been
 // flaky in practice (the composable's internal scheduling assumes a stable
 // setup-time call site), so we always call it.
-// eslint-disable-next-line no-console
+ 
 console.info('[NotificationBell] subscribing for user', initialUserId);
 useEcho<NotificationReceivedPayload>(
     `App.Models.User.${initialUserId}`,
     '.notification.received',
     (payload) => {
-        // eslint-disable-next-line no-console
+         
         console.info('[NotificationBell] received', payload);
+
         if (
             typeof payload.id !== 'string' ||
             typeof payload.type !== 'string'
         ) {
             return;
         }
+
         if (liveNotifications.value.some((n) => n.id === payload.id)) {
             return;
         }
+
         liveNotifications.value = [
             {
                 id: payload.id,
@@ -128,6 +131,7 @@ function notificationUrl(notification: AppNotification): string {
         if (typeof data.target_url === 'string' && data.target_url !== '') {
             return data.target_url;
         }
+
         if (typeof data.room_id === 'number') {
             return `/chat/rooms/${data.room_id}`;
         }
@@ -206,6 +210,7 @@ function notificationLabel(notification: AppNotification): string {
         const who = data.author_username
             ? `@${data.author_username}`
             : (data.author_name ?? t('notifications.types.chatMentionFallbackAuthor'));
+
         return t('notifications.types.chatMention', { who });
     }
 
@@ -214,10 +219,12 @@ function notificationLabel(notification: AppNotification): string {
 
 function handleMarkAsRead(notification: AppNotification) {
     const target = liveNotifications.value.find((n) => n.id === notification.id);
+
     if (target && !target.read_at) {
         target.read_at = new Date().toISOString();
         liveUnread.value = Math.max(0, liveUnread.value - 1);
     }
+
     router.patch(markAsRead(notification.id).url, {}, { preserveScroll: true });
 }
 
@@ -237,9 +244,11 @@ function handleArchive(notification: AppNotification) {
     liveNotifications.value = liveNotifications.value.filter(
         (n) => n.id !== notification.id,
     );
+
     if (wasUnread) {
         liveUnread.value = Math.max(0, liveUnread.value - 1);
     }
+
     router.patch(
         archiveNotification(notification.id).url,
         {},

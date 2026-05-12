@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // @see docs/mil-std-498/SRS.md CHT-F-024, CHT-F-027
-import { Button } from '@/components/ui/button';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Button } from '@/components/ui/button';
 import type { ChatMessageDto } from './types';
 
 const props = defineProps<{

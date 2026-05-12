@@ -63,6 +63,7 @@ function notificationUrl(notification: AppNotification): string | null {
         if (typeof data.target_url === 'string' && data.target_url !== '') {
             return data.target_url;
         }
+
         if (typeof data.room_id === 'number') {
             return `/chat/rooms/${data.room_id}`;
         }
@@ -138,6 +139,7 @@ function notificationLabel(notification: AppNotification): string {
         const who = data.author_username
             ? `@${data.author_username}`
             : (data.author_name ?? 'someone');
+
         return `${who} mentioned you in a chat`;
     }
 

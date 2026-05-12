@@ -1,5 +1,8 @@
 <script setup lang="ts">
 // @see docs/mil-std-498/SRS.md CHT-F-026
+import { Head } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import ChatRoom from '@/components/chat/ChatRoom.vue';
 import type {
     ChatMemberDto,
@@ -8,9 +11,6 @@ import type {
     MemberPresenceMap,
 } from '@/components/chat/types';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head } from '@inertiajs/vue3';
-import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
     room: ChatRoomDto;

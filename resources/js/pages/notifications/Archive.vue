@@ -73,6 +73,7 @@ function notificationLabel(notification: AppNotification): string {
         const who = data.author_username
             ? `@${data.author_username}`
             : (data.author_name ?? 'someone');
+
         return `${who} mentioned you in a chat`;
     }
 

@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { ExternalLink, ListOrdered, Users } from 'lucide-vue-next';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import TeamController from '@/actions/App/Domain/Competition/Http/Controllers/TeamController';
+import UserCompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/UserCompetitionController';
 import ChatRoom from '@/components/chat/ChatRoom.vue';
 import type {
     ChatMemberDto,
@@ -8,10 +12,6 @@ import type {
     ChatRoomDto,
     MemberPresenceMap,
 } from '@/components/chat/types';
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import TeamController from '@/actions/App/Domain/Competition/Http/Controllers/TeamController';
-import UserCompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/UserCompetitionController';
 import MailLetterAnimation from '@/components/MailLetterAnimation.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
