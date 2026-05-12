@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
+import { useEcho } from '@laravel/echo-vue';
 import {
     Archive,
     Bell,
@@ -8,7 +9,7 @@ import {
     CheckCheck,
     ExternalLink,
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
     archive as archiveNotification,
@@ -31,9 +32,78 @@ import type { AppNotification } from '@/types';
 const { t } = useI18n();
 const page = usePage();
 
-const unreadCount = computed(() => page.props.unreadNotificationsCount ?? 0);
+// Server-rendered snapshot, kept in a ref so Echo events can push new
+// notifications into the list without a page reload. Re-syncs whenever
+// Inertia replaces the page props (e.g. after navigation or partial reload).
+const liveUnread = ref<number>((page.props.unreadNotificationsCount as number) ?? 0);
+const liveNotifications = ref<AppNotification[]>(
+    (page.props.recentNotifications as AppNotification[]) ?? [],
+);
+
+watch(
+    () => page.props.unreadNotificationsCount,
+    (next) => {
+        liveUnread.value = (next as number) ?? 0;
+    },
+);
+
+watch(
+    () => page.props.recentNotifications,
+    (next) => {
+        liveNotifications.value = (next as AppNotification[]) ?? [];
+    },
+);
+
+const initialUserId =
+    (page.props.auth as { user?: { id?: number } } | undefined)?.user?.id ?? 0;
+
+interface NotificationReceivedPayload {
+    id: string;
+    type: string;
+    data: AppNotification['data'];
+    created_at: string | null;
+    read_at: string | null;
+}
+
+// Subscribe unconditionally — when `initialUserId` is 0 the channel auth
+// rejects and Echo no-ops. Calling useEcho inside a conditional has been
+// flaky in practice (the composable's internal scheduling assumes a stable
+// setup-time call site), so we always call it.
+// eslint-disable-next-line no-console
+console.info('[NotificationBell] subscribing for user', initialUserId);
+useEcho<NotificationReceivedPayload>(
+    `App.Models.User.${initialUserId}`,
+    '.notification.received',
+    (payload) => {
+        // eslint-disable-next-line no-console
+        console.info('[NotificationBell] received', payload);
+        if (
+            typeof payload.id !== 'string' ||
+            typeof payload.type !== 'string'
+        ) {
+            return;
+        }
+        if (liveNotifications.value.some((n) => n.id === payload.id)) {
+            return;
+        }
+        liveNotifications.value = [
+            {
+                id: payload.id,
+                type: payload.type,
+                data: payload.data ?? ({} as AppNotification['data']),
+                read_at: payload.read_at,
+                created_at: payload.created_at ?? new Date().toISOString(),
+            },
+            ...liveNotifications.value,
+        ].slice(0, 5);
+        liveUnread.value += 1;
+    },
+    [initialUserId],
+);
+
+const unreadCount = computed(() => liveUnread.value);
 const recentNotifications = computed<AppNotification[]>(
-    () => page.props.recentNotifications ?? [],
+    () => liveNotifications.value,
 );
 
 function notificationUrl(notification: AppNotification): string {
@@ -52,6 +122,15 @@ function notificationUrl(notification: AppNotification): string {
         typeof data.shop_url === 'string'
     ) {
         return data.shop_url;
+    }
+
+    if (type === 'ChatMentionNotification') {
+        if (typeof data.target_url === 'string' && data.target_url !== '') {
+            return data.target_url;
+        }
+        if (typeof data.room_id === 'number') {
+            return `/chat/rooms/${data.room_id}`;
+        }
     }
 
     return notificationsIndex().url;
@@ -123,18 +202,44 @@ function notificationLabel(notification: AppNotification): string {
         return t(key, { ticketName: data.ticket_type_name });
     }
 
+    if (type === 'ChatMentionNotification') {
+        const who = data.author_username
+            ? `@${data.author_username}`
+            : (data.author_name ?? t('notifications.types.chatMentionFallbackAuthor'));
+        return t('notifications.types.chatMention', { who });
+    }
+
     return t('notifications.types.generic');
 }
 
 function handleMarkAsRead(notification: AppNotification) {
+    const target = liveNotifications.value.find((n) => n.id === notification.id);
+    if (target && !target.read_at) {
+        target.read_at = new Date().toISOString();
+        liveUnread.value = Math.max(0, liveUnread.value - 1);
+    }
     router.patch(markAsRead(notification.id).url, {}, { preserveScroll: true });
 }
 
 function handleMarkAllAsRead() {
+    const now = new Date().toISOString();
+    liveNotifications.value = liveNotifications.value.map((n) =>
+        n.read_at ? n : { ...n, read_at: now },
+    );
+    liveUnread.value = 0;
     router.patch(markAllAsRead().url, {}, { preserveScroll: true });
 }
 
 function handleArchive(notification: AppNotification) {
+    const wasUnread = !liveNotifications.value.find(
+        (n) => n.id === notification.id,
+    )?.read_at;
+    liveNotifications.value = liveNotifications.value.filter(
+        (n) => n.id !== notification.id,
+    );
+    if (wasUnread) {
+        liveUnread.value = Math.max(0, liveUnread.value - 1);
+    }
     router.patch(
         archiveNotification(notification.id).url,
         {},

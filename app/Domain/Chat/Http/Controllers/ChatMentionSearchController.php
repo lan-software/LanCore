@@ -4,9 +4,12 @@ namespace App\Domain\Chat\Http\Controllers;
 
 use App\Domain\Chat\Models\ChatRoom;
 use App\Domain\Chat\Services\PolicyResolver;
+use App\Domain\Competition\Models\Competition;
+use App\Domain\Competition\Models\CompetitionTeamMember;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,6 +19,8 @@ use Illuminate\Http\Request;
  */
 class ChatMentionSearchController extends Controller
 {
+    private const MAX_RESULTS = 8;
+
     public function __construct(
         private readonly PolicyResolver $policyResolver,
     ) {}
@@ -29,34 +34,77 @@ class ChatMentionSearchController extends Controller
             throw new AuthorizationException;
         }
 
-        $q = trim((string) $request->query('q', ''));
+        $q = mb_strtolower(trim((string) $request->query('q', '')));
 
-        if (strlen($q) < 1) {
+        $candidateIds = $this->candidateUserIds($room);
+
+        if ($candidateIds === []) {
             return response()->json(['users' => []]);
         }
 
-        // Restrict candidates to current room members so non-viewable users are never surfaced.
-        $candidates = $room->memberships()
-            ->with('user:id,name,username')
-            ->get()
-            ->pluck('user')
-            ->filter()
-            ->filter(function (User $candidate) use ($q): bool {
-                $needle = mb_strtolower($q);
-                $username = mb_strtolower((string) $candidate->username);
-                $name = mb_strtolower((string) $candidate->name);
-
-                return str_contains($username, $needle) || str_contains($name, $needle);
+        $users = User::query()
+            ->whereIn('id', $candidateIds)
+            ->whereNotNull('username')
+            ->when($q !== '', function (Builder $builder) use ($q): void {
+                $needle = '%'.$q.'%';
+                $builder->where(function (Builder $b) use ($needle): void {
+                    $b->whereRaw('LOWER(username) LIKE ?', [$needle])
+                        ->orWhereRaw('LOWER(name) LIKE ?', [$needle]);
+                });
             })
-            ->take(8)
-            ->map(fn (User $candidate) => [
-                'id' => $candidate->id,
-                'name' => $candidate->name,
-                'username' => $candidate->username,
-            ])
-            ->values()
-            ->all();
+            ->orderBy('username')
+            ->limit(self::MAX_RESULTS)
+            ->get(['id', 'name', 'username']);
 
-        return response()->json(['users' => $candidates]);
+        return response()->json([
+            'users' => $users
+                ->map(fn (User $u) => [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'username' => $u->username,
+                ])
+                ->all(),
+        ]);
+    }
+
+    /**
+     * Union of (a) current room memberships and (b) the wider pool of users
+     * who can be mentioned in this room — for a competition room that's all
+     * team members of the competition, since auto-join may lag behind team
+     * roster changes.
+     *
+     * @return array<int, int>
+     */
+    private function candidateUserIds(ChatRoom $room): array
+    {
+        $ids = $room->memberships()->pluck('user_id')->map(fn ($id) => (int) $id)->all();
+
+        $competitionId = $this->competitionIdFromKey($room->key);
+
+        if ($competitionId !== null) {
+            $competition = Competition::query()->find($competitionId, ['id']);
+
+            if ($competition !== null) {
+                $teamMemberIds = CompetitionTeamMember::query()
+                    ->whereNull('left_at')
+                    ->whereHas('team', fn ($q) => $q->where('competition_id', $competitionId))
+                    ->pluck('user_id')
+                    ->map(fn ($id) => (int) $id)
+                    ->all();
+
+                $ids = array_unique(array_merge($ids, $teamMemberIds));
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    private function competitionIdFromKey(string $key): ?int
+    {
+        if (preg_match('/^competition:(\d+)(?::|$)/', $key, $matches)) {
+            return (int) $matches[1];
+        }
+
+        return null;
     }
 }

@@ -53,6 +53,7 @@ use App\Domain\Notification\Events\ProfileUpdated;
 use App\Domain\Notification\Events\TicketDiscoverySettingsUpdated;
 use App\Domain\Notification\Events\UserAttributesUpdated;
 use App\Domain\Notification\Events\UserRolesChanged;
+use App\Domain\Notification\Listeners\BroadcastDatabaseNotification;
 use App\Domain\Notification\Listeners\HandleProfileUpdatedWebhooks;
 use App\Domain\Notification\Listeners\HandleUserRolesChangedWebhooks;
 use App\Domain\Notification\Listeners\SendUserAttributesUpdatedNotification;
@@ -77,6 +78,7 @@ use App\Domain\Policy\Policies\PolicyAcceptancePolicy;
 use App\Domain\Policy\Policies\PolicyPolicy;
 use App\Domain\Policy\Policies\PolicyTypePolicy;
 use App\Domain\Policy\Policies\PolicyVersionPolicy;
+use App\Domain\Presence\Listeners\ClearPresenceOnLogout;
 use App\Domain\Program\Events\ProgramTimeSlotApproaching;
 use App\Domain\Program\Listeners\SendProgramTimeSlotNotification;
 use App\Domain\Program\Models\Program;
@@ -129,9 +131,11 @@ use App\Models\User;
 use App\Policies\UserPolicy;
 use App\Services\ModelCacheService;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event as EventFacade;
@@ -360,6 +364,11 @@ class AppServiceProvider extends ServiceProvider
     protected function configureEvents(): void
     {
         EventFacade::listen(MessagePosted::class, NotifyMentionedUsers::class);
+        EventFacade::listen(Logout::class, ClearPresenceOnLogout::class);
+        EventFacade::listen(
+            NotificationSent::class,
+            BroadcastDatabaseNotification::class,
+        );
         EventFacade::listen(MatchReadyForOrchestration::class, EnsureMatchRoomOnReady::class);
         EventFacade::listen(MatchFinalized::class, WriteLockMatchRoomOnFinalized::class);
         EventFacade::listen(AnnouncementPublished::class, SendAnnouncementNotification::class);

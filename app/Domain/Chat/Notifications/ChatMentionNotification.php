@@ -3,6 +3,7 @@
 namespace App\Domain\Chat\Notifications;
 
 use App\Domain\Chat\Models\ChatMessage;
+use App\Domain\Competition\Chat\CompetitionChatLinkResolver;
 use App\Domain\Notification\Channels\WebPushChannel;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -23,6 +24,9 @@ class ChatMentionNotification extends Notification
      */
     public function via(User $notifiable): array
     {
+        // Real-time delivery is handled centrally by
+        // `BroadcastDatabaseNotification` on the `database` channel — no need
+        // to list `broadcast` here.
         $channels = ['database'];
 
         $prefs = $notifiable->notificationPreference;
@@ -52,11 +56,19 @@ class ChatMentionNotification extends Notification
      */
     public function toArray(User $notifiable): array
     {
+        $author = $this->message->user;
+        $room = $this->message->room;
+
         return [
             'message_id' => $this->message->id,
             'room_id' => $this->message->room_id,
             'author_id' => $this->message->user_id,
+            'author_username' => $author?->username,
+            'author_name' => $author?->name,
             'body' => $this->message->body,
+            'target_url' => $room !== null
+                ? app(CompetitionChatLinkResolver::class)->resolve($room)
+                : null,
         ];
     }
 
@@ -65,12 +77,18 @@ class ChatMentionNotification extends Notification
      */
     public function toWebPush(User $notifiable): array
     {
+        $room = $this->message->room;
+        $targetUrl = $room !== null
+            ? app(CompetitionChatLinkResolver::class)->resolve($room)
+            : null;
+
         return [
             'title' => __('chat.notifications.mention.push_title'),
             'body' => $this->message->body,
             'data' => [
                 'message_id' => $this->message->id,
                 'room_id' => $this->message->room_id,
+                'target_url' => $targetUrl,
             ],
         ];
     }

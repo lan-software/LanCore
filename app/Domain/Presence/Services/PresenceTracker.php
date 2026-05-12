@@ -37,6 +37,23 @@ class PresenceTracker
         }
     }
 
+    /**
+     * Force the user offline by removing their heartbeat key. Called on logout
+     * so the user's status flips to Offline immediately rather than waiting
+     * for the TTL to expire.
+     */
+    public function forget(User $user): void
+    {
+        try {
+            $this->connection()->del($this->keyFor($user->id));
+        } catch (Throwable $e) {
+            Log::debug('[presence] failed to forget heartbeat', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
     public function statusFor(User $user): PresenceStatus
     {
         $raw = null;

@@ -59,6 +59,15 @@ function notificationUrl(notification: AppNotification): string | null {
         return data.shop_url;
     }
 
+    if (type === 'ChatMentionNotification') {
+        if (typeof data.target_url === 'string' && data.target_url !== '') {
+            return data.target_url;
+        }
+        if (typeof data.room_id === 'number') {
+            return `/chat/rooms/${data.room_id}`;
+        }
+    }
+
     return null;
 }
 
@@ -125,6 +134,13 @@ function notificationLabel(notification: AppNotification): string {
             : `Tickets on sale: ${data.ticket_type_name}`;
     }
 
+    if (type === 'ChatMentionNotification') {
+        const who = data.author_username
+            ? `@${data.author_username}`
+            : (data.author_name ?? 'someone');
+        return `${who} mentioned you in a chat`;
+    }
+
     return 'New notification';
 }
 
@@ -178,6 +194,10 @@ function notificationDescription(notification: AppNotification): string | null {
         }
 
         return 'Open the shop to grab a ticket.';
+    }
+
+    if (type === 'ChatMentionNotification' && typeof data.body === 'string') {
+        return data.body;
     }
 
     return null;

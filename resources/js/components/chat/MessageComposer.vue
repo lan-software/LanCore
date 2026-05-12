@@ -31,11 +31,7 @@ const placeholder = computed(() =>
         : t('chat.composer.placeholder'),
 );
 
-watch(mentionQuery, async (q) => {
-    if (!mentionOpen.value || q === '') {
-        mentionResults.value = [];
-        return;
-    }
+async function runMentionSearch(q: string): Promise<void> {
     mentionAbort.value?.abort();
     const ac = new AbortController();
     mentionAbort.value = ac;
@@ -43,7 +39,7 @@ watch(mentionQuery, async (q) => {
     try {
         const url =
             ChatMentionSearchController({ room: props.roomId }).url +
-            `?q=${encodeURIComponent(q)}`;
+            (q === '' ? '' : `?q=${encodeURIComponent(q)}`);
         const res = await fetch(url, {
             signal: ac.signal,
             headers: { Accept: 'application/json' },
@@ -58,6 +54,14 @@ watch(mentionQuery, async (q) => {
     } finally {
         mentionLoading.value = false;
     }
+}
+
+watch([mentionOpen, mentionQuery], ([isOpen, q]) => {
+    if (!isOpen) {
+        mentionResults.value = [];
+        return;
+    }
+    runMentionSearch(q);
 });
 
 onBeforeUnmount(() => {

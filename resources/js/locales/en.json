@@ -939,6 +939,8 @@
             "ticketQrUpdated": "Ticket QR updated",
             "ticketSaleRelease": "Tickets on sale: {ticketName}",
             "ticketSaleEnd": "Last chance: {ticketName}",
+            "chatMention": "{who} mentioned you in a chat",
+            "chatMentionFallbackAuthor": "Someone",
             "generic": "New notification"
         },
         "push": {
