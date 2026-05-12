@@ -26,6 +26,11 @@ export interface ChatMemberDto {
     username: string | null;
     role: string | null;
     muted_until: string | null;
+    /** Set by `CompetitionMemberAnnotator` when the room is a competition room. */
+    is_admin?: boolean;
+    team_id?: number | null;
+    team_name?: string | null;
+    team_tag?: string | null;
 }
 
 export interface ChatRoomDto {

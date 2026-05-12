@@ -1312,6 +1312,10 @@
             "minutes": "Mute duration (minutes)",
             "reason": "Reason (optional)"
         },
+        "member": {
+            "adminBadge": "Admin",
+            "adminTitle": "Competition admin / moderator"
+        },
         "mentionSearch": {
             "label": "Mention",
             "empty": "No matching users."

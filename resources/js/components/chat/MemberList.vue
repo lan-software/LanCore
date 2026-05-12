@@ -2,9 +2,10 @@
 // @see docs/mil-std-498/SRS.md CHT-F-026
 import ChatModerationController from '@/actions/App/Domain/Chat/Http/Controllers/ChatModerationController';
 import PresenceIndicator from '@/components/PresenceIndicator.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { PresenceStatus } from '@/composables/usePresence';
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import type { ChatMemberDto, MemberPresenceMap } from './types';
 
@@ -63,12 +64,40 @@ function isMuted(member: ChatMemberDto): boolean {
                 class="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-900"
             >
                 <PresenceIndicator :status="statusFor(member.user_id)" size="sm" />
-                <div class="flex-1 truncate text-sm">
-                    <span class="font-medium">{{ member.name ?? member.username }}</span>
-                    <span v-if="member.username" class="ml-1 text-xs text-zinc-500">
+                <component
+                    :is="member.username ? Link : 'div'"
+                    v-bind="
+                        member.username
+                            ? {
+                                  href: `/u/${member.username}`,
+                                  class: 'flex-1 min-w-0 truncate text-sm rounded-sm hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                              }
+                            : { class: 'flex-1 min-w-0 truncate text-sm' }
+                    "
+                >
+                    <div class="flex flex-wrap items-center gap-1">
+                        <span class="font-medium">{{ member.name ?? member.username }}</span>
+                        <Badge
+                            v-if="member.is_admin"
+                            variant="default"
+                            class="px-1.5 py-0 text-[10px] uppercase tracking-wide"
+                            :title="t('chat.member.adminTitle')"
+                        >
+                            {{ t('chat.member.adminBadge') }}
+                        </Badge>
+                        <Badge
+                            v-if="member.team_name"
+                            variant="secondary"
+                            class="px-1.5 py-0 text-[10px]"
+                            :title="member.team_name ?? undefined"
+                        >
+                            {{ member.team_tag ?? member.team_name }}
+                        </Badge>
+                    </div>
+                    <span v-if="member.username" class="block truncate text-xs text-zinc-500">
                         @{{ member.username }}
                     </span>
-                </div>
+                </component>
                 <template v-if="canModerate">
                     <Button
                         v-if="!isMuted(member)"
