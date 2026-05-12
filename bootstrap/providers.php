@@ -9,9 +9,11 @@ use App\Providers\FortifyServiceProvider;
 use App\Providers\HorizonServiceProvider;
 use App\Providers\IntegrationServiceProvider;
 use App\Providers\PrometheusServiceProvider;
+use App\Providers\PulseServiceProvider;
 use App\Providers\TelescopeServiceProvider;
 use Laravel\Horizon\HorizonApplicationServiceProvider;
 use Laravel\Horizon\HorizonServiceProvider as HorizonPackageServiceProvider;
+use Laravel\Pulse\PulseServiceProvider as PulsePackageServiceProvider;
 use Laravel\Telescope\TelescopeApplicationServiceProvider;
 
 return array_values(array_filter([
@@ -28,6 +30,9 @@ return array_values(array_filter([
         : null,
     IntegrationServiceProvider::class,
     PrometheusServiceProvider::class,
+    class_exists(PulsePackageServiceProvider::class)
+        ? PulseServiceProvider::class
+        : null,
     SteamSocialiteServiceProvider::class,
     class_exists(TelescopeApplicationServiceProvider::class)
         ? TelescopeServiceProvider::class

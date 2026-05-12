@@ -2,8 +2,12 @@ import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { configDefaults } from 'vitest/config';
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const isVitest = !!process.env.VITEST;
 const skipWayfinder = !!process.env.WAYFINDER_SKIP;
@@ -31,6 +35,15 @@ export default defineConfig({
                 formVariants: true,
             }),
     ],
+    // Vitest reads `resolve.alias` at the top level (the previous nesting
+    // inside `test.resolve` was silently ignored, which is fine for `vite build`
+    // since TS path mapping covers that path — but JSDOM tests of SFCs that
+    // pull `@/...` imports failed at transform time).
+    resolve: {
+        alias: {
+            '@': path.resolve(projectRoot, 'resources/js'),
+        },
+    },
     test: {
         globals: true,
         environment: 'jsdom',
@@ -41,11 +54,6 @@ export default defineConfig({
             reporter: ['text', 'lcov'],
             include: ['resources/js/**/*.{ts,vue}'],
             exclude: ['resources/js/wayfinder/**', 'resources/js/actions/**', 'resources/js/routes/**'],
-        },
-        resolve: {
-            alias: {
-                '@': '/resources/js',
-            },
         },
     },
 });

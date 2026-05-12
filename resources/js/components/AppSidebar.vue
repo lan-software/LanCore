@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import {
+    Activity,
     Calendar,
     ClipboardList,
     Cog,
@@ -632,6 +633,18 @@ function toggleFavorite(itemId: string): void {
                                 >
                                     <GaugeCircle />
                                     <span>Queue Monitor</span>
+                                </a>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem v-if="isSuperadmin">
+                            <SidebarMenuButton as-child>
+                                <a
+                                    href="/pulse"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    <Activity />
+                                    <span>Pulse</span>
                                 </a>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

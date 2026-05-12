@@ -1283,6 +1283,12 @@
             "idle": "Idle",
             "offline": "Offline",
             "activeInChat": "Active in this chat"
+        },
+        "tooltip": {
+            "active": "User is currently active on LanCore (recent activity within the last few minutes).",
+            "idle": "User is logged in but has been inactive for several minutes.",
+            "offline": "User is not currently signed in, or has been inactive long enough to be considered offline.",
+            "activeInChat": "User is viewing this chat room right now."
         }
     },
     "chat": {

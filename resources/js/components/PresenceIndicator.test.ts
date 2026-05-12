@@ -24,19 +24,28 @@ function makeWrapper(props: {
     status: 'active' | 'idle' | 'offline';
     size?: 'sm' | 'md';
     withLabel?: boolean;
+    inChat?: boolean;
+    noTooltip?: boolean;
 }) {
     return mount(PresenceIndicator, {
-        props,
+        props: { noTooltip: true, ...props },
         global: { plugins: [i18n] },
     });
 }
 
 describe('PresenceIndicator', () => {
-    it('renders a green dot with a tick for active', () => {
+    it('renders a green dot without a tick for active (out of chat)', () => {
         const wrapper = makeWrapper({ status: 'active' });
         const dot = wrapper.find('[role="img"]');
         expect(dot.classes().some((c) => c.startsWith('bg-green-'))).toBe(true);
         expect(dot.attributes('aria-label')).toBe('Active');
+        expect(dot.find('svg').exists()).toBe(false);
+    });
+
+    it('renders a green dot with a tick for in-chat presence', () => {
+        const wrapper = makeWrapper({ status: 'active', inChat: true });
+        const dot = wrapper.find('[role="img"]');
+        expect(dot.classes().some((c) => c.startsWith('bg-green-'))).toBe(true);
         expect(dot.find('svg').exists()).toBe(true);
     });
 
@@ -69,7 +78,7 @@ describe('PresenceIndicator', () => {
     it('applies a smaller dot for size=sm', () => {
         const wrapper = makeWrapper({ status: 'active', size: 'sm' });
         const dot = wrapper.find('[role="img"]');
-        expect(dot.classes()).toContain('h-2');
-        expect(dot.classes()).toContain('w-2');
+        expect(dot.classes()).toContain('h-3.5');
+        expect(dot.classes()).toContain('w-3.5');
     });
 });
