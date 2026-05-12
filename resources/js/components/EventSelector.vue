@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
-import { Calendar } from 'lucide-vue-next';
+import { Calendar, Check } from 'lucide-vue-next';
 import { computed } from 'vue';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Select,
     SelectContent,
@@ -11,10 +19,12 @@ import {
 } from '@/components/ui/select';
 import {
     SidebarGroup,
-    SidebarGroupLabel,
     SidebarGroupContent,
+    SidebarGroupLabel,
     SidebarMenu,
+    SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import type { EventContext } from '@/types';
 
@@ -34,6 +44,11 @@ const props = withDefaults(
 );
 
 const page = usePage();
+const sidebar = props.sidebar ? useSidebar() : null;
+
+const isCollapsed = computed(
+    () => sidebar?.state.value === 'collapsed' && !sidebar?.isMobile.value,
+);
 
 const context = computed(() => {
     if (props.variant === 'my') {
@@ -57,6 +72,22 @@ const selectedValue = computed(() => {
 
     return id ? String(id) : 'all';
 });
+
+const selectedEventName = computed(() => {
+    const id = context.value?.selectedEventId;
+
+    if (!id) {
+        return null;
+    }
+
+    return context.value?.events.find((e) => e.id === id)?.name ?? null;
+});
+
+const tooltipLabel = computed(() =>
+    selectedEventName.value
+        ? `${props.label}: ${selectedEventName.value}`
+        : `${props.label}: All Events`,
+);
 
 function onSelect(value: string) {
     if (value === 'all') {
@@ -83,7 +114,51 @@ function onSelect(value: string) {
         <SidebarGroupContent>
             <SidebarMenu>
                 <SidebarMenuItem>
+                    <DropdownMenu v-if="isCollapsed">
+                        <DropdownMenuTrigger as-child>
+                            <SidebarMenuButton
+                                :tooltip="tooltipLabel"
+                                :is-active="!!selectedEventName"
+                                class="justify-center"
+                                data-test="event-selector-collapsed-trigger"
+                            >
+                                <Calendar />
+                            </SidebarMenuButton>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            side="right"
+                            align="start"
+                            :side-offset="4"
+                            class="min-w-56"
+                        >
+                            <DropdownMenuLabel>{{ label }}</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                class="justify-between"
+                                @click="onSelect('all')"
+                            >
+                                <span>All Events</span>
+                                <Check
+                                    v-if="selectedValue === 'all'"
+                                    class="size-4"
+                                />
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                v-for="event in context.events"
+                                :key="event.id"
+                                class="justify-between"
+                                @click="onSelect(String(event.id))"
+                            >
+                                <span>{{ event.name }}</span>
+                                <Check
+                                    v-if="selectedValue === String(event.id)"
+                                    class="size-4"
+                                />
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <Select
+                        v-else
                         :model-value="selectedValue"
                         @update:model-value="onSelect"
                     >

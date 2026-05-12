@@ -189,6 +189,11 @@ let focusAnimationApplied = false;
  * flow each time would be jarring.
  */
 function onSeatMapReady(): void {
+    console.info('[Welcome] seatmap ready', {
+        focusSeatId: props.focusSeatId,
+        focusAnimationApplied,
+    });
+
     if (focusAnimationApplied || !props.focusSeatId) {
         return;
     }
@@ -196,6 +201,7 @@ function onSeatMapReady(): void {
     const wrapper = seatMapWrapperRef.value;
 
     if (!wrapper) {
+        console.warn('[Welcome] seatmap wrapper missing — focus aborted');
         return;
     }
 
@@ -207,6 +213,14 @@ function onSeatMapReady(): void {
         );
 
         if (!seatNode) {
+            console.warn(
+                '[Welcome] focus seat node not found in DOM',
+                {
+                    focusSeatId: props.focusSeatId,
+                    selector: `g.seat[id="${CSS.escape(String(props.focusSeatId))}"]`,
+                    totalSeatNodes: wrapper.querySelectorAll('g.seat').length,
+                },
+            );
             return;
         }
 
@@ -217,6 +231,14 @@ function onSeatMapReady(): void {
         const cy = parseFloat(circle?.getAttribute('cy') ?? '0');
         const r = parseFloat(circle?.getAttribute('r') ?? '12');
         const blockId = circle?.getAttribute('block-id');
+
+        console.info('[Welcome] focus seat located', {
+            focusSeatId: props.focusSeatId,
+            blockId,
+            cx,
+            cy,
+            r,
+        });
 
         // Zoom the underlying d3-zoom transform onto the seat's block so the
         // pulse renders at a useful size. zoomToBlock animates over ~500ms,

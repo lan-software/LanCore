@@ -357,9 +357,20 @@ async function initSeatmap(): Promise<void> {
     // the container and synthesize a payload that matches the library's public
     // SeatClickEvent shape (id, salable, isSelected/select/unSelect methods).
     wireSeatClicks(blocks);
+    console.info('[SeatMapCanvas] after wireSeatClicks');
     wireSeatHovers();
+    console.info('[SeatMapCanvas] after wireSeatHovers');
     suppressTooltipForTakenSeats();
+    console.info('[SeatMapCanvas] after suppressTooltipForTakenSeats');
 
+    // Library precomputes zoom levels at construction time (no blocks yet),
+    // so they're stale relative to the data we just loaded. Refresh before
+    // emitting `ready` so any `@ready` handler that drives a zoom (e.g. the
+    // public event page's focus_user flow) operates on accurate levels.
+    recalculateZoomLevels();
+    console.info('[SeatMapCanvas] after recalculateZoomLevels');
+
+    console.info('[SeatMapCanvas] emitting ready');
     emit('ready');
 }
 
@@ -660,6 +671,43 @@ function suppressTooltipForTakenSeats(): void {
     wrapped.__seatmapPatched = true;
 }
 
+/**
+ * Re-run the library's recompute path so any `zoomManager.zoomTo*` call uses
+ * fresh per-block zoom levels. The library calculates these once during
+ * construction (with no blocks yet) and does not refresh them after our
+ * subsequent `replaceData`, so a `zoomToBlock` invoked right after init —
+ * for example Welcome.vue wiring the focus-user flow into `@ready` — would
+ * otherwise act on stale levels and leave the canvas at venue zoom.
+ *
+ * Mirror of the recompute steps inlined in `resetView`; pulled out so init,
+ * reset, and the ad-hoc zoom-to methods all converge on the same sequence.
+ */
+function recalculateZoomLevels(): void {
+    const instance = seatmapInstance as unknown as {
+        data?: { getBlocks?: () => unknown[] };
+        svg?: { stage?: { blocks?: { update?: () => void } } };
+        windowManager?: { resizeHandler?: () => void };
+        zoomManager?: {
+            calculateZoomLevels?: (blocks: unknown[]) => void;
+            calculateActiveBlocks?: (blocks: unknown[]) => void;
+        };
+    } | null;
+
+    try {
+        const blocks = instance?.data?.getBlocks?.() ?? [];
+        instance?.svg?.stage?.blocks?.update?.();
+        instance?.windowManager?.resizeHandler?.();
+        instance?.zoomManager?.calculateZoomLevels?.(blocks);
+        instance?.zoomManager?.calculateActiveBlocks?.(blocks);
+        instance?.windowManager?.resizeHandler?.();
+    } catch (error) {
+        console.warn(
+            '[SeatMapCanvas] recalculateZoomLevels failed (non-fatal):',
+            error,
+        );
+    }
+}
+
 defineExpose({
     /**
      * Access the underlying library instance for programmatic control
@@ -675,38 +723,21 @@ defineExpose({
      *
      * `zoomToVenue` alone uses precomputed `zoomLevels.VENUE.{x,y,k}` that
      * go stale after `replaceData` or when only one block exists, so we
-     * first re-run the library's own recompute path — same sequence it
-     * invokes internally on its ADD_BLOCK event — then jump to the refreshed
-     * venue zoom:
-     *
-     *   1. `svg.stage.blocks.update()`        — rebuild DOM bboxes
-     *   2. `windowManager.resizeHandler()`    — sync container rect
-     *   3. `zoomManager.calculateZoomLevels()`— recompute VENUE/BLOCK/SEAT
-     *   4. `zoomManager.zoomToVenue(true)`    — apply the refreshed VENUE
-     *
-     * Falls back to `initSeatmap()` (full rebuild) if any internal API
-     * changes shape and `.` access fails.
+     * first re-run the library's recompute path via {@link recalculateZoomLevels}
+     * and then jump to the refreshed venue zoom. Falls back to a full
+     * `initSeatmap()` rebuild if the library's `zoomToVenue` itself throws.
      */
     resetView(): void {
-        const instance = seatmapInstance as unknown as {
-            data?: { getBlocks?: () => unknown[] };
-            svg?: { stage?: { blocks?: { update?: () => void } } };
-            windowManager?: { resizeHandler?: () => void };
-            zoomManager?: {
-                calculateZoomLevels?: (blocks: unknown[]) => void;
-                calculateActiveBlocks?: (blocks: unknown[]) => void;
-                zoomToVenue?: (animated?: boolean) => void;
-            };
-        } | null;
+        recalculateZoomLevels();
+
+        const zm = (
+            seatmapInstance as unknown as {
+                zoomManager?: { zoomToVenue?: (animated?: boolean) => void };
+            } | null
+        )?.zoomManager;
 
         try {
-            const blocks = instance?.data?.getBlocks?.() ?? [];
-            instance?.svg?.stage?.blocks?.update?.();
-            instance?.windowManager?.resizeHandler?.();
-            instance?.zoomManager?.calculateZoomLevels?.(blocks);
-            instance?.zoomManager?.calculateActiveBlocks?.(blocks);
-            instance?.windowManager?.resizeHandler?.();
-            instance?.zoomManager?.zoomToVenue?.(true);
+            zm?.zoomToVenue?.(true);
         } catch (error) {
             console.warn(
                 '[SeatMapCanvas] resetView fast path failed, rebuilding canvas:',
@@ -718,9 +749,12 @@ defineExpose({
 
     /**
      * Zoom the viewport to whatever seats are currently marked selected
-     * on the canvas.
+     * on the canvas. Refreshes per-block zoom levels first so the result
+     * is correct even if the canvas was resized or hidden since last init.
      */
     zoomToSelection(): void {
+        recalculateZoomLevels();
+
         const zm = (
             seatmapInstance as unknown as {
                 zoomManager?: { zoomToSelection: (animated?: boolean) => void };
@@ -731,8 +765,13 @@ defineExpose({
 
     /**
      * Zoom the viewport to a specific block by id (e.g. a ticket's row).
+     * Refreshes per-block zoom levels first; otherwise calls made right
+     * after the canvas emits `ready` would hit stale precomputed levels and
+     * silently no-op (see {@link recalculateZoomLevels}).
      */
     zoomToBlock(blockId: string): void {
+        recalculateZoomLevels();
+
         const zm = (
             seatmapInstance as unknown as {
                 zoomManager?: {
