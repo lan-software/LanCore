@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Announcement\Enums\Permission as AnnouncementPermission;
+use App\Domain\Chat\Enums\Permission as ChatPermission;
 use App\Domain\News\Enums\Permission as NewsPermission;
 use App\Domain\Sponsoring\Enums\Permission as SponsoringPermission;
 use App\Enums\Permission;
@@ -39,7 +40,8 @@ it('gives moderator only content moderation permissions', function () {
 
     expect($permissions)->toContain(NewsPermission::ModerateNewsComments)
         ->and($permissions)->toContain(AnnouncementPermission::ManageAnnouncements)
-        ->and($permissions)->toHaveCount(2);
+        ->and($permissions)->toContain(ChatPermission::ModerateChat)
+        ->and($permissions)->toHaveCount(3);
 });
 
 it('gives sponsor manager only assigned sponsors permission', function () {

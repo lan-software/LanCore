@@ -5,6 +5,7 @@ namespace App\Enums;
 use App\Contracts\PermissionEnum;
 use App\Domain\Achievements\Enums\Permission as AchievementPermission;
 use App\Domain\Announcement\Enums\Permission as AnnouncementPermission;
+use App\Domain\Chat\Enums\Permission as ChatPermission;
 use App\Domain\Competition\Enums\Permission as CompetitionPermission;
 use App\Domain\DataLifecycle\Enums\Permission as DataLifecyclePermission;
 use App\Domain\EmailLog\Enums\Permission as EmailLogPermission;
@@ -43,6 +44,7 @@ final class RolePermissionMap
             RoleName::Moderator => [
                 NewsPermission::ModerateNewsComments,
                 AnnouncementPermission::ManageAnnouncements,
+                ChatPermission::ModerateChat,
             ],
 
             RoleName::SponsorManager => [
@@ -52,6 +54,8 @@ final class RolePermissionMap
             RoleName::Admin => [
                 AchievementPermission::ManageAchievements,
                 AnnouncementPermission::ManageAnnouncements,
+                ChatPermission::ManageChat,
+                ChatPermission::ModerateChat,
                 NewsPermission::ManageNewsArticles,
                 NewsPermission::ModerateNewsComments,
                 EventPermission::ManageEvents,
@@ -102,6 +106,7 @@ final class RolePermissionMap
             ...CompetitionPermission::cases(),
             ...AchievementPermission::cases(),
             ...AnnouncementPermission::cases(),
+            ...ChatPermission::cases(),
             ...DataLifecyclePermission::cases(),
             ...EmailLogPermission::cases(),
             ...EventPermission::cases(),

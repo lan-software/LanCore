@@ -3,10 +3,12 @@
 namespace App\Domain\Competition\Jobs;
 
 use App\Domain\Api\Clients\LanBracketsClient;
+use App\Domain\Competition\Exceptions\LanBracketsRequestException;
 use App\Domain\Competition\Models\Competition;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * @see docs/mil-std-498/SRS.md COMP-F-010
@@ -23,42 +25,60 @@ class SyncCompetitionToLanBrackets implements ShouldQueue
 
     public function handle(LanBracketsClient $client): void
     {
-        $competition = $this->competition;
+        $competition = $this->competition->fresh() ?? $this->competition;
 
-        if ($competition->isSyncedToLanBrackets()) {
-            $client->updateCompetition($competition->lanbrackets_id, [
+        try {
+            if ($competition->isSyncedToLanBrackets()) {
+                $client->updateCompetition($competition->lanbrackets_id, [
+                    'name' => $competition->name,
+                    'description' => $competition->description,
+                ]);
+
+                return;
+            }
+
+            $response = $client->createCompetition([
                 'name' => $competition->name,
+                'type' => $competition->type->value,
+                'stage_type' => $competition->stage_type->value,
                 'description' => $competition->description,
+                'external_reference_id' => (string) $competition->id,
+                'source_system' => 'lancore',
             ]);
 
-            return;
-        }
+            $lanbracketsId = $response['id'] ?? null;
 
-        $response = $client->createCompetition([
-            'name' => $competition->name,
-            'type' => $competition->type->value,
-            'stage_type' => $competition->stage_type->value,
-            'description' => $competition->description,
-            'external_reference_id' => (string) $competition->id,
-            'source_system' => 'lancore',
-        ]);
+            if ($lanbracketsId === null) {
+                Log::error('SyncCompetitionToLanBrackets: No ID returned from LanBrackets.', [
+                    'competition_id' => $competition->id,
+                    'response' => $response,
+                ]);
 
-        $lanbracketsId = $response['id'] ?? null;
+                return;
+            }
 
-        if ($lanbracketsId === null) {
-            Log::error('SyncCompetitionToLanBrackets: No ID returned from LanBrackets.', [
+            $shareToken = $client->regenerateShareToken($lanbracketsId);
+
+            $competition->update([
+                'lanbrackets_id' => $lanbracketsId,
+                'lanbrackets_share_token' => $shareToken,
+            ]);
+        } catch (LanBracketsRequestException $e) {
+            Log::error('SyncCompetitionToLanBrackets: LanBrackets API rejected the request.', [
                 'competition_id' => $competition->id,
-                'response' => $response,
+                'status' => $e->getCode(),
+                'message' => $e->getMessage(),
             ]);
 
-            return;
+            throw $e;
+        } catch (Throwable $e) {
+            Log::error('SyncCompetitionToLanBrackets: unexpected failure.', [
+                'competition_id' => $competition->id,
+                'exception' => $e::class,
+                'message' => $e->getMessage(),
+            ]);
+
+            throw $e;
         }
-
-        $shareToken = $client->regenerateShareToken($lanbracketsId);
-
-        $competition->update([
-            'lanbrackets_id' => $lanbracketsId,
-            'lanbrackets_share_token' => $shareToken,
-        ]);
     }
 }

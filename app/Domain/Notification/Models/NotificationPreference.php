@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'push_on_seating',
     'mail_on_ticket_sale',
     'push_on_ticket_sale',
+    'mail_on_chat_mention',
+    'push_on_chat_mention',
 ])]
 class NotificationPreference extends Model
 {
@@ -56,6 +58,8 @@ class NotificationPreference extends Model
             'push_on_seating' => 'boolean',
             'mail_on_ticket_sale' => 'boolean',
             'push_on_ticket_sale' => 'boolean',
+            'mail_on_chat_mention' => 'boolean',
+            'push_on_chat_mention' => 'boolean',
         ];
     }
 

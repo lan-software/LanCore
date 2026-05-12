@@ -11,8 +11,19 @@ use App\Domain\Announcement\Listeners\HandleAnnouncementPublishedWebhooks;
 use App\Domain\Announcement\Listeners\SendAnnouncementNotification;
 use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Announcement\Policies\AnnouncementPolicy;
+use App\Domain\Chat\Events\MessagePosted;
+use App\Domain\Chat\Listeners\NotifyMentionedUsers;
+use App\Domain\Chat\Services\ChatService;
+use App\Domain\Chat\Services\PolicyResolver;
+use App\Domain\Competition\Chat\CompetitionChatLifecycleObserver;
+use App\Domain\Competition\Chat\CompetitionTeamMemberObserver;
 use App\Domain\Competition\Events\MatchCompleted;
+use App\Domain\Competition\Events\MatchFinalized;
 use App\Domain\Competition\Events\MatchReadyForOrchestration;
+use App\Domain\Competition\Listeners\EnsureMatchRoomOnReady;
+use App\Domain\Competition\Listeners\WriteLockMatchRoomOnFinalized;
+use App\Domain\Competition\Models\Competition;
+use App\Domain\Competition\Models\CompetitionTeamMember;
 use App\Domain\Event\Events\EventPublished;
 use App\Domain\Event\Listeners\HandleEventPublishedWebhooks;
 use App\Domain\Event\Models\Event;
@@ -143,6 +154,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(ModelCacheService::class);
+        $this->app->singleton(PolicyResolver::class);
+        $this->app->singleton(ChatService::class);
 
         $this->app->singleton(PaymentProviderManager::class, function ($app): PaymentProviderManager {
             $manager = new PaymentProviderManager;
@@ -187,6 +200,18 @@ class AppServiceProvider extends ServiceProvider
         $this->configurePaypalAutoEnable();
         $this->configureRateLimiters();
         $this->configureNotificationChannels();
+        $this->configureChatObservers();
+    }
+
+    /**
+     * Wire competition-driven chat-room lifecycle observers.
+     *
+     * @see docs/mil-std-498/SRS.md CHT-F-028, CHT-F-029
+     */
+    protected function configureChatObservers(): void
+    {
+        Competition::observe(CompetitionChatLifecycleObserver::class);
+        CompetitionTeamMember::observe(CompetitionTeamMemberObserver::class);
     }
 
     /**
@@ -334,6 +359,9 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureEvents(): void
     {
+        EventFacade::listen(MessagePosted::class, NotifyMentionedUsers::class);
+        EventFacade::listen(MatchReadyForOrchestration::class, EnsureMatchRoomOnReady::class);
+        EventFacade::listen(MatchFinalized::class, WriteLockMatchRoomOnFinalized::class);
         EventFacade::listen(AnnouncementPublished::class, SendAnnouncementNotification::class);
         EventFacade::listen(NewsArticlePublished::class, SendNewsNotification::class);
         EventFacade::listen(ProgramTimeSlotApproaching::class, SendProgramTimeSlotNotification::class);

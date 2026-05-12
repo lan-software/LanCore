@@ -43,6 +43,73 @@ it('passes a presence map keyed by user id', function () {
         );
 });
 
+it('sorts users by presence status ascending (active → idle → offline)', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create(['name' => 'Zed Admin']);
+    $offlineUser = User::factory()->withRole(RoleName::User)->create(['name' => 'Offline Olive']);
+    $idleUser = User::factory()->withRole(RoleName::User)->create(['name' => 'Idle Ivan']);
+    $activeUser = User::factory()->withRole(RoleName::User)->create(['name' => 'Active Alice']);
+
+    $statuses = [
+        $admin->id => PresenceStatus::Offline,
+        $offlineUser->id => PresenceStatus::Offline,
+        $idleUser->id => PresenceStatus::Idle,
+        $activeUser->id => PresenceStatus::Active,
+    ];
+
+    $tracker = Mockery::mock(PresenceTracker::class);
+    $tracker->shouldReceive('bulkStatusFor')->andReturnUsing(
+        fn (iterable $ids) => collect($ids)
+            ->mapWithKeys(fn ($id) => [(int) $id => $statuses[(int) $id] ?? PresenceStatus::Offline])
+            ->all()
+    );
+    $tracker->shouldReceive('statusFor')->andReturn(PresenceStatus::Active);
+    $tracker->shouldReceive('touch')->andReturnNull();
+    $this->app->instance(PresenceTracker::class, $tracker);
+
+    $this->actingAs($admin)
+        ->get('/backstage/users?sort=presence&direction=asc')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('users/Index')
+                ->where('users.data.0.id', $activeUser->id)
+                ->where('users.data.1.id', $idleUser->id)
+                ->etc(),
+        );
+});
+
+it('sorts users by presence status descending (offline → idle → active)', function () {
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $offlineUser = User::factory()->withRole(RoleName::User)->create();
+    $activeUser = User::factory()->withRole(RoleName::User)->create();
+
+    $statuses = [
+        $admin->id => PresenceStatus::Active,
+        $offlineUser->id => PresenceStatus::Offline,
+        $activeUser->id => PresenceStatus::Active,
+    ];
+
+    $tracker = Mockery::mock(PresenceTracker::class);
+    $tracker->shouldReceive('bulkStatusFor')->andReturnUsing(
+        fn (iterable $ids) => collect($ids)
+            ->mapWithKeys(fn ($id) => [(int) $id => $statuses[(int) $id] ?? PresenceStatus::Offline])
+            ->all()
+    );
+    $tracker->shouldReceive('statusFor')->andReturn(PresenceStatus::Active);
+    $tracker->shouldReceive('touch')->andReturnNull();
+    $this->app->instance(PresenceTracker::class, $tracker);
+
+    $this->actingAs($admin)
+        ->get('/backstage/users?sort=presence&direction=desc')
+        ->assertSuccessful()
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('users/Index')
+                ->where('users.data.0.id', $offlineUser->id)
+                ->etc(),
+        );
+});
+
 it('invokes bulkStatusFor exactly once per page render', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
     User::factory()->withRole(RoleName::User)->count(15)->create();

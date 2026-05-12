@@ -3,6 +3,7 @@
 namespace App\Domain\Policy\Providers;
 
 use App\Domain\Achievements\Gdpr\AchievementsDataSource;
+use App\Domain\Chat\Gdpr\ChatDataSource;
 use App\Domain\Competition\Gdpr\CompetitionDataSource;
 use App\Domain\News\Gdpr\NewsDataSource;
 use App\Domain\Notification\Gdpr\NotificationDataSource;
@@ -42,6 +43,7 @@ class GdprServiceProvider extends ServiceProvider
         OrgaTeamDataSource::class,
         SponsoringDataSource::class,
         AchievementsDataSource::class,
+        ChatDataSource::class,
     ];
 
     public function register(): void

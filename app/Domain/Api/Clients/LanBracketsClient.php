@@ -263,6 +263,35 @@ class LanBracketsClient
     }
 
     /**
+     * Trigger LanBrackets to generate the bracket / matches for a stage.
+     * LanBrackets does not auto-generate matches when participants are added;
+     * the consumer (LanCore) calls this after registration closes and teams
+     * have been synced.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws LanBracketsDisabledException
+     * @throws LanBracketsRequestException
+     */
+    public function generateStage(int $competitionId, int $stageId): array
+    {
+        $this->ensureEnabled();
+
+        $response = $this->withRetries(
+            fn () => $this->apiClient()->post("/api/v1/competitions/{$competitionId}/stages/{$stageId}/generate")
+        );
+
+        if (! $response->successful()) {
+            throw new LanBracketsRequestException(
+                $response->json('message') ?? 'Failed to generate stage.',
+                $response->status()
+            );
+        }
+
+        return $response->json('data', $response->json());
+    }
+
+    /**
      * @return array<int, array<string, mixed>>
      *
      * @throws LanBracketsDisabledException

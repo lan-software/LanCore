@@ -18,7 +18,7 @@ class UserIndexRequest extends FormRequest
     {
         return [
             'search' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'sort' => ['sometimes', 'nullable', 'string', Rule::in(['name', 'email', 'created_at'])],
+            'sort' => ['sometimes', 'nullable', 'string', Rule::in(['name', 'email', 'created_at', 'presence'])],
             'direction' => ['sometimes', 'nullable', 'string', Rule::in(['asc', 'desc'])],
             'role' => ['sometimes', 'nullable', 'string', Rule::in(array_column(RoleName::cases(), 'value'))],
             'steam_status' => ['sometimes', 'nullable', 'string', Rule::in(array_column(SteamLinkStatus::cases(), 'value'))],

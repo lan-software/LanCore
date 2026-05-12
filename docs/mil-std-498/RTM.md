@@ -449,6 +449,8 @@ No gaps identified.
 | COMP-F-013 | Submit join request via `RequestToJoinTeam`; `TeamJoinRequestNotification` dispatched to captain | `Domain/Competition/Actions/RequestToJoinTeam.php` | — | **Gap** |
 | COMP-F-014 | Captain resolves join request (approve/reject) via `ResolveJoinRequest`; `JoinRequestResolvedNotification` dispatched | `Domain/Competition/Actions/ResolveJoinRequest.php` | — | **Gap** |
 | COMP-F-015 | Prevent duplicate join requests and requests when team at capacity | `Domain/Competition/Actions/RequestToJoinTeam.php` | — | **Gap** |
+| COMP-F-016 | RegistrationClosed transition triggers LanBrackets bracket generation via `Bus::chain([SyncTeamsToLanBrackets, GenerateLanBracketsStages])` | `Domain/Competition/Actions/UpdateCompetition.php`, `Domain/Competition/Jobs/GenerateLanBracketsStages.php` | — | **Gap** |
+| COMP-F-017 | Manual recovery via `competitions:generate-matches {id} [--sync]` artisan command | `Console/Commands/Competition/GenerateLanBracketsMatchesCommand.php` | — | **Gap** |
 
 ---
 
@@ -770,3 +772,40 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | Req ID | Domain | Source CAP | Design § | Code path | Test file |
 |--------|--------|------------|----------|-----------|-----------|
 | PLATFORM-CHT-001 | Chat / Platform | CAP-CHT-001 | SDD §4.2.1 (Chat domain row), `docs/deployment/reverb.md` | `composer.json` (laravel/reverb), `package.json` (@laravel/echo-vue, laravel-echo, pusher-js), `config/reverb.php`, `config/broadcasting.php`, `routes/channels.php`, `compose.yaml` (reverb service), `resources/js/app.ts` (Echo config), `.env.example` (`REVERB_*` + `VITE_REVERB_*`) | `tests/Unit/Broadcasting/ReverbConfigTest.php` |
+
+---
+
+## 30. Chat Domain (CSCI-CHT)
+
+| Req ID | Domain | Source CAP | Design § | Code path | Test file |
+|--------|--------|------------|----------|-----------|-----------|
+| CHT-F-001 | Chat | CAP-CHT-001 | DBDD §4.20 | `database/migrations/2026_05_12_100000..100003_*`, `app/Domain/Chat/Models/{ChatRoom,ChatRoomMembership,ChatMessage,ChatModerationAction}.php` | `tests/Feature/Chat/ChatSchemaTest.php` |
+| CHT-F-002 | Chat | CAP-CHT-001 | SDD §5.3e | `app/Domain/Chat/Enums/Permission.php`, `app/Enums/RolePermissionMap.php` | `tests/Unit/Domain/Chat/RolePermissionMapTest.php`, `tests/Unit/PermissionEnumTest.php` |
+| CHT-F-003 | Chat | CAP-CHT-001 | SDD §5.3e | `app/Domain/Chat/Enums/RoomStatus.php` | `tests/Feature/Chat/ChatSchemaTest.php` |
+| CHT-F-004 | Chat | CAP-CHT-001 | SDD §5.3e | `app/Domain/Chat/Enums/ModerationAction.php` | `tests/Feature/Chat/ChatSchemaTest.php` |
+| CHT-F-005 | Chat | CAP-CHT-001 | SDD §5.3e | `app/Domain/Chat/Models/ChatMessage.php` (`SoftDeletes`) | `tests/Feature/Chat/ChatSchemaTest.php` |
+| CHT-F-007 | Chat | CAP-CHT-001 | SDD §5.3e (RoomPolicy contract) | `app/Domain/Chat/Contracts/RoomPolicy.php`, `app/Domain/Chat/Services/PolicyResolver.php` | `tests/Feature/Chat/ChannelAuthorizationTest.php` |
+| CHT-F-008 | Chat | CAP-CHT-001 | SDD §5.3e (channel auth) | `app/Domain/Chat/Broadcasting/ChatRoomChannel.php`, `routes/channels.php` | `tests/Feature/Chat/ChannelAuthorizationTest.php` |
+| CHT-F-009 | Chat | CAP-CHT-001 | SDD §5.3e (broadcasting), IDD §3.14 | `app/Domain/Chat/Events/MessagePosted.php` (`ShouldBroadcastNow`) | (covered by CHT-003 in PostMessage tests) |
+| CHT-F-010 | Chat | CAP-CHT-001 | SDD §5.3e | `app/Domain/Chat/Services/ChatService.php` (`ensureRoom`) | `tests/Unit/Domain/Chat/ChatServiceTest.php` |
+| CHT-F-011 | Chat | CAP-CHT-001 | SDD §5.3e | `app/Domain/Chat/Services/ChatService.php` (`writeLock`, `archive`) | `tests/Unit/Domain/Chat/ChatServiceTest.php` |
+| CHT-F-012 | Chat | CAP-CHT-001 | SDD §5.3e (PostMessage) | `app/Domain/Chat/Actions/PostMessage.php`, `app/Domain/Chat/Exceptions/{ChatException,RoomNotPostableException,PostUnauthorizedException,UserMutedException,RateLimitExceededException,DuplicateMessageException}.php`, `lang/en/chat.php` | `tests/Feature/Chat/PostMessageTest.php` |
+| CHT-F-019 | Chat | CAP-CHT-001 | SDD §5.3e (config knobs) | `config/chat.php` | `tests/Feature/Chat/PostMessageTest.php` (verifies thresholds honored via `Config::set`) |
+| CHT-F-013 | Chat | CAP-CHT-001 | SDD §5.3e (mentions pipeline) | `app/Domain/Chat/Support/MentionParser.php` | `tests/Unit/Domain/Chat/MentionParserTest.php` |
+| CHT-F-014 | Chat | CAP-CHT-001 | SDD §5.3e (mentions pipeline) | `app/Domain/Chat/Actions/PostMessage.php` (mentions persist), `app/Domain/Chat/Models/ChatMessage.php` (`mentions_json` cast) | `tests/Feature/Chat/MentionsNotificationTest.php` |
+| CHT-F-015 | Chat | CAP-CHT-001 | SDD §5.3e (mentions pipeline) | `app/Domain/Chat/Listeners/NotifyMentionedUsers.php`, `app/Providers/AppServiceProvider.php` (event binding) | `tests/Feature/Chat/MentionsNotificationTest.php` (self-mention + visibility cases) |
+| CHT-F-016 | Chat | CAP-CHT-001 | SDD §5.3e (mentions pipeline) | `app/Domain/Chat/Notifications/ChatMentionNotification.php` (`via()`), `app/Domain/Notification/Models/NotificationPreference.php` (chat-mention casts) | `tests/Feature/Chat/MentionsNotificationTest.php` (channel toggle cases) |
+| CHT-F-017 | Chat | CAP-CHT-001 | DBDD §4.12.1 (notification_preferences extension) | `database/migrations/2026_05_12_110000_add_chat_mention_preferences_to_notification_preferences_table.php` | `tests/Feature/Chat/MentionsNotificationTest.php` (preference round-trip) |
+| CHT-F-020 | Chat | CAP-CHT-001 | SDD §5.3e (moderation) | `app/Domain/Chat/Actions/MuteUser.php`, `app/Domain/Chat/Concerns/AuthorizesModeration.php` | `tests/Feature/Chat/ModerationTest.php` |
+| CHT-F-021 | Chat | CAP-CHT-001 | SDD §5.3e (moderation) | `app/Domain/Chat/Actions/UnmuteUser.php` | `tests/Feature/Chat/ModerationTest.php` |
+| CHT-F-022 | Chat | CAP-CHT-001 | SDD §5.3e (moderation) | `app/Domain/Chat/Actions/DeleteMessage.php` | `tests/Feature/Chat/ModerationTest.php` (soft-delete + body retention) |
+| CHT-F-023 | Chat | CAP-CHT-001 | SDD §5.3e (moderation) | `app/Domain/Chat/Actions/CloseRoom.php` | `tests/Feature/Chat/ModerationTest.php` |
+| CHT-F-024 | Chat | CAP-CHT-001 | SDD §5.3e (moderation auth) | `app/Domain/Chat/Exceptions/ModerationUnauthorizedException.php`, `AuthorizesModeration::ensureCanModerate` | `tests/Feature/Chat/ModerationTest.php` (denial case) |
+| CHT-F-018 | Chat | CAP-GDPR-001 | SDD §5.3e (GDPR) | `app/Domain/Chat/Gdpr/ChatDataSource.php`, `app/Domain/Policy/Providers/GdprServiceProvider.php` (`SOURCES` registration) | `tests/Feature/Chat/ChatGdprDataSourceTest.php` |
+| CHT-F-026 | Chat | CAP-CHT-001 | SDD §5.3e (cleanup command) | `app/Console/Commands/Chat/PruneArchivedChatsCommand.php` | `tests/Feature/Chat/PruneArchivedChatsCommandTest.php` |
+| CHT-F-027 | Competition×Chat | CAP-CHT-001 | SDD §5.3e (Competition-Chat coupling) | `app/Domain/Competition/Chat/CompetitionRoomPolicy.php` | `tests/Feature/Competition/CompetitionChatRoomLifecycleTest.php` (canView case) |
+| CHT-F-028 | Competition×Chat | CAP-CHT-001 | SDD §5.3e (Competition-Chat coupling) | `app/Domain/Competition/Chat/CompetitionChatLifecycleObserver.php`, `app/Providers/AppServiceProvider.php` (`Competition::observe`) | `tests/Feature/Competition/CompetitionChatRoomLifecycleTest.php` |
+| CHT-F-029 | Competition×Chat | CAP-CHT-001 | SDD §5.3e (Competition-Chat coupling) | `app/Domain/Competition/Chat/CompetitionTeamMemberObserver.php`, `app/Domain/Competition/Chat/CompetitionRoomAutoJoin.php` | `tests/Feature/Competition/CompetitionChatRoomLifecycleTest.php` (post-publish join case) |
+| CHT-F-030 | Competition×Chat | CAP-CHT-001 | SDD §5.3e (match-room policy) | `app/Domain/Competition/Chat/MatchRoomPolicy.php` | `tests/Feature/Competition/MatchChatRoomLifecycleTest.php` (canView case) |
+| CHT-F-031 | Competition×Chat | CAP-CHT-001 | SDD §5.3e (match-room lifecycle) | `app/Domain/Competition/Listeners/EnsureMatchRoomOnReady.php`, `app/Providers/AppServiceProvider.php` (event binding) | `tests/Feature/Competition/MatchChatRoomLifecycleTest.php` |
+| CHT-F-032 | Competition×Chat | CAP-CHT-001 | SDD §5.3e (match-room lifecycle) | `app/Domain/Competition/Listeners/WriteLockMatchRoomOnFinalized.php`, `app/Providers/AppServiceProvider.php` (event binding) | `tests/Feature/Competition/MatchChatRoomLifecycleTest.php` |

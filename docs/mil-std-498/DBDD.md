@@ -1143,6 +1143,73 @@ Standard Laravel Cashier tables for subscription management with metered billing
 
 The Presence CSCI introduces **no schema changes**. Heartbeat state is stored exclusively in Redis under keys of the form `presence:user:{id}`, with a TTL equal to `config('presence.offline_after')` (default 1800s) so the store self-cleans for offline users. Status derivation (Active / Idle / Offline) is computed from the heartbeat timestamp delta in `App\Domain\Presence\Services\PresenceTracker`. See SRS §3.2.DD (PRS-F-002, PRS-F-012) and SDD §5.3d.
 
+### 4.20 Chat Domain (CSCI-CHT)
+
+All four tables are owned by the Chat CSCI. Every model implements `OwenIt\Auditing\Contracts\Auditable`, so create/update/delete audit rows land in the existing `audits` table — no chat-specific audit tables.
+
+#### 4.20.1 `chat_rooms`
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | bigint PK | |
+| key | varchar(191) UNIQUE | `competition:{id}` or `competition:{cid}:match:{mid}` — the stable identifier consumers use with `ChatService::ensureRoom` |
+| title | varchar(191) NULLABLE | optional human label |
+| status | varchar(32) default `'open'` | enum-shaped: `open`, `write_locked`, `archived` — cast to `RoomStatus` on the model |
+| consumer_domain | varchar(64) | e.g. `'Competition'` — bookkeeping for cleanup queries |
+| policy_class | varchar(191) | FQCN of the bound `RoomPolicy` implementation, resolved lazily at authorization time |
+| opened_at | timestamp NULLABLE | first transition to `Open` |
+| write_locked_at | timestamp NULLABLE | transition to `WriteLocked` (set by consumer finalize signal or `CloseRoom` moderation) |
+| archived_at | timestamp NULLABLE | transition to `Archived` |
+| created_by | bigint FK → users.id (NULL ON DELETE) NULLABLE | actor that triggered creation, if any |
+| created_at, updated_at | timestamp | |
+
+**Indexes:** UNIQUE `key`, INDEX `(consumer_domain, status)`.
+
+#### 4.20.2 `chat_room_memberships`
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | bigint PK | |
+| room_id | bigint FK → chat_rooms.id (CASCADE) | |
+| user_id | bigint FK → users.id (CASCADE) | |
+| role | varchar(32) default `'member'` | `member` or `mod` |
+| joined_at | timestamp NULLABLE | |
+| last_read_at | timestamp NULLABLE | drives unread indicators |
+| muted_until | timestamp NULLABLE | enforced by `PostMessage` before persisting |
+| created_at, updated_at | timestamp | |
+
+**Indexes:** UNIQUE `(room_id, user_id)`, INDEX `(user_id, last_read_at)`.
+
+#### 4.20.3 `chat_messages`
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | bigint PK | |
+| room_id | bigint FK → chat_rooms.id (RESTRICT) | rooms cannot be deleted while messages exist — see CHT-007 cleanup |
+| user_id | bigint FK → users.id (CASCADE) | |
+| body | text | |
+| mentions_json | jsonb NULLABLE | resolved user ids parsed by `MentionParser` at write time |
+| created_at, updated_at | timestamp | |
+| deleted_at | timestamp NULLABLE | `SoftDeletes`; the raw `body` is retained for GDPR export, frontend renders a translated placeholder |
+| deleted_by | bigint FK → users.id (NULL ON DELETE) NULLABLE | moderator that soft-deleted, if any |
+
+**Indexes:** `chat_messages_room_id_created_at_desc_idx` on `(room_id, created_at DESC)` — explicitly DESC for the room-history pagination access pattern; created via raw `DB::statement` in the migration since Blueprint indexes default to ASC.
+
+#### 4.20.4 `chat_moderation_actions`
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | bigint PK | |
+| room_id | bigint FK → chat_rooms.id (CASCADE) | |
+| actor_id | bigint FK → users.id (CASCADE) | the moderator |
+| target_user_id | bigint FK → users.id (NULL ON DELETE) NULLABLE | only set for `Mute`/`Unmute`/`DeleteMessage` |
+| action | varchar(32) | enum-shaped: `mute`, `unmute`, `delete_message`, `close_room` — cast to `ModerationAction` |
+| reason | text NULLABLE | |
+| expires_at | timestamp NULLABLE | mute window, mirrored to `memberships.muted_until` by the action |
+| created_at, updated_at | timestamp | |
+
+**Indexes:** INDEX `(room_id, created_at)`.
+
 ---
 
 ## 5. Entity Relationship Summary

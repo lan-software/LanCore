@@ -21,7 +21,7 @@ it('throws LanBracketsDisabledException when disabled', function () {
 
 it('creates a competition via API', function () {
     Http::fake([
-        'lanbrackets.test/api/v1/backstage/competitions' => Http::response([
+        'lanbrackets.test/api/v1/competitions' => Http::response([
             'data' => ['id' => 42, 'name' => 'Test Competition'],
         ], 201),
     ]);
@@ -39,7 +39,7 @@ it('creates a competition via API', function () {
     expect($result['name'])->toBe('Test Competition');
 
     Http::assertSent(function ($request) {
-        return $request->url() === 'http://lanbrackets.test/api/v1/backstage/competitions'
+        return $request->url() === 'http://lanbrackets.test/api/v1/competitions'
             && $request->hasHeader('Authorization', 'Bearer lbt_test_token')
             && $request['name'] === 'Test Competition';
     });
@@ -47,7 +47,7 @@ it('creates a competition via API', function () {
 
 it('throws LanBracketsRequestException on API error', function () {
     Http::fake([
-        'lanbrackets.test/api/v1/backstage/competitions' => Http::response([
+        'lanbrackets.test/api/v1/competitions' => Http::response([
             'message' => 'Validation failed',
         ], 422),
     ]);
@@ -58,7 +58,7 @@ it('throws LanBracketsRequestException on API error', function () {
 
 it('regenerates a share token', function () {
     Http::fake([
-        'lanbrackets.test/api/v1/backstage/competitions/42/share-token' => Http::response([
+        'lanbrackets.test/api/v1/competitions/42/share-token' => Http::response([
             'share_token' => 'abc123token',
         ]),
     ]);
@@ -71,7 +71,7 @@ it('regenerates a share token', function () {
 
 it('reports a match result', function () {
     Http::fake([
-        'lanbrackets.test/api/v1/backstage/competitions/42/matches/7/result' => Http::response([
+        'lanbrackets.test/api/v1/competitions/42/matches/7/result' => Http::response([
             'data' => ['id' => 7, 'status' => 'finished'],
         ]),
     ]);

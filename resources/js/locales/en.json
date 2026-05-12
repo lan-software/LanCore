@@ -1273,5 +1273,39 @@
             "idle": "Idle",
             "offline": "Offline"
         }
+    },
+    "chat": {
+        "room": {
+            "title": "Chat",
+            "members": "Members",
+            "membersToggle": "Show members",
+            "membersClose": "Close members",
+            "writeLocked": "This room is read-only. Posting is disabled.",
+            "archived": "This room is archived. Posting is disabled.",
+            "empty": "No messages yet. Be the first to say hello."
+        },
+        "composer": {
+            "placeholder": "Write a message…",
+            "send": "Send",
+            "hint": "Use @ to mention someone in the room."
+        },
+        "message": {
+            "deletedPlaceholder": "(message removed by a moderator)",
+            "delete": "Delete",
+            "deleteConfirm": "Delete this message?",
+            "mentionedYou": "mentioned you",
+            "loadMore": "Load earlier messages"
+        },
+        "moderation": {
+            "mute": "Mute member",
+            "unmute": "Unmute member",
+            "close": "Close room",
+            "minutes": "Mute duration (minutes)",
+            "reason": "Reason (optional)"
+        },
+        "mentionSearch": {
+            "label": "Mention",
+            "empty": "No matching users."
+        }
     }
 }

@@ -18,8 +18,10 @@ use App\Http\Requests\Users\UserPersonalDataUpdateRequest;
 use App\Http\Requests\Users\UserUpdateRequest;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -54,9 +56,17 @@ class UserController extends Controller
 
         $sortColumn = $request->validated('sort') ?? 'name';
         $sortDirection = $request->validated('direction') ?? 'asc';
-        $query->orderBy($sortColumn, $sortDirection);
+        $perPage = $request->validated('per_page') ?? 20;
+        $tracker = app(PresenceTracker::class);
 
-        $users = $query->paginate($request->validated('per_page') ?? 20)->withQueryString();
+        if ($sortColumn === 'presence') {
+            $users = $this->paginateByPresence($query, $sortDirection, $perPage, $tracker);
+        } else {
+            $users = $query->orderBy($sortColumn, $sortDirection)
+                ->paginate($perPage)
+                ->withQueryString();
+        }
+
         $users->getCollection()->transform(function (User $user): array {
             $row = $user->toArray();
             $row['steam_status'] = SteamLinkStatus::for($user)->value;
@@ -64,8 +74,7 @@ class UserController extends Controller
             return $row;
         });
 
-        $presenceMap = app(PresenceTracker::class)
-            ->bulkStatusFor($users->getCollection()->pluck('id')->all());
+        $presenceMap = $tracker->bulkStatusFor($users->getCollection()->pluck('id')->all());
         $presence = [];
         foreach ($presenceMap as $userId => $status) {
             $presence[$userId] = $status->value;
@@ -76,6 +85,53 @@ class UserController extends Controller
             'filters' => $request->only(['search', 'sort', 'direction', 'role', 'steam_status', 'per_page']),
             'presence' => $presence,
         ]);
+    }
+
+    /**
+     * Sort users by presence status (Redis-backed, not a DB column).
+     *
+     * Fetches all matching IDs, looks up presence in a single MGET, sorts
+     * by PresenceStatus::priority(), and hand-rolls a LengthAwarePaginator
+     * for the requested page.
+     */
+    private function paginateByPresence(
+        Builder $query,
+        string $direction,
+        int $perPage,
+        PresenceTracker $tracker,
+    ): LengthAwarePaginator {
+        $allIds = (clone $query)->reorder()->pluck('users.id')->all();
+        $presenceMap = $tracker->bulkStatusFor($allIds);
+
+        $multiplier = $direction === 'desc' ? -1 : 1;
+        usort($allIds, function (int $a, int $b) use ($presenceMap, $multiplier): int {
+            $pa = $presenceMap[$a]->priority();
+            $pb = $presenceMap[$b]->priority();
+
+            return $pa === $pb ? $a <=> $b : ($pa <=> $pb) * $multiplier;
+        });
+
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $pageIds = array_slice($allIds, ($page - 1) * $perPage, $perPage);
+
+        $usersById = $pageIds === []
+            ? collect()
+            : User::with('roles')->whereIn('id', $pageIds)->get()->keyBy('id');
+        $orderedUsers = collect($pageIds)
+            ->map(fn (int $id) => $usersById->get($id))
+            ->filter()
+            ->values();
+
+        return (new LengthAwarePaginator(
+            $orderedUsers,
+            count($allIds),
+            $perPage,
+            $page,
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(),
+                'pageName' => 'page',
+            ],
+        ))->withQueryString();
     }
 
     public function show(User $user): Response

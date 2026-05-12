@@ -3,6 +3,7 @@
 namespace App\Domain\Competition\Jobs;
 
 use App\Domain\Api\Clients\LanBracketsClient;
+use App\Domain\Competition\Exceptions\LanBracketsRequestException;
 use App\Domain\Competition\Models\Competition;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -48,6 +49,24 @@ class SyncTeamsToLanBrackets implements ShouldQueue
             return;
         }
 
-        $client->bulkAddParticipants($competition->lanbrackets_id, $participants);
+        try {
+            $client->bulkAddParticipants($competition->lanbrackets_id, $participants);
+        } catch (LanBracketsRequestException $e) {
+            // Already-registered participants surface as a 4xx — treat as idempotent
+            // success so the chained generation step still runs. The Bus chain
+            // halts on uncaught exceptions, which previously left the bracket
+            // ungenerated whenever the sync ran twice.
+            if ($e->getCode() >= 400 && $e->getCode() < 500) {
+                Log::info('SyncTeamsToLanBrackets: bulk add returned 4xx — treating as already-synced.', [
+                    'competition_id' => $competition->id,
+                    'status' => $e->getCode(),
+                    'message' => $e->getMessage(),
+                ]);
+
+                return;
+            }
+
+            throw $e;
+        }
     }
 }
