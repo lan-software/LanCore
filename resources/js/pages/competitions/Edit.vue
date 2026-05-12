@@ -13,6 +13,13 @@ import {
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/CompetitionController';
+import ChatRoom from '@/components/chat/ChatRoom.vue';
+import type {
+    ChatMemberDto,
+    ChatMessageDto,
+    ChatRoomDto,
+    MemberPresenceMap,
+} from '@/components/chat/types';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +40,12 @@ const props = defineProps<{
     events: { id: number; name: string; start_date: string }[];
     lanbracketsEnabled: boolean;
     lanbracketsBaseUrl: string;
+    chat: {
+        room: ChatRoomDto;
+        messages: ChatMessageDto[];
+        members: ChatMemberDto[];
+        memberPresence: MemberPresenceMap;
+    } | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -692,6 +705,21 @@ function statusColor(status: string): string {
                             </div>
                         </dl>
                     </div>
+                </div>
+            </div>
+
+            <div
+                v-if="chat"
+                class="mt-6 overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
+            >
+                <div class="h-[60vh] min-h-[400px]">
+                    <ChatRoom
+                        :room="chat.room"
+                        :messages="chat.messages"
+                        :members="chat.members"
+                        :member-presence="chat.memberPresence"
+                        observer-mode
+                    />
                 </div>
             </div>
         </div>

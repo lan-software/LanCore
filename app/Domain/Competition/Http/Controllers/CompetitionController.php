@@ -2,7 +2,10 @@
 
 namespace App\Domain\Competition\Http\Controllers;
 
+use App\Domain\Chat\Models\ChatRoom;
+use App\Domain\Chat\Services\PolicyResolver;
 use App\Domain\Competition\Actions\CreateCompetition;
+use App\Domain\Competition\Chat\CompetitionMemberAnnotator;
 use App\Domain\Competition\Actions\DeleteCompetition;
 use App\Domain\Competition\Actions\UpdateCompetition;
 use App\Domain\Competition\Http\Requests\CompetitionIndexRequest;
@@ -11,6 +14,7 @@ use App\Domain\Competition\Http\Requests\UpdateCompetitionRequest;
 use App\Domain\Competition\Models\Competition;
 use App\Domain\Event\Models\Event;
 use App\Domain\Games\Models\Game;
+use App\Domain\Presence\Services\PresenceTracker;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -25,6 +29,9 @@ class CompetitionController extends Controller
         private readonly CreateCompetition $createCompetition,
         private readonly UpdateCompetition $updateCompetition,
         private readonly DeleteCompetition $deleteCompetition,
+        private readonly PolicyResolver $policyResolver,
+        private readonly PresenceTracker $presenceTracker,
+        private readonly CompetitionMemberAnnotator $competitionMemberAnnotator,
     ) {}
 
     public function index(CompetitionIndexRequest $request): Response
@@ -87,13 +94,98 @@ class CompetitionController extends Controller
 
         $competition->load(['teams.captain', 'teams.activeMembers.user', 'game', 'gameMode', 'event']);
 
+        $chatRoom = ChatRoom::query()
+            ->where('key', "competition:{$competition->id}")
+            ->first();
+
+        $chatPayload = $chatRoom !== null
+            ? $this->buildChatPayload($chatRoom, request()->user())
+            : null;
+
         return Inertia::render('competitions/Edit', [
             'competition' => $competition,
             'games' => Game::where('is_active', true)->with('gameModes')->get(),
             'events' => Event::orderByDesc('start_date')->get(['id', 'name', 'start_date']),
             'lanbracketsEnabled' => config('lanbrackets.enabled'),
             'lanbracketsBaseUrl' => config('lanbrackets.base_url'),
+            'chat' => $chatPayload,
         ]);
+    }
+
+    /**
+     * Mirror of `UserCompetitionController::serializeRoomPayload`. Kept inline
+     * (rather than extracted) until a third call-site appears.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function buildChatPayload(ChatRoom $room, $user): ?array
+    {
+        $policy = $this->policyResolver->resolve($room);
+
+        if (! $policy->canView($user, $room)) {
+            return null;
+        }
+
+        $messages = $room->messages()
+            ->withTrashed()
+            ->with('user:id,name,username')
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get()
+            ->reverse()
+            ->values()
+            ->map(fn ($m) => [
+                'id' => $m->id,
+                'room_id' => $m->room_id,
+                'user_id' => $m->user_id,
+                'user' => [
+                    'id' => $m->user?->id,
+                    'name' => $m->user?->name,
+                    'username' => $m->user?->username,
+                ],
+                'body' => $m->body,
+                'mentions' => $m->mentions_json ?? [],
+                'deleted_at' => $m->deleted_at?->toIso8601String(),
+                'created_at' => $m->created_at?->toIso8601String(),
+            ])
+            ->all();
+
+        $members = $this->competitionMemberAnnotator->annotate(
+            $room->key,
+            $room->memberships()
+                ->with('user:id,name,username')
+                ->get()
+                ->map(fn ($m) => [
+                    'user_id' => $m->user_id,
+                    'name' => $m->user?->name,
+                    'username' => $m->user?->username,
+                    'role' => $m->role,
+                    'muted_until' => $m->muted_until?->toIso8601String(),
+                ])
+                ->all(),
+        );
+
+        $presence = [];
+        foreach ($this->presenceTracker->bulkStatusFor(collect($members)->pluck('user_id')->all()) as $userId => $status) {
+            $presence[$userId] = $status->value;
+        }
+
+        return [
+            'room' => [
+                'id' => $room->id,
+                'key' => $room->key,
+                'title' => $room->title,
+                'status' => $room->status->value,
+                'can_post' => $policy->canPost($user, $room),
+                'can_moderate' => $policy->canModerate($user, $room),
+                'is_open' => $room->status->value === 'open',
+                'is_archived' => $room->status->value === 'archived',
+                'is_write_locked' => $room->status->value === 'write_locked',
+            ],
+            'messages' => $messages,
+            'members' => $members,
+            'memberPresence' => $presence,
+        ];
     }
 
     public function update(UpdateCompetitionRequest $request, Competition $competition): RedirectResponse

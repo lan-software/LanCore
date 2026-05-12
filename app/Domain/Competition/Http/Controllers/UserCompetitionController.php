@@ -2,7 +2,11 @@
 
 namespace App\Domain\Competition\Http\Controllers;
 
+use App\Domain\Chat\Models\ChatRoom;
+use App\Domain\Chat\Services\PolicyResolver;
+use App\Domain\Competition\Chat\CompetitionMemberAnnotator;
 use App\Domain\Competition\Models\Competition;
+use App\Domain\Presence\Services\PresenceTracker;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,6 +17,12 @@ use Inertia\Response;
  */
 class UserCompetitionController extends Controller
 {
+    public function __construct(
+        private readonly PolicyResolver $policyResolver,
+        private readonly PresenceTracker $presenceTracker,
+        private readonly CompetitionMemberAnnotator $competitionMemberAnnotator,
+    ) {}
+
     public function index(Request $request): Response
     {
         $userId = $request->user()->id;
@@ -49,10 +59,98 @@ class UserCompetitionController extends Controller
         $userTeam = $competition->teams
             ->first(fn ($team) => $team->activeMembers->contains('user_id', $userId));
 
+        $competitionChatRoom = ChatRoom::query()
+            ->where('key', "competition:{$competition->id}")
+            ->first();
+
+        $chatPayload = null;
+        if ($competitionChatRoom !== null) {
+            $chatPayload = $this->serializeRoomPayload($competitionChatRoom, $request->user());
+        }
+
         return Inertia::render('competitions/user/Show', [
             'competition' => $competition,
             'userTeam' => $userTeam,
             'bracketUrl' => $competition->lanBracketsViewUrl(),
+            'chat' => $chatPayload,
         ]);
+    }
+
+    /**
+     * Returns the same payload shape as `ChatRoomController@show` so the
+     * embedded `<ChatRoom>` Vue component can mount without an extra round-trip.
+     * Returns null when the user isn't allowed to view the room (controller-level
+     * authorization is handled before this is called).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function serializeRoomPayload(ChatRoom $room, $user): ?array
+    {
+        $policy = $this->policyResolver->resolve($room);
+
+        if (! $policy->canView($user, $room)) {
+            return null;
+        }
+
+        $messages = $room->messages()
+            ->withTrashed()
+            ->with('user:id,name,username')
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get()
+            ->reverse()
+            ->values()
+            ->map(fn ($message) => [
+                'id' => $message->id,
+                'room_id' => $message->room_id,
+                'user_id' => $message->user_id,
+                'user' => [
+                    'id' => $message->user?->id,
+                    'name' => $message->user?->name,
+                    'username' => $message->user?->username,
+                ],
+                'body' => $message->body,
+                'mentions' => $message->mentions_json ?? [],
+                'deleted_at' => $message->deleted_at?->toIso8601String(),
+                'created_at' => $message->created_at?->toIso8601String(),
+            ])
+            ->all();
+
+        $members = $this->competitionMemberAnnotator->annotate(
+            $room->key,
+            $room->memberships()
+                ->with('user:id,name,username')
+                ->get()
+                ->map(fn ($m) => [
+                    'user_id' => $m->user_id,
+                    'name' => $m->user?->name,
+                    'username' => $m->user?->username,
+                    'role' => $m->role,
+                    'muted_until' => $m->muted_until?->toIso8601String(),
+                ])
+                ->all(),
+        );
+
+        $presence = [];
+        foreach ($this->presenceTracker->bulkStatusFor(collect($members)->pluck('user_id')->all()) as $userId => $status) {
+            $presence[$userId] = $status->value;
+        }
+
+        return [
+            'room' => [
+                'id' => $room->id,
+                'key' => $room->key,
+                'title' => $room->title,
+                'status' => $room->status->value,
+                'can_post' => $policy->canPost($user, $room),
+                'can_moderate' => $policy->canModerate($user, $room),
+                'is_open' => $room->status->value === 'open',
+                'is_archived' => $room->status->value === 'archived',
+                'is_write_locked' => $room->status->value === 'write_locked',
+            ],
+            'messages' => $messages,
+            'members' => $members,
+            'memberPresence' => $presence,
+        ];
     }
 }

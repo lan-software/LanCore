@@ -6,6 +6,7 @@ use App\Domain\Competition\Http\Controllers\MatchResultController;
 use App\Domain\Competition\Http\Controllers\TeamController;
 use App\Domain\Competition\Http\Controllers\TeamInviteController;
 use App\Domain\Competition\Http\Controllers\UserCompetitionController;
+use App\Domain\Competition\Http\Controllers\UserMatchController;
 use App\Domain\Competition\Http\Controllers\UserTeamController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +48,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified'])->prefix('portal')->group(function () {
     Route::get('competitions', [UserCompetitionController::class, 'index'])->name('my-competitions.index');
     Route::get('competitions/{competition}', [UserCompetitionController::class, 'show'])->name('my-competitions.show');
+    Route::get('competitions/{competition}/matches', [UserMatchController::class, 'index'])->name('my-competitions.matches.index');
+    Route::post('competitions/{competition}/matches/{matchId}/open-chat', [UserMatchController::class, 'openChat'])->name('my-competitions.matches.open-chat');
 
     Route::get('teams', [UserTeamController::class, 'index'])->name('my-teams.index');
     Route::get('teams/{team}', [UserTeamController::class, 'show'])->name('my-teams.show');

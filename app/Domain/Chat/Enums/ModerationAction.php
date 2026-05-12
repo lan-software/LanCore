@@ -11,4 +11,5 @@ enum ModerationAction: string
     case Unmute = 'unmute';
     case DeleteMessage = 'delete_message';
     case CloseRoom = 'close_room';
+    case ReopenRoom = 'reopen_room';
 }

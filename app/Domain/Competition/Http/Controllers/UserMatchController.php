@@ -1,0 +1,240 @@
+<?php
+
+namespace App\Domain\Competition\Http\Controllers;
+
+use App\Domain\Api\Clients\LanBracketsClient;
+use App\Domain\Chat\Models\ChatRoom;
+use App\Domain\Chat\Models\ChatRoomMembership;
+use App\Domain\Chat\Services\ChatService;
+use App\Domain\Competition\Chat\CompetitionRoomAutoJoin;
+use App\Domain\Competition\Chat\MatchRoomPolicy;
+use App\Domain\Competition\Models\Competition;
+use App\Domain\Competition\Models\CompetitionTeamMember;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
+use Inertia\Response;
+use Throwable;
+
+/**
+ * User-facing match list for a competition. Fetches the live bracket from
+ * LanBrackets (source of truth for matches) and merges per-match chat room
+ * ids from the local DB so participants can jump into a match chat.
+ *
+ * @see docs/mil-std-498/SRS.md COMP-F-018
+ */
+class UserMatchController extends Controller
+{
+    public function __construct(
+        private readonly LanBracketsClient $lanBrackets,
+        private readonly ChatService $chat,
+        private readonly CompetitionRoomAutoJoin $autoJoin,
+    ) {}
+
+    public function index(Request $request, Competition $competition): Response
+    {
+        $this->authorize('view', $competition);
+
+        $user = $request->user();
+        $competition->load(['teams.activeMembers']);
+
+        $userTeam = $competition->teams
+            ->first(fn ($team) => $team->activeMembers->contains('user_id', $user->id));
+
+        $stages = [];
+        $matchesByStage = [];
+
+        if ($competition->isSyncedToLanBrackets()) {
+            try {
+                $stages = $this->lanBrackets->getStages($competition->lanbrackets_id);
+            } catch (Throwable $e) {
+                Log::warning('UserMatchController: failed to fetch stages', [
+                    'competition_id' => $competition->id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+
+            foreach ($stages as $stage) {
+                $stageId = (int) ($stage['id'] ?? 0);
+                if ($stageId === 0) {
+                    continue;
+                }
+
+                try {
+                    $matchesByStage[$stageId] = $this->lanBrackets->getMatches(
+                        $competition->lanbrackets_id,
+                        $stageId,
+                    );
+                } catch (Throwable $e) {
+                    Log::warning('UserMatchController: failed to fetch matches', [
+                        'competition_id' => $competition->id,
+                        'stage_id' => $stageId,
+                        'message' => $e->getMessage(),
+                    ]);
+                    $matchesByStage[$stageId] = [];
+                }
+            }
+        }
+
+        $participantIdToTeamId = $competition->teams
+            ->pluck('id', 'lanbrackets_id')
+            ->filter()
+            ->all();
+
+        $teamIdsByUserId = $this->teamIdsForUser($competition->id, $user->id);
+
+        $chatRoomsByMatchId = ChatRoom::query()
+            ->where('key', 'like', "competition:{$competition->id}:match:%")
+            ->get(['id', 'key', 'status'])
+            ->mapWithKeys(function (ChatRoom $room) {
+                preg_match('/:match:(\d+)$/', $room->key, $m);
+
+                return [(int) ($m[1] ?? 0) => $room];
+            })
+            ->filter(fn ($_, $k) => $k > 0);
+
+        $serializedStages = [];
+        foreach ($stages as $stage) {
+            $stageId = (int) ($stage['id'] ?? 0);
+            $matches = $matchesByStage[$stageId] ?? [];
+
+            $serializedStages[] = [
+                'id' => $stageId,
+                'name' => $stage['name'] ?? null,
+                'stage_type' => $stage['stage_type'] ?? null,
+                'status' => $stage['status'] ?? null,
+                'matches' => array_map(
+                    fn (array $match) => $this->serializeMatch(
+                        $match,
+                        $competition,
+                        $participantIdToTeamId,
+                        $teamIdsByUserId,
+                        $chatRoomsByMatchId,
+                        $user,
+                    ),
+                    $matches,
+                ),
+            ];
+        }
+
+        return Inertia::render('competitions/user/Matches', [
+            'competition' => [
+                'id' => $competition->id,
+                'name' => $competition->name,
+            ],
+            'userTeam' => $userTeam
+                ? ['id' => $userTeam->id, 'name' => $userTeam->name]
+                : null,
+            'stages' => $serializedStages,
+        ]);
+    }
+
+    /**
+     * Lazy-create the match chat room when a participant clicks "Open chat" on
+     * a match that has no room yet (orchestration may have skipped it).
+     * Auto-joins the requesting user if they're a participant.
+     */
+    public function openChat(Request $request, Competition $competition, int $matchId): RedirectResponse
+    {
+        $this->authorize('view', $competition);
+
+        $user = $request->user();
+        $teamIds = $this->teamIdsForUser($competition->id, $user->id);
+
+        if ($teamIds === []) {
+            abort(403);
+        }
+
+        $room = $this->chat->ensureRoom(
+            "competition:{$competition->id}:match:{$matchId}",
+            new MatchRoomPolicy,
+            [
+                'consumer_domain' => 'Competition',
+                'title' => "{$competition->name} — match {$matchId}",
+            ],
+        );
+
+        $alreadyMember = ChatRoomMembership::query()
+            ->where('room_id', $room->id)
+            ->where('user_id', $user->id)
+            ->exists();
+
+        if (! $alreadyMember) {
+            $this->autoJoin->joinUsers($room, [$user->id]);
+        }
+
+        return redirect()->route('chat.rooms.show', ['room' => $room->id]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $match
+     * @param  array<int, int>  $participantIdToTeamId
+     * @param  array<int, int>  $teamIdsByUserId
+     * @param  Collection<int, ChatRoom>  $chatRoomsByMatchId
+     * @return array<string, mixed>
+     */
+    private function serializeMatch(
+        array $match,
+        Competition $competition,
+        array $participantIdToTeamId,
+        array $teamIdsByUserId,
+        $chatRoomsByMatchId,
+        $user,
+    ): array {
+        $matchId = (int) ($match['id'] ?? 0);
+        $participants = collect($match['match_participants'] ?? $match['participants'] ?? []);
+
+        $userOnMatch = $participants->contains(function ($p) use ($participantIdToTeamId, $teamIdsByUserId) {
+            $participantId = (int) ($p['competition_participant_id'] ?? 0);
+            $teamId = $participantIdToTeamId[$participantId] ?? null;
+
+            return $teamId !== null && in_array($teamId, $teamIdsByUserId, true);
+        });
+
+        $room = $chatRoomsByMatchId->get($matchId);
+
+        return [
+            'id' => $matchId,
+            'round_number' => $match['round_number'] ?? null,
+            'sequence' => $match['sequence'] ?? null,
+            'status' => $match['status'] ?? null,
+            'participants' => $participants
+                ->map(function ($p) use ($competition, $participantIdToTeamId) {
+                    $participantId = (int) ($p['competition_participant_id'] ?? 0);
+                    $teamId = $participantIdToTeamId[$participantId] ?? null;
+                    $team = $teamId !== null
+                        ? $competition->teams->firstWhere('id', $teamId)
+                        : null;
+
+                    return [
+                        'participant_id' => $participantId,
+                        'team_id' => $teamId,
+                        'team_name' => $team?->name,
+                        'score' => $p['score'] ?? null,
+                        'result' => $p['result'] ?? null,
+                    ];
+                })
+                ->all(),
+            'user_is_participant' => $userOnMatch,
+            'chat_room_id' => $room?->id,
+            'chat_room_status' => $room?->status?->value,
+        ];
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function teamIdsForUser(int $competitionId, int $userId): array
+    {
+        return CompetitionTeamMember::query()
+            ->whereHas('team', fn ($q) => $q->where('competition_id', $competitionId))
+            ->where('user_id', $userId)
+            ->whereNull('left_at')
+            ->pluck('team_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+}

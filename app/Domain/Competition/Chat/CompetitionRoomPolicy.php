@@ -26,6 +26,12 @@ class CompetitionRoomPolicy implements RoomPolicy
             return false;
         }
 
+        if ($user->hasPermission(CompetitionPermission::ManageCompetitions)
+            || $user->hasPermission(ChatPermission::ModerateChat)
+        ) {
+            return true;
+        }
+
         return CompetitionTeamMember::query()
             ->whereHas('team', fn ($q) => $q->where('competition_id', $competitionId))
             ->where('user_id', $user->id)

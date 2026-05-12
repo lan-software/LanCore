@@ -4,6 +4,7 @@ namespace App\Domain\Chat\Http\Controllers;
 
 use App\Domain\Chat\Actions\CloseRoom;
 use App\Domain\Chat\Actions\MuteUser;
+use App\Domain\Chat\Actions\ReopenRoom;
 use App\Domain\Chat\Actions\UnmuteUser;
 use App\Domain\Chat\Models\ChatRoom;
 use App\Http\Controllers\Controller;
@@ -20,6 +21,7 @@ class ChatModerationController extends Controller
         private readonly MuteUser $muteUser,
         private readonly UnmuteUser $unmuteUser,
         private readonly CloseRoom $closeRoom,
+        private readonly ReopenRoom $reopenRoom,
     ) {}
 
     public function mute(Request $request, ChatRoom $room, User $user): RedirectResponse
@@ -47,6 +49,14 @@ class ChatModerationController extends Controller
     {
         $reason = $request->validate(['reason' => ['nullable', 'string', 'max:500']])['reason'] ?? null;
         $this->closeRoom->execute($request->user(), $room, $reason);
+
+        return back();
+    }
+
+    public function reopen(Request $request, ChatRoom $room): RedirectResponse
+    {
+        $reason = $request->validate(['reason' => ['nullable', 'string', 'max:500']])['reason'] ?? null;
+        $this->reopenRoom->execute($request->user(), $room, $reason);
 
         return back();
     }

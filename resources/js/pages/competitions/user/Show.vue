@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { ExternalLink, Users } from 'lucide-vue-next';
+import { ExternalLink, ListOrdered, Users } from 'lucide-vue-next';
+import ChatRoom from '@/components/chat/ChatRoom.vue';
+import type {
+    ChatMemberDto,
+    ChatMessageDto,
+    ChatRoomDto,
+    MemberPresenceMap,
+} from '@/components/chat/types';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import TeamController from '@/actions/App/Domain/Competition/Http/Controllers/TeamController';
@@ -21,6 +28,12 @@ const props = defineProps<{
     competition: Competition;
     userTeam: CompetitionTeam | null;
     bracketUrl: string | null;
+    chat: {
+        room: ChatRoomDto;
+        messages: ChatMessageDto[];
+        members: ChatMemberDto[];
+        memberPresence: MemberPresenceMap;
+    } | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -141,15 +154,13 @@ function requestJoin(teamId: number) {
             <div class="grid gap-6 lg:grid-cols-3">
                 <!-- Main content -->
                 <div class="space-y-6 lg:col-span-2">
-                    <!-- Bracket Link -->
+                    <!-- Bracket / Matches links -->
                     <div
-                        v-if="bracketUrl"
-                        class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
+                        v-if="bracketUrl || userTeam"
+                        class="flex flex-wrap items-center gap-2 rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
-                        <h3 class="mb-2 text-sm font-semibold">
-                            {{ $t('competitions.user.bracketView') }}
-                        </h3>
                         <a
+                            v-if="bracketUrl"
                             :href="bracketUrl"
                             target="_blank"
                             rel="noopener"
@@ -158,6 +169,29 @@ function requestJoin(teamId: number) {
                             <ExternalLink class="size-3" />
                             {{ $t('competitions.user.openBracket') }}
                         </a>
+                        <Link
+                            v-if="userTeam"
+                            :href="`/portal/competitions/${competition.id}/matches`"
+                            class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                        >
+                            <ListOrdered class="size-3" />
+                            {{ $t('competitions.user.viewMatches') }}
+                        </Link>
+                    </div>
+
+                    <!-- Embedded competition chat -->
+                    <div
+                        v-if="chat"
+                        class="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
+                    >
+                        <div class="h-[60vh] min-h-[400px]">
+                            <ChatRoom
+                                :room="chat.room"
+                                :messages="chat.messages"
+                                :members="chat.members"
+                                :member-presence="chat.memberPresence"
+                            />
+                        </div>
                     </div>
 
                     <!-- Your Team -->

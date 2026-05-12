@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/sheet';
 import { router, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import MemberList from './MemberList.vue';
 import MessageComposer from './MessageComposer.vue';
@@ -25,12 +25,21 @@ import type {
     MemberPresenceMap,
 } from './types';
 
-const props = defineProps<{
-    room: ChatRoomDto;
-    messages: ChatMessageDto[];
-    members: ChatMemberDto[];
-    memberPresence: MemberPresenceMap;
-}>();
+const props = withDefaults(
+    defineProps<{
+        room: ChatRoomDto;
+        messages: ChatMessageDto[];
+        members: ChatMemberDto[];
+        memberPresence: MemberPresenceMap;
+        /**
+         * Insert a transient "observer" membership for the duration the component
+         * is mounted. Used by admin pages where the admin should appear in the
+         * member list while actively viewing the chat, then disappear on leave.
+         */
+        observerMode?: boolean;
+    }>(),
+    { observerMode: false },
+);
 
 const { t } = useI18n();
 const page = usePage();
@@ -83,6 +92,62 @@ useEcho<BroadcastPayload>(
     },
     [props.room.id],
 );
+
+function observerJoinUrl(): string {
+    return `/chat/rooms/${props.room.id}/observer`;
+}
+
+function leaveObserverViaBeacon(): void {
+    if (!props.observerMode) return;
+    // DELETE via fetch with keepalive so the request still completes during
+    // page unload. sendBeacon only does POST, so we fall back to fetch.
+    try {
+        fetch(observerJoinUrl(), {
+            method: 'DELETE',
+            credentials: 'same-origin',
+            keepalive: true,
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN':
+                    document
+                        .querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+                        ?.getAttribute('content') ?? '',
+            },
+        });
+    } catch {
+        // Best-effort cleanup; if the browser blocks the unload request the
+        // membership stays until the next observer join (idempotent) or
+        // pruning sweep.
+    }
+}
+
+onMounted(async () => {
+    if (!props.observerMode) return;
+    try {
+        await fetch(observerJoinUrl(), {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN':
+                    document
+                        .querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+                        ?.getAttribute('content') ?? '',
+            },
+        });
+    } catch {
+        // Best-effort; the policy already permits the admin to view, so missing
+        // the membership row only hides them from the member list.
+    }
+    window.addEventListener('pagehide', leaveObserverViaBeacon);
+    window.addEventListener('beforeunload', leaveObserverViaBeacon);
+});
+
+onBeforeUnmount(() => {
+    leaveObserverViaBeacon();
+    window.removeEventListener('pagehide', leaveObserverViaBeacon);
+    window.removeEventListener('beforeunload', leaveObserverViaBeacon);
+});
 
 async function onLoadMore(): Promise<void> {
     const oldest = liveMessages.value[0];
@@ -141,6 +206,15 @@ function closeRoom(): void {
     );
 }
 
+function reopenRoom(): void {
+    if (!window.confirm(t('chat.moderation.reopen'))) return;
+    router.post(
+        ChatModerationController.reopen({ room: props.room.id }).url,
+        {},
+        { preserveScroll: true },
+    );
+}
+
 const disabledReason = computed<string | null>(() => {
     if (props.room.is_archived) return t('chat.room.archived');
     if (props.room.is_write_locked) return t('chat.room.writeLocked');
@@ -167,6 +241,15 @@ const disabledReason = computed<string | null>(() => {
                         @click="closeRoom"
                     >
                         {{ t('chat.moderation.close') }}
+                    </Button>
+                    <Button
+                        v-if="room.can_moderate && !room.is_open"
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        @click="reopenRoom"
+                    >
+                        {{ t('chat.moderation.reopen') }}
                     </Button>
                     <Sheet v-model:open="memberSheetOpen">
                         <SheetTrigger as-child>
