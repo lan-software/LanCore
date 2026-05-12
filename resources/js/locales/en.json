@@ -195,6 +195,8 @@
         "upcomingEventsHeading": "Upcoming Events",
         "noUpcomingEvents": "Not registered for any upcoming events.",
         "attendingBadge": "Going",
+        "seatLabel": "Seat {seat}",
+        "seatFind": "Find on seat plan",
         "previewIndicator": "Preview — this is how your profile looks to anonymous visitors",
         "editProfile": "Edit profile",
         "profileVisibility": {
