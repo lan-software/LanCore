@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { CalendarDays, ExternalLink, MapPin } from 'lucide-vue-next';
+import { Armchair, CalendarDays, ExternalLink, MapPin } from 'lucide-vue-next';
 import { computed, defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import AppFooter from '@/components/AppFooter.vue';
@@ -22,6 +22,11 @@ type Achievement = {
     earned_percentage: number;
 };
 
+type EventSeatInfo = {
+    seat_title: string | null;
+    picker_url: string | null;
+};
+
 type EventHistoryItem = {
     id: number;
     name: string;
@@ -29,6 +34,7 @@ type EventHistoryItem = {
     end_date: string | null;
     venue_name: string | null;
     public_url: string | null;
+    seat?: EventSeatInfo;
 };
 
 type ProfilePayload = {
@@ -266,6 +272,28 @@ function rarityClass(percentage: number): string {
                                         event.venue_name
                                     }}</span>
                                 </p>
+                                <component
+                                    :is="event.seat?.picker_url ? 'a' : 'span'"
+                                    v-if="event.seat"
+                                    :href="event.seat.picker_url ?? undefined"
+                                    class="mt-1 inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-800 dark:bg-sky-900/40 dark:text-sky-200"
+                                    :class="
+                                        event.seat.picker_url
+                                            ? 'hover:bg-sky-200 dark:hover:bg-sky-900/60'
+                                            : ''
+                                    "
+                                >
+                                    <Armchair class="size-3" />
+                                    <span class="truncate">
+                                        {{
+                                            event.seat.seat_title
+                                                ? $t('publicProfile.seatLabel', {
+                                                      seat: event.seat.seat_title,
+                                                  })
+                                                : $t('publicProfile.seatFind')
+                                        }}
+                                    </span>
+                                </component>
                             </div>
                             <p
                                 class="flex shrink-0 items-center gap-1 text-xs text-muted-foreground"

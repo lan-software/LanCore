@@ -6,8 +6,10 @@ use App\Domain\Event\Enums\EventStatus;
 use App\Domain\Event\Models\Event;
 use App\Domain\Presence\Services\PresenceTracker;
 use App\Domain\Profile\Enums\ProfileVisibility;
+use App\Domain\Seating\Models\SeatAssignment;
 use App\Http\Resources\PublicProfileResource;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
@@ -35,7 +37,7 @@ class PublicProfileController extends Controller
         return Inertia::render('u/Show', [
             'profile' => (new PublicProfileResource($user))->resolve($request),
             'achievements' => $this->achievementsPayload($user),
-            'upcomingEvents' => $this->upcomingEventsPayload($user),
+            'upcomingEvents' => $this->upcomingEventsPayload($user, $request->user()),
             'eventHistory' => $this->eventHistoryPayload($user),
             'presence' => app(PresenceTracker::class)->statusFor($user)->value,
             'isPreview' => false,
@@ -54,7 +56,7 @@ class PublicProfileController extends Controller
         return Inertia::render('u/Show', [
             'profile' => (new PublicProfileResource($user))->resolve($request),
             'achievements' => $this->achievementsPayload($user),
-            'upcomingEvents' => $this->upcomingEventsPayload($user),
+            'upcomingEvents' => $this->upcomingEventsPayload($user, $user),
             'eventHistory' => $this->eventHistoryPayload($user),
             'presence' => app(PresenceTracker::class)->statusFor($user)->value,
             'isPreview' => true,
@@ -134,20 +136,56 @@ class PublicProfileController extends Controller
      * events so visitors don't see drafted/internal events the profile
      * owner happens to hold a ticket for. Sorted earliest-first.
      *
+     * When the user has an active seat assignment for an upcoming event and
+     * the viewer is allowed to see it (per {@see User::isSeatNameVisibleTo()}),
+     * the entry is annotated with a `seat` block carrying the human-readable
+     * label and a deep-link to the event's seat picker. This powers the
+     * "find a friend's seat" quick action on the public profile.
+     *
      * @return array<int, array<string, mixed>>
      */
-    private function upcomingEventsPayload(User $user): array
+    private function upcomingEventsPayload(User $user, ?User $viewer): array
     {
-        return Event::query()
+        $events = Event::query()
             ->forUser($user)
             ->upcoming()
             ->published()
             ->with('venue:id,name')
             ->orderBy('start_date')
             ->limit(50)
+            ->get();
+
+        if ($events->isEmpty()) {
+            return [];
+        }
+
+        $assignmentsByEvent = SeatAssignment::query()
+            ->where('user_id', $user->getKey())
+            ->whereHas(
+                'seatPlan',
+                fn (Builder $query) => $query->whereIn('event_id', $events->pluck('id')),
+            )
+            ->with(['seat.block', 'seatPlan:id,event_id'])
             ->get()
-            ->map(fn (Event $event): array => $this->eventListItem($event))
-            ->all();
+            ->keyBy(fn (SeatAssignment $a): int => (int) $a->seatPlan->event_id);
+
+        $canVisitPicker = $viewer !== null && $viewer->hasVerifiedEmail();
+
+        return $events->map(function (Event $event) use ($user, $viewer, $assignmentsByEvent, $canVisitPicker): array {
+            $item = $this->eventListItem($event);
+            $assignment = $assignmentsByEvent->get($event->id);
+
+            if ($assignment !== null && $user->isSeatNameVisibleTo($viewer, $event)) {
+                $item['seat'] = [
+                    'seat_title' => $assignment->seat_title,
+                    'picker_url' => $canVisitPicker
+                        ? route('events.seats.picker', ['event' => $event->id]).'?focus_user='.$user->getKey()
+                        : null,
+                ];
+            }
+
+            return $item;
+        })->all();
     }
 
     /**
