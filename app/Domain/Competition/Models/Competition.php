@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'type', 'stage_type', 'status', 'team_size', 'max_teams',
     'registration_opens_at', 'registration_closes_at', 'starts_at', 'ends_at',
     'lanbrackets_id', 'lanbrackets_share_token', 'settings', 'metadata',
-    'signup_rules',
+    'signup_rules', 'match_length_minutes',
 ])]
 class Competition extends Model
 {
@@ -51,6 +51,7 @@ class Competition extends Model
             'status' => CompetitionStatus::class,
             'team_size' => 'integer',
             'max_teams' => 'integer',
+            'match_length_minutes' => 'integer',
             'registration_opens_at' => 'datetime',
             'registration_closes_at' => 'datetime',
             'starts_at' => 'datetime',
@@ -84,6 +85,33 @@ class Competition extends Model
         $gameRules = $game->signup_rules;
 
         return is_array($gameRules) && $gameRules !== [] ? $gameRules : null;
+    }
+
+    /**
+     * Resolve the effective match length (minutes) for this competition by
+     * inheritance: Competition override > GameMode > Game > null.
+     *
+     * Used by the duration estimator to derive round/stage/competition
+     * durations from a hard match-length ceiling (e.g. CS has a fixed 45 min
+     * per match), rather than the looser `avg_match_minutes` heuristic.
+     *
+     * @see docs/mil-std-498/SRS.md COMP-RND-003
+     */
+    public function effectiveMatchLengthMinutes(): ?int
+    {
+        if ($this->match_length_minutes !== null) {
+            return (int) $this->match_length_minutes;
+        }
+        $mode = $this->gameMode;
+        if ($mode?->match_length_minutes !== null) {
+            return (int) $mode->match_length_minutes;
+        }
+        $game = $this->game;
+        if ($game?->match_length_minutes !== null) {
+            return (int) $game->match_length_minutes;
+        }
+
+        return null;
     }
 
     /** @return BelongsTo<Event, $this> */

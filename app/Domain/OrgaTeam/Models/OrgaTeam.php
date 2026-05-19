@@ -38,6 +38,7 @@ class OrgaTeam extends Model
     public function deputies(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'orga_team_deputies')
+            ->using(OrgaTeamDeputy::class)
             ->withPivot(['sort_order'])
             ->withTimestamps()
             ->orderByPivot('sort_order');

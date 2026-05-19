@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'slug', 'publisher', 'description', 'is_active', 'signup_rules', 'avg_match_minutes', 'avg_stage_minutes'])]
+#[Fillable(['name', 'slug', 'publisher', 'description', 'is_active', 'signup_rules', 'avg_match_minutes', 'avg_stage_minutes', 'match_length_minutes'])]
 class Game extends Model
 {
     /** @use HasFactory<GameFactory> */
@@ -32,6 +32,7 @@ class Game extends Model
             'signup_rules' => 'array',
             'avg_match_minutes' => 'integer',
             'avg_stage_minutes' => 'integer',
+            'match_length_minutes' => 'integer',
         ];
     }
 

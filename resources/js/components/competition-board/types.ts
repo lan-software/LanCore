@@ -1,3 +1,19 @@
+export interface RoundScheduleDto {
+    id: string;
+    stage_schedule_id: string;
+    lanbrackets_round_number: number;
+    sequence: number;
+    label: string | null;
+    starts_at: string | null;
+    estimated_duration_minutes: number;
+    reserve_buffer_minutes: number;
+    duration_overridden: boolean;
+    notes: string | null;
+    ends_at: string | null;
+    slack_minutes: number | null;
+    slack_against: 'next_round' | 'next_stage' | 'competition_end' | null;
+}
+
 export interface StageScheduleDto {
     id: string;
     lanbrackets_stage_id: string;
@@ -12,6 +28,7 @@ export interface StageScheduleDto {
     ends_at: string | null;
     slack_minutes: number | null;
     slack_against: 'next_stage' | 'competition_end' | null;
+    round_schedules: RoundScheduleDto[];
 }
 
 export interface CompetitionDto {

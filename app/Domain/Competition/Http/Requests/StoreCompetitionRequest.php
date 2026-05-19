@@ -37,6 +37,7 @@ class StoreCompetitionRequest extends FormRequest
             'ends_at' => ['nullable', 'date', 'after:starts_at'],
             'settings' => ['nullable', 'array'],
             'settings.result_submission_mode' => ['nullable', Rule::enum(ResultSubmissionMode::class)],
+            'match_length_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
         ];
     }
 }

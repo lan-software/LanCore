@@ -4,6 +4,7 @@ namespace App\Domain\CompetitionSchedule\Http\Controllers;
 
 use App\Domain\Competition\Models\Competition;
 use App\Domain\CompetitionSchedule\Events\StageScheduleUpdated;
+use App\Domain\CompetitionSchedule\Models\CompetitionRoundSchedule;
 use App\Domain\CompetitionSchedule\Models\CompetitionStageSchedule;
 use App\Domain\CompetitionSchedule\Services\ConflictDetector;
 use App\Domain\CompetitionSchedule\Services\DurationEstimator;
@@ -19,6 +20,7 @@ use Inertia\Response;
 
 /**
  * @see docs/mil-std-498/SRS.md COMP-SCH-001, COMP-SCH-006
+ * @see docs/mil-std-498/SRS.md COMP-RND-004, COMP-RND-006
  */
 class CompetitionBoardController extends Controller
 {
@@ -146,7 +148,7 @@ class CompetitionBoardController extends Controller
     {
         $competitions = Competition::query()
             ->where('event_id', $event->id)
-            ->with(['stageSchedules', 'game:id,name,avg_match_minutes'])
+            ->with(['stageSchedules.roundSchedules', 'game:id,name,avg_match_minutes'])
             ->get();
 
         $competitionsPayload = $competitions
@@ -169,6 +171,43 @@ class CompetitionBoardController extends Controller
                         }
                     }
 
+                    $rounds = $s->roundSchedules->values();
+                    $roundDtos = $rounds->map(function (CompetitionRoundSchedule $r, int $rIdx) use ($rounds, $next, $competition): array {
+                        $rEnds = $r->endsAt();
+                        $rNext = $rounds->get($rIdx + 1);
+
+                        $rSlack = null;
+                        $rAgainst = null;
+                        if ($rEnds !== null) {
+                            if ($rNext !== null && $rNext->starts_at !== null) {
+                                $rSlack = (int) round($rNext->starts_at->diffInMinutes($rEnds, false));
+                                $rAgainst = 'next_round';
+                            } elseif ($next !== null && $next->starts_at !== null) {
+                                $rSlack = (int) round($next->starts_at->diffInMinutes($rEnds, false));
+                                $rAgainst = 'next_stage';
+                            } elseif ($competition->ends_at !== null) {
+                                $rSlack = (int) round($competition->ends_at->diffInMinutes($rEnds, false));
+                                $rAgainst = 'competition_end';
+                            }
+                        }
+
+                        return [
+                            'id' => $r->id,
+                            'stage_schedule_id' => $r->stage_schedule_id,
+                            'lanbrackets_round_number' => $r->lanbrackets_round_number,
+                            'sequence' => $r->sequence,
+                            'label' => $r->label,
+                            'starts_at' => $r->starts_at?->toIso8601String(),
+                            'estimated_duration_minutes' => $r->estimated_duration_minutes,
+                            'reserve_buffer_minutes' => $r->reserve_buffer_minutes,
+                            'duration_overridden' => $r->duration_overridden,
+                            'notes' => $r->notes,
+                            'ends_at' => $rEnds?->toIso8601String(),
+                            'slack_minutes' => $rSlack,
+                            'slack_against' => $rAgainst,
+                        ];
+                    })->all();
+
                     return [
                         'id' => $s->id,
                         'lanbrackets_stage_id' => $s->lanbrackets_stage_id,
@@ -183,6 +222,7 @@ class CompetitionBoardController extends Controller
                         'ends_at' => $endsAt?->toIso8601String(),
                         'slack_minutes' => $slackMinutes,
                         'slack_against' => $slackAgainst,
+                        'round_schedules' => $roundDtos,
                     ];
                 })->all();
 

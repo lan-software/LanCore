@@ -11,7 +11,12 @@ use App\Domain\CompetitionSchedule\ValueObjects\DurationEstimate;
  * Produces a stable hash so callers can detect when the underlying
  * inputs change (e.g., match count after bracket regeneration).
  *
+ * Per-match minutes is resolved by the inheritance chain
+ * Competition.match_length_minutes (organizer override) > GameMode.match_length_minutes >
+ * Game.match_length_minutes > Game.avg_match_minutes > DEFAULT_AVG_MATCH_MINUTES.
+ *
  * @see docs/mil-std-498/SRS.md COMP-SCH-003
+ * @see docs/mil-std-498/SRS.md COMP-RND-003
  */
 class DurationEstimator
 {
@@ -25,7 +30,14 @@ class DurationEstimator
     public function estimate(Competition $competition, array $stage): DurationEstimate
     {
         $game = $competition->game;
-        $avgMatch = (int) ($game?->avg_match_minutes ?? self::DEFAULT_AVG_MATCH_MINUTES);
+        $matchLength = $competition->effectiveMatchLengthMinutes();
+        $perMatchSource = 'avg';
+        if ($matchLength !== null && $matchLength > 0) {
+            $perMatch = $matchLength;
+            $perMatchSource = 'match_length';
+        } else {
+            $perMatch = (int) ($game?->avg_match_minutes ?? self::DEFAULT_AVG_MATCH_MINUTES);
+        }
         $avgStage = (int) ($game?->avg_stage_minutes ?? self::DEFAULT_AVG_STAGE_MINUTES);
 
         $stageType = (string) ($stage['stage_type'] ?? $stage['type'] ?? 'single_elimination');
@@ -34,13 +46,13 @@ class DurationEstimator
         $settings = is_array($stage['settings'] ?? null) ? $stage['settings'] : [];
 
         if ($matchCount !== null && $matchCount > 0) {
-            $minutes = max($avgStage, $matchCount * $avgMatch);
+            $minutes = max($avgStage, $matchCount * $perMatch);
             $strategy = 'match_count';
         } else {
             [$minutes, $strategy] = $this->estimateFromTeamCount(
                 $stageType,
                 $teamCount,
-                $avgMatch,
+                $perMatch,
                 $avgStage,
                 $settings,
             );
@@ -50,7 +62,8 @@ class DurationEstimator
             'strategy' => $strategy,
             'match_count' => $matchCount,
             'team_count' => $teamCount,
-            'avg_match' => $avgMatch,
+            'per_match' => $perMatch,
+            'per_match_source' => $perMatchSource,
             'avg_stage' => $avgStage,
             'stage_type' => $stageType,
             'total_rounds' => $settings['total_rounds'] ?? null,
@@ -90,50 +103,50 @@ class DurationEstimator
     private function estimateFromTeamCount(
         string $stageType,
         int $teamCount,
-        int $avgMatch,
+        int $perMatch,
         int $avgStage,
         array $settings,
     ): array {
         $teams = max(2, $teamCount);
 
         return match ($stageType) {
-            'single_elimination' => [$this->singleElimMinutes($teams, $avgMatch), 'team_count_single_elim'],
-            'double_elimination' => [$this->doubleElimMinutes($teams, $avgMatch), 'team_count_double_elim'],
-            'round_robin' => [$this->roundRobinMinutes($teams, $avgMatch), 'team_count_round_robin'],
-            'swiss' => [$this->swissMinutes($teams, $avgMatch, $settings), 'team_count_swiss'],
+            'single_elimination' => [$this->singleElimMinutes($teams, $perMatch), 'team_count_single_elim'],
+            'double_elimination' => [$this->doubleElimMinutes($teams, $perMatch), 'team_count_double_elim'],
+            'round_robin' => [$this->roundRobinMinutes($teams, $perMatch), 'team_count_round_robin'],
+            'swiss' => [$this->swissMinutes($teams, $perMatch, $settings), 'team_count_swiss'],
             'group_stage', 'race_heat', 'final_stage' => [$avgStage, 'team_count_default'],
             default => [$avgStage, 'team_count_default'],
         };
     }
 
-    private function singleElimMinutes(int $teams, int $avgMatch): int
+    private function singleElimMinutes(int $teams, int $perMatch): int
     {
         $rounds = (int) ceil(log($teams, 2));
 
-        return max($avgMatch, $rounds * $avgMatch);
+        return max($perMatch, $rounds * $perMatch);
     }
 
-    private function doubleElimMinutes(int $teams, int $avgMatch): int
+    private function doubleElimMinutes(int $teams, int $perMatch): int
     {
-        return (int) ceil(2 * $this->singleElimMinutes($teams, $avgMatch));
+        return (int) ceil(2 * $this->singleElimMinutes($teams, $perMatch));
     }
 
-    private function roundRobinMinutes(int $teams, int $avgMatch): int
+    private function roundRobinMinutes(int $teams, int $perMatch): int
     {
         $matches = ($teams * ($teams - 1)) / 2;
 
-        return (int) ceil($matches * $avgMatch);
+        return (int) ceil($matches * $perMatch);
     }
 
     /**
      * @param  array<string, mixed>  $settings
      */
-    private function swissMinutes(int $teams, int $avgMatch, array $settings): int
+    private function swissMinutes(int $teams, int $perMatch, array $settings): int
     {
         $rounds = (int) ($settings['total_rounds'] ?? max(3, (int) ceil(log($teams, 2))));
         $matchesPerRound = (int) ceil($teams / 2);
 
-        return $rounds * $matchesPerRound * $avgMatch;
+        return $rounds * $matchesPerRound * $perMatch;
     }
 
     /**

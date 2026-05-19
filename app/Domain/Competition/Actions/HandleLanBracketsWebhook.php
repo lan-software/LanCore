@@ -206,7 +206,7 @@ class HandleLanBracketsWebhook
      * Fetches matches for a stage and dispatches orchestration events
      * for matches where all participants are set.
      */
-    private function dispatchReadyMatchesForOrchestration(Competition $competition, ?string $matchId): void
+    private function dispatchReadyMatchesForOrchestration(Competition $competition, ?string $stageId): void
     {
         if ($stageId === null || ! $competition->isSyncedToLanBrackets()) {
             return;

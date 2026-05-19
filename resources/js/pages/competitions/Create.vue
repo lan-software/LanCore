@@ -191,6 +191,24 @@ const breadcrumbs: BreadcrumbItem[] = [
                         </div>
                     </div>
 
+                    <div class="grid gap-2">
+                        <Label for="match_length_minutes">{{
+                            $t('games.matchLengthMinutes')
+                        }}</Label>
+                        <Input
+                            id="match_length_minutes"
+                            name="match_length_minutes"
+                            type="number"
+                            min="1"
+                            max="1440"
+                            :placeholder="$t('games.matchLengthMinutesPlaceholder')"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            {{ $t('games.matchLengthMinutesHelp') }}
+                        </p>
+                        <InputError :message="errors.match_length_minutes" />
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div class="grid gap-2">
                             <Label for="game_id">{{

@@ -485,6 +485,67 @@ function statusColor(status: string): string {
                             </div>
                         </div>
 
+                        <div class="grid gap-2">
+                            <Label for="match_length_minutes">{{
+                                $t('games.matchLengthMinutes')
+                            }}</Label>
+                            <Input
+                                id="match_length_minutes"
+                                name="match_length_minutes"
+                                type="number"
+                                min="1"
+                                max="1440"
+                                :default-value="
+                                    competition.match_length_minutes ?? ''
+                                "
+                                :placeholder="
+                                    (competition.game_mode?.match_length_minutes
+                                        ?? competition.game?.match_length_minutes)
+                                        !== null
+                                        ? String(
+                                              competition.game_mode
+                                                  ?.match_length_minutes
+                                                  ?? competition.game
+                                                      ?.match_length_minutes,
+                                          )
+                                        : $t('games.matchLengthMinutesPlaceholder')
+                                "
+                                :disabled="!canEditDetails"
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                {{ $t('games.matchLengthMinutesHelp') }}
+                                <span
+                                    v-if="
+                                        competition.game_mode
+                                            ?.match_length_minutes !== null
+                                    "
+                                >
+                                    ({{
+                                        $t('common.inherits_from_game_mode', {
+                                            value: competition.game_mode
+                                                ?.match_length_minutes,
+                                        })
+                                    }})
+                                </span>
+                                <span
+                                    v-else-if="
+                                        competition.game?.match_length_minutes
+                                            !== null
+                                    "
+                                >
+                                    ({{
+                                        $t('common.inherits_from_game', {
+                                            value: competition.game
+                                                ?.match_length_minutes,
+                                        })
+                                    }})
+                                </span>
+                            </p>
+                            <InputError
+                                :message="errors.match_length_minutes"
+                            />
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4">
                             <div class="grid gap-2">
                                 <Label for="starts_at">{{

@@ -146,6 +146,32 @@ const parametersJson = props.gameMode.parameters
                     </div>
 
                     <div class="grid gap-2">
+                        <Label for="match_length_minutes">{{
+                            $t('games.matchLengthMinutes')
+                        }}</Label>
+                        <Input
+                            id="match_length_minutes"
+                            name="match_length_minutes"
+                            type="number"
+                            min="1"
+                            max="1440"
+                            :default-value="gameMode.match_length_minutes ?? ''"
+                            :placeholder="
+                                game.match_length_minutes !== null
+                                    ? String(game.match_length_minutes)
+                                    : $t('games.matchLengthMinutesPlaceholder')
+                            "
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            {{ $t('games.matchLengthMinutesHelp') }}
+                            <span v-if="game.match_length_minutes !== null">
+                                ({{ $t('common.inherits_from_game', { value: game.match_length_minutes }) }})
+                            </span>
+                        </p>
+                        <InputError :message="errors.match_length_minutes" />
+                    </div>
+
+                    <div class="grid gap-2">
                         <Label for="parameters">Parameters (JSON)</Label>
                         <Textarea
                             id="parameters"

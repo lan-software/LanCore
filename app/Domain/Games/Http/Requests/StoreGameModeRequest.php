@@ -23,6 +23,7 @@ class StoreGameModeRequest extends FormRequest
             'team_size' => ['required', 'integer', 'min:1'],
             'parameters' => ['nullable', 'json'],
             'is_active' => ['sometimes', 'boolean'],
+            'match_length_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
         ];
     }
 }

@@ -26,11 +26,12 @@ it('updates a stage schedule and marks duration overridden', function (): void {
     ]);
 
     $this->actingAs($admin)
-        ->patchJson("/backstage/stage-schedules/{$schedule->id}", [
+        ->from('/backstage/competition-board')
+        ->patch("/backstage/stage-schedules/{$schedule->id}", [
             'estimated_duration_minutes' => 90,
             'reserve_buffer_minutes' => 30,
         ])
-        ->assertOk();
+        ->assertRedirect('/backstage/competition-board');
 
     $schedule->refresh();
     expect($schedule->estimated_duration_minutes)->toBe(90)
@@ -50,6 +51,28 @@ it('blocks non-admin users from updating a stage schedule', function (): void {
             'estimated_duration_minutes' => 90,
         ])
         ->assertForbidden();
+});
+
+it('returns an Inertia-compatible redirect on stage drag (SCH-REG-001)', function (): void {
+    EventFacade::fake([StageScheduleUpdated::class]);
+    $admin = User::factory()->withRole(RoleName::Admin)->create();
+    $event = Event::factory()->create();
+    $competition = Competition::factory()->create(['event_id' => $event->id]);
+    $schedule = CompetitionStageSchedule::factory()->for($competition)->create();
+
+    $response = $this->actingAs($admin)
+        ->from('/backstage/competition-board')
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => '1',
+        ])
+        ->patch("/backstage/stage-schedules/{$schedule->id}", [
+            'starts_at' => now()->addHours(2)->toIso8601String(),
+        ]);
+
+    $response->assertRedirect();
+    expect($response->headers->get('Content-Type'))
+        ->not->toContain('application/json');
 });
 
 it('renders the competition board for admins via the session-scoped route', function (): void {

@@ -1,6 +1,9 @@
 {
     "common": {
         "appName": "LanCore",
+        "inherits_from_game": "inherits {value} from game",
+        "inherits_from_game_mode": "inherits {value} from game mode",
+        "inherits_from_game_via_mode": "inherits {value} via mode",
         "loading": "Loading...",
         "saving": "Saving...",
         "error": "Error",
@@ -930,6 +933,9 @@
         "modesDescription": "Manage the available modes for this game",
         "addMode": "Add Mode",
         "teamSize": "Team Size",
+        "matchLengthMinutes": "Match Length (minutes)",
+        "matchLengthMinutesHelp": "Maximum or fixed time a single match lasts. Used to derive round, stage, and competition durations. Game modes and individual competitions may override this.",
+        "matchLengthMinutesPlaceholder": "e.g. 45",
         "noModes": "No game modes yet.",
         "deleteHeading": "Delete Game",
         "deleteHint": "Permanently delete this game and all its modes.",

@@ -24,9 +24,10 @@ Broadcast::channel('chat.room.{roomId}', function (User $user, int $roomId): arr
 
 /**
  * Competition board scheduling channel — only competition managers receive
- * StageScheduleUpdated broadcasts for the given event.
+ * StageScheduleUpdated and RoundScheduleUpdated broadcasts for the given event.
  *
  * @see docs/mil-std-498/SRS.md COMP-SCH-006
+ * @see docs/mil-std-498/SRS.md COMP-RND-004
  */
 Broadcast::channel('event.{eventId}.competition-board', function (User $user, string $eventId): bool {
     if (! $user->hasPermission(Permission::ManageCompetitions)) {

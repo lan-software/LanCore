@@ -5,6 +5,9 @@ export type Game = {
     publisher: string | null;
     description: string | null;
     is_active: boolean;
+    avg_match_minutes: number | null;
+    avg_stage_minutes: number | null;
+    match_length_minutes: number | null;
     game_modes_count?: number;
     game_modes?: GameMode[];
     created_at: string;
@@ -20,6 +23,7 @@ export type GameMode = {
     team_size: number;
     parameters: Record<string, unknown> | null;
     is_active: boolean;
+    match_length_minutes: number | null;
     created_at: string;
     updated_at: string;
 };
@@ -63,6 +67,7 @@ export type Competition = {
     settings: Record<string, unknown> | null;
     metadata: Record<string, unknown> | null;
     signup_rules?: Record<string, unknown> | null;
+    match_length_minutes: number | null;
     created_at: string;
     updated_at: string;
 };

@@ -5,6 +5,12 @@ const BUSY_PX_PER_MIN = 2; // ~120 px per hour
 const IDLE_PX_PER_MIN = 0.4; // ~24 px per hour (≈ 4h per length unit @ 96 px)
 const BUSY_PADDING_MIN = 30;
 
+export const SNAP_MINUTES = 15;
+
+export function snapMinutes(mins: number): number {
+    return Math.round(mins / SNAP_MINUTES) * SNAP_MINUTES;
+}
+
 interface UseTimeAxisResult {
     segments: ComputedRef<TimeSegment[]>;
     totalWidth: ComputedRef<number>;
@@ -21,13 +27,18 @@ export function useTimeAxis(
 ): UseTimeAxisResult {
     const rangeStart = computed(() => {
         const e = event();
-        const stageStarts = competitions()
-            .flatMap((c) => c.stage_schedules)
-            .map((s) => (s.starts_at ? new Date(s.starts_at).getTime() : null))
-            .filter((v): v is number => v !== null);
+        const starts = competitions().flatMap((c) =>
+            c.stage_schedules.flatMap((s) => {
+                const roundStarts = s.round_schedules
+                    .map((r) => (r.starts_at ? new Date(r.starts_at).getTime() : null))
+                    .filter((v): v is number => v !== null);
+                if (roundStarts.length > 0) return roundStarts;
+                return s.starts_at ? [new Date(s.starts_at).getTime()] : [];
+            }),
+        );
         const candidates = [
             e.start_date ? new Date(e.start_date).getTime() : null,
-            ...stageStarts,
+            ...starts,
         ].filter((v): v is number => v !== null);
         if (candidates.length === 0) {
             return Date.now();
@@ -37,13 +48,18 @@ export function useTimeAxis(
 
     const rangeEnd = computed(() => {
         const e = event();
-        const stageEnds = competitions()
-            .flatMap((c) => c.stage_schedules)
-            .map((s) => (s.ends_at ? new Date(s.ends_at).getTime() : null))
-            .filter((v): v is number => v !== null);
+        const ends = competitions().flatMap((c) =>
+            c.stage_schedules.flatMap((s) => {
+                const roundEnds = s.round_schedules
+                    .map((r) => (r.ends_at ? new Date(r.ends_at).getTime() : null))
+                    .filter((v): v is number => v !== null);
+                if (roundEnds.length > 0) return roundEnds;
+                return s.ends_at ? [new Date(s.ends_at).getTime()] : [];
+            }),
+        );
         const candidates = [
             e.end_date ? new Date(e.end_date).getTime() : null,
-            ...stageEnds,
+            ...ends,
         ].filter((v): v is number => v !== null);
         if (candidates.length === 0) {
             return rangeStart.value + 24 * 60 * 60 * 1000;
@@ -53,11 +69,21 @@ export function useTimeAxis(
 
     const busyIntervals = computed(() => {
         const raw = competitions()
-            .flatMap((c) => c.stage_schedules)
-            .filter((s) => s.starts_at && s.ends_at)
-            .map((s) => ({
-                start: new Date(s.starts_at!).getTime() - BUSY_PADDING_MIN * 60_000,
-                end: new Date(s.ends_at!).getTime() + BUSY_PADDING_MIN * 60_000,
+            .flatMap((c) =>
+                c.stage_schedules.flatMap((s) =>
+                    s.round_schedules.length > 0
+                        ? s.round_schedules.filter((r) => r.starts_at && r.ends_at).map((r) => ({
+                              starts_at: r.starts_at!,
+                              ends_at: r.ends_at!,
+                          }))
+                        : s.starts_at && s.ends_at
+                          ? [{ starts_at: s.starts_at, ends_at: s.ends_at }]
+                          : [],
+                ),
+            )
+            .map((iv) => ({
+                start: new Date(iv.starts_at).getTime() - BUSY_PADDING_MIN * 60_000,
+                end: new Date(iv.ends_at).getTime() + BUSY_PADDING_MIN * 60_000,
             }))
             .sort((a, b) => a.start - b.start);
         const merged: Array<{ start: number; end: number }> = [];

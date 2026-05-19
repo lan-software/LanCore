@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('achievement_events', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->foreignUlid('achievement_id')->constrained()->cascadeOnDelete();
             $table->string('event_class');
             $table->timestamps();

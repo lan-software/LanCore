@@ -23,6 +23,7 @@ class UpdateGameRequest extends FormRequest
             'publisher' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
+            'match_length_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
         ];
     }
 }

@@ -2,34 +2,32 @@
 
 namespace App\Domain\CompetitionSchedule\Models;
 
-use App\Domain\Competition\Models\Competition;
 use Carbon\CarbonInterface;
-use Database\Factories\CompetitionStageScheduleFactory;
+use Database\Factories\CompetitionRoundScheduleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @see docs/mil-std-498/SRS.md COMP-SCH-001
+ * @see docs/mil-std-498/SRS.md COMP-RND-001
  */
 #[Fillable([
-    'competition_id', 'lanbrackets_stage_id', 'stage_name', 'stage_type', 'sequence',
+    'stage_schedule_id', 'lanbrackets_round_number', 'sequence', 'label',
     'starts_at', 'estimated_duration_minutes', 'reserve_buffer_minutes',
     'duration_overridden', 'computed_inputs_hash', 'notes',
 ])]
-class CompetitionStageSchedule extends Model
+class CompetitionRoundSchedule extends Model
 {
-    /** @use HasFactory<CompetitionStageScheduleFactory> */
+    /** @use HasFactory<CompetitionRoundScheduleFactory> */
     use HasFactory;
 
     use HasUlids;
 
-    protected static function newFactory(): CompetitionStageScheduleFactory
+    protected static function newFactory(): CompetitionRoundScheduleFactory
     {
-        return CompetitionStageScheduleFactory::new();
+        return CompetitionRoundScheduleFactory::new();
     }
 
     /**
@@ -38,6 +36,7 @@ class CompetitionStageSchedule extends Model
     protected function casts(): array
     {
         return [
+            'lanbrackets_round_number' => 'integer',
             'sequence' => 'integer',
             'starts_at' => 'datetime',
             'estimated_duration_minutes' => 'integer',
@@ -47,22 +46,11 @@ class CompetitionStageSchedule extends Model
     }
 
     /**
-     * @return BelongsTo<Competition, self>
+     * @return BelongsTo<CompetitionStageSchedule, self>
      */
-    public function competition(): BelongsTo
+    public function stageSchedule(): BelongsTo
     {
-        return $this->belongsTo(Competition::class);
-    }
-
-    /**
-     * @return HasMany<CompetitionRoundSchedule, self>
-     *
-     * @see docs/mil-std-498/SRS.md COMP-RND-001
-     */
-    public function roundSchedules(): HasMany
-    {
-        return $this->hasMany(CompetitionRoundSchedule::class, 'stage_schedule_id')
-            ->orderBy('sequence');
+        return $this->belongsTo(CompetitionStageSchedule::class, 'stage_schedule_id');
     }
 
     public function endsAt(): ?CarbonInterface

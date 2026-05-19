@@ -31,6 +31,7 @@ use App\Domain\Shop\Enums\PaymentMethod;
 use App\Domain\Shop\Models\GlobalPurchaseCondition;
 use App\Domain\Shop\Models\PaymentProviderCondition;
 use App\Domain\Shop\Models\PurchaseRequirement;
+use App\Domain\Shop\Models\ShopSetting;
 use App\Domain\Sponsoring\Models\Sponsor;
 use App\Domain\Sponsoring\Models\SponsorLevel;
 use App\Domain\Theme\Models\Theme;

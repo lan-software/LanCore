@@ -2,6 +2,7 @@
 
 use App\Domain\CompetitionSchedule\Http\Controllers\CompetitionBoardController;
 use App\Domain\CompetitionSchedule\Http\Controllers\NextMatchProposalController;
+use App\Domain\CompetitionSchedule\Http\Controllers\RoundScheduleController;
 use App\Domain\CompetitionSchedule\Http\Controllers\StageScheduleController;
 use Illuminate\Support\Facades\Route;
 
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 | @see docs/mil-std-498/SRS.md COMP-SCH-001..007
+| @see docs/mil-std-498/SRS.md COMP-RND-001..007
 */
 
 /*
@@ -30,6 +32,9 @@ Route::middleware(['auth', 'verified'])->prefix('backstage')->group(function () 
 
     Route::patch('stage-schedules/{schedule}', [StageScheduleController::class, 'update'])
         ->name('stage-schedules.update');
+
+    Route::patch('round-schedules/{schedule}', [RoundScheduleController::class, 'update'])
+        ->name('round-schedules.update');
 });
 
 /*

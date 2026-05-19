@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['game_id', 'name', 'slug', 'description', 'team_size', 'parameters', 'is_active'])]
+#[Fillable(['game_id', 'name', 'slug', 'description', 'team_size', 'parameters', 'is_active', 'match_length_minutes'])]
 class GameMode extends Model
 {
     /** @use HasFactory<GameModeFactory> */
@@ -31,6 +31,7 @@ class GameMode extends Model
             'team_size' => 'integer',
             'parameters' => 'array',
             'is_active' => 'boolean',
+            'match_length_minutes' => 'integer',
         ];
     }
 

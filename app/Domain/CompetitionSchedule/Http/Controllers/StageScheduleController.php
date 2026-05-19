@@ -7,7 +7,7 @@ use App\Domain\CompetitionSchedule\Http\Requests\UpdateStageScheduleRequest;
 use App\Domain\CompetitionSchedule\Models\CompetitionStageSchedule;
 use App\Domain\CompetitionSchedule\Services\DurationEstimator;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 
 /**
  * @see docs/mil-std-498/SRS.md COMP-SCH-006
@@ -18,7 +18,7 @@ class StageScheduleController extends Controller
         private readonly DurationEstimator $estimator,
     ) {}
 
-    public function update(UpdateStageScheduleRequest $request, CompetitionStageSchedule $schedule): JsonResponse
+    public function update(UpdateStageScheduleRequest $request, CompetitionStageSchedule $schedule): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -54,16 +54,6 @@ class StageScheduleController extends Controller
         $competition = $schedule->competition;
         StageScheduleUpdated::dispatch($competition?->event_id, (string) $schedule->competition_id);
 
-        return response()->json([
-            'data' => [
-                'id' => $schedule->id,
-                'starts_at' => $schedule->starts_at?->toIso8601String(),
-                'estimated_duration_minutes' => $schedule->estimated_duration_minutes,
-                'reserve_buffer_minutes' => $schedule->reserve_buffer_minutes,
-                'duration_overridden' => $schedule->duration_overridden,
-                'notes' => $schedule->notes,
-                'ends_at' => $schedule->endsAt()?->toIso8601String(),
-            ],
-        ]);
+        return back();
     }
 }
