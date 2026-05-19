@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('vouchers', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('code')->unique();
             $table->string('type');
             $table->unsignedInteger('discount_amount')->nullable();
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->dateTime('valid_from')->nullable();
             $table->dateTime('valid_until')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->foreignId('event_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignUlid('event_id')->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

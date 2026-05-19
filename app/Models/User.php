@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Concerns\HasPermissions;
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Domain\Achievements\Models\Achievement;
 use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Auth\Steam\Enums\SteamLinkStatus;
@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -58,6 +59,8 @@ class User extends Authenticatable implements AuditableContract
 {
     /** @use HasFactory<UserFactory> */
     use Auditable, Billable, HasFactory, HasPermissions, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
+
+    use HasUlids;
 
     /**
      * @var array<int, string>

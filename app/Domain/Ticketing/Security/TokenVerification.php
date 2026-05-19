@@ -8,7 +8,7 @@ namespace App\Domain\Ticketing\Security;
 final readonly class TokenVerification
 {
     public function __construct(
-        public int $tid,
+        public string $tid,
         public string $nonce,
         public int $iat,
         public int $exp,

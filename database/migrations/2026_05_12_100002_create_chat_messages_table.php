@@ -10,18 +10,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chat_messages', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('room_id')
+            $table->ulid('id')->primary();
+            $table->foreignUlid('room_id')
                 ->constrained('chat_rooms')
                 ->restrictOnDelete();
-            $table->foreignId('user_id')
+            $table->foreignUlid('user_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
             $table->text('body');
             $table->json('mentions_json')->nullable();
             $table->timestamps();
             $table->timestamp('deleted_at')->nullable();
-            $table->foreignId('deleted_by')
+            $table->foreignUlid('deleted_by')
                 ->nullable()
                 ->constrained('users')
                 ->nullOnDelete();

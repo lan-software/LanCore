@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('announcements', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('priority')->default('normal');
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('author_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignUlid('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('author_id')->constrained('users')->cascadeOnDelete();
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });

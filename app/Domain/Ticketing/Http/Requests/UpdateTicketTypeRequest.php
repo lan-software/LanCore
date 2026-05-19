@@ -28,8 +28,8 @@ class UpdateTicketTypeRequest extends FormRequest
             'is_hidden' => ['sometimes', 'boolean'],
             'purchase_from' => ['nullable', 'date'],
             'purchase_until' => ['nullable', 'date', 'after_or_equal:purchase_from'],
-            'ticket_category_id' => ['nullable', 'integer', 'exists:ticket_categories,id'],
-            'ticket_group_id' => ['nullable', 'integer', 'exists:ticket_groups,id'],
+            'ticket_category_id' => ['nullable', 'string', 'ulid', 'exists:ticket_categories,id'],
+            'ticket_group_id' => ['nullable', 'string', 'ulid', 'exists:ticket_groups,id'],
             'notify_on_release' => ['sometimes', 'boolean'],
             'notify_on_end' => ['sometimes', 'boolean'],
             'notify_on_end_lead_minutes' => ['required_if:notify_on_end,true', 'integer', 'min:1', 'max:43200'],
@@ -42,7 +42,7 @@ class UpdateTicketTypeRequest extends FormRequest
             $rules['max_users_per_ticket'] = ['sometimes', 'integer', 'min:1'];
             $rules['check_in_mode'] = ['sometimes', Rule::enum(CheckInMode::class)];
             $rules['is_seatable'] = ['sometimes', 'boolean'];
-            $rules['event_id'] = ['required', 'integer', 'exists:events,id'];
+            $rules['event_id'] = ['required', 'string', 'ulid', 'exists:events,id'];
         }
 
         return $rules;

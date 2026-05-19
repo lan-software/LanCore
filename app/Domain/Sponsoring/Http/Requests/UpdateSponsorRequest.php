@@ -22,11 +22,11 @@ class UpdateSponsorRequest extends FormRequest
             'link' => ['nullable', 'url', 'max:2048'],
             'logo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp,svg', 'max:2048'],
             'remove_logo' => ['sometimes', 'boolean'],
-            'sponsor_level_id' => ['nullable', 'integer', 'exists:sponsor_levels,id'],
+            'sponsor_level_id' => ['nullable', 'string', 'ulid', 'exists:sponsor_levels,id'],
             'event_ids' => ['sometimes', 'array'],
-            'event_ids.*' => ['integer', 'exists:events,id'],
+            'event_ids.*' => ['string', 'ulid', 'exists:events,id'],
             'manager_ids' => ['sometimes', 'array'],
-            'manager_ids.*' => ['integer', 'exists:users,id'],
+            'manager_ids.*' => ['string', 'ulid', 'exists:users,id'],
         ];
     }
 }

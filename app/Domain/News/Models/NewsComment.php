@@ -5,6 +5,7 @@ namespace App\Domain\News\Models;
 use App\Models\User;
 use Database\Factories\NewsCommentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,8 @@ class NewsComment extends Model implements AuditableContract
 
     /** @use HasFactory<NewsCommentFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): NewsCommentFactory
     {

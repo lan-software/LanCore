@@ -17,7 +17,7 @@ class AssignOrgaTeamToEventRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'orga_team_id' => ['nullable', 'integer', 'exists:orga_teams,id'],
+            'orga_team_id' => ['nullable', 'string', 'ulid', 'exists:orga_teams,id'],
         ];
     }
 }

@@ -20,12 +20,12 @@ class SeatAssignmentInvalidated
      * @param  'seat_removed'|'category_mismatch'  $reason
      */
     public function __construct(
-        public readonly int $ticketId,
-        public readonly int $userId,
+        public readonly string $ticketId,
+        public readonly string $userId,
         public readonly SeatPlan $seatPlan,
-        public readonly int $previousSeatId,
+        public readonly string $previousSeatId,
         public readonly ?string $previousSeatTitle,
-        public readonly ?int $previousBlockId,
+        public readonly ?string $previousBlockId,
         public readonly string $reason,
     ) {}
 }

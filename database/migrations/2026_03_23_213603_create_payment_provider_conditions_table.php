@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('payment_provider_conditions', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('payment_method');
             $table->string('name');
             $table->text('description')->nullable();

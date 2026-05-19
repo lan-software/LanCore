@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chat_rooms', function (Blueprint $table): void {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('key', 191)->unique();
             $table->string('title', 191)->nullable();
             $table->string('status', 32)->default('open');
@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('opened_at')->nullable();
             $table->timestamp('write_locked_at')->nullable();
             $table->timestamp('archived_at')->nullable();
-            $table->foreignId('created_by')
+            $table->foreignUlid('created_by')
                 ->nullable()
                 ->constrained('users')
                 ->nullOnDelete();

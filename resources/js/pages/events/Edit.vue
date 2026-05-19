@@ -35,18 +35,18 @@ const { t } = useI18n();
 
 const props = defineProps<{
     event: Event;
-    venues: { id: number; name: string }[];
-    orgaTeams: { id: number; name: string }[];
-    themes: { id: number; name: string }[];
+    venues: { id: string; name: string }[];
+    orgaTeams: { id: string; name: string }[];
+    themes: { id: string; name: string }[];
 }>();
 
-const orgaTeamSelection = ref<number | null>(
-    (props.event as Event & { orga_team_id: number | null }).orga_team_id ??
+const orgaTeamSelection = ref<string | null>(
+    (props.event as Event & { orga_team_id: string | null }).orga_team_id ??
         null,
 );
 
-const themeSelection = ref<number | null>(
-    (props.event as Event & { theme_id: number | null }).theme_id ?? null,
+const themeSelection = ref<string | null>(
+    (props.event as Event & { theme_id: string | null }).theme_id ?? null,
 );
 
 function saveOrgaTeam() {
@@ -97,7 +97,7 @@ function markImageForRemoval(index: number) {
 }
 
 // Newly picked images (not yet uploaded).
-const newBannerSlots = ref<{ id: number; preview: string }[]>([]);
+const newBannerSlots = ref<{ id: string; preview: string }[]>([]);
 let nextSlotId = 0;
 
 function addBannerSlot() {
@@ -510,7 +510,7 @@ function unpublishEvent() {
                         @update:model-value="
                             (v) =>
                                 (orgaTeamSelection =
-                                    v === '__none__' || !v ? null : Number(v))
+                                    v === '__none__' || !v ? null : String(v))
                         "
                     >
                         <SelectTrigger class="max-w-sm">
@@ -558,7 +558,7 @@ function unpublishEvent() {
                         @update:model-value="
                             (v) =>
                                 (themeSelection =
-                                    v === '__none__' || !v ? null : Number(v))
+                                    v === '__none__' || !v ? null : String(v))
                         "
                     >
                         <SelectTrigger class="max-w-sm">

@@ -22,7 +22,7 @@ class UpdateOrgaSubTeamRequest extends FormRequest
             'emoji' => ['nullable', 'string', 'max:8'],
             'color' => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
-            'leader_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'leader_user_id' => ['nullable', 'string', 'ulid', 'exists:users,id'],
         ];
     }
 }

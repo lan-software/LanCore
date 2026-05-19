@@ -39,7 +39,7 @@ function submitComment() {
     });
 }
 
-function voteComment(commentId: number, value: number) {
+function voteComment(commentId: string, value: number) {
     router.post(
         vote({ newsComment: commentId }).url,
         { value },

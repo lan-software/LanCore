@@ -21,7 +21,7 @@ class CompetitionIndexRequest extends FormRequest
             'sort' => ['nullable', 'string', 'in:name,status,type,created_at,starts_at'],
             'direction' => ['nullable', 'string', 'in:asc,desc'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
-            'event_id' => ['nullable', 'integer', 'exists:events,id'],
+            'event_id' => ['nullable', 'string', 'ulid', 'exists:events,id'],
             'status' => ['nullable', 'string'],
         ];
     }

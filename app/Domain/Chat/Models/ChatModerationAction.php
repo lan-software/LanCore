@@ -5,6 +5,7 @@ namespace App\Domain\Chat\Models;
 use App\Domain\Chat\Enums\ModerationAction as ModerationActionEnum;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use OwenIt\Auditing\Auditable;
@@ -20,6 +21,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class ChatModerationAction extends Model implements AuditableContract
 {
     use Auditable;
+    use HasUlids;
 
     /**
      * @return array<string, string>

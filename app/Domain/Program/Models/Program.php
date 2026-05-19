@@ -7,6 +7,7 @@ use App\Domain\Program\Enums\ProgramVisibility;
 use App\Domain\Sponsoring\Models\Sponsor;
 use Database\Factories\ProgramFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,6 +23,8 @@ class Program extends Model implements AuditableContract
 
     /** @use HasFactory<ProgramFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): ProgramFactory
     {

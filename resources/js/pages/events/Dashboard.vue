@@ -23,7 +23,7 @@ import type { BreadcrumbItem } from '@/types';
 
 interface Stats {
     event: {
-        id: number;
+        id: string;
         name: string;
         start_date: string | null;
         end_date: string | null;
@@ -39,7 +39,7 @@ interface Stats {
         activeAssignees: number;
     };
     ticketTypes: {
-        id: number;
+        id: string;
         name: string;
         quota: number;
         sold: number;
@@ -53,7 +53,7 @@ interface Stats {
         unseatedCheckedIn: number;
     };
     recentCheckins: {
-        id: number;
+        id: string;
         userName: string | null;
         ticketTypeName: string | null;
         action: string;

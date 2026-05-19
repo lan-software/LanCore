@@ -79,7 +79,7 @@ interface DashboardStats {
     };
     roles: Record<string, number>;
     lastActiveUsers: {
-        id: number;
+        id: string;
         name: string;
         email: string;
         last_activity: string;

@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('carts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('event_id')->nullable()->constrained()->nullOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('event_id')->nullable()->constrained()->nullOnDelete();
             $table->string('voucher_code', 50)->nullable();
             $table->timestamps();
 
@@ -19,10 +19,10 @@ return new class extends Migration
         });
 
         Schema::create('cart_items', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('cart_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('cart_id')->constrained()->cascadeOnDelete();
             $table->string('purchasable_type');
-            $table->unsignedBigInteger('purchasable_id');
+            $table->ulid('purchasable_id');
             $table->unsignedInteger('quantity')->default(1);
             $table->timestamps();
 

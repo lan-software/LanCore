@@ -65,7 +65,7 @@ class ListmonkClient
      *
      * @return array<string, mixed>
      */
-    public function getList(int $id): array
+    public function getList(string $id): array
     {
         $this->ensureConfigured();
 
@@ -99,7 +99,7 @@ class ListmonkClient
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    public function updateList(int $id, array $payload): array
+    public function updateList(string $id, array $payload): array
     {
         $this->ensureConfigured();
 
@@ -113,7 +113,7 @@ class ListmonkClient
     /**
      * Delete a Listmonk list.
      */
-    public function deleteList(int $id): void
+    public function deleteList(string $id): void
     {
         $this->ensureConfigured();
 
@@ -192,7 +192,7 @@ class ListmonkClient
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    public function updateSubscriber(int $id, array $payload): array
+    public function updateSubscriber(string $id, array $payload): array
     {
         $this->ensureConfigured();
 
@@ -210,7 +210,7 @@ class ListmonkClient
      *
      * @param  array<int, int>  $listIds
      */
-    public function manageSubscriberLists(int $subscriberId, array $listIds, string $action, ?string $status = null): void
+    public function manageSubscriberLists(string $subscriberId, array $listIds, string $action, ?string $status = null): void
     {
         $this->ensureConfigured();
 
@@ -237,7 +237,7 @@ class ListmonkClient
      *
      * @return array{results: array<int, array<string, mixed>>, total: int, page: int, per_page: int}
      */
-    public function getSubscribersOfList(int $listId, int $page = 1, int $perPage = 100): array
+    public function getSubscribersOfList(string $listId, int $page = 1, int $perPage = 100): array
     {
         $this->ensureConfigured();
 

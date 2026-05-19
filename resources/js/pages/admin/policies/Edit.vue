@@ -20,15 +20,15 @@ import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{
     policy: {
-        id: number;
+        id: string;
         key: string;
         name: string;
         description: string | null;
         is_required_for_registration: boolean;
         sort_order: number;
-        policy_type_id: number;
+        policy_type_id: string;
     };
-    policyTypes: { id: number; label: string; key: string }[];
+    policyTypes: { id: string; label: string; key: string }[];
 }>();
 
 const { t } = useI18n();

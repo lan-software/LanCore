@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ticket_addons', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name');
             $table->text('description')->nullable();
             $table->unsignedInteger('price');
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedInteger('seats_consumed')->default(0);
             $table->boolean('requires_ticket')->default(true);
             $table->boolean('is_hidden')->default(false);
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('event_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

@@ -8,11 +8,11 @@ import type { ChatMessageDto } from './types';
 const props = defineProps<{
     message: ChatMessageDto;
     canModerate: boolean;
-    currentUserId: number | null;
+    currentUserId: string | null;
 }>();
 
 const emit = defineEmits<{
-    (e: 'delete', id: number): void;
+    (e: 'delete', id: string): void;
 }>();
 
 const { t } = useI18n();

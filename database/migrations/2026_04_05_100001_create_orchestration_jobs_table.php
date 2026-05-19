@@ -9,12 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('orchestration_jobs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('game_server_id')->nullable()->constrained('game_servers')->nullOnDelete();
-            $table->foreignId('competition_id')->constrained('competitions')->cascadeOnDelete();
-            $table->unsignedBigInteger('lanbrackets_match_id');
-            $table->foreignId('game_id')->constrained('games')->cascadeOnDelete();
-            $table->foreignId('game_mode_id')->nullable()->constrained('game_modes')->nullOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('game_server_id')->nullable()->constrained('game_servers')->nullOnDelete();
+            $table->foreignUlid('competition_id')->constrained('competitions')->cascadeOnDelete();
+            $table->ulid('lanbrackets_match_id');
+            $table->foreignUlid('game_id')->constrained('games')->cascadeOnDelete();
+            $table->foreignUlid('game_mode_id')->nullable()->constrained('game_modes')->nullOnDelete();
             $table->string('status')->default('pending');
             $table->json('match_config')->nullable();
             $table->string('match_handler')->nullable();

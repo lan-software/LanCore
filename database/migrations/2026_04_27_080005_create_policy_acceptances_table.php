@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('policy_acceptances', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('policy_version_id')->constrained('policy_versions')->restrictOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignUlid('policy_version_id')->constrained('policy_versions')->restrictOnDelete();
             $table->timestamp('accepted_at');
             $table->string('locale', 10);
             $table->string('ip_address', 45)->nullable();

@@ -9,11 +9,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chat_room_memberships', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('room_id')
+            $table->ulid('id')->primary();
+            $table->foreignUlid('room_id')
                 ->constrained('chat_rooms')
                 ->cascadeOnDelete();
-            $table->foreignId('user_id')
+            $table->foreignUlid('user_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
             $table->string('role', 32)->default('member');

@@ -38,7 +38,7 @@ return new class extends Migration
         });
 
         Schema::table('seat_assignments', function (Blueprint $table): void {
-            $table->foreignId('seat_plan_seat_id')->nullable(false)->change();
+            $table->foreignUlid('seat_plan_seat_id')->nullable(false)->change();
             $table->unique(['seat_plan_id', 'seat_plan_seat_id']);
         });
 
@@ -55,7 +55,7 @@ return new class extends Migration
 
         Schema::table('seat_assignments', function (Blueprint $table): void {
             $table->dropUnique(['seat_plan_id', 'seat_plan_seat_id']);
-            $table->foreignId('seat_plan_seat_id')->nullable()->change();
+            $table->foreignUlid('seat_plan_seat_id')->nullable()->change();
             $table->string('seat_id', 64)->nullable();
             $table->unique(['seat_plan_id', 'seat_id']);
         });

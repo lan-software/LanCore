@@ -164,7 +164,7 @@ class TicketTokenService
         }
 
         return new TokenVerification(
-            tid: (int) $body['tid'],
+            tid: (string) $body['tid'],
             nonce: (string) $body['nonce'],
             iat: (int) $body['iat'],
             exp: $exp,
@@ -201,7 +201,7 @@ class TicketTokenService
      * Deterministically derive + sign a token envelope for a given ticket,
      * epoch, kid, and timestamps. Shared by rotate() and render().
      */
-    private function build(int $ticketId, int $epoch, string $kid, Carbon $issuedAt, Carbon $expiresAt): IssuedToken
+    private function build(string $ticketId, int $epoch, string $kid, Carbon $issuedAt, Carbon $expiresAt): IssuedToken
     {
         $nonce = $this->deriveNonce($ticketId, $epoch);
         $nonceB64 = TicketKeyRing::base64UrlEncode($nonce);
@@ -236,7 +236,7 @@ class TicketTokenService
      * nonce = HMAC-SHA256(pepper, tid_le64 || epoch_le64) truncated to 16 bytes.
      * The truncation matches the prior 128-bit CSPRNG nonce length.
      */
-    private function deriveNonce(int $ticketId, int $epoch): string
+    private function deriveNonce(string $ticketId, int $epoch): string
     {
         $material = pack('J', $ticketId).pack('J', $epoch);
         $full = hash_hmac('sha256', $material, $this->pepper(), true);

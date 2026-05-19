@@ -4,7 +4,7 @@ import { computed, ref, watch } from 'vue';
 import AnnouncementDismissals from '@/actions/App/Domain/Announcement/Http/Controllers/AnnouncementDismissalController';
 
 type SharedAnnouncement = {
-    id: number;
+    id: string;
     audience: string | null;
     severity: string | null;
     title: string;

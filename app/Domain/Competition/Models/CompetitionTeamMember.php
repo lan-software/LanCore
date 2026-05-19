@@ -5,6 +5,7 @@ namespace App\Domain\Competition\Models;
 use App\Models\User;
 use Database\Factories\CompetitionTeamMemberFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,8 @@ class CompetitionTeamMember extends Model
 {
     /** @use HasFactory<CompetitionTeamMemberFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected $table = 'competition_team_members';
 

@@ -398,6 +398,8 @@
         "vouchers": "Gutscheine",
         "achievements": "Trophäen",
         "competitions": "Turniere",
+        "competitionBoard": "Wettkampf-Board",
+        "playNext": "Nächstes Match",
         "integrations": "Integrationen",
         "lanApps": "LanApps",
         "organization": "Organisation",
@@ -1155,6 +1157,66 @@
             "pickSeat": "Sitzplatz wählen",
             "changeSeat": "Sitzplatz ändern",
             "addAttendeeHint": "Füge einen Teilnehmer hinzu, um einen Sitzplatz auszuwählen."
+        }
+    },
+    "play_next": {
+        "title": "Nächstes Match",
+        "no_event": "Wähle ein Event in der Seitenleiste.",
+        "empty": "Aktuell kein Match für dich bereit.",
+        "ready": "Bereit",
+        "blocked": "Blockiert",
+        "and_after": "Danach"
+    },
+    "competition_board": {
+        "title": "Wettkampf-Board",
+        "subtitle": "Plane und verfolge alle Wettkämpfe dieses Events.",
+        "column": {
+            "competition": "Wettkampf",
+            "slack": "Slack"
+        },
+        "actions": {
+            "sync": "Mit LanBrackets synchronisieren",
+            "auto_fit": "Unverplante Stages einpassen",
+            "open_panel": "Stage bearbeiten"
+        },
+        "stage": {
+            "duration_minutes": "Dauer (Minuten)",
+            "reserve_minutes": "Reserve (Minuten)",
+            "slack": "Slack",
+            "starts_at": "Startzeit",
+            "notes": "Notizen",
+            "reset_to_computed": "Auf berechneten Wert zurücksetzen",
+            "overridden": "Manuelle Dauer",
+            "computed": "Berechnete Dauer",
+            "unscheduled": "Nicht geplant"
+        },
+        "conflicts": {
+            "title": "Konflikte",
+            "none": "Keine Planungskonflikte.",
+            "out_of_event_window": "Stage „{stage}\" reicht außerhalb des Eventfensters.",
+            "stage_sequence_overlap": "Stage „{earlier}\" überschneidet sich mit „{later}\" im selben Wettkampf.",
+            "player_double_booked": "{count} Spieler doppelt verplant zwischen „{stage_a}\" und „{stage_b}\"."
+        },
+        "proposal": {
+            "title": "Nächste Matches",
+            "empty": "Aktuell keine spielbereiten Matches.",
+            "in_window": "Im geplanten Fenster",
+            "upcoming": "Bald geplant",
+            "overrunning": "Überzieht",
+            "unscheduled": "Stage ohne Termin",
+            "deadline_close": "Deadline rückt nahe",
+            "blocked_team_busy": "Blockiert: Team bereits in einem Match",
+            "teams_free": "Beide Teams frei"
+        },
+        "axis": {
+            "busy": "ausgelastet",
+            "idle": "leer"
+        },
+        "sync": {
+            "queued": "Stage-Sync gestartet."
+        },
+        "auto_fit": {
+            "applied": "Unverplante Stages wurden eingepasst."
         }
     }
 }

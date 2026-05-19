@@ -24,8 +24,8 @@ return new class extends Migration
         });
 
         Schema::create('seat_plan_blocks', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('seat_plan_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('seat_plan_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->string('color', 16)->default('#2c3e50');
             $table->string('background_image_url', 2048)->nullable();
@@ -36,8 +36,8 @@ return new class extends Migration
         });
 
         Schema::create('seat_plan_rows', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('seat_plan_block_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('seat_plan_block_id')->constrained()->cascadeOnDelete();
             $table->string('name', 64);
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
@@ -46,10 +46,10 @@ return new class extends Migration
         });
 
         Schema::create('seat_plan_seats', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('seat_plan_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('seat_plan_block_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('seat_plan_row_id')->nullable()->constrained('seat_plan_rows')->nullOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('seat_plan_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('seat_plan_block_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('seat_plan_row_id')->nullable()->constrained('seat_plan_rows')->nullOnDelete();
             $table->unsignedInteger('number')->nullable();
             $table->string('title', 64);
             $table->integer('x');
@@ -65,8 +65,8 @@ return new class extends Migration
         });
 
         Schema::create('seat_plan_labels', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('seat_plan_block_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('seat_plan_block_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->integer('x');
             $table->integer('y');
@@ -75,14 +75,14 @@ return new class extends Migration
         });
 
         Schema::create('seat_plan_block_category_restrictions', function (Blueprint $table): void {
-            $table->foreignId('seat_plan_block_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('ticket_category_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('seat_plan_block_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('ticket_category_id')->constrained()->cascadeOnDelete();
 
             $table->primary(['seat_plan_block_id', 'ticket_category_id']);
         });
 
         Schema::table('seat_assignments', function (Blueprint $table): void {
-            $table->foreignId('seat_plan_seat_id')
+            $table->foreignUlid('seat_plan_seat_id')
                 ->nullable()
                 ->after('seat_plan_id')
                 ->constrained('seat_plan_seats')

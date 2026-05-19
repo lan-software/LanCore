@@ -20,7 +20,7 @@ class StoreTicketCategoryRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
-            'event_id' => ['nullable', 'integer', 'exists:events,id'],
+            'event_id' => ['nullable', 'string', 'ulid', 'exists:events,id'],
         ];
     }
 }

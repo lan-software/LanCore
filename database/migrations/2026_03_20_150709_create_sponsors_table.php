@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sponsors', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('link')->nullable();
             $table->string('logo')->nullable();
-            $table->foreignId('sponsor_level_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUlid('sponsor_level_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }

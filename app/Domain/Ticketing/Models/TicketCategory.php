@@ -7,6 +7,7 @@ use App\Domain\Event\Models\Event;
 use Database\Factories\TicketCategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,8 @@ class TicketCategory extends Model implements AuditableContract
 
     /** @use HasFactory<TicketCategoryFactory> */
     use HasFactory, HasModelCache;
+
+    use HasUlids;
 
     /**
      * @return Builder<static>

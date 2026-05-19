@@ -22,7 +22,7 @@ use Illuminate\Validation\ValidationException;
  */
 class AssignSeat
 {
-    public function execute(Ticket $ticket, User $assignee, SeatPlan $seatPlan, int $seatId): SeatAssignment
+    public function execute(Ticket $ticket, User $assignee, SeatPlan $seatPlan, string $seatId): SeatAssignment
     {
         $this->ensureSeatPlanBelongsToTicketEvent($ticket, $seatPlan);
         $seat = $this->ensureSeatExistsAndIsSalable($seatPlan, $seatId);
@@ -56,7 +56,7 @@ class AssignSeat
         }
     }
 
-    private function ensureSeatExistsAndIsSalable(SeatPlan $seatPlan, int $seatId): SeatPlanSeat
+    private function ensureSeatExistsAndIsSalable(SeatPlan $seatPlan, string $seatId): SeatPlanSeat
     {
         $seat = $seatPlan->seats()
             ->with(['block.categoryRestrictions'])

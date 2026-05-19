@@ -7,6 +7,7 @@ use App\Domain\DataLifecycle\Enums\DeletionRequestStatus;
 use App\Models\User;
 use Database\Factories\DeletionRequestFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +30,8 @@ class DeletionRequest extends Model implements AuditableContract
 
     /** @use HasFactory<DeletionRequestFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     /**
      * @return array<string, string>

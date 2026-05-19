@@ -31,7 +31,7 @@ import type { TicketCategory } from '@/types/domain';
 
 const props = defineProps<{
     ticketCategory: TicketCategory;
-    events: { id: number; name: string }[];
+    events: { id: string; name: string }[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

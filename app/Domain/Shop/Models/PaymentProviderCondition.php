@@ -6,6 +6,7 @@ use App\Domain\Shop\Enums\PaymentMethod;
 use Database\Factories\PaymentProviderConditionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,6 +22,8 @@ class PaymentProviderCondition extends Model
 {
     /** @use HasFactory<PaymentProviderConditionFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): PaymentProviderConditionFactory
     {

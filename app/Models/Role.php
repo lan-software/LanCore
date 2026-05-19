@@ -6,6 +6,7 @@ use App\Concerns\HasModelCache;
 use App\Enums\RoleName;
 use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -15,6 +16,8 @@ class Role extends Model
 {
     /** @use HasFactory<RoleFactory> */
     use HasFactory, HasModelCache;
+
+    use HasUlids;
 
     /**
      * @return array<int, string>

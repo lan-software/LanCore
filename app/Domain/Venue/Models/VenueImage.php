@@ -4,6 +4,7 @@ namespace App\Domain\Venue\Models;
 
 use Database\Factories\VenueImageFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,8 @@ class VenueImage extends Model
 {
     /** @use HasFactory<VenueImageFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): VenueImageFactory
     {

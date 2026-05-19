@@ -17,13 +17,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('retention_policies', function (Blueprint $table): void {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('data_class', 64)->unique();
             $table->unsignedInteger('retention_days');
             $table->text('legal_basis');
             $table->boolean('can_be_force_deleted')->default(true);
             $table->text('description')->nullable();
-            $table->foreignId('updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUlid('updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

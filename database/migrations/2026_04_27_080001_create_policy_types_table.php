@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('policy_types', function (Blueprint $table): void {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('key', 64)->unique();
             $table->string('label', 128);
             $table->text('description')->nullable();

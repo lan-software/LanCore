@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import {
     Activity,
     Calendar,
+    ChartGantt,
     ClipboardList,
     Cog,
     CreditCard,
@@ -70,6 +71,7 @@ import { index as adminTeamsIndex } from '@/routes/admin/teams';
 import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import { index as announcementsIndex } from '@/routes/announcements';
 import { index as competitionsIndex } from '@/routes/competitions';
+import competitionBoardRoutes from '@/routes/events/competition-board';
 import {
     dashboard as eventsDashboard,
     index as eventsIndex,
@@ -147,6 +149,11 @@ const mainNavItems = computed<NavItem[]>(() => [
         icon: Swords,
     },
     {
+        title: t('navigation.playNext'),
+        href: '/portal/play-next',
+        icon: ChartGantt,
+    },
+    {
         title: t('navigation.myTeams'),
         href: myTeamsIndex(),
         icon: Users,
@@ -206,6 +213,8 @@ const allPinnableItems = computed<NavItem[]>(() => {
         items.push(
             { id: 'competitions', title: t('navigation.competitions'), href: competitionsIndex(), icon: Swords },
             { id: 'admin-teams', title: t('navigation.teams'), href: adminTeamsIndex(), icon: Users },
+            // Session-scoped via Event Selector (selected_event_id), per spec.
+            { id: 'competition-board', title: t('navigation.competitionBoard'), href: '/backstage/competition-board', icon: ChartGantt },
         );
     }
     if (can(Permission.ManageGames)) {
@@ -401,6 +410,7 @@ const labels = {
     competition: computed(() => [
         t('navigation.competitions'),
         t('navigation.teams'),
+        t('navigation.competitionBoard'),
     ]),
     orchestration: computed(() => {
         const out: string[] = [];
@@ -441,10 +451,9 @@ const labels = {
         </SidebarHeader>
 
         <EventSelector />
+        <SidebarSearch v-model="search" />
 
         <SidebarContent>
-            <SidebarSearch v-model="search" />
-
             <NavMain :items="mainNavItems" />
 
             <NavFavorites :all-items="allPinnableItems" />
@@ -808,6 +817,13 @@ const labels = {
                         :label="t('navigation.teams')"
                         :icon="Users"
                         :href="adminTeamsIndex().url"
+                        :search-query="search"
+                    />
+                    <SidebarLink
+                        favorite-id="competition-board"
+                        :label="t('navigation.competitionBoard')"
+                        :icon="ChartGantt"
+                        href="/backstage/competition-board"
                         :search-query="search"
                     />
                 </SidebarMenu>

@@ -14,8 +14,8 @@ import { index as requirementsIndex } from '@/routes/purchase-requirements';
 import type { BreadcrumbItem } from '@/types';
 
 defineProps<{
-    ticketTypes: { id: number; name: string }[];
-    addons: { id: number; name: string }[];
+    ticketTypes: { id: string; name: string }[];
+    addons: { id: string; name: string }[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

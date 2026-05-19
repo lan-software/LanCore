@@ -8,6 +8,7 @@ use App\Domain\Games\Models\GameMode;
 use App\Domain\Orchestration\Enums\OrchestrationJobStatus;
 use Database\Factories\OrchestrationJobFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +28,8 @@ class OrchestrationJob extends Model
     /** @use HasFactory<OrchestrationJobFactory> */
     use HasFactory;
 
+    use HasUlids;
+
     protected static function newFactory(): OrchestrationJobFactory
     {
         return OrchestrationJobFactory::new();
@@ -38,7 +41,7 @@ class OrchestrationJob extends Model
     protected function casts(): array
     {
         return [
-            'lanbrackets_match_id' => 'integer',
+            'lanbrackets_match_id' => 'string',
             'status' => OrchestrationJobStatus::class,
             'match_config' => 'array',
             'attempts' => 'integer',

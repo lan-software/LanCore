@@ -6,11 +6,13 @@ use App\Domain\Competition\Enums\CompetitionStatus;
 use App\Domain\Competition\Enums\CompetitionType;
 use App\Domain\Competition\Enums\ResultSubmissionMode;
 use App\Domain\Competition\Enums\StageType;
+use App\Domain\CompetitionSchedule\Models\CompetitionStageSchedule;
 use App\Domain\Event\Models\Event;
 use App\Domain\Games\Models\Game;
 use App\Domain\Games\Models\GameMode;
 use Database\Factories\CompetitionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +32,8 @@ class Competition extends Model
 {
     /** @use HasFactory<CompetitionFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): CompetitionFactory
     {
@@ -51,7 +55,7 @@ class Competition extends Model
             'registration_closes_at' => 'datetime',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
-            'lanbrackets_id' => 'integer',
+            'lanbrackets_id' => 'string',
             'settings' => 'array',
             'metadata' => 'array',
             'signup_rules' => 'array',
@@ -110,6 +114,13 @@ class Competition extends Model
     public function matchResultProofs(): HasMany
     {
         return $this->hasMany(MatchResultProof::class);
+    }
+
+    /** @return HasMany<CompetitionStageSchedule, $this> */
+    public function stageSchedules(): HasMany
+    {
+        return $this->hasMany(CompetitionStageSchedule::class)
+            ->orderBy('sequence');
     }
 
     public function isRegistrationOpen(): bool

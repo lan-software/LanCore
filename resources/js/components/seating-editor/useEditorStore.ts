@@ -265,15 +265,15 @@ export function useEditorStore(initial: EditorPlan) {
         selection.value = [];
     }
 
-    function findBlock(id: number | string): EditorBlock | null {
+    function findBlock(id: string | string): EditorBlock | null {
         const idStr = String(id);
 
         return plan.value.blocks.find((b) => String(b.id) === idStr) ?? null;
     }
 
     function findRow(
-        blockId: number | string,
-        rowId: number | string,
+        blockId: string | string,
+        rowId: string | string,
     ): EditorRow | null {
         const block = findBlock(blockId);
 
@@ -287,8 +287,8 @@ export function useEditorStore(initial: EditorPlan) {
     }
 
     function findSeat(
-        blockId: number | string,
-        seatId: number | string,
+        blockId: string | string,
+        seatId: string | string,
     ): EditorSeat | null {
         const block = findBlock(blockId);
 
@@ -302,8 +302,8 @@ export function useEditorStore(initial: EditorPlan) {
     }
 
     function findLabel(
-        blockId: number | string | undefined | null,
-        labelId: number | string,
+        blockId: string | string | undefined | null,
+        labelId: string | string,
     ): EditorLabel | null {
         const idStr = String(labelId);
 

@@ -10,6 +10,7 @@ use App\Domain\Ticketing\Security\TicketTokenService;
 use App\Models\User;
 use Database\Factories\TicketFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,6 +33,8 @@ class Ticket extends Model
 {
     /** @use HasFactory<TicketFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     /**
      * Rotate this ticket's signed LCT1 token.

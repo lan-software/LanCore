@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('policies', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('policy_type_id')->constrained('policy_types')->restrictOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('policy_type_id')->constrained('policy_types')->restrictOnDelete();
             $table->string('key', 64)->unique();
             $table->string('name', 128);
             $table->text('description')->nullable();

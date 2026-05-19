@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('themes', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name')->unique();
             $table->string('description')->nullable();
             $table->json('light_config')->nullable();

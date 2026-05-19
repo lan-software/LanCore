@@ -200,11 +200,11 @@ class PublicEventController extends Controller
      * action; this method enforces the same visibility check on arrival so
      * a stale or hand-crafted URL can't leak a private seat.
      */
-    private function resolveFocusSeatId(Event $event, Request $request): ?int
+    private function resolveFocusSeatId(Event $event, Request $request): ?string
     {
-        $focusUserId = $request->integer('focus_user');
+        $focusUserId = $request->string('focus_user')->toString();
 
-        if ($focusUserId <= 0) {
+        if ($focusUserId === '') {
             return null;
         }
 

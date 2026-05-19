@@ -8,6 +8,7 @@ use Database\Factories\SeatAssignmentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,8 @@ class SeatAssignment extends Model implements AuditableContract
 
     /** @use HasFactory<SeatAssignmentFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     /**
      * @var list<string>
@@ -89,7 +92,7 @@ class SeatAssignment extends Model implements AuditableContract
      *
      * @param  Builder<SeatAssignment>  $query
      */
-    public function scopeForEvent(Builder $query, int $eventId): Builder
+    public function scopeForEvent(Builder $query, string $eventId): Builder
     {
         return $query->whereHas('seatPlan', fn (Builder $plan) => $plan->where('event_id', $eventId));
     }

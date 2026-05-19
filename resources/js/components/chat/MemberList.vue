@@ -24,7 +24,7 @@ import type { ChatMemberDto, MemberPresenceMap } from './types';
 
 const props = withDefaults(
     defineProps<{
-        roomId: number;
+        roomId: string;
         members: ChatMemberDto[];
         presence: MemberPresenceMap;
         canModerate: boolean;
@@ -51,7 +51,7 @@ watch(
 );
 
 interface PresenceChangedPayload {
-    user_id: number;
+    user_id: string;
     status: PresenceStatus;
 }
 
@@ -67,11 +67,11 @@ useEchoPresence<PresenceChangedPayload>(
     [props.roomId],
 );
 
-function statusFor(userId: number): PresenceStatus {
+function statusFor(userId: string): PresenceStatus {
     return livePresence.value[userId] ?? 'offline';
 }
 
-function isInChat(userId: number): boolean {
+function isInChat(userId: string): boolean {
     return props.presentUserIds.has(userId);
 }
 

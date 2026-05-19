@@ -25,7 +25,7 @@ class StoreVoucherRequest extends FormRequest
             'valid_from' => ['nullable', 'date'],
             'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'is_active' => ['sometimes', 'boolean'],
-            'event_id' => ['nullable', 'integer', 'exists:events,id'],
+            'event_id' => ['nullable', 'string', 'ulid', 'exists:events,id'],
         ];
     }
 

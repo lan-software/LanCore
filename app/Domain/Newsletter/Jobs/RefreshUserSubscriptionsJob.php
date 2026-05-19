@@ -26,7 +26,7 @@ class RefreshUserSubscriptionsJob implements ShouldQueue
 
     public int $tries = 2;
 
-    public function __construct(public readonly int $userId) {}
+    public function __construct(public readonly string $userId) {}
 
     public function handle(RefreshUserSubscriptions $action): void
     {

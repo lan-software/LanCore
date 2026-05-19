@@ -11,11 +11,11 @@ class EventContextController extends Controller
 {
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'event_id' => ['required', 'integer', 'exists:events,id'],
+        $validated = $request->validate([
+            'event_id' => ['required', 'string', 'ulid', 'exists:events,id'],
         ]);
 
-        $request->session()->put('selected_event_id', (int) $request->input('event_id'));
+        $request->session()->put('selected_event_id', $validated['event_id']);
 
         return back();
     }
@@ -30,10 +30,10 @@ class EventContextController extends Controller
     public function storeMy(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'event_id' => ['required', 'integer', 'exists:events,id'],
+            'event_id' => ['required', 'string', 'ulid', 'exists:events,id'],
         ]);
 
-        $eventId = (int) $validated['event_id'];
+        $eventId = $validated['event_id'];
         $user = $request->user();
 
         $isAllowed = Event::query()->forUser($user)->whereKey($eventId)->exists();

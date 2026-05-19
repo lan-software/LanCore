@@ -11,26 +11,26 @@ import { index as myCompetitionsRoute } from '@/routes/my-competitions';
 import type { BreadcrumbItem } from '@/types';
 
 interface MatchParticipant {
-    participant_id: number;
-    team_id: number | null;
+    participant_id: string;
+    team_id: string | null;
     team_name: string | null;
     score: number | null;
     result: string | null;
 }
 
 interface Match {
-    id: number;
+    id: string;
     round_number: number | null;
     sequence: number | null;
     status: string | null;
     participants: MatchParticipant[];
     user_is_participant: boolean;
-    chat_room_id: number | null;
+    chat_room_id: string | null;
     chat_room_status: 'open' | 'write_locked' | 'archived' | null;
 }
 
 interface Stage {
-    id: number;
+    id: string;
     name: string | null;
     stage_type: string | null;
     status: string | null;
@@ -40,8 +40,8 @@ interface Stage {
 const { t } = useI18n();
 
 const props = defineProps<{
-    competition: { id: number; name: string };
-    userTeam: { id: number; name: string } | null;
+    competition: { id: string; name: string };
+    userTeam: { id: string; name: string } | null;
     stages: Stage[];
 }>();
 

@@ -12,13 +12,13 @@ import type { BreadcrumbItem } from '@/types';
 const { t } = useI18n();
 
 interface TeamItem {
-    id: number;
+    id: string;
     name: string;
     tag: string | null;
     is_captain: boolean;
     active_members_count: number;
     competition: {
-        id: number;
+        id: string;
         name: string;
         status: string;
         type: string;

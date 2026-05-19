@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chat_moderation_actions', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('room_id')
+            $table->ulid('id')->primary();
+            $table->foreignUlid('room_id')
                 ->constrained('chat_rooms')
                 ->cascadeOnDelete();
-            $table->foreignId('actor_id')
+            $table->foreignUlid('actor_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
-            $table->foreignId('target_user_id')
+            $table->foreignUlid('target_user_id')
                 ->nullable()
                 ->constrained('users')
                 ->nullOnDelete();

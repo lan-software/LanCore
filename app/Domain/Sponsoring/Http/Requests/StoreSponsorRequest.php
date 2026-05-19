@@ -21,9 +21,9 @@ class StoreSponsorRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'link' => ['nullable', 'url', 'max:2048'],
             'logo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp,svg', 'max:2048'],
-            'sponsor_level_id' => ['nullable', 'integer', 'exists:sponsor_levels,id'],
+            'sponsor_level_id' => ['nullable', 'string', 'ulid', 'exists:sponsor_levels,id'],
             'event_ids' => ['sometimes', 'array'],
-            'event_ids.*' => ['integer', 'exists:events,id'],
+            'event_ids.*' => ['string', 'ulid', 'exists:events,id'],
         ];
     }
 }

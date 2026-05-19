@@ -51,7 +51,7 @@ class EnsureMatchRoomOnReady
      * @param  array<string, mixed>  $matchData
      * @return array<int, int>
      */
-    private function extractParticipantUserIds(array $matchData, int $competitionId): array
+    private function extractParticipantUserIds(array $matchData, string $competitionId): array
     {
         $participantIds = collect($matchData['participants'] ?? [])
             ->pluck('competition_participant_id')

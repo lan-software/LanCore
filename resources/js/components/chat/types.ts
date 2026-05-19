@@ -4,15 +4,15 @@ import type { PresenceStatus } from '@/composables/usePresence';
 export type RoomStatus = 'open' | 'write_locked' | 'archived';
 
 export interface ChatUserRef {
-    id: number;
+    id: string;
     name: string | null;
     username: string | null;
 }
 
 export interface ChatMessageDto {
-    id: number;
-    room_id: number;
-    user_id: number | null;
+    id: string;
+    room_id: string;
+    user_id: string | null;
     user: ChatUserRef | null;
     body: string;
     mentions: number[];
@@ -21,20 +21,20 @@ export interface ChatMessageDto {
 }
 
 export interface ChatMemberDto {
-    user_id: number;
+    user_id: string;
     name: string | null;
     username: string | null;
     role: string | null;
     muted_until: string | null;
     /** Set by `CompetitionMemberAnnotator` when the room is a competition room. */
     is_admin?: boolean;
-    team_id?: number | null;
+    team_id?: string | null;
     team_name?: string | null;
     team_tag?: string | null;
 }
 
 export interface ChatRoomDto {
-    id: number;
+    id: string;
     key: string;
     title: string | null;
     status: RoomStatus;

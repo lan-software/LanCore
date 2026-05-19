@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('order_lines', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('order_id')->constrained()->cascadeOnDelete();
             $table->string('purchasable_type');
-            $table->unsignedBigInteger('purchasable_id');
+            $table->ulid('purchasable_id');
             $table->string('description');
             $table->unsignedInteger('quantity');
             $table->unsignedInteger('unit_price');

@@ -48,7 +48,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function updateCompetition(int $id, array $data): array
+    public function updateCompetition(string $id, array $data): array
     {
         $this->ensureEnabled();
 
@@ -70,7 +70,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function deleteCompetition(int $id): void
+    public function deleteCompetition(string $id): void
     {
         $this->ensureEnabled();
 
@@ -92,7 +92,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function getCompetition(int $id): array
+    public function getCompetition(string $id): array
     {
         $this->ensureEnabled();
 
@@ -182,7 +182,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function addParticipant(int $competitionId, array $data): array
+    public function addParticipant(string $competitionId, array $data): array
     {
         $this->ensureEnabled();
 
@@ -207,7 +207,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function bulkAddParticipants(int $competitionId, array $participants): array
+    public function bulkAddParticipants(string $competitionId, array $participants): array
     {
         $this->ensureEnabled();
 
@@ -231,7 +231,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function withdrawParticipant(int $competitionId, int $participantId): void
+    public function withdrawParticipant(string $competitionId, string $participantId): void
     {
         $this->ensureEnabled();
 
@@ -254,7 +254,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function reportMatchResult(int $competitionId, int $matchId, array $scores): array
+    public function reportMatchResult(string $competitionId, string $matchId, array $scores): array
     {
         $this->ensureEnabled();
 
@@ -280,7 +280,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function getStages(int $competitionId): array
+    public function getStages(string $competitionId): array
     {
         $this->ensureEnabled();
 
@@ -309,7 +309,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function generateStage(int $competitionId, int $stageId): array
+    public function generateStage(string $competitionId, string $stageId): array
     {
         $this->ensureEnabled();
 
@@ -333,7 +333,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function getMatches(int $competitionId, int $stageId): array
+    public function getMatches(string $competitionId, string $stageId): array
     {
         $this->ensureEnabled();
 
@@ -357,7 +357,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function getStandings(int $competitionId): array
+    public function getStandings(string $competitionId): array
     {
         $this->ensureEnabled();
 
@@ -379,7 +379,7 @@ class LanBracketsClient
      * @throws LanBracketsDisabledException
      * @throws LanBracketsRequestException
      */
-    public function regenerateShareToken(int $competitionId): string
+    public function regenerateShareToken(string $competitionId): string
     {
         $this->ensureEnabled();
 

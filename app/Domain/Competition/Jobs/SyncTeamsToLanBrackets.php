@@ -94,7 +94,7 @@ class SyncTeamsToLanBrackets implements ShouldQueue
      * prior `lanbrackets_id` to fall back on. 5xx errors re-raise so the queue
      * retries.
      */
-    private function upsertTeam(LanBracketsClient $client, int $competitionId, CompetitionTeam $team): bool
+    private function upsertTeam(LanBracketsClient $client, string $returnedId, CompetitionTeam $team): bool
     {
         $payload = [
             'name' => $team->name,

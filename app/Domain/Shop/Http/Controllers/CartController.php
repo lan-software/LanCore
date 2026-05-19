@@ -107,9 +107,9 @@ class CartController extends Controller
 
         $request->validate([
             'purchasable_type' => ['required', 'string', 'in:ticket_type,addon'],
-            'purchasable_id' => ['required', 'integer'],
+            'purchasable_id' => ['required', 'string', 'ulid'],
             'quantity' => ['sometimes', 'integer', 'min:1'],
-            'event_id' => ['required', 'integer', 'exists:events,id'],
+            'event_id' => ['required', 'string', 'ulid', 'exists:events,id'],
         ]);
 
         $cart = Cart::forUser($user);
@@ -436,7 +436,7 @@ class CartController extends Controller
     {
         $request->validate([
             'acknowledgeable_type' => ['required', 'string', 'in:global_purchase_condition,payment_provider_condition,purchase_requirement'],
-            'acknowledgeable_id' => ['required', 'integer'],
+            'acknowledgeable_id' => ['required', 'string', 'ulid'],
             'acknowledgement_key' => ['nullable', 'string', 'max:255'],
         ]);
 

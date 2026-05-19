@@ -10,7 +10,7 @@ import SettingsLayout from '@/layouts/settings/Layout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 type EarnedAchievement = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     color: string;
@@ -21,7 +21,7 @@ type EarnedAchievement = {
 };
 
 type AchievementSummary = {
-    id: number;
+    id: string;
     name: string;
     color: string;
     icon: string;

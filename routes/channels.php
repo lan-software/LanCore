@@ -1,6 +1,8 @@
 <?php
 
 use App\Domain\Chat\Broadcasting\ChatRoomChannel;
+use App\Domain\Competition\Enums\Permission;
+use App\Domain\Event\Models\Event;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -18,4 +20,18 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
  */
 Broadcast::channel('chat.room.{roomId}', function (User $user, int $roomId): array|false {
     return app(ChatRoomChannel::class)->join($user, $roomId);
+});
+
+/**
+ * Competition board scheduling channel — only competition managers receive
+ * StageScheduleUpdated broadcasts for the given event.
+ *
+ * @see docs/mil-std-498/SRS.md COMP-SCH-006
+ */
+Broadcast::channel('event.{eventId}.competition-board', function (User $user, string $eventId): bool {
+    if (! $user->hasPermission(Permission::ManageCompetitions)) {
+        return false;
+    }
+
+    return Event::query()->whereKey($eventId)->exists();
 });

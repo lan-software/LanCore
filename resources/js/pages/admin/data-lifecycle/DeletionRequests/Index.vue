@@ -4,14 +4,14 @@ import Heading from '@/components/Heading.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 type DeletionRequest = {
-    id: number;
+    id: string;
     status: string;
     initiator: string;
-    user_id: number;
+    user_id: string;
     created_at: string;
     scheduled_for: string | null;
     user: {
-        id: number;
+        id: string;
         name: string | null;
         email: string | null;
         deleted_at: string | null;

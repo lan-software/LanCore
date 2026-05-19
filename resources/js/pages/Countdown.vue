@@ -12,13 +12,13 @@ import { index as shopIndex } from '@/routes/shop';
 
 const props = defineProps<{
     event: {
-        id: number;
+        id: string;
         name: string;
         start_date: string | null;
         banner_image_urls: string[];
     } | null;
     newsletter: {
-        list_id: number;
+        list_id: string;
         list_name: string;
         list_description: string | null;
     } | null;

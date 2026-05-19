@@ -5,6 +5,7 @@ namespace App\Domain\Policy\Models;
 use Database\Factories\PolicyFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +29,8 @@ class Policy extends Model implements AuditableContract
 
     /** @use HasFactory<PolicyFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected $table = 'policies';
 

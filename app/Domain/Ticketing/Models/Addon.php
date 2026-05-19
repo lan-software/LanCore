@@ -8,6 +8,7 @@ use App\Domain\Shop\Contracts\Purchasable;
 use App\Domain\Shop\Contracts\PurchasableDependency;
 use Database\Factories\AddonFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +31,7 @@ class Addon extends Model implements AuditableContract, Purchasable
     /** @use HasFactory<AddonFactory> */
     use HasFactory;
 
+    use HasUlids;
     use InteractsWithShop;
 
     protected $table = 'ticket_addons';

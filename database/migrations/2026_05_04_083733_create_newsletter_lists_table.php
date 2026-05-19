@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('newsletter_lists', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->unsignedBigInteger('listmonk_id')->unique();
             $table->string('name');
             $table->string('description')->nullable();

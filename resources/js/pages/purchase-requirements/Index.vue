@@ -21,7 +21,7 @@ import { index as requirementsIndex } from '@/routes/purchase-requirements';
 import type { BreadcrumbItem } from '@/types';
 
 type PurchaseRequirementRow = {
-    id: number;
+    id: string;
     name: string;
     is_active: boolean;
     ticket_types_count: number;

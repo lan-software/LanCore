@@ -59,11 +59,11 @@ export type SeatPlanScenePlan = SeatPlanData & {
 export type SeatPlanImperativeHandle = {
     fitToVenue(options?: { animated?: boolean; padding?: number }): void;
     zoomToBlock(
-        blockId: number | string,
+        blockId: string | string,
         options?: { animated?: boolean; padding?: number },
     ): void;
     zoomToSeat(
-        seatId: number | string,
+        seatId: string | string,
         options?: { animated?: boolean; padding?: number },
     ): void;
     zoomToBoundingBox(
@@ -71,10 +71,10 @@ export type SeatPlanImperativeHandle = {
         options?: { animated?: boolean; padding?: number },
     ): void;
     pulseSeat(
-        seatId: number | string,
+        seatId: string | string,
         options?: { durationMs?: number },
     ): void;
-    getSeatScreenRect(seatId: number | string): DOMRect | null;
+    getSeatScreenRect(seatId: string | string): DOMRect | null;
     getView(): ViewState;
     setView(view: Partial<ViewState>, options?: { animated?: boolean }): void;
 };

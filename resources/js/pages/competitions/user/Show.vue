@@ -85,7 +85,7 @@ function leaveTeam() {
     }
 
     const authUserId = (
-        page.props.auth as { user?: { id: number } } | undefined
+        page.props.auth as { user?: { id: string } } | undefined
     )?.user?.id;
     const isCaptain =
         authUserId != null && props.userTeam.captain_user_id === authUserId;
@@ -110,10 +110,10 @@ function leaveTeam() {
     );
 }
 
-const requestingTeamId = ref<number | null>(null);
-const mailAnimTeamId = ref<number | null>(null);
+const requestingTeamId = ref<string | null>(null);
+const mailAnimTeamId = ref<string | null>(null);
 
-function requestJoin(teamId: number) {
+function requestJoin(teamId: string) {
     requestingTeamId.value = teamId;
     router.post(
         TeamController.requestJoin({

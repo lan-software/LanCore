@@ -36,7 +36,7 @@ import type { Role, User } from '@/types/auth';
 import type { Order, Ticket } from '@/types/domain';
 
 type DeletionRequestRow = {
-    id: number;
+    id: string;
     status: string;
     initiator: string;
     reason: string | null;
@@ -50,15 +50,15 @@ type DeletionRequestRow = {
 type AdminTicket = Ticket & { admin_role: 'owned' | 'managed' | 'assigned' };
 
 type CommentRow = {
-    id: number;
+    id: string;
     content: string;
     is_approved: boolean;
     created_at: string;
-    article: { id: number; title: string; slug: string } | null;
+    article: { id: string; title: string; slug: string } | null;
 };
 
 type NewsletterListRow = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     status: 'enabled' | 'unsubscribed' | 'blocklisted';
@@ -278,7 +278,7 @@ const showLifecycleTab = computed(
         props.deletionRequests.length > 0,
 );
 
-const newsletterForm = useForm<{ subscribed_list_ids: number[] }>({
+const newsletterForm = useForm<{ subscribed_list_ids: string[] }>({
     subscribed_list_ids: [],
 });
 
@@ -304,11 +304,11 @@ watch(
     { immediate: true },
 );
 
-function isNewsletterSubscribed(listId: number): boolean {
+function isNewsletterSubscribed(listId: string): boolean {
     return newsletterForm.subscribed_list_ids.includes(listId);
 }
 
-function toggleNewsletterSubscription(listId: number, enabled: boolean) {
+function toggleNewsletterSubscription(listId: string, enabled: boolean) {
     if (enabled) {
         if (!newsletterForm.subscribed_list_ids.includes(listId)) {
             newsletterForm.subscribed_list_ids.push(listId);

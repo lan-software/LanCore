@@ -5,6 +5,7 @@ namespace App\Domain\DataLifecycle\Models;
 use App\Domain\DataLifecycle\Enums\RetentionDataClass;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use LogicException;
@@ -22,6 +23,8 @@ use LogicException;
 ])]
 class AnonymizationLogEntry extends Model
 {
+    use HasUlids;
+
     public $timestamps = false;
 
     protected $dates = ['retention_until', 'completed_at', 'created_at'];

@@ -21,15 +21,15 @@ class UpdateProgramRequest extends FormRequest
             'visibility' => ['required', 'string', Rule::enum(ProgramVisibility::class)],
             'is_primary' => ['sometimes', 'boolean'],
             'sponsor_ids' => ['sometimes', 'array'],
-            'sponsor_ids.*' => ['integer', 'exists:sponsors,id'],
+            'sponsor_ids.*' => ['string', 'ulid', 'exists:sponsors,id'],
             'time_slots' => ['sometimes', 'array'],
-            'time_slots.*.id' => ['sometimes', 'nullable', 'integer', 'exists:time_slots,id'],
+            'time_slots.*.id' => ['sometimes', 'nullable', 'string', 'ulid', 'exists:time_slots,id'],
             'time_slots.*.name' => ['required', 'string', 'max:255'],
             'time_slots.*.description' => ['nullable', 'string'],
             'time_slots.*.starts_at' => ['required', 'date'],
             'time_slots.*.visibility' => ['required', 'string', Rule::enum(ProgramVisibility::class)],
             'time_slots.*.sponsor_ids' => ['sometimes', 'array'],
-            'time_slots.*.sponsor_ids.*' => ['integer', 'exists:sponsors,id'],
+            'time_slots.*.sponsor_ids.*' => ['string', 'ulid', 'exists:sponsors,id'],
         ];
     }
 }

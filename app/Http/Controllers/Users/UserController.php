@@ -118,7 +118,7 @@ class UserController extends Controller
             ? collect()
             : User::with('roles')->whereIn('id', $pageIds)->get()->keyBy('id');
         $orderedUsers = collect($pageIds)
-            ->map(fn (int $id) => $usersById->get($id))
+            ->map(fn (string $usersById) => $usersById->get($id))
             ->filter()
             ->values();
 
@@ -312,7 +312,7 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer'],
+            'ids.*' => ['string', 'ulid'],
         ]);
 
         $users = User::whereIn('id', $validated['ids'])->get();

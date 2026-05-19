@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ticket_groups', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('event_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

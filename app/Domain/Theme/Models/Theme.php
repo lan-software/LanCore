@@ -5,6 +5,7 @@ namespace App\Domain\Theme\Models;
 use App\Domain\Event\Models\Event;
 use Database\Factories\ThemeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +13,7 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @property int $id
+ * @property string $id
  * @property string $name
  * @property string|null $description
  * @property array<string, string>|null $light_config
@@ -29,6 +30,8 @@ class Theme extends Model implements AuditableContract
 
     /** @use HasFactory<ThemeFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): ThemeFactory
     {

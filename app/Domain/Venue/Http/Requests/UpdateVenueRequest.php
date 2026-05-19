@@ -22,7 +22,7 @@ class UpdateVenueRequest extends FormRequest
             'state' => ['nullable', 'string', 'max:255'],
             'country' => ['required', 'string', 'max:255'],
             'existing_images' => ['sometimes', 'array'],
-            'existing_images.*.id' => ['required', 'integer', 'exists:venue_images,id'],
+            'existing_images.*.id' => ['required', 'string', 'ulid', 'exists:venue_images,id'],
             'existing_images.*.alt_text' => ['nullable', 'string', 'max:255'],
             'new_images' => ['sometimes', 'array'],
             'new_images.*.file' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],

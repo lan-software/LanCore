@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 interface InviteData {
-    id: number;
+    id: string;
     token: string;
     team: {
         name: string;

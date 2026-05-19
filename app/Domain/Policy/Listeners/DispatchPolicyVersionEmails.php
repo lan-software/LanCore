@@ -36,8 +36,8 @@ class DispatchPolicyVersionEmails implements ShouldQueue
         foreach ($userIds->chunk(500) as $chunk) {
             foreach ($chunk as $userId) {
                 SendPolicyPublishedEmailJob::dispatch(
-                    (int) $userId,
-                    $policyId,
+                    (string) $userId,
+                    (string) $policyId,
                     $event->versionNumber,
                 );
             }

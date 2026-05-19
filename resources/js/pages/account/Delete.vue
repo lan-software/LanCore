@@ -9,7 +9,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 
 type PendingRequest = {
-    id: number;
+    id: string;
     status: string;
     scheduled_for: string | null;
     email_confirmed_at: string | null;

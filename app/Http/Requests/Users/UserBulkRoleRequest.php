@@ -17,7 +17,7 @@ class UserBulkRoleRequest extends FormRequest
     {
         return [
             'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer'],
+            'ids.*' => ['string', 'ulid'],
             'role' => ['required', 'string', Rule::in(array_column(RoleName::cases(), 'value'))],
         ];
     }

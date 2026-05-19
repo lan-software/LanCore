@@ -49,14 +49,14 @@ class IntegrationUserController extends Controller
         $app = $request->attributes->get('integration_app');
 
         $request->validate([
-            'user_id' => ['required_without:email', 'nullable', 'integer'],
+            'user_id' => ['required_without:email', 'nullable', 'string', 'ulid'],
             'email' => ['required_without:user_id', 'nullable', 'email'],
         ]);
 
         $user = null;
 
         if ($request->filled('user_id')) {
-            $user = User::find($request->integer('user_id'));
+            $user = User::find($request->string('user_id')->toString());
         } elseif ($request->filled('email')) {
             $user = User::where('email', $request->string('email'))->first();
         }

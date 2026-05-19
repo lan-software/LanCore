@@ -23,9 +23,9 @@ import { index as shopIndex } from '@/routes/shop';
 import type { Event } from '@/types/domain';
 
 type CartItemData = {
-    id: number;
+    id: string;
     purchasable_type: string;
-    purchasable_id: number;
+    purchasable_id: string;
     quantity: number;
     name: string;
     description: string | null;

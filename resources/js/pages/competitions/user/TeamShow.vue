@@ -16,8 +16,8 @@ import type { BreadcrumbItem } from '@/types';
 const { t } = useI18n();
 
 interface Member {
-    id: number;
-    user_id: number;
+    id: string;
+    user_id: string;
     name: string | null;
     email: string | null;
     joined_at: string | null;
@@ -25,7 +25,7 @@ interface Member {
 }
 
 interface JoinRequest {
-    id: number;
+    id: string;
     user_name: string;
     user_email: string;
     message: string | null;
@@ -33,19 +33,19 @@ interface JoinRequest {
 }
 
 interface PendingInvite {
-    id: number;
+    id: string;
     email: string;
     expires_at: string;
 }
 
 interface TeamDetail {
-    id: number;
+    id: string;
     name: string;
     tag: string | null;
-    captain: { id: number; name: string; email: string } | null;
+    captain: { id: string; name: string; email: string } | null;
     is_captain: boolean;
     competition: {
-        id: number;
+        id: string;
         name: string;
         status: string;
         type: string;
@@ -93,7 +93,7 @@ function leaveTeam() {
     );
 }
 
-function resolveRequest(requestId: number, action: 'approve' | 'deny') {
+function resolveRequest(requestId: string, action: 'approve' | 'deny') {
     router.post(
         `/teams/join-requests/${requestId}/resolve`,
         { action },

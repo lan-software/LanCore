@@ -18,7 +18,7 @@ class StoreSeatPlanRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'event_id' => ['required', 'integer', 'exists:events,id'],
+            'event_id' => ['required', 'string', 'ulid', 'exists:events,id'],
             'background_image_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
             'data' => ['sometimes', 'nullable'],
         ];

@@ -13,7 +13,7 @@ type Perspective = 'on' | 'by';
 
 interface ByAudit extends Audit {
     auditable_type?: string | null;
-    auditable_id?: number | null;
+    auditable_id?: string | null;
 }
 
 interface PaginatedAudits {
@@ -30,7 +30,7 @@ interface PaginatedAudits {
 }
 
 const props = defineProps<{
-    user: { id: number; name: string; email: string };
+    user: { id: string; name: string; email: string };
     perspective: Perspective;
     audits: PaginatedAudits;
 }>();

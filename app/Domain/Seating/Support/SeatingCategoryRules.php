@@ -21,7 +21,7 @@ class SeatingCategoryRules
      * Expects the pivot to be eager-loaded via `with('categoryRestrictions')`
      * to avoid N+1.
      */
-    public static function blockAccepts(SeatPlanBlock $block, ?int $categoryId): bool
+    public static function blockAccepts(SeatPlanBlock $block, ?string $categoryId): bool
     {
         $allowed = self::allowedCategoryIds($block);
 

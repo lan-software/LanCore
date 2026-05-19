@@ -15,8 +15,8 @@ use Illuminate\Support\Carbon;
  * E-Mail Settings card without round-tripping on every page load.
  *
  * @property int $id
- * @property int $newsletter_list_id
- * @property int $user_id
+ * @property string $newsletter_list_id
+ * @property string $user_id
  * @property int|null $listmonk_subscriber_id
  * @property SubscriptionStatus $status
  * @property Carbon|null $subscribed_at

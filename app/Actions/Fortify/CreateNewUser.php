@@ -32,7 +32,7 @@ class CreateNewUser implements CreatesNewUsers
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
             'accepted_policy_version_ids' => ['sometimes', 'array'],
-            'accepted_policy_version_ids.*' => ['integer', 'exists:policy_versions,id'],
+            'accepted_policy_version_ids.*' => ['string', 'ulid', 'exists:policy_versions,id'],
         ])->validate();
 
         $requiredVersions = $this->resolveRequiredVersions();

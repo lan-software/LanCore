@@ -5,6 +5,7 @@ use App\Domain\Presence\Services\PresenceTracker;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Str;
 
 beforeEach(function (): void {
     Config::set('presence.idle_after', 300);
@@ -13,12 +14,13 @@ beforeEach(function (): void {
 });
 
 it('writes a heartbeat with the configured TTL', function (): void {
-    $user = User::factory()->make(['id' => 42]);
+    $userId = (string) Str::ulid();
+    $user = User::factory()->make(['id' => $userId]);
 
     $connection = Mockery::mock();
     $connection->shouldReceive('setex')
         ->once()
-        ->with('presence:user:42', 1800, Mockery::type('string'));
+        ->with("presence:user:{$userId}", 1800, Mockery::type('string'));
 
     Redis::shouldReceive('connection')->with('default')->andReturn($connection);
 
@@ -26,12 +28,13 @@ it('writes a heartbeat with the configured TTL', function (): void {
 });
 
 it('returns Active when the heartbeat is fresh', function (): void {
-    $user = User::factory()->make(['id' => 1]);
+    $userId = (string) Str::ulid();
+    $user = User::factory()->make(['id' => $userId]);
 
     $connection = Mockery::mock();
     $connection->shouldReceive('get')
         ->once()
-        ->with('presence:user:1')
+        ->with("presence:user:{$userId}")
         ->andReturn((string) now()->subSeconds(30)->getTimestamp());
 
     Redis::shouldReceive('connection')->andReturn($connection);
@@ -40,7 +43,7 @@ it('returns Active when the heartbeat is fresh', function (): void {
 });
 
 it('returns Idle between idle_after and offline_after', function (): void {
-    $user = User::factory()->make(['id' => 1]);
+    $user = User::factory()->make(['id' => (string) Str::ulid()]);
 
     $connection = Mockery::mock();
     $connection->shouldReceive('get')
@@ -52,7 +55,7 @@ it('returns Idle between idle_after and offline_after', function (): void {
 });
 
 it('returns Offline when the key is missing', function (): void {
-    $user = User::factory()->make(['id' => 1]);
+    $user = User::factory()->make(['id' => (string) Str::ulid()]);
 
     $connection = Mockery::mock();
     $connection->shouldReceive('get')->andReturn(null);
@@ -63,7 +66,7 @@ it('returns Offline when the key is missing', function (): void {
 });
 
 it('returns Offline when the heartbeat is older than offline_after', function (): void {
-    $user = User::factory()->make(['id' => 1]);
+    $user = User::factory()->make(['id' => (string) Str::ulid()]);
 
     $connection = Mockery::mock();
     $connection->shouldReceive('get')
@@ -78,7 +81,7 @@ it('honours overridden thresholds from config', function (): void {
     Config::set('presence.idle_after', 60);
     Config::set('presence.offline_after', 120);
 
-    $user = User::factory()->make(['id' => 1]);
+    $user = User::factory()->make(['id' => (string) Str::ulid()]);
 
     $connection = Mockery::mock();
     $connection->shouldReceive('get')
@@ -90,13 +93,15 @@ it('honours overridden thresholds from config', function (): void {
 });
 
 it('issues a single mget regardless of input size', function (): void {
+    $ids = [(string) Str::ulid(), (string) Str::ulid(), (string) Str::ulid()];
+
     $connection = Mockery::mock();
     $connection->shouldReceive('mget')
         ->once()
         ->with([
-            'presence:user:1',
-            'presence:user:2',
-            'presence:user:3',
+            "presence:user:{$ids[0]}",
+            "presence:user:{$ids[1]}",
+            "presence:user:{$ids[2]}",
         ])
         ->andReturn([
             (string) now()->subSeconds(30)->getTimestamp(),
@@ -106,28 +111,31 @@ it('issues a single mget regardless of input size', function (): void {
 
     Redis::shouldReceive('connection')->andReturn($connection);
 
-    $result = (new PresenceTracker)->bulkStatusFor([1, 2, 3]);
+    $result = (new PresenceTracker)->bulkStatusFor($ids);
 
     expect($result)->toBe([
-        1 => PresenceStatus::Active,
-        2 => PresenceStatus::Idle,
-        3 => PresenceStatus::Offline,
+        $ids[0] => PresenceStatus::Active,
+        $ids[1] => PresenceStatus::Idle,
+        $ids[2] => PresenceStatus::Offline,
     ]);
 });
 
 it('deduplicates user ids before querying', function (): void {
+    $idA = (string) Str::ulid();
+    $idB = (string) Str::ulid();
+
     $connection = Mockery::mock();
     $connection->shouldReceive('mget')
         ->once()
         ->with([
-            'presence:user:1',
-            'presence:user:2',
+            "presence:user:{$idA}",
+            "presence:user:{$idB}",
         ])
         ->andReturn([null, null]);
 
     Redis::shouldReceive('connection')->andReturn($connection);
 
-    $result = (new PresenceTracker)->bulkStatusFor([1, 2, 1, 2]);
+    $result = (new PresenceTracker)->bulkStatusFor([$idA, $idB, $idA, $idB]);
 
     expect($result)->toHaveCount(2);
 });
@@ -139,7 +147,7 @@ it('returns an empty array for an empty input', function (): void {
 });
 
 it('swallows redis failures on touch', function (): void {
-    $user = User::factory()->make(['id' => 1]);
+    $user = User::factory()->make(['id' => (string) Str::ulid()]);
 
     $connection = Mockery::mock();
     $connection->shouldReceive('setex')->andThrow(new RuntimeException('redis down'));

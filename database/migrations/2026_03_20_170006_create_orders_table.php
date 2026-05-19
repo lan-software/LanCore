@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('stripe_checkout_session_id')->nullable()->unique();
             $table->string('stripe_payment_intent_id')->nullable()->unique();
             $table->string('status')->default('pending');
             $table->unsignedInteger('subtotal');
             $table->unsignedInteger('discount')->default(0);
             $table->unsignedInteger('total');
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('voucher_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('voucher_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }

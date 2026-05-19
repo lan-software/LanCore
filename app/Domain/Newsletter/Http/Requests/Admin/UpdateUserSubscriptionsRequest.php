@@ -23,7 +23,7 @@ class UpdateUserSubscriptionsRequest extends FormRequest
     {
         return [
             'subscribed_list_ids' => ['present', 'array'],
-            'subscribed_list_ids.*' => ['integer', Rule::exists('newsletter_lists', 'id')->where('is_user_selectable', true)],
+            'subscribed_list_ids.*' => ['string', 'ulid', Rule::exists('newsletter_lists', 'id')->where('is_user_selectable', true)],
         ];
     }
 }

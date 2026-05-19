@@ -34,14 +34,14 @@ import { index as themesIndex } from '@/routes/themes';
 import type { BreadcrumbItem } from '@/types';
 
 type Theme = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
 };
 
 const props = defineProps<{
     themes: Theme[];
-    defaultThemeId: number | null;
+    defaultThemeId: string | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

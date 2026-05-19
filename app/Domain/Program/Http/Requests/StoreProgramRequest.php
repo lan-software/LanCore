@@ -19,7 +19,7 @@ class StoreProgramRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'visibility' => ['required', 'string', Rule::enum(ProgramVisibility::class)],
-            'event_id' => ['required', 'integer', 'exists:events,id'],
+            'event_id' => ['required', 'string', 'ulid', 'exists:events,id'],
             'is_primary' => ['sometimes', 'boolean'],
             'time_slots' => ['sometimes', 'array'],
             'time_slots.*.name' => ['required', 'string', 'max:255'],

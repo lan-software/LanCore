@@ -40,7 +40,7 @@ const { t } = useI18n();
 const props = defineProps<{
     competition: Competition & { signup_rules?: RuleGroup | null };
     games: Game[];
-    events: { id: number; name: string; start_date: string }[];
+    events: { id: string; name: string; start_date: string }[];
     lanbracketsEnabled: boolean;
     lanbracketsBaseUrl: string;
     chat: {
@@ -51,8 +51,8 @@ const props = defineProps<{
     } | null;
     signupRuleCatalog: {
         ruleTypes: string[];
-        ticketTypes: { id: number; name: string }[];
-        addons: { id: number; name: string }[];
+        ticketTypes: { id: string; name: string }[];
+        addons: { id: string; name: string }[];
         gameSignupRules: RuleGroup | null;
     };
 }>();

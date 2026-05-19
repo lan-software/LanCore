@@ -38,10 +38,10 @@ const props = defineProps<{
     program: Program & { time_slots: TimeSlot[] };
     isPrimary: boolean;
     events: {
-        id: number;
+        id: string;
         name: string;
-        primary_program_id: number | null;
-        primary_program: { id: number; name: string } | null;
+        primary_program_id: string | null;
+        primary_program: { id: string; name: string } | null;
     }[];
     sponsors: Sponsor[];
 }>();
@@ -94,7 +94,7 @@ function cancelReplacePrimary() {
 }
 
 interface EditableTimeSlot {
-    id?: number;
+    id?: string;
     name: string;
     description: string;
     starts_at: string;
@@ -144,7 +144,7 @@ function executeDelete() {
 }
 
 function toggleProgramSponsor(
-    sponsorId: number,
+    sponsorId: string,
     checked: boolean | 'indeterminate',
 ) {
     if (checked === true) {
@@ -158,7 +158,7 @@ function toggleProgramSponsor(
 
 function toggleSlotSponsor(
     slotIndex: number,
-    sponsorId: number,
+    sponsorId: string,
     checked: boolean | 'indeterminate',
 ) {
     const ids = timeSlots.value[slotIndex].sponsor_ids;

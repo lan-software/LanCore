@@ -15,13 +15,17 @@ use App\Domain\Chat\Models\ChatRoomMembership;
 class CompetitionRoomAutoJoin
 {
     /**
-     * @param  iterable<int>  $userIds
+     * @param  iterable<string>  $userIds  ULIDs from `users.id`.
      */
     public function joinUsers(ChatRoom $room, iterable $userIds): void
     {
         foreach ($userIds as $userId) {
+            if ($userId === null || $userId === '') {
+                continue;
+            }
+
             ChatRoomMembership::firstOrCreate(
-                ['room_id' => $room->id, 'user_id' => (int) $userId],
+                ['room_id' => $room->id, 'user_id' => (string) $userId],
                 ['joined_at' => now()],
             );
         }

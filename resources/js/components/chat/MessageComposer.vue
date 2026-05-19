@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import type { ChatUserRef } from './types';
 
 const props = defineProps<{
-    roomId: number;
+    roomId: string;
     disabled: boolean;
     disabledReason?: string | null;
 }>();

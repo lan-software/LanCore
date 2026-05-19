@@ -23,8 +23,8 @@ const { t } = useI18n();
 const props = defineProps<{
     modelValue: RuleGroup | null;
     ruleTypes: string[];
-    ticketTypes: { id: number; name: string }[];
-    addons: { id: number; name: string }[];
+    ticketTypes: { id: string; name: string }[];
+    addons: { id: string; name: string }[];
     disabled?: boolean;
 }>();
 
@@ -77,11 +77,11 @@ function toggleSubgroupType(group: RuleGroup) {
     update();
 }
 
-function isTicketSelected(leaf: RuleLeaf, id: number): boolean {
+function isTicketSelected(leaf: RuleLeaf, id: string): boolean {
     return (leaf.config?.ticket_type_ids ?? []).includes(id);
 }
 
-function toggleTicket(leaf: RuleLeaf, id: number) {
+function toggleTicket(leaf: RuleLeaf, id: string) {
     const config = (leaf.config ??= {});
     const ids = config.ticket_type_ids ?? [];
     config.ticket_type_ids = ids.includes(id)
@@ -90,11 +90,11 @@ function toggleTicket(leaf: RuleLeaf, id: number) {
     update();
 }
 
-function isAddonSelected(leaf: RuleLeaf, id: number): boolean {
+function isAddonSelected(leaf: RuleLeaf, id: string): boolean {
     return (leaf.config?.addon_ids ?? []).includes(id);
 }
 
-function toggleAddon(leaf: RuleLeaf, id: number) {
+function toggleAddon(leaf: RuleLeaf, id: string) {
     const config = (leaf.config ??= {});
     const ids = config.addon_ids ?? [];
     config.addon_ids = ids.includes(id)

@@ -17,7 +17,7 @@ class StorePolicyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'policy_type_id' => ['required', 'integer', 'exists:policy_types,id'],
+            'policy_type_id' => ['required', 'string', 'ulid', 'exists:policy_types,id'],
             'key' => ['required', 'string', 'max:64', 'regex:/^[a-z0-9_-]+$/', 'unique:policies,key'],
             'name' => ['required', 'string', 'max:128'],
             'description' => ['nullable', 'string'],

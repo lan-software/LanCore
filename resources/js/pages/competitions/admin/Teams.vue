@@ -15,12 +15,12 @@ import type { BreadcrumbItem } from '@/types';
 const { t } = useI18n();
 
 interface Team {
-    id: number;
+    id: string;
     name: string;
     tag: string | null;
     active_members_count: number;
-    captain: { id: number; name: string } | null;
-    competition: { id: number; name: string; status: string } | null;
+    captain: { id: string; name: string } | null;
+    competition: { id: string; name: string; status: string } | null;
 }
 
 const props = defineProps<{

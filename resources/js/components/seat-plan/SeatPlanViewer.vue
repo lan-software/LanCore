@@ -40,9 +40,9 @@ const props = withDefaults(
 
 const emit = defineEmits<{
     'seat-click': [
-        payload: { id: number | string; salable: boolean; rect: DOMRect },
+        payload: { id: string | string; salable: boolean; rect: DOMRect },
     ];
-    'seat-hover-enter': [payload: { id: number | string; rect: DOMRect }];
+    'seat-hover-enter': [payload: { id: string | string; rect: DOMRect }];
     'seat-hover-leave': [];
     'view-change': [view: ViewState];
     ready: [];

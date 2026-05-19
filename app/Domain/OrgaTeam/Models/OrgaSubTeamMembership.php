@@ -5,6 +5,7 @@ namespace App\Domain\OrgaTeam\Models;
 use App\Domain\OrgaTeam\Enums\SubTeamRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
@@ -14,9 +15,9 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 #[Fillable(['orga_sub_team_id', 'user_id', 'role', 'sort_order'])]
 class OrgaSubTeamMembership extends Pivot
 {
-    protected $table = 'orga_sub_team_memberships';
+    use HasUlids;
 
-    public $incrementing = true;
+    protected $table = 'orga_sub_team_memberships';
 
     public $timestamps = true;
 

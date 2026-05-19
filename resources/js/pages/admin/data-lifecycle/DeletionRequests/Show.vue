@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 type DeletionRequest = {
-    id: number;
+    id: string;
     status: string;
     initiator: string;
     reason: string | null;
@@ -15,8 +15,8 @@ type DeletionRequest = {
     email_confirmed_at: string | null;
     anonymized_at: string | null;
     force_deleted_at: string | null;
-    user_id: number;
-    user: { id: number; name: string | null; email: string | null } | null;
+    user_id: string;
+    user: { id: string; name: string | null; email: string | null } | null;
 };
 
 type Verdict = {

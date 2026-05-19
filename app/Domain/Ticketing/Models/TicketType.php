@@ -8,6 +8,7 @@ use App\Domain\Shop\Contracts\Purchasable;
 use App\Domain\Ticketing\Enums\CheckInMode;
 use Database\Factories\TicketTypeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,6 +36,7 @@ class TicketType extends Model implements AuditableContract, Purchasable
     /** @use HasFactory<TicketTypeFactory> */
     use HasFactory;
 
+    use HasUlids;
     use InteractsWithShop;
 
     protected static function newFactory(): TicketTypeFactory

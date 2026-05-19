@@ -17,7 +17,7 @@ return new class extends Migration
         });
 
         Schema::table('webhooks', function (Blueprint $table) {
-            $table->foreignId('integration_app_id')->nullable()->after('id')->constrained('integration_apps')->nullOnDelete();
+            $table->foreignUlid('integration_app_id')->nullable()->after('id')->constrained('integration_apps')->nullOnDelete();
         });
     }
 

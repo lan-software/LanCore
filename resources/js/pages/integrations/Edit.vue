@@ -41,7 +41,7 @@ import { index as integrationsRoute } from '@/routes/integrations';
 import type { BreadcrumbItem } from '@/types';
 
 type IntegrationToken = {
-    id: number;
+    id: string;
     name: string;
     plain_text_prefix: string;
     last_used_at: string | null;
@@ -51,7 +51,7 @@ type IntegrationToken = {
 };
 
 type IntegrationApp = {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     description: string | null;
@@ -86,9 +86,9 @@ const newToken = computed(
 const tokenCopied = ref(false);
 const showDeleteDialog = ref(false);
 const showRevokeDialog = ref(false);
-const revokeTokenId = ref<number | null>(null);
+const revokeTokenId = ref<string | null>(null);
 const showRotateDialog = ref(false);
-const rotateTokenId = ref<number | null>(null);
+const rotateTokenId = ref<string | null>(null);
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administration', href: integrationsRoute().url },
@@ -110,7 +110,7 @@ function deleteApp() {
     });
 }
 
-function revokeToken(tokenId: number) {
+function revokeToken(tokenId: string) {
     router.delete(
         destroyToken({ integration: props.integrationApp.id, token: tokenId })
             .url,
@@ -123,17 +123,17 @@ function revokeToken(tokenId: number) {
     );
 }
 
-function confirmRevoke(tokenId: number) {
+function confirmRevoke(tokenId: string) {
     revokeTokenId.value = tokenId;
     showRevokeDialog.value = true;
 }
 
-function confirmRotate(tokenId: number) {
+function confirmRotate(tokenId: string) {
     rotateTokenId.value = tokenId;
     showRotateDialog.value = true;
 }
 
-function rotateTokenAction(tokenId: number) {
+function rotateTokenAction(tokenId: string) {
     router.post(
         rotateToken({ integration: props.integrationApp.id, token: tokenId })
             .url,

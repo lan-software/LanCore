@@ -5,6 +5,7 @@ namespace App\Domain\Newsletter\Models;
 use App\Models\User;
 use Database\Factories\NewsletterListFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -22,7 +23,7 @@ use Illuminate\Support\Carbon;
  * — enforced at the action level, not by a DB constraint, so admins can
  * swap the flag atomically).
  *
- * @property int $id
+ * @property string $id
  * @property int $listmonk_id
  * @property string $name
  * @property string|null $description
@@ -45,6 +46,8 @@ class NewsletterList extends Model
 {
     /** @use HasFactory<NewsletterListFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): NewsletterListFactory
     {

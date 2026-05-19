@@ -11,7 +11,7 @@
  * @see docs/mil-std-498/SRS.md THM-F-005
  */
 export type ThemeContext = {
-    id: number;
+    id: string;
     name: string;
     lightConfig: Record<string, string>;
     darkConfig: Record<string, string>;

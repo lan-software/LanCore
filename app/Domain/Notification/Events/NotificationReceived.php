@@ -24,7 +24,7 @@ class NotificationReceived implements ShouldBroadcastNow
      * @param  array<string, mixed>  $data
      */
     public function __construct(
-        public readonly int $userId,
+        public readonly string $userId,
         public readonly string $notificationId,
         public readonly string $type,
         public readonly array $data,

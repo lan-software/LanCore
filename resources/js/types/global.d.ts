@@ -25,8 +25,8 @@ declare module '@inertiajs/core' {
             sidebarCollapsedGroups: string[];
             eventContext: EventContext | null;
             myEventContext: {
-                selectedEventId: number | null;
-                events: { id: number; name: string }[];
+                selectedEventId: string | null;
+                events: { id: string; name: string }[];
             } | null;
             activeTheme: ThemeContext | null;
             organization: {

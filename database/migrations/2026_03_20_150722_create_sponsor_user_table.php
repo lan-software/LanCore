@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('sponsor_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sponsor_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('sponsor_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
 
             $table->unique(['sponsor_id', 'user_id']);

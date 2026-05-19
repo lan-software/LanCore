@@ -10,14 +10,14 @@ import EventLayout from '@/layouts/event/EventLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 type Person = {
-    id: number;
+    id: string;
     username: string | null;
     profile_emoji: string | null;
     avatar_url: string;
 };
 
 type SubTeam = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     emoji: string | null;
@@ -28,7 +28,7 @@ type SubTeam = {
 };
 
 type OrgaTeam = {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     description: string | null;
@@ -39,7 +39,7 @@ type OrgaTeam = {
 
 const props = defineProps<{
     event: {
-        id: number;
+        id: string;
         name: string;
         start_date: string | null;
         end_date: string | null;

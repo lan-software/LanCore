@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('program_notification_subscriptions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('program_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('program_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
 
             $table->unique(['user_id', 'program_id']);

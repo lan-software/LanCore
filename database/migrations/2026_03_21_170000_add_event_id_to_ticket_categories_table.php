@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ticket_categories', function (Blueprint $table) {
-            $table->foreignId('event_id')->nullable()->after('sort_order')->constrained()->nullOnDelete();
+            $table->foreignUlid('event_id')->nullable()->after('sort_order')->constrained()->nullOnDelete();
         });
     }
 

@@ -554,6 +554,8 @@
         "vouchers": "Vouchers",
         "achievements": "Achievements",
         "competitions": "Competitions",
+        "competitionBoard": "Competition Board",
+        "playNext": "Play Next",
         "integrations": "Integrations",
         "lanApps": "LanApps",
         "organization": "Organization",
@@ -1396,6 +1398,66 @@
         "mentionSearch": {
             "label": "Mention",
             "empty": "No matching users."
+        }
+    },
+    "play_next": {
+        "title": "Play Next",
+        "no_event": "Select an event from the sidebar.",
+        "empty": "No matches ready for you right now.",
+        "ready": "Ready",
+        "blocked": "Blocked",
+        "and_after": "And after that"
+    },
+    "competition_board": {
+        "title": "Competition Board",
+        "subtitle": "Schedule and track every competition for this event.",
+        "column": {
+            "competition": "Competition",
+            "slack": "Slack"
+        },
+        "actions": {
+            "sync": "Sync from LanBrackets",
+            "auto_fit": "Auto-fit unscheduled",
+            "open_panel": "Edit stage"
+        },
+        "stage": {
+            "duration_minutes": "Duration (minutes)",
+            "reserve_minutes": "Reserve (minutes)",
+            "slack": "Slack",
+            "starts_at": "Starts at",
+            "notes": "Notes",
+            "reset_to_computed": "Reset to computed",
+            "overridden": "Manual duration",
+            "computed": "Computed duration",
+            "unscheduled": "Not scheduled"
+        },
+        "conflicts": {
+            "title": "Conflicts",
+            "none": "No scheduling conflicts.",
+            "out_of_event_window": "Stage \"{stage}\" extends outside the event window.",
+            "stage_sequence_overlap": "Stage \"{earlier}\" overlaps with \"{later}\" within the same competition.",
+            "player_double_booked": "{count} player(s) double-booked between \"{stage_a}\" and \"{stage_b}\"."
+        },
+        "proposal": {
+            "title": "Next matches",
+            "empty": "No matches ready right now.",
+            "in_window": "In scheduled window",
+            "upcoming": "Scheduled soon",
+            "overrunning": "Overrunning",
+            "unscheduled": "Stage unscheduled",
+            "deadline_close": "Competition deadline approaching",
+            "blocked_team_busy": "Blocked: team already in a match",
+            "teams_free": "Both teams free"
+        },
+        "axis": {
+            "busy": "busy",
+            "idle": "idle"
+        },
+        "sync": {
+            "queued": "Stage sync started."
+        },
+        "auto_fit": {
+            "applied": "Unscheduled stages have been laid out."
         }
     }
 }

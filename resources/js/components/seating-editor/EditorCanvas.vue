@@ -101,7 +101,7 @@ function svgPoint(event: PointerEvent | WheelEvent): { x: number; y: number } {
 
 function selectionContains(
     kind: EntityRef['kind'],
-    id: number | string,
+    id: string | string,
 ): boolean {
     return props.store.selection.value.some(
         (r) => r.kind === kind && String(r.id) === String(id),
@@ -115,7 +115,7 @@ function seatDisplayTitle(
     return (block.seat_title_prefix ?? '') + seat.title;
 }
 
-function deleteSeat(blockId: number | string, seatId: number | string): void {
+function deleteSeat(blockId: string | string, seatId: string | string): void {
     props.store.applyMutation('delete-seat', (draft) => {
         const block = draft.blocks.find(
             (b) => String(b.id) === String(blockId),
@@ -132,7 +132,7 @@ function deleteSeat(blockId: number | string, seatId: number | string): void {
     props.store.clearSelection();
 }
 
-function deleteLabel(blockId: number | string, labelId: number | string): void {
+function deleteLabel(blockId: string | string, labelId: string | string): void {
     props.store.applyMutation('delete-label', (draft) => {
         const block = draft.blocks.find(
             (b) => String(b.id) === String(blockId),
@@ -151,8 +151,8 @@ function deleteLabel(blockId: number | string, labelId: number | string): void {
 
 function onSeatPointerDown(
     event: PointerEvent,
-    blockId: number | string,
-    seatId: number | string,
+    blockId: string | string,
+    seatId: string | string,
 ): void {
     if (props.store.tool.value === 'delete') {
         event.stopPropagation();
@@ -171,8 +171,8 @@ function onSeatPointerDown(
 
 function onLabelPointerDown(
     event: PointerEvent,
-    blockId: number | string | null,
-    labelId: number | string | undefined,
+    blockId: string | string | null,
+    labelId: string | string | undefined,
 ): void {
     if (labelId === undefined) {
         return;
@@ -202,7 +202,7 @@ function onLabelPointerDown(
     startEntityDrag(event, ref);
 }
 
-function deletePlanLabel(labelId: number | string): void {
+function deletePlanLabel(labelId: string | string): void {
     props.store.applyMutation('delete-plan-label', (draft) => {
         draft.labels = (draft.labels ?? []).filter(
             (l) => l.id === undefined || String(l.id) !== String(labelId),
@@ -440,7 +440,7 @@ function startPan(event: PointerEvent): void {
      * own render tick. */
     let pendingX = startPan.x;
     let pendingY = startPan.y;
-    let rafId: number | null = null;
+    let rafId: string | null = null;
 
     function flush(): void {
         rafId = null;

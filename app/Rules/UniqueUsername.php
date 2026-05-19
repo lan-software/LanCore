@@ -17,7 +17,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
  */
 class UniqueUsername implements ValidationRule
 {
-    public function __construct(private readonly ?int $ignoreId = null) {}
+    public function __construct(private readonly ?string $ignoreId = null) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {

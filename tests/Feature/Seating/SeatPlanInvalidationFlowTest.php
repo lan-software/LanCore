@@ -47,7 +47,7 @@ beforeEach(function (): void {
     ]);
 });
 
-function payloadKeepingOnlyA2(SeatPlan $plan, int $seatA2Id, int $blockId, int $rowId): string
+function payloadKeepingOnlyA2(SeatPlan $plan, string $seatA2Id, string $blockId, string $rowId): string
 {
     return json_encode([
         'blocks' => [[

@@ -14,7 +14,7 @@ import type { BreadcrumbItem } from '@/types';
 import type { PaletteVariablesSchema } from '@/types/theme-editor';
 
 type Theme = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     light_config: Record<string, string> | null;

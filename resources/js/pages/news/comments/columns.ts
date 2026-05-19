@@ -38,7 +38,7 @@ function sortableHeader(label: string) {
 export const columns: ColumnDef<
     NewsComment & {
         article?: {
-            id: number;
+            id: string;
             title: string;
             slug: string;
             visibility: string;

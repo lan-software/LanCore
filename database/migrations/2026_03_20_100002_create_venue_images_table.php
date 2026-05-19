@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('venue_images', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('venue_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('venue_id')->constrained()->cascadeOnDelete();
             $table->string('path');
             $table->string('alt_text')->nullable();
             $table->unsignedInteger('sort_order')->default(0);

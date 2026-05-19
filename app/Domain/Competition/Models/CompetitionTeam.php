@@ -5,6 +5,7 @@ namespace App\Domain\Competition\Models;
 use App\Models\User;
 use Database\Factories\CompetitionTeamFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,8 @@ class CompetitionTeam extends Model
 {
     /** @use HasFactory<CompetitionTeamFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected $table = 'competition_teams';
 
@@ -30,7 +33,7 @@ class CompetitionTeam extends Model
     protected function casts(): array
     {
         return [
-            'lanbrackets_id' => 'integer',
+            'lanbrackets_id' => 'string',
         ];
     }
 

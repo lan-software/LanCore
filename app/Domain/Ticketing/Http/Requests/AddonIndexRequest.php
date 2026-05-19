@@ -20,7 +20,7 @@ class AddonIndexRequest extends FormRequest
             'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'in:name,price,quota,seats_consumed,created_at'],
             'direction' => ['nullable', 'string', 'in:asc,desc'],
-            'event_id' => ['nullable', 'integer', 'exists:events,id'],
+            'event_id' => ['nullable', 'string', 'ulid', 'exists:events,id'],
             'per_page' => ['nullable', 'integer', 'in:10,20,50,100'],
         ];
     }

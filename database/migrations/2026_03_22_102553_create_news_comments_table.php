@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('news_comments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('news_article_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('news_article_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->text('content');
             $table->boolean('is_approved')->default(false);
             $table->timestamp('edited_at')->nullable();

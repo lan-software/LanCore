@@ -19,14 +19,14 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 interface PolicyTypeRow {
-    id: number;
+    id: string;
     key: string;
     label: string;
     description: string | null;
 }
 
 interface PolicyRow {
-    id: number;
+    id: string;
     key: string;
     name: string;
     description: string | null;
@@ -35,7 +35,7 @@ interface PolicyRow {
     archived_at: string | null;
     type: PolicyTypeRow | null;
     current_version: {
-        id: number;
+        id: string;
         version_number: number;
         locale: string;
     } | null;

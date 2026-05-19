@@ -16,7 +16,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('policies', function (Blueprint $table): void {
-            $table->foreignId('required_acceptance_version_id')
+            $table->foreignUlid('required_acceptance_version_id')
                 ->nullable()
                 ->after('sort_order')
                 ->constrained('policy_versions')

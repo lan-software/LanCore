@@ -32,7 +32,7 @@ import type { TicketAddon } from '@/types/domain';
 
 const props = defineProps<{
     ticketAddon: TicketAddon;
-    events: { id: number; name: string }[];
+    events: { id: string; name: string }[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

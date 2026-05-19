@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('ticket_ticket_addon', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('ticket_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('ticket_addon_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('ticket_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('ticket_addon_id')->constrained()->cascadeOnDelete();
             $table->unsignedInteger('price_paid');
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('order_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
 
             $table->unique(['ticket_id', 'ticket_addon_id']);

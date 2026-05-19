@@ -135,7 +135,7 @@ class UserMatchController extends Controller
      * a match that has no room yet (orchestration may have skipped it).
      * Auto-joins the requesting user if they're a participant.
      */
-    public function openChat(Request $request, Competition $competition, int $matchId): RedirectResponse
+    public function openChat(Request $request, Competition $competition, string $matchId): RedirectResponse
     {
         $this->authorize('view', $competition);
 
@@ -237,7 +237,7 @@ class UserMatchController extends Controller
     /**
      * @return array<int, int>
      */
-    private function teamIdsForUser(int $competitionId, int $userId): array
+    private function teamIdsForUser(string $competitionId, string $userId): array
     {
         return CompetitionTeamMember::query()
             ->whereHas('team', fn ($q) => $q->where('competition_id', $competitionId))

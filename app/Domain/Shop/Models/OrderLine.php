@@ -2,6 +2,7 @@
 
 namespace App\Domain\Shop\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class OrderLine extends Model
 {
+    use HasUlids;
+
     protected $guarded = [];
 
     /**

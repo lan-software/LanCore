@@ -23,7 +23,7 @@ class UpdateEventRequest extends FormRequest
             'banner_images_to_remove' => ['sometimes', 'array'],
             'banner_images_to_remove.*' => ['string'],
             'seat_capacity' => ['nullable', 'integer', 'min:1'],
-            'venue_id' => ['nullable', 'integer', 'exists:venues,id'],
+            'venue_id' => ['nullable', 'string', 'ulid', 'exists:venues,id'],
         ];
     }
 }

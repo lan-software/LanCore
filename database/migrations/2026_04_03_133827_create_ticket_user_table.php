@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('ticket_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('ticket_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('ticket_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->dateTime('checked_in_at')->nullable();
             $table->timestamps();
 

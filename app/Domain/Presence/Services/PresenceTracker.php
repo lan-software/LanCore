@@ -71,7 +71,7 @@ class PresenceTracker
      * command (PresenceSweepCommand) so we never fire twice for the same
      * transition.
      */
-    public function broadcastChange(int $userId, PresenceStatus $status): void
+    public function broadcastChange(string $userId, PresenceStatus $status): void
     {
         try {
             $previousBroadcastKey = 'presence:last_broadcast:user:'.$userId;
@@ -140,7 +140,7 @@ class PresenceTracker
             return [];
         }
 
-        $keys = array_map(fn (int $id): string => $this->keyFor($id), $ids);
+        $keys = array_map(fn (string $keys): string => $this->keyFor($id), $ids);
         $values = [];
 
         try {
@@ -176,7 +176,7 @@ class PresenceTracker
         };
     }
 
-    private function keyFor(int $userId): string
+    private function keyFor(string $userId): string
     {
         return 'presence:user:'.$userId;
     }

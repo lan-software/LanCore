@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('purchase_requirement_purchasable', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('purchase_requirement_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('purchase_requirement_id')->constrained()->cascadeOnDelete();
             $table->string('purchasable_type');
-            $table->unsignedBigInteger('purchasable_id');
+            $table->ulid('purchasable_id');
             $table->timestamps();
 
             $table->unique(['purchase_requirement_id', 'purchasable_type', 'purchasable_id'], 'pr_purchasable_unique');

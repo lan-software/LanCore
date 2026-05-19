@@ -24,7 +24,7 @@ class StoreAddonRequest extends FormRequest
             'seats_consumed' => ['required', 'integer', 'min:0'],
             'requires_ticket' => ['sometimes', 'boolean'],
             'is_hidden' => ['sometimes', 'boolean'],
-            'event_id' => ['required', 'integer', 'exists:events,id'],
+            'event_id' => ['required', 'string', 'ulid', 'exists:events,id'],
         ];
     }
 

@@ -6,6 +6,7 @@ use App\Domain\Event\Models\Event;
 use App\Models\User;
 use Database\Factories\OrgaTeamFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,8 @@ class OrgaTeam extends Model
 {
     /** @use HasFactory<OrgaTeamFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): OrgaTeamFactory
     {

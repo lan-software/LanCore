@@ -32,12 +32,12 @@ import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{
     events: {
-        id: number;
+        id: string;
         name: string;
-        primary_program_id: number | null;
-        primary_program: { id: number; name: string } | null;
+        primary_program_id: string | null;
+        primary_program: { id: string; name: string } | null;
     }[];
-    selectedEventId?: number | null;
+    selectedEventId?: string | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

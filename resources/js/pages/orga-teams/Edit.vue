@@ -29,36 +29,36 @@ import {
 import { store as subTeamStore } from '@/routes/orga-teams/sub-teams';
 import type { BreadcrumbItem } from '@/types';
 
-type UserOption = { id: number; username: string | null; name: string };
+type UserOption = { id: string; username: string | null; name: string };
 
 type Membership = {
-    id: number;
-    user_id: number;
+    id: string;
+    user_id: string;
     role: 'deputy' | 'member';
     sort_order: number;
     user: UserOption | null;
 };
 
 type SubTeam = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     emoji: string | null;
     color: string | null;
     sort_order: number;
-    leader_user_id: number | null;
+    leader_user_id: string | null;
     leader: UserOption | null;
     memberships: Membership[];
 };
 
-type AssignedEvent = { id: number; name: string };
+type AssignedEvent = { id: string; name: string };
 
 type OrgaTeam = {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     description: string | null;
-    organizer_user_id: number;
+    organizer_user_id: string;
     organizer: UserOption | null;
     deputies: (UserOption & { pivot?: { sort_order: number } })[];
     sub_teams: SubTeam[];
@@ -102,7 +102,7 @@ function deleteTeam() {
     router.delete(orgaTeamDestroy(props.orgaTeam.id).url);
 }
 
-function toggleDeputy(userId: number) {
+function toggleDeputy(userId: string) {
     if (userId === teamForm.organizer_user_id) {
         return;
     }
@@ -137,9 +137,9 @@ function createSubTeam() {
 }
 
 // --- per sub-team edit ---
-const expanded = ref<number | null>(null);
+const expanded = ref<string | null>(null);
 
-function toggle(subId: number) {
+function toggle(subId: string) {
     expanded.value = expanded.value === subId ? null : subId;
 }
 
@@ -181,7 +181,7 @@ function syncMembers(sub: SubTeam) {
 
 function addMembership(
     sub: SubTeam,
-    userId: number,
+    userId: string,
     role: 'deputy' | 'member',
 ) {
     if (sub.memberships.some((m) => m.user_id === userId)) {
@@ -197,7 +197,7 @@ function addMembership(
     });
 }
 
-function removeMembership(sub: SubTeam, userId: number) {
+function removeMembership(sub: SubTeam, userId: string) {
     const idx = sub.memberships.findIndex((m) => m.user_id === userId);
 
     if (idx >= 0) {
@@ -215,7 +215,7 @@ const usersById = computed(() => {
     return map;
 });
 
-function userLabel(id: number): string {
+function userLabel(id: string): string {
     const u = usersById.value.get(id);
 
     if (!u) {
@@ -275,7 +275,7 @@ function userLabel(id: number): string {
                         <Select
                             :model-value="String(teamForm.organizer_user_id)"
                             @update:model-value="
-                                (v) => (teamForm.organizer_user_id = Number(v))
+                                (v) => (teamForm.organizer_user_id = String(v))
                             "
                         >
                             <SelectTrigger id="t-org">
@@ -463,7 +463,7 @@ function userLabel(id: number): string {
                                 @update:model-value="
                                     (v) =>
                                         (sub.leader_user_id = v
-                                            ? Number(v)
+                                            ? String(v)
                                             : null)
                                 "
                             >
@@ -548,7 +548,7 @@ function userLabel(id: number): string {
                                                 v &&
                                                 addMembership(
                                                     sub,
-                                                    Number(v),
+                                                    String(v),
                                                     'member',
                                                 )
                                         "

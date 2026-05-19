@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export type EmailMessageRow = {
-    id: number;
+    id: string;
     subject: string | null;
     status: 'queued' | 'sent' | 'failed' | 'bounced' | 'complained';
     source: string | null;

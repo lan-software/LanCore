@@ -16,7 +16,7 @@ return new class extends Migration
         DB::table('announcements')->update(['audience' => 'lancore_only']);
 
         Schema::table('announcements', function (Blueprint $table): void {
-            $table->foreignId('event_id')->nullable()->change();
+            $table->foreignUlid('event_id')->nullable()->change();
         });
     }
 

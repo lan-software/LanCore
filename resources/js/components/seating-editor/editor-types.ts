@@ -11,9 +11,9 @@ export type EditorLabel = SeatPlanLabel;
 export type EditorBlock = SeatPlanBlock & { rows: SeatPlanRow[] };
 
 export type EditorPlan = {
-    id: number;
+    id: string;
     name: string;
-    event_id: number;
+    event_id: string;
     background_image_url?: string | null;
     /** Plan-level labels (SET-F-020); flattened into first block on the wire. */
     labels: EditorLabel[];
@@ -33,8 +33,8 @@ export type EntityKind = 'seat' | 'row' | 'block' | 'label';
 
 export type EntityRef = {
     kind: EntityKind;
-    id: number | string;
-    blockId?: number | string;
+    id: string | string;
+    blockId?: string | string;
 };
 
 export type ViewState = {

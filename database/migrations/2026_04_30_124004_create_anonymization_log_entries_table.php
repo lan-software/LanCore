@@ -18,8 +18,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('anonymization_log_entries', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('data_class', 64);
             $table->string('anonymizer_class', 191);
             $table->unsignedInteger('records_scrubbed_count')->default(0);

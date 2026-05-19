@@ -14,21 +14,21 @@ import { index as requirementsIndex } from '@/routes/purchase-requirements';
 import type { BreadcrumbItem } from '@/types';
 
 type PurchaseRequirement = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     requirements_content: string | null;
     acknowledgements: string[] | null;
     is_active: boolean;
     requires_scroll: boolean;
-    ticket_types: { id: number; name: string }[];
-    addons: { id: number; name: string }[];
+    ticket_types: { id: string; name: string }[];
+    addons: { id: string; name: string }[];
 };
 
 const props = defineProps<{
     requirement: PurchaseRequirement;
-    ticketTypes: { id: number; name: string }[];
-    addons: { id: number; name: string }[];
+    ticketTypes: { id: string; name: string }[];
+    addons: { id: string; name: string }[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -61,7 +61,7 @@ function removeAcknowledgement(index: number) {
     acknowledgements.value.splice(index, 1);
 }
 
-function toggleTicketType(id: number) {
+function toggleTicketType(id: string) {
     const idx = selectedTicketTypeIds.value.indexOf(id);
 
     if (idx === -1) {
@@ -71,7 +71,7 @@ function toggleTicketType(id: number) {
     }
 }
 
-function toggleAddon(id: number) {
+function toggleAddon(id: string) {
     const idx = selectedAddonIds.value.indexOf(id);
 
     if (idx === -1) {

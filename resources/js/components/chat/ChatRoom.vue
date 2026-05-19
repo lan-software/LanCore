@@ -43,9 +43,9 @@ const props = withDefaults(
 
 const { t } = useI18n();
 const page = usePage();
-const currentUserId = computed<number | null>(
+const currentUserId = computed<string | null>(
     () =>
-        (page.props.auth as { user?: { id?: number } } | undefined)?.user?.id ??
+        (page.props.auth as { user?: { id?: string } } | undefined)?.user?.id ??
         null,
 );
 
@@ -55,16 +55,16 @@ const loadingHistory = ref(false);
 const memberSheetOpen = ref(false);
 
 interface BroadcastPayload {
-    id: number;
-    room_id: number;
-    user_id: number | null;
+    id: string;
+    room_id: string;
+    user_id: string | null;
     body: string;
     mentions: number[];
     created_at: string;
 }
 
 interface PresenceMember {
-    id: number;
+    id: string;
     name: string | null;
     username: string | null;
 }
@@ -222,7 +222,7 @@ return;
     }
 }
 
-function onDeleteMessage(messageId: number): void {
+function onDeleteMessage(messageId: string): void {
     router.delete(
         ChatMessageController.destroy({
             room: props.room.id,

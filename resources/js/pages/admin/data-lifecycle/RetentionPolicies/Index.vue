@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 type Policy = {
-    id: number;
+    id: string;
     data_class: string;
     retention_days: number;
     legal_basis: string;
@@ -40,7 +40,7 @@ for (const p of props.policies) {
     );
 }
 
-const formFor = (id: number) => forms.get(id)!;
+const formFor = (id: string) => forms.get(id)!;
 
 const save = (policy: Policy) => {
     formFor(policy.id).patch(

@@ -10,7 +10,7 @@ import type { BreadcrumbItem } from '@/types';
 type Address = { address: string; name: string | null };
 
 type Message = {
-    id: number;
+    id: string;
     message_id: string | null;
     mailer: string | null;
     from_address: string | null;

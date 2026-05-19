@@ -4,6 +4,7 @@ namespace App\Domain\Chat\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -18,6 +19,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class ChatMessage extends Model implements AuditableContract
 {
     use Auditable, SoftDeletes;
+    use HasUlids;
 
     /**
      * @return array<string, string>

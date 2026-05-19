@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('events', function (Blueprint $table) {
-            $table->foreignId('orga_team_id')
+            $table->foreignUlid('orga_team_id')
                 ->nullable()
                 ->after('primary_program_id')
                 ->constrained('orga_teams')

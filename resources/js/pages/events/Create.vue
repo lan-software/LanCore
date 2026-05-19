@@ -24,7 +24,7 @@ import type { BreadcrumbItem } from '@/types';
 const { t } = useI18n();
 
 defineProps<{
-    venues: { id: number; name: string }[];
+    venues: { id: string; name: string }[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -33,7 +33,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: t('common.create'), href: EventController.create().url },
 ];
 
-const bannerPreviews = ref<{ id: number; preview: string }[]>([]);
+const bannerPreviews = ref<{ id: string; preview: string }[]>([]);
 let nextBannerId = 0;
 
 function addBannerSlot() {

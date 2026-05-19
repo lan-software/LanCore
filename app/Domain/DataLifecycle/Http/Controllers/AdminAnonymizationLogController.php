@@ -27,7 +27,7 @@ class AdminAnonymizationLogController extends Controller
             ->with(['user' => fn ($q) => $q->withTrashed()])
             ->orderByDesc('id');
 
-        if ($userId = $request->integer('user_id')) {
+        if ($userId = $request->string('user_id')->toString()) {
             $query->where('user_id', $userId);
         }
 

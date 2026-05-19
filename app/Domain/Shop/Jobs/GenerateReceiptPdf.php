@@ -19,7 +19,7 @@ class GenerateReceiptPdf implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private readonly int $orderId) {}
+    public function __construct(private readonly string $orderId) {}
 
     public function handle(): void
     {

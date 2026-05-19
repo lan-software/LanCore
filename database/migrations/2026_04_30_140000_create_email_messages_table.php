@@ -9,7 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('email_messages', function (Blueprint $table): void {
-            $table->id();
+            $table->ulid('id');
+            $table->primary('id');
 
             $table->string('message_id')->nullable()->index();
             $table->string('mailer')->nullable();
@@ -32,9 +33,9 @@ return new class extends Migration
             $table->string('source')->nullable()->index();
             $table->string('source_label')->nullable();
 
-            $table->nullableMorphs('notifiable');
+            $table->nullableUlidMorphs('notifiable');
 
-            $table->foreignId('parent_id')
+            $table->foreignUlid('parent_id')
                 ->nullable()
                 ->constrained('email_messages')
                 ->nullOnDelete();

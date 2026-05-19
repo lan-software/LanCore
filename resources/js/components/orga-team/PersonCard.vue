@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { show as profileShow } from '@/routes/public-profile';
 
 type Person = {
-    id: number;
+    id: string;
     username: string | null;
     profile_emoji: string | null;
     avatar_url: string;

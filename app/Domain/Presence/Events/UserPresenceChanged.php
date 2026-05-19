@@ -25,7 +25,7 @@ class UserPresenceChanged implements ShouldBroadcastNow
      * @param  array<int, int>  $roomIds  Chat room ids that should receive the broadcast.
      */
     public function __construct(
-        public readonly int $userId,
+        public readonly string $userId,
         public readonly PresenceStatus $status,
         public readonly array $roomIds,
     ) {}
@@ -36,7 +36,7 @@ class UserPresenceChanged implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return array_map(
-            fn (int $roomId) => new PresenceChannel('chat.room.'.$roomId),
+            fn (string $roomId) => new PresenceChannel('chat.room.'.$roomId),
             $this->roomIds,
         );
     }

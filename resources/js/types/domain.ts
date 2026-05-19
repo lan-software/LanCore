@@ -1,5 +1,5 @@
 export type Game = {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     publisher: string | null;
@@ -12,8 +12,8 @@ export type Game = {
 };
 
 export type GameMode = {
-    id: number;
-    game_id: number;
+    id: string;
+    game_id: string;
     name: string;
     slug: string;
     description: string | null;
@@ -37,7 +37,7 @@ export type CompetitionStatus =
 export type CompetitionType = 'tournament' | 'league' | 'race';
 
 export type Competition = {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     description: string | null;
@@ -50,15 +50,15 @@ export type Competition = {
     registration_closes_at: string | null;
     starts_at: string | null;
     ends_at: string | null;
-    event_id: number | null;
-    event?: { id: number; name: string } | null;
-    game_id: number | null;
+    event_id: string | null;
+    event?: { id: string; name: string } | null;
+    game_id: string | null;
     game?: Game | null;
-    game_mode_id: number | null;
+    game_mode_id: string | null;
     game_mode?: GameMode | null;
     teams?: CompetitionTeam[];
     teams_count?: number;
-    lanbrackets_id: number | null;
+    lanbrackets_id: string | null;
     lanbrackets_share_token: string | null;
     settings: Record<string, unknown> | null;
     metadata: Record<string, unknown> | null;
@@ -68,13 +68,13 @@ export type Competition = {
 };
 
 export type CompetitionTeam = {
-    id: number;
-    competition_id: number;
+    id: string;
+    competition_id: string;
     name: string;
     tag: string | null;
-    captain_user_id: number | null;
-    captain?: { id: number; name: string } | null;
-    lanbrackets_id: number | null;
+    captain_user_id: string | null;
+    captain?: { id: string; name: string } | null;
+    lanbrackets_id: string | null;
     active_members?: CompetitionTeamMember[];
     active_members_count?: number;
     created_at: string;
@@ -82,10 +82,10 @@ export type CompetitionTeam = {
 };
 
 export type CompetitionTeamMember = {
-    id: number;
-    team_id: number;
-    user_id: number;
-    user?: { id: number; name: string; email: string };
+    id: string;
+    team_id: string;
+    user_id: string;
+    user?: { id: string; name: string; email: string };
     joined_at: string | null;
     left_at: string | null;
     created_at: string;
@@ -93,13 +93,13 @@ export type CompetitionTeamMember = {
 };
 
 export type MatchResultProof = {
-    id: number;
-    competition_id: number;
-    lanbrackets_match_id: number;
-    submitted_by_user_id: number;
-    submitted_by_team_id: number | null;
+    id: string;
+    competition_id: string;
+    lanbrackets_match_id: string;
+    submitted_by_user_id: string;
+    submitted_by_team_id: string | null;
     screenshot_path: string;
-    scores: { participant_id: number; score: number }[];
+    scores: { participant_id: string; score: number }[];
     is_disputed: boolean;
     resolved_at: string | null;
     created_at: string;
@@ -107,7 +107,7 @@ export type MatchResultProof = {
 };
 
 export type Address = {
-    id: number;
+    id: string;
     street: string;
     city: string;
     zip_code: string;
@@ -118,8 +118,8 @@ export type Address = {
 };
 
 export type VenueImage = {
-    id: number;
-    venue_id: number;
+    id: string;
+    venue_id: string;
     path: string;
     url: string;
     alt_text: string | null;
@@ -129,10 +129,10 @@ export type VenueImage = {
 };
 
 export type Venue = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
-    address_id: number;
+    address_id: string;
     address: Address;
     images: VenueImage[];
     created_at: string;
@@ -140,7 +140,7 @@ export type Venue = {
 };
 
 export type Event = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     start_date: string;
@@ -149,14 +149,14 @@ export type Event = {
     banner_image_urls: string[];
     status: 'draft' | 'published';
     seat_capacity: number | null;
-    venue_id: number | null;
+    venue_id: string | null;
     venue: Venue | null;
-    primary_program_id: number | null;
+    primary_program_id: string | null;
     programs: Program[];
     sponsors: Sponsor[];
     seat_plans?: SeatPlan[];
     taken_seats?: {
-        seat_plan_id: number;
+        seat_plan_id: string;
         seat_id: string;
         name: string | null;
         username: string | null;
@@ -170,12 +170,12 @@ export type Event = {
 };
 
 export type Program = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     visibility: 'public' | 'internal' | 'private';
-    event_id: number;
-    event?: { id: number; name: string };
+    event_id: string;
+    event?: { id: string; name: string };
     sort_order: number;
     time_slots: TimeSlot[];
     sponsors: Sponsor[];
@@ -184,12 +184,12 @@ export type Program = {
 };
 
 export type TimeSlot = {
-    id?: number;
+    id?: string;
     name: string;
     description: string | null;
     starts_at: string;
     visibility: 'public' | 'internal' | 'private';
-    program_id?: number;
+    program_id?: string;
     sort_order: number;
     sponsors: Sponsor[];
     created_at?: string;
@@ -197,7 +197,7 @@ export type TimeSlot = {
 };
 
 export type SponsorLevel = {
-    id: number;
+    id: string;
     name: string;
     color: string;
     sort_order: number;
@@ -207,16 +207,16 @@ export type SponsorLevel = {
 };
 
 export type Sponsor = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     link: string | null;
     logo: string | null;
     logo_url: string | null;
-    sponsor_level_id: number | null;
+    sponsor_level_id: string | null;
     sponsor_level: SponsorLevel | null;
-    events: { id: number; name: string }[];
-    managers: { id: number; name: string; email: string }[];
+    events: { id: string; name: string }[];
+    managers: { id: string; name: string; email: string }[];
     created_at: string;
     updated_at: string;
 };
@@ -224,11 +224,11 @@ export type Sponsor = {
 // Ticketing Domain
 
 export type TicketCategory = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     sort_order: number;
-    event_id: number | null;
+    event_id: string | null;
     event?: Event | null;
     ticket_types_count?: number;
     created_at: string;
@@ -236,17 +236,17 @@ export type TicketCategory = {
 };
 
 export type TicketGroup = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
-    event_id: number;
-    event?: { id: number; name: string };
+    event_id: string;
+    event?: { id: string; name: string };
     created_at: string;
     updated_at: string;
 };
 
 export type TicketType = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     price: number;
@@ -262,11 +262,11 @@ export type TicketType = {
     purchase_from: string | null;
     purchase_until: string | null;
     is_locked: boolean;
-    event_id: number;
-    event?: { id: number; name: string };
-    ticket_category_id: number | null;
+    event_id: string;
+    event?: { id: string; name: string };
+    ticket_category_id: string | null;
     ticket_category?: TicketCategory | null;
-    ticket_group_id: number | null;
+    ticket_group_id: string | null;
     ticket_group?: TicketGroup | null;
     tickets_count?: number;
     remaining_quota?: number;
@@ -280,7 +280,7 @@ export type TicketType = {
 };
 
 export type TicketAddon = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     price: number;
@@ -288,8 +288,8 @@ export type TicketAddon = {
     seats_consumed: number;
     requires_ticket: boolean;
     is_hidden: boolean;
-    event_id: number;
-    event?: { id: number; name: string };
+    event_id: string;
+    event?: { id: string; name: string };
     tickets_count?: number;
     remaining_quota?: number;
     created_at: string;
@@ -299,7 +299,7 @@ export type TicketAddon = {
 export type VoucherType = 'fixed_amount' | 'percentage';
 
 export type Voucher = {
-    id: number;
+    id: string;
     code: string;
     type: VoucherType;
     discount_amount: number | null;
@@ -309,14 +309,14 @@ export type Voucher = {
     valid_from: string | null;
     valid_until: string | null;
     is_active: boolean;
-    event_id: number | null;
-    event?: { id: number; name: string } | null;
+    event_id: string | null;
+    event?: { id: string; name: string } | null;
     created_at: string;
     updated_at: string;
 };
 
 export type PurchaseRequirement = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     requirements_content: string | null;
@@ -332,7 +332,7 @@ export type PurchaseRequirement = {
 };
 
 export type GlobalPurchaseCondition = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     content: string | null;
@@ -346,7 +346,7 @@ export type GlobalPurchaseCondition = {
 };
 
 export type PaymentProviderCondition = {
-    id: number;
+    id: string;
     payment_method: PaymentMethod;
     name: string;
     description: string | null;
@@ -365,7 +365,7 @@ export type OrderStatus = 'pending' | 'completed' | 'failed' | 'refunded';
 export type PaymentMethod = 'stripe' | 'on_site' | 'paypal';
 
 export type Order = {
-    id: number;
+    id: string;
     payment_method: PaymentMethod;
     provider_session_id: string | null;
     provider_transaction_id: string | null;
@@ -379,11 +379,11 @@ export type Order = {
     fee_source: 'provider' | 'estimated' | null;
     fees_fetched_at: string | null;
     currency: string;
-    user_id: number;
-    event_id: number;
-    voucher_id: number | null;
-    user?: { id: number; name: string; email: string };
-    event?: { id: number; name: string };
+    user_id: string;
+    event_id: string;
+    voucher_id: string | null;
+    user?: { id: string; name: string; email: string };
+    event?: { id: string; name: string };
     voucher?: Voucher | null;
     tickets?: Ticket[];
     order_lines?: OrderLine[];
@@ -393,10 +393,10 @@ export type Order = {
 };
 
 export type OrderLine = {
-    id: number;
-    order_id: number;
+    id: string;
+    order_id: string;
     purchasable_type: string;
-    purchasable_id: number;
+    purchasable_id: string;
     description: string;
     quantity: number;
     unit_price: number;
@@ -408,20 +408,20 @@ export type OrderLine = {
 export type TicketStatus = 'Active' | 'CheckedIn' | 'Cancelled';
 
 export type Ticket = {
-    id: number;
+    id: string;
     status: TicketStatus;
     validation_kid: string | null;
     validation_issued_at: string | null;
     validation_expires_at: string | null;
     checked_in_at: string | null;
-    ticket_type_id: number;
-    event_id: number;
-    order_id: number;
-    owner_id: number;
-    manager_id: number | null;
+    ticket_type_id: string;
+    event_id: string;
+    order_id: string;
+    owner_id: string;
+    manager_id: string | null;
     ticket_type?: TicketType;
     event?: {
-        id: number;
+        id: string;
         name: string;
         start_date?: string;
         end_date?: string;
@@ -429,10 +429,10 @@ export type Ticket = {
         banner_image_urls?: string[];
     };
     order?: Order;
-    owner?: { id: number; name: string; email: string };
-    manager?: { id: number; name: string; email: string } | null;
+    owner?: { id: string; name: string; email: string };
+    manager?: { id: string; name: string; email: string } | null;
     users?: {
-        id: number;
+        id: string;
         name: string;
         email: string;
         pivot?: { checked_in_at: string | null };
@@ -444,11 +444,11 @@ export type Ticket = {
 };
 
 export type SeatAssignment = {
-    id: number;
-    ticket_id: number;
-    user_id: number;
-    seat_plan_id: number;
-    seat_id: number;
+    id: string;
+    ticket_id: string;
+    user_id: string;
+    seat_plan_id: string;
+    seat_id: string;
     seat_title: string | null;
     created_at?: string;
     updated_at?: string;
@@ -461,7 +461,7 @@ export type SeatAssignment = {
  * swaps in the persisted PKs.
  */
 export type SeatPlanBlock = {
-    id: number | string;
+    id: string | string;
     title: string;
     color: string;
     /**
@@ -484,14 +484,14 @@ export type SeatPlanBlock = {
 };
 
 export type SeatPlanRow = {
-    id: number | string;
+    id: string | string;
     name: string;
     sort_order?: number;
 };
 
 export type SeatPlanSeat = {
-    id: number | string;
-    row_id?: number | string | null;
+    id: string | string;
+    row_id?: string | string | null;
     number?: number | null;
     title: string;
     x: number;
@@ -504,7 +504,7 @@ export type SeatPlanSeat = {
 };
 
 export type SeatPlanLabel = {
-    id?: number | string;
+    id?: string | string;
     title: string;
     x: number;
     y: number;
@@ -522,14 +522,14 @@ export type SeatPlanData = {
 } & Record<string, unknown>;
 
 export type SeatPlan = {
-    id: number;
+    id: string;
     name: string;
-    event_id: number;
+    event_id: string;
     background_image_url?: string | null;
     /** Plan-level labels (SET-F-020). */
     labels?: SeatPlanLabel[];
     blocks: SeatPlanBlock[];
-    event?: { id: number; name: string };
+    event?: { id: string; name: string };
     created_at?: string;
     updated_at?: string;
 };
@@ -537,7 +537,7 @@ export type SeatPlan = {
 // Auditing
 
 export type Audit = {
-    id: number;
+    id: string;
     event: string;
     old_values: Record<string, unknown>;
     new_values: Record<string, unknown>;
@@ -546,13 +546,13 @@ export type Audit = {
     user_agent: string | null;
     tags: string | null;
     created_at: string;
-    user: { id: number; name: string; email: string } | null;
+    user: { id: string; name: string; email: string } | null;
 };
 
 // News Domain
 
 export type NewsArticle = {
-    id: number;
+    id: string;
     title: string;
     slug: string;
     summary: string | null;
@@ -571,8 +571,8 @@ export type NewsArticle = {
     og_description: string | null;
     og_image: string | null;
     og_image_url: string | null;
-    author_id: number;
-    author?: { id: number; name: string };
+    author_id: string;
+    author?: { id: string; name: string };
     published_at: string | null;
     comments?: NewsComment[];
     created_at: string;
@@ -580,20 +580,20 @@ export type NewsArticle = {
 };
 
 export type NewsComment = {
-    id: number;
-    news_article_id: number;
-    user_id: number;
+    id: string;
+    news_article_id: string;
+    user_id: string;
     content: string;
     is_approved: boolean;
     edited_at: string | null;
     article?: {
-        id: number;
+        id: string;
         title: string;
         slug: string;
         visibility: string;
         tags: string[] | null;
     };
-    user?: { id: number; name: string };
+    user?: { id: string; name: string };
     vote_score?: number;
     created_at: string;
     updated_at: string;
@@ -604,17 +604,17 @@ export type NewsComment = {
 export type AnnouncementPriority = 'silent' | 'normal' | 'emergency';
 
 export type Announcement = {
-    id: number;
+    id: string;
     title: string;
     description: string | null;
     priority: AnnouncementPriority;
-    event_id: number;
-    event?: { id: number; name: string };
-    author_id: number;
-    author?: { id: number; name: string };
+    event_id: string;
+    event?: { id: string; name: string };
+    author_id: string;
+    author?: { id: string; name: string };
     published_at: string | null;
     dismissed_by_users_count?: number;
-    dismissed_by_users?: { id: number; name: string }[];
+    dismissed_by_users?: { id: string; name: string }[];
     created_at: string;
     updated_at: string;
 };
@@ -632,7 +632,7 @@ export type AppNotification = {
 // Achievements Domain
 
 export type Achievement = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     notification_text: string | null;
@@ -659,7 +659,7 @@ export type WebhookEventType =
     | 'event.published';
 
 export type Webhook = {
-    id: number;
+    id: string;
     name: string;
     url: string;
     event: WebhookEventType;
@@ -667,8 +667,8 @@ export type Webhook = {
     description: string | null;
     is_active: boolean;
     sent_count: number;
-    integration_app_id: number | null;
-    integration_app: { id: number; name: string; slug: string } | null;
+    integration_app_id: string | null;
+    integration_app: { id: string; name: string; slug: string } | null;
     deliveries_count: number;
     last_delivery_status_code: number | null;
     created_at: string;
@@ -676,8 +676,8 @@ export type Webhook = {
 };
 
 export type WebhookDelivery = {
-    id: number;
-    webhook_id: number;
+    id: string;
+    webhook_id: string;
     status_code: number | null;
     duration_ms: number | null;
     succeeded: boolean;
@@ -704,12 +704,12 @@ export type OrchestrationJobStatus =
     | 'cancelled';
 
 export type GameServer = {
-    id: number;
+    id: string;
     name: string;
     host: string;
     port: number;
-    game_id: number;
-    game_mode_id: number | null;
+    game_id: string;
+    game_mode_id: string | null;
     status: GameServerStatus;
     allocation_type: GameServerAllocationType;
     credentials: Record<string, unknown> | null;
@@ -722,12 +722,12 @@ export type GameServer = {
 };
 
 export type OrchestrationJob = {
-    id: number;
-    game_server_id: number | null;
-    competition_id: number;
-    lanbrackets_match_id: number;
-    game_id: number;
-    game_mode_id: number | null;
+    id: string;
+    game_server_id: string | null;
+    competition_id: string;
+    lanbrackets_match_id: string;
+    game_id: string;
+    game_mode_id: string | null;
     status: OrchestrationJobStatus;
     match_config: Record<string, unknown> | null;
     match_handler: string | null;
@@ -745,8 +745,8 @@ export type OrchestrationJob = {
 };
 
 export type MatchChatMessage = {
-    id: number;
-    orchestration_job_id: number;
+    id: string;
+    orchestration_job_id: string;
     steam_id: string;
     player_name: string;
     message: string;

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class SetDefaultTheme
 {
-    public function execute(?int $themeId): void
+    public function execute(?string $themeId): void
     {
         OrganizationSetting::set('default_theme_id', $themeId);
         Cache::forget('inertia.activeTheme.default_id');

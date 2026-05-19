@@ -103,7 +103,7 @@ class ShopController extends Controller
     {
         $request->validate([
             'code' => ['required', 'string'],
-            'event_id' => ['required', 'integer', 'exists:events,id'],
+            'event_id' => ['required', 'string', 'ulid', 'exists:events,id'],
         ]);
 
         $voucher = Voucher::where('code', $request->input('code'))->first();

@@ -8,7 +8,7 @@ use App\Domain\Competition\Models\MatchResultProof;
 use App\Models\User;
 use Illuminate\Support\Facades\Event;
 
-function dispatchMatchResultWebhook(Competition $competition, int $matchId, bool $forcedByAdmin = false): void
+function dispatchMatchResultWebhook(Competition $competition, string $matchId, bool $forcedByAdmin = false): void
 {
     $payload = [
         'event' => 'match.result_reported',

@@ -12,9 +12,9 @@ import {
 } from '@/components/ui/dialog';
 
 export interface InvalidationRow {
-    assignment_id: number;
-    ticket_id: number;
-    user_id: number;
+    assignment_id: string;
+    ticket_id: string;
+    user_id: string;
     seat_id: string;
     seat_title: string | null;
     block_id: string | null;

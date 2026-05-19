@@ -6,6 +6,7 @@ use App\Domain\Program\Models\Program;
 use App\Models\User;
 use Database\Factories\ProgramNotificationSubscriptionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,6 +16,8 @@ class ProgramNotificationSubscription extends Model
 {
     /** @use HasFactory<ProgramNotificationSubscriptionFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): ProgramNotificationSubscriptionFactory
     {

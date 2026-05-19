@@ -36,7 +36,7 @@ import type { Announcement } from '@/types/domain';
 
 const props = defineProps<{
     announcement: Announcement;
-    events: { id: number; name: string }[];
+    events: { id: string; name: string }[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

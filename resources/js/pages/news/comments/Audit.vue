@@ -31,7 +31,7 @@ interface PaginatedAudits {
 }
 
 const props = defineProps<{
-    comment: { id: number; content: string };
+    comment: { id: string; content: string };
     audits: PaginatedAudits;
 }>();
 

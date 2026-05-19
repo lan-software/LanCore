@@ -30,8 +30,8 @@ class SubscribeUserJob implements ShouldQueue
     public int $backoff = 30;
 
     public function __construct(
-        public readonly int $userId,
-        public readonly int $newsletterListId,
+        public readonly string $userId,
+        public readonly string $newsletterListId,
     ) {}
 
     public function handle(SubscribeUserToList $action): void

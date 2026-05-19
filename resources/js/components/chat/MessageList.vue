@@ -10,14 +10,14 @@ import type { ChatMessageDto } from './types';
 const props = defineProps<{
     messages: ChatMessageDto[];
     canModerate: boolean;
-    currentUserId: number | null;
+    currentUserId: string | null;
     hasMore: boolean;
     loading?: boolean;
 }>();
 
 const emit = defineEmits<{
     (e: 'load-more'): void;
-    (e: 'delete-message', id: number): void;
+    (e: 'delete-message', id: string): void;
 }>();
 
 const { t } = useI18n();

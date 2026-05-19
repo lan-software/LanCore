@@ -26,7 +26,7 @@ const blocks = computed<BlockWithCategories[]>(
     () => (props.data.blocks ?? []) as BlockWithCategories[],
 );
 
-function isSelected(blockId: string | number, categoryId: number): boolean {
+function isSelected(blockId: string | number, categoryId: string): boolean {
     const block = blocks.value.find((b) => String(b.id) === String(blockId));
 
     return (block?.allowed_ticket_category_ids ?? []).includes(categoryId);
@@ -34,7 +34,7 @@ function isSelected(blockId: string | number, categoryId: number): boolean {
 
 function toggle(
     blockId: string | number,
-    categoryId: number,
+    categoryId: string,
     nextState: boolean | 'indeterminate',
 ): void {
     const nextBlocks = blocks.value.map((block) => {

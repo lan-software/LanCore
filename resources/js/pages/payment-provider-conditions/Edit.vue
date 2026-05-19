@@ -19,7 +19,7 @@ import { index as conditionsIndex } from '@/routes/payment-provider-conditions';
 import type { BreadcrumbItem } from '@/types';
 
 type Condition = {
-    id: number;
+    id: string;
     payment_method: string;
     name: string;
     description: string | null;

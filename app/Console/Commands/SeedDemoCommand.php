@@ -14,6 +14,8 @@ use App\Domain\Competition\Enums\StageType;
 use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\CompetitionTeam;
 use App\Domain\Competition\Models\CompetitionTeamMember;
+use App\Domain\Competition\Models\MatchResultProof;
+use App\Domain\CompetitionSchedule\Models\CompetitionStageSchedule;
 use App\Domain\Event\Models\Event;
 use App\Domain\Games\Models\Game;
 use App\Domain\Games\Models\GameMode;
@@ -45,6 +47,7 @@ use App\Enums\RoleName;
 use App\Models\OrganizationSetting;
 use App\Models\User;
 use App\Support\StorageRole;
+use Carbon\CarbonImmutable;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -1026,7 +1029,7 @@ class SeedDemoCommand extends Command
                 ->limit(40)
                 ->get();
 
-            // --- CS2 Main Tournament: 8 teams, single elimination, registration closed ---
+            // --- CS2 Main Tournament: 8 teams, single elimination, running with submitted results ---
             $cs2Tournament = Competition::create([
                 'name' => 'CS2 Main Tournament',
                 'slug' => 'cs2-main-tournament',
@@ -1036,14 +1039,29 @@ class SeedDemoCommand extends Command
                 'game_mode_id' => $cs2Competitive?->id,
                 'type' => CompetitionType::Tournament,
                 'stage_type' => StageType::SingleElimination,
-                'status' => CompetitionStatus::RegistrationClosed,
+                'status' => CompetitionStatus::Running,
                 'team_size' => 5,
                 'max_teams' => 8,
                 'registration_opens_at' => '2026-05-01 00:00:00',
                 'registration_closes_at' => '2026-07-10 23:59:59',
                 'starts_at' => '2026-07-15 18:00:00',
                 'ends_at' => '2026-07-17 20:00:00',
+                'lanbrackets_id' => '01JV7K7BRACKETSCS2MAINSEED',
+                'lanbrackets_share_token' => 'demo-cs2-main-share-token',
                 'settings' => ['result_submission_mode' => ResultSubmissionMode::ParticipantsWithProof->value],
+            ]);
+
+            CompetitionStageSchedule::create([
+                'competition_id' => $cs2Tournament->id,
+                'lanbrackets_stage_id' => 'demo-cs2-main-stage-1',
+                'stage_name' => 'Single Elimination',
+                'stage_type' => 'single_elimination',
+                'sequence' => 1,
+                'starts_at' => '2026-07-15 18:00:00',
+                'estimated_duration_minutes' => 360,
+                'reserve_buffer_minutes' => 30,
+                'duration_overridden' => false,
+                'computed_inputs_hash' => 'demo-seed-hash-cs2-main',
             ]);
 
             $cs2TeamNames = [
@@ -1085,6 +1103,8 @@ class SeedDemoCommand extends Command
 
                 $userIndex++;
             }
+
+            $this->seedMatchResultProofsForCs2Main($cs2Tournament);
 
             // --- CS2 Wingman: 2v2, round robin, registration open ---
             $cs2Wingman = Competition::create([
@@ -1188,7 +1208,7 @@ class SeedDemoCommand extends Command
 
             // --- Past event: finished competition ---
             $pastEvent = $events['past'];
-            Competition::create([
+            $winterCup = Competition::create([
                 'name' => 'Winter LAN CS2 Cup',
                 'slug' => 'winter-lan-cs2-cup',
                 'description' => 'The CS2 tournament from Winter LAN 2025. What a final!',
@@ -1204,10 +1224,199 @@ class SeedDemoCommand extends Command
                 'registration_closes_at' => '2025-12-26 23:59:59',
                 'starts_at' => '2025-12-27 16:00:00',
                 'ends_at' => '2025-12-28 20:00:00',
+                'lanbrackets_id' => '01JV7K7BRACKETSWINTERCUP01',
+                'lanbrackets_share_token' => 'demo-winter-cup-share-token',
             ]);
+
+            CompetitionStageSchedule::create([
+                'competition_id' => $winterCup->id,
+                'lanbrackets_stage_id' => 'demo-winter-cup-stage-1',
+                'stage_name' => 'Single Elimination',
+                'stage_type' => 'single_elimination',
+                'sequence' => 1,
+                'starts_at' => '2025-12-27 16:00:00',
+                'estimated_duration_minutes' => 240,
+                'reserve_buffer_minutes' => 30,
+                'duration_overridden' => false,
+                'computed_inputs_hash' => 'demo-seed-hash-winter-cup',
+            ]);
+
+            $this->seedMatchResultProofsForWinterCup($winterCup);
         });
 
         return true;
+    }
+
+    /**
+     * Seed a realistic spread of MatchResultProof rows for the running CS2 Main
+     * Tournament: two finished quarterfinals, two pending submissions, and one
+     * disputed result so the moderation queue has signal.
+     */
+    private function seedMatchResultProofsForCs2Main(Competition $competition): void
+    {
+        $teams = $competition->teams()->orderBy('created_at')->get();
+        if ($teams->count() < 8) {
+            return;
+        }
+
+        $matches = [
+            // Quarterfinal 1: finished — Neon Vipers 16-12 Lag Lords
+            [
+                'lanbrackets_match_id' => '01JV7K7CS2MAINMATCHQF001AA',
+                'winner_index' => 0, 'loser_index' => 6,
+                'winner_score' => 16, 'loser_score' => 12,
+                'resolved_at' => now()->subHours(4),
+                'is_disputed' => false,
+            ],
+            // Quarterfinal 2: finished — Digital Storm 16-9 Pixel Pirates
+            [
+                'lanbrackets_match_id' => '01JV7K7CS2MAINMATCHQF002AB',
+                'winner_index' => 1, 'loser_index' => 3,
+                'winner_score' => 16, 'loser_score' => 9,
+                'resolved_at' => now()->subHours(3),
+                'is_disputed' => false,
+            ],
+            // Quarterfinal 3: submitted, awaiting admin confirmation — Frag Hunters 16-14 Shadow Ops
+            [
+                'lanbrackets_match_id' => '01JV7K7CS2MAINMATCHQF003AC',
+                'winner_index' => 2, 'loser_index' => 5,
+                'winner_score' => 16, 'loser_score' => 14,
+                'resolved_at' => null,
+                'is_disputed' => false,
+            ],
+            // Quarterfinal 4: submitted but disputed — Byte Force 16-15 Clutch Kings (contested overtime call)
+            [
+                'lanbrackets_match_id' => '01JV7K7CS2MAINMATCHQF004AD',
+                'winner_index' => 4, 'loser_index' => 7,
+                'winner_score' => 16, 'loser_score' => 15,
+                'resolved_at' => null,
+                'is_disputed' => true,
+            ],
+            // Semifinal 1: result just submitted — Neon Vipers 16-11 Digital Storm
+            [
+                'lanbrackets_match_id' => '01JV7K7CS2MAINMATCHSF001AE',
+                'winner_index' => 0, 'loser_index' => 1,
+                'winner_score' => 16, 'loser_score' => 11,
+                'resolved_at' => null,
+                'is_disputed' => false,
+            ],
+        ];
+
+        foreach ($matches as $match) {
+            $winner = $teams[$match['winner_index']];
+            $loser = $teams[$match['loser_index']];
+            $captain = $winner->captain;
+            if ($captain === null) {
+                continue;
+            }
+
+            MatchResultProof::create([
+                'competition_id' => $competition->id,
+                'lanbrackets_match_id' => $match['lanbrackets_match_id'],
+                'submitted_by_user_id' => $captain->id,
+                'submitted_by_team_id' => $winner->id,
+                'screenshot_path' => 'proofs/demo/'.$match['lanbrackets_match_id'].'.png',
+                'scores' => [
+                    ['team_id' => $winner->id, 'team_name' => $winner->name, 'score' => $match['winner_score']],
+                    ['team_id' => $loser->id, 'team_name' => $loser->name, 'score' => $match['loser_score']],
+                ],
+                'is_disputed' => $match['is_disputed'],
+                'resolved_at' => $match['resolved_at'],
+            ]);
+        }
+    }
+
+    /**
+     * Seed a fully-resolved bracket of MatchResultProof rows for the past
+     * Winter LAN CS2 Cup so the finished-competition view has substance.
+     */
+    private function seedMatchResultProofsForWinterCup(Competition $competition): void
+    {
+        $teams = $competition->teams()->orderBy('created_at')->get();
+        if ($teams->isEmpty()) {
+            // Past event seeds no teams today; create a minimal historical bracket so proofs land.
+            $captainPool = User::query()
+                ->where('email', '!=', 'superadmin@example.com')
+                ->inRandomOrder()
+                ->limit(20)
+                ->get();
+
+            $historicalTeams = [
+                ['name' => 'Frost Wolves', 'tag' => 'FW'],
+                ['name' => 'Glacier Squad', 'tag' => 'GS'],
+                ['name' => 'Snow Tigers', 'tag' => 'ST'],
+                ['name' => 'Ice Breakers', 'tag' => 'IB'],
+            ];
+
+            $cursor = 0;
+            $created = collect();
+            foreach ($historicalTeams as $teamData) {
+                $captain = $captainPool[$cursor] ?? User::factory()->create();
+                $cursor++;
+                $team = CompetitionTeam::create([
+                    'competition_id' => $competition->id,
+                    'name' => $teamData['name'],
+                    'tag' => $teamData['tag'],
+                    'captain_user_id' => $captain->id,
+                ]);
+                CompetitionTeamMember::create([
+                    'team_id' => $team->id,
+                    'user_id' => $captain->id,
+                    'joined_at' => '2025-12-05 12:00:00',
+                    'left_at' => null,
+                ]);
+                for ($i = 0; $i < 4; $i++) {
+                    $member = $captainPool[$cursor] ?? User::factory()->create();
+                    $cursor++;
+                    CompetitionTeamMember::create([
+                        'team_id' => $team->id,
+                        'user_id' => $member->id,
+                        'joined_at' => '2025-12-05 12:00:00',
+                        'left_at' => null,
+                    ]);
+                }
+                $created->push($team);
+            }
+            $teams = $created;
+        }
+
+        if ($teams->count() < 4) {
+            return;
+        }
+
+        $resolvedAt = CarbonImmutable::parse('2025-12-28 18:00:00');
+
+        $bracket = [
+            // Semifinal 1: Frost Wolves 16-13 Snow Tigers
+            ['lanbrackets_match_id' => '01JV7K7WINTERCUPMATCHSF1AA', 'winner' => 0, 'loser' => 2, 'ws' => 16, 'ls' => 13],
+            // Semifinal 2: Glacier Squad 16-10 Ice Breakers
+            ['lanbrackets_match_id' => '01JV7K7WINTERCUPMATCHSF1BB', 'winner' => 1, 'loser' => 3, 'ws' => 16, 'ls' => 10],
+            // Final: Frost Wolves 19-17 Glacier Squad (overtime)
+            ['lanbrackets_match_id' => '01JV7K7WINTERCUPMATCHFINAL', 'winner' => 0, 'loser' => 1, 'ws' => 19, 'ls' => 17],
+        ];
+
+        foreach ($bracket as $match) {
+            $winner = $teams[$match['winner']];
+            $loser = $teams[$match['loser']];
+            $captain = $winner->captain;
+            if ($captain === null) {
+                continue;
+            }
+
+            MatchResultProof::create([
+                'competition_id' => $competition->id,
+                'lanbrackets_match_id' => $match['lanbrackets_match_id'],
+                'submitted_by_user_id' => $captain->id,
+                'submitted_by_team_id' => $winner->id,
+                'screenshot_path' => 'proofs/demo/'.$match['lanbrackets_match_id'].'.png',
+                'scores' => [
+                    ['team_id' => $winner->id, 'team_name' => $winner->name, 'score' => $match['ws']],
+                    ['team_id' => $loser->id, 'team_name' => $loser->name, 'score' => $match['ls']],
+                ],
+                'is_disputed' => false,
+                'resolved_at' => $resolvedAt,
+            ]);
+        }
     }
 
     private function seedNews(): bool

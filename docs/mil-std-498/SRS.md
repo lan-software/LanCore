@@ -387,6 +387,35 @@ The LanCore CSCI shall support the following operational states:
 | COM-F-MATCH-FINAL-001 | The software shall dispatch a `MatchFinalized` event whenever a match transitions to a finalized state, carrying the competition, the LanBrackets match id, and a `MatchFinalizationSource` enum value identifying the trigger source |
 | COM-F-MATCH-FINAL-002 | The `MatchFinalizationSource` enum shall include cases `SubmittedByParticipants` (derived from the participant-confirm path) and `ForcedByAdmin` (derived from a `forced_by_admin` flag on the LanBrackets webhook payload) |
 | COM-F-MATCH-FINAL-003 | The software shall dispatch `MatchFinalized` at most once per `(competition_id, lanbrackets_match_id)` tuple, regardless of webhook re-emits or admin re-confirmations, via an atomic cache marker with a 30-day TTL |
+| COMP-SCH-001 | The software shall persist a `CompetitionStageSchedule` row per LanBrackets stage (keyed by `(competition_id, lanbrackets_stage_id)`) carrying `starts_at`, `estimated_duration_minutes`, `reserve_buffer_minutes`, and `duration_overridden` so that organizers can lay out competitions on a Gantt-style board independently of LanBrackets' bracket state. |
+| COMP-SCH-002 | The software shall provide `StageScheduleSynchronizer` (invoked via `SyncCompetitionStagesJob`, the `competitions:sync-stages` artisan command, and the LanBrackets `bracket.generated` / `stage.completed` webhook handlers) which upserts schedule rows from LanBrackets, deletes orphans, preserves organizer-set `starts_at`, `notes`, and overridden durations, and refreshes `computed_inputs_hash`. |
+| COMP-SCH-003 | The software shall compute a default `estimated_duration_minutes` per stage via `DurationEstimator` using `match_count × game.avg_match_minutes` when LanBrackets reports a match count, falling back to stage-type-specific formulas (single elim: rounds × avg_match; round robin: C(teams, 2) × avg_match; swiss: rounds × matches_per_round × avg_match; otherwise game.avg_stage_minutes). The estimator shall produce a stable `DurationEstimate` containing `minutes`, `strategy`, and a SHA-256 `hash` of the inputs so callers can detect when inputs have drifted. |
+| COMP-SCH-004 | The software shall surface scheduling conflicts via `ConflictDetector::detectForEvent()` covering: (a) player double-booking when two stages with shared active players overlap on the time axis, (b) stage runs extending outside `Event.start_date`..`end_date`, and (c) intra-competition sequence overlap where a later-sequence stage starts before the earlier stage's run + reserve completes. |
+| COMP-SCH-005 | The software shall provide a live next-match queue via `NextMatchProposer::proposeForEvent()` that pulls pending matches from every Running competition via LanBrackets, filters out matches with unresolved dependencies, ranks by scheduled-window proximity and competition deadline urgency, and marks proposals whose participants are already in an in-progress match elsewhere as blocked. Matches are cached per (competition, stage) for 30 seconds. |
+| COMP-SCH-006 | The software shall expose `PATCH /backstage/stage-schedules/{schedule}` accepting `starts_at`, `estimated_duration_minutes` (which sets `duration_overridden=true`), `reserve_buffer_minutes`, `notes`, and `reset_to_computed`. On every change the software shall dispatch a `StageScheduleUpdated` broadcast on the private `event.{eventId}.competition-board` channel so the Gantt UI updates in real time via Reverb. |
+| COMP-SCH-007 | The software shall enforce `CompetitionStageSchedulePolicy` requiring `Permission::ManageCompetitions` for both viewing the competition board and updating any stage schedule, and shall authorise the broadcast channel through the same gate. |
+| COMP-SCH-008 | The Competition Board shall be reachable at `/backstage/competition-board`, scoped to the event selected via the AppSidebar Event Selector (session key `selected_event_id`). The shown event is determined at request time; no event identifier appears in the URL. |
+| COMP-SCH-009 | The Competition Board shall render three columns left to right — Competition (name + game), Slack (signed `±H:MM` for current competition slack), Timeline (adaptive-zoom Gantt with stage blocks). The Slack column shows `current_slack_minutes = competition.ends_at − end_of_last_stage` (positive = ahead of plan, negative = projected overrun); this is an interim forward-mapping approximation of the spec's backwards-mapped slack-vs-plan model — full backwards mapping with `{target, min, max}` slack triple per stage is deferred to a follow-up release (see Deferred Items below). |
+| COMP-SCH-010 | The `NextMatchProposer` shall be exposed primarily as a player-facing surface at `/portal/play-next`. The endpoint shall return only matches whose participants include a `CompetitionTeam` the signed-in user is an active member of (resolved via `CompetitionTeam.id` ↔ LanBrackets participant `external_reference_id` per COMP-F-018). The proposer service retains an event-scoped variant for future organizer dashboards but no admin route is published in v1. |
+
+### Deferred items (tracked from competition-board.md, not yet implemented in v1.a)
+
+The following spec items are documented here so future work can find them. They are intentionally not in the current release scope:
+
+- **Backwards mapping engine** from `Competition.end_at`. Derives `planned_start_at` / `planned_end_at` for every stage/round, accounting for breaks.
+- **Slack triple** `{target, min, max}` per Stage with inheritance Stage → Competition → Format → Global. Current `reserve_buffer_minutes` is the closest existing concept and stays orthogonal — `reserve` is a per-round prospective buffer while the slack triple is the reactive plan-vs-actual delta.
+- **Breaks** as first-class entities (`Break` model on `CompetitionPlan`). Render as vertical greyed-out bands across all rows; trigger ripple replan when added/moved.
+- **Stage → Round → Match** refinement. Today's schema collapses Round into Stage; the spec calls for explicit `Round` rows carrying `bo_n`, `expected_games_per_match`, `match_duration`, and `reserve` per round.
+- **BoN configuration** at Competition / Stage / Round levels with inheritance resolution.
+- **`Competition.is_lockable`** flag plus lock evaluator with soft/hard variants.
+- **Demand burndown summary row** at the bottom of the board (per-time-box aggregate player-hour demand).
+- **Demand Collision factor row** (heat-strip showing same-time double-bookings).
+- **Cross-Competition blocking gradient** colouring on stage boxes (green → red).
+- **Boxplot match-progress markers** (`|---|`) inside each stage box.
+- **Vertical "now" cursor** spanning all rows.
+- **Plan-time feasibility checker** (spec v1.c): probabilistic load projection per participant, infeasibility flagging before event start.
+- **Notification profile integration** for the player-facing card (gentle / standard / aggressive).
+- **Game-level / format-preset / event-level inheritance** templates for the configuration model.
 
 #### 3.2.15 Venue Domain (CSCI-VEN)
 

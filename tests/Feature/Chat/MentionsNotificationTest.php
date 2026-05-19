@@ -38,7 +38,7 @@ class MentionsAllowAllPolicy implements RoomPolicy
 
 class MentionsAuthorOnlyPolicy implements RoomPolicy
 {
-    public function __construct(public readonly int $authorId) {}
+    public function __construct(public readonly string $authorId) {}
 
     public function canView(User $user, ChatRoom $room): bool
     {

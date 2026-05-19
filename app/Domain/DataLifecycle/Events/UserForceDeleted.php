@@ -8,5 +8,5 @@ class UserForceDeleted
 {
     use Dispatchable;
 
-    public function __construct(public int $userId, public string $reason) {}
+    public function __construct(public string $userId, public string $reason) {}
 }

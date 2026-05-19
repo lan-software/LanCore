@@ -31,7 +31,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 interface PolicyVersionRow {
-    id: number;
+    id: string;
     version_number: number;
     locale: string;
     is_non_editorial_change: boolean;
@@ -39,22 +39,22 @@ interface PolicyVersionRow {
     effective_at: string;
     published_at: string;
     pdf_path: string | null;
-    published_by: { id: number; name: string } | null;
+    published_by: { id: string; name: string } | null;
 }
 
 interface DraftRow {
     locale: string;
     content: string;
     updated_at: string | null;
-    updated_by: { id: number; name: string } | null;
+    updated_by: { id: string; name: string } | null;
 }
 
 interface AuditRow {
-    id: number;
+    id: string;
     event: string;
     auditable_type: string;
-    auditable_id: number;
-    actor: { id: number; name: string } | null;
+    auditable_id: string;
+    actor: { id: string; name: string } | null;
     old_values: Record<string, unknown> | string | null;
     new_values: Record<string, unknown> | string | null;
     created_at: string;
@@ -75,7 +75,7 @@ interface DiffRow {
 
 const props = defineProps<{
     policy: {
-        id: number;
+        id: string;
         key: string;
         name: string;
         description: string | null;

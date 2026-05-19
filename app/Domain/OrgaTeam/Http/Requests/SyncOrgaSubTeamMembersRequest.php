@@ -20,7 +20,7 @@ class SyncOrgaSubTeamMembersRequest extends FormRequest
     {
         return [
             'memberships' => ['present', 'array'],
-            'memberships.*.user_id' => ['required', 'integer', 'exists:users,id'],
+            'memberships.*.user_id' => ['required', 'string', 'ulid', 'exists:users,id'],
             'memberships.*.role' => ['required', Rule::enum(SubTeamRole::class)],
         ];
     }

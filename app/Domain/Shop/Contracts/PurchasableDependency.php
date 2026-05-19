@@ -14,7 +14,7 @@ class PurchasableDependency
      */
     public function __construct(
         public readonly string $purchasableClass,
-        public readonly ?int $eventId = null,
+        public readonly ?string $eventId = null,
         public readonly string $message = 'This item requires another item in your cart or account.',
     ) {}
 }

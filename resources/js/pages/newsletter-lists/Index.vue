@@ -28,8 +28,8 @@ import { index as newsletterListsIndex } from '@/routes/newsletter-lists';
 import type { BreadcrumbItem } from '@/types';
 
 type NewsletterList = {
-    id: number;
-    listmonk_id: number;
+    id: string;
+    listmonk_id: string;
     name: string;
     description: string | null;
     type: string;

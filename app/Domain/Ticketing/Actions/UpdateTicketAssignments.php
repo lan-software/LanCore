@@ -105,14 +105,14 @@ class UpdateTicketAssignments
         return $ticket->rotateSignedToken($this->tokenService);
     }
 
-    public function checkIn(Ticket $ticket, int $performedBy, ?int $userId = null): Ticket
+    public function checkIn(Ticket $ticket, int $performedBy, ?string $userId = null): Ticket
     {
         $this->ensureNotCheckedIn($ticket);
 
         return $this->performCheckIn($ticket, $userId);
     }
 
-    private function performCheckIn(Ticket $ticket, ?int $userId = null): Ticket
+    private function performCheckIn(Ticket $ticket, ?string $userId = null): Ticket
     {
         return DB::transaction(function () use ($ticket, $userId): Ticket {
             $checkInMode = $ticket->ticketType->check_in_mode;

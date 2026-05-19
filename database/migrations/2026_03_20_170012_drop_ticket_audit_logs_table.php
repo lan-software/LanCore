@@ -13,12 +13,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::create('ticket_audit_logs', function ($table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('action');
             $table->json('old_values')->nullable();
             $table->json('new_values')->nullable();
-            $table->foreignId('ticket_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('performed_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUlid('ticket_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('performed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

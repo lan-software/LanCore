@@ -3,14 +3,14 @@ import PersonCard from '@/components/orga-team/PersonCard.vue';
 import SubTeamGroup from '@/components/orga-team/SubTeamGroup.vue';
 
 type Person = {
-    id: number;
+    id: string;
     username: string | null;
     profile_emoji: string | null;
     avatar_url: string;
 };
 
 type SubTeam = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     emoji: string | null;
@@ -21,7 +21,7 @@ type SubTeam = {
 };
 
 type OrgaTeam = {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     description: string | null;

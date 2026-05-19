@@ -54,7 +54,7 @@ it('upserts each team and persists the returned lanbrackets_id before bulk add',
 
     $mock->shouldReceive('bulkAddParticipants')
         ->once()
-        ->withArgs(function (int $compId, array $participants): bool {
+        ->withArgs(function (string $compId, array $participants): bool {
             $ids = collect($participants)->pluck('participant_id')->all();
 
             return $compId === 100
@@ -101,7 +101,7 @@ it('skips teams whose upsert returned 4xx and have no prior lanbrackets_id', fun
 
     $mock->shouldReceive('bulkAddParticipants')
         ->once()
-        ->withArgs(function (int $compId, array $participants): bool {
+        ->withArgs(function (string $compId, array $participants): bool {
             $ids = collect($participants)->pluck('participant_id')->all();
 
             return $compId === 200

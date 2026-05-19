@@ -5,6 +5,7 @@ namespace App\Domain\Seating\Models;
 use App\Domain\Event\Models\Event;
 use Database\Factories\SeatPlanFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,6 +27,8 @@ class SeatPlan extends Model implements AuditableContract
 
     /** @use HasFactory<SeatPlanFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): SeatPlanFactory
     {

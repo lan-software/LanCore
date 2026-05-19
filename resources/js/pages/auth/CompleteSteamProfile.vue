@@ -23,8 +23,8 @@ interface PendingSteamProfile {
 }
 
 interface RequiredPolicy {
-    id: number;
-    policy_id: number;
+    id: string;
+    policy_id: string;
     policy_key: string | null;
     policy_name: string | null;
     policy_description: string | null;
@@ -40,7 +40,7 @@ const props = defineProps<{
 
 const acceptedPolicyIds = ref<number[]>([]);
 
-function togglePolicy(id: number, checked: boolean | string): void {
+function togglePolicy(id: string, checked: boolean | string): void {
     if (checked) {
         if (!acceptedPolicyIds.value.includes(id)) {
             acceptedPolicyIds.value = [...acceptedPolicyIds.value, id];

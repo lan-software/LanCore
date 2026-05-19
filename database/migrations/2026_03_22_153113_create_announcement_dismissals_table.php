@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('announcement_dismissals', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('announcement_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('announcement_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
 
             $table->unique(['announcement_id', 'user_id']);

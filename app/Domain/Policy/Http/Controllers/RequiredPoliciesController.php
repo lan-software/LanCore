@@ -83,7 +83,7 @@ class RequiredPoliciesController extends Controller
     {
         $validated = $request->validate([
             'policy_version_ids' => ['required', 'array', 'min:1'],
-            'policy_version_ids.*' => ['integer', 'exists:policy_versions,id'],
+            'policy_version_ids.*' => ['string', 'ulid', 'exists:policy_versions,id'],
         ]);
 
         $user = $request->user();

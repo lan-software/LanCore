@@ -94,7 +94,7 @@ class ThemeController extends Controller
         $this->authorize('create', Theme::class);
 
         $validated = $request->validate([
-            'theme_id' => ['nullable', 'integer', Rule::exists('themes', 'id')],
+            'theme_id' => ['nullable', 'string', 'ulid', Rule::exists('themes', 'id')],
         ]);
 
         $this->setDefaultTheme->execute($validated['theme_id'] ?? null);

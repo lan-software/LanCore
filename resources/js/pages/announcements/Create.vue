@@ -22,8 +22,8 @@ import { index as announcementsRoute } from '@/routes/announcements';
 import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{
-    events: { id: number; name: string }[];
-    selectedEventId?: number | null;
+    events: { id: string; name: string }[];
+    selectedEventId?: string | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

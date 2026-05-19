@@ -127,8 +127,8 @@ class SeatPickerController extends Controller
             'taken' => $taken,
             'myTickets' => $myTickets,
             'context' => [
-                'ticket_id' => $request->integer('ticket') ?: null,
-                'user_id' => $request->integer('user') ?: null,
+                'ticket_id' => $request->string('ticket')->toString() ?: null,
+                'user_id' => $request->string('user')->toString() ?: null,
             ],
         ]);
     }

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ticket_types', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name');
             $table->text('description')->nullable();
             $table->unsignedInteger('price');
@@ -24,9 +24,9 @@ return new class extends Migration
             $table->dateTime('purchase_from')->nullable();
             $table->dateTime('purchase_until')->nullable();
             $table->boolean('is_locked')->default(false);
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('ticket_category_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('ticket_group_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUlid('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('ticket_category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUlid('ticket_group_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }

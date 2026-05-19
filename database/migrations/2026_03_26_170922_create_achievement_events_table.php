@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('achievement_events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('achievement_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('achievement_id')->constrained()->cascadeOnDelete();
             $table->string('event_class');
             $table->timestamps();
 

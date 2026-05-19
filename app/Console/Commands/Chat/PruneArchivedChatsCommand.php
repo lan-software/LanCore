@@ -59,7 +59,7 @@ class PruneArchivedChatsCommand extends Command
         }
 
         $consumerKeys = $archivedCompetitionIds
-            ->flatMap(fn (int $id) => [
+            ->flatMap(fn (string $id) => [
                 "competition:{$id}",
             ])
             ->toArray();

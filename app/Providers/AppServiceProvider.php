@@ -24,6 +24,8 @@ use App\Domain\Competition\Listeners\EnsureMatchRoomOnReady;
 use App\Domain\Competition\Listeners\WriteLockMatchRoomOnFinalized;
 use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\CompetitionTeamMember;
+use App\Domain\CompetitionSchedule\Models\CompetitionStageSchedule;
+use App\Domain\CompetitionSchedule\Policies\CompetitionStageSchedulePolicy;
 use App\Domain\Event\Events\EventPublished;
 use App\Domain\Event\Listeners\HandleEventPublishedWebhooks;
 use App\Domain\Event\Models\Event;
@@ -326,6 +328,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(PolicyType::class, PolicyTypePolicy::class);
         Gate::policy(PolicyVersion::class, PolicyVersionPolicy::class);
         Gate::policy(PolicyAcceptance::class, PolicyAcceptancePolicy::class);
+        Gate::policy(CompetitionStageSchedule::class, CompetitionStageSchedulePolicy::class);
     }
 
     /**

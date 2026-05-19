@@ -32,7 +32,7 @@ interface PaginatedAudits {
 }
 
 const props = defineProps<{
-    ticketCategory: { id: number; name: string };
+    ticketCategory: { id: string; name: string };
     audits: PaginatedAudits;
 }>();
 

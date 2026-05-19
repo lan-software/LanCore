@@ -38,7 +38,7 @@ const props = withDefaults(
         announcements: Announcement[];
         dismissedAnnouncementIds: number[];
         openCompetitions: {
-            id: number;
+            id: string;
             name: string;
             slug: string | null;
             description: string | null;
@@ -54,7 +54,7 @@ const props = withDefaults(
             registration_closes_at: string | null;
             starts_at: string | null;
         }[];
-        focusSeatId?: number | null;
+        focusSeatId?: string | null;
     }>(),
     {
         canRegister: true,
@@ -187,7 +187,7 @@ let focusAnimationApplied = false;
 
 /* Find which block owns the focused seat so we can zoom to it before
  * pulsing. */
-function findBlockIdForSeat(seatId: number): string | null {
+function findBlockIdForSeat(seatId: string): string | null {
     const plan = props.nextEvent?.seat_plans?.[0];
 
     if (!plan) {
@@ -195,7 +195,7 @@ function findBlockIdForSeat(seatId: number): string | null {
     }
 
     for (const block of plan.blocks ?? []) {
-        if (block.seats.some((s) => Number(s.id) === seatId)) {
+        if (block.seats.some((s) => String(s.id) === String(seatId))) {
             return String(block.id);
         }
     }
@@ -238,7 +238,7 @@ seatMapViewer.onReady(() => {
     focusAnimationApplied = true;
 });
 
-function dismissAnnouncement(announcementId: number) {
+function dismissAnnouncement(announcementId: string) {
     router.post(
         `/announcements/${announcementId}/dismiss`,
         {},

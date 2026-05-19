@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
  */
 class SelectServerForMatch
 {
-    public function execute(int $gameId, ?int $gameModeId = null): ?GameServer
+    public function execute(string $gameId, ?string $gameModeId = null): ?GameServer
     {
         return DB::transaction(function () use ($gameId, $gameModeId) {
             $query = GameServer::query()

@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('purchase_requirements', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name');
             $table->text('description')->nullable();
             $table->text('requirements_content')->nullable();

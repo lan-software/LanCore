@@ -20,7 +20,7 @@ class AdminRequestDeletionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'integer', Rule::exists((new User)->getTable(), 'id')->whereNull('deleted_at')],
+            'user_id' => ['required', 'string', 'ulid', Rule::exists((new User)->getTable(), 'id')->whereNull('deleted_at')],
             'reason' => ['required', 'string', 'min:5', 'max:1000'],
         ];
     }

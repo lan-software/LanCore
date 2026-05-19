@@ -5,6 +5,7 @@ namespace App\Domain\Integration\Models;
 use App\Domain\Webhook\Models\Webhook;
 use Database\Factories\IntegrationAppFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,6 +15,8 @@ class IntegrationApp extends Model
 {
     /** @use HasFactory<IntegrationAppFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     /**
      * @return array<string, string>

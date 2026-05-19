@@ -9,8 +9,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { index as anonymizationLogIndex } from '@/routes/admin/data-lifecycle/anonymization-log';
 
 type LogEntry = {
-    id: number;
-    user_id: number;
+    id: string;
+    user_id: string;
     data_class: string;
     anonymizer_class: string;
     records_scrubbed_count: number;
@@ -19,7 +19,7 @@ type LogEntry = {
     completed_at: string;
     summary: Record<string, unknown> | null;
     user: {
-        id: number;
+        id: string;
         name: string | null;
         email: string | null;
         deleted_at: string | null;
@@ -35,7 +35,7 @@ type Paginated<T> = {
 
 const props = defineProps<{
     entries: Paginated<LogEntry>;
-    filters: { user_id?: number | string; data_class?: string };
+    filters: { user_id?: string | string; data_class?: string };
 }>();
 
 const filterState = reactive({

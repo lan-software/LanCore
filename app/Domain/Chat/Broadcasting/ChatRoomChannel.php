@@ -29,7 +29,7 @@ class ChatRoomChannel
     /**
      * @return array{id: int, name: ?string, username: ?string}|false
      */
-    public function join(User $user, int $roomId): array|false
+    public function join(User $user, string $roomId): array|false
     {
         $room = ChatRoom::find($roomId);
 

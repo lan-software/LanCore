@@ -9,12 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('entrance_audit_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('ticket_id')->nullable()->constrained()->nullOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('ticket_id')->nullable()->constrained()->nullOnDelete();
             $table->string('validation_id', 32)->nullable();
             $table->string('action', 30);
             $table->string('decision', 30)->nullable();
-            $table->unsignedBigInteger('operator_id');
+            $table->ulid('operator_id');
             $table->string('operator_session')->nullable();
             $table->text('client_info')->nullable();
             $table->text('override_reason')->nullable();

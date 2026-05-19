@@ -8,6 +8,7 @@ use App\Domain\Orchestration\Enums\GameServerAllocationType;
 use App\Domain\Orchestration\Enums\GameServerStatus;
 use Database\Factories\GameServerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,8 @@ class GameServer extends Model
 {
     /** @use HasFactory<GameServerFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): GameServerFactory
     {

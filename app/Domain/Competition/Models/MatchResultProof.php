@@ -5,6 +5,7 @@ namespace App\Domain\Competition\Models;
 use App\Models\User;
 use Database\Factories\MatchResultProofFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,8 @@ class MatchResultProof extends Model
 {
     /** @use HasFactory<MatchResultProofFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     protected static function newFactory(): MatchResultProofFactory
     {

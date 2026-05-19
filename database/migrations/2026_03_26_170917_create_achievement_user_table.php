@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('achievement_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('achievement_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('achievement_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->timestamp('earned_at')->useCurrent();
             $table->timestamps();
 

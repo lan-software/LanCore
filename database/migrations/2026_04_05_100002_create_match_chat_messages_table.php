@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('match_chat_messages', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('orchestration_job_id')->constrained('orchestration_jobs')->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('orchestration_job_id')->constrained('orchestration_jobs')->cascadeOnDelete();
             $table->string('steam_id');
             $table->string('player_name');
             $table->text('message');

@@ -56,7 +56,7 @@ interface PaginatedComments {
 
 const props = defineProps<{
     comments: PaginatedComments;
-    articles: { id: number; title: string }[];
+    articles: { id: string; title: string }[];
     tags: string[];
     filters: DataTableFilters;
 }>();
@@ -110,7 +110,7 @@ const table = useVueTable({
 });
 
 // Inline editing state
-const editingId = ref<number | null>(null);
+const editingId = ref<string | null>(null);
 const editContent = ref('');
 
 function startEdit(comment: NewsComment) {

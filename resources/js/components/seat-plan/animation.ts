@@ -26,7 +26,7 @@ export function tweenView(
     }
 
     const start = performance.now();
-    let rafId: number | null = null;
+    let rafId: string | null = null;
     let cancelled = false;
 
     function tick(now: number): void {

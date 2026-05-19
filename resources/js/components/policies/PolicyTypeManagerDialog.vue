@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 interface PolicyType {
-    id: number;
+    id: string;
     key: string;
     label: string;
     description: string | null;

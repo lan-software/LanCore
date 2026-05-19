@@ -20,10 +20,10 @@ import {
 import type { BreadcrumbItem } from '@/types';
 
 type OrgaTeamRow = {
-    id: number;
+    id: string;
     name: string;
     slug: string;
-    organizer: { id: number; username: string | null; name: string } | null;
+    organizer: { id: string; username: string | null; name: string } | null;
     sub_teams_count: number;
     events_count: number;
 };

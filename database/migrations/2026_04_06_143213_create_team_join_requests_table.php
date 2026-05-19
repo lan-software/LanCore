@@ -9,12 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('team_join_requests', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('team_id')->constrained('competition_teams')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('team_id')->constrained('competition_teams')->cascadeOnDelete();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->string('status', 20)->default('pending');
             $table->text('message')->nullable();
-            $table->foreignId('resolved_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUlid('resolved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('resolved_at')->nullable();
             $table->timestamps();
 

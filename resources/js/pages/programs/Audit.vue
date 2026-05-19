@@ -32,7 +32,7 @@ interface PaginatedAudits {
 }
 
 const props = defineProps<{
-    program: { id: number; name: string };
+    program: { id: string; name: string };
     audits: PaginatedAudits;
 }>();
 

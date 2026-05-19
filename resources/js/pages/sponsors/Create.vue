@@ -23,8 +23,8 @@ import type { SponsorLevel } from '@/types/domain';
 
 const props = defineProps<{
     sponsorLevels: SponsorLevel[];
-    events: { id: number; name: string }[];
-    selectedEventId?: number | null;
+    events: { id: string; name: string }[];
+    selectedEventId?: string | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

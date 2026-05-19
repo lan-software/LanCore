@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tickets', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('status')->default('active');
             $table->dateTime('checked_in_at')->nullable();
-            $table->foreignId('ticket_type_id')->constrained()->restrictOnDelete();
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('manager_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUlid('ticket_type_id')->constrained()->restrictOnDelete();
+            $table->foreignUlid('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('order_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('owner_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignUlid('manager_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUlid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

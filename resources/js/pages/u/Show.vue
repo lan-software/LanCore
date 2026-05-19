@@ -12,7 +12,7 @@ import { edit as profileEdit } from '@/routes/profile';
 import type { BreadcrumbItem } from '@/types';
 
 type Achievement = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     icon: string | null;
@@ -28,7 +28,7 @@ type EventSeatInfo = {
 };
 
 type EventHistoryItem = {
-    id: number;
+    id: string;
     name: string;
     start_date: string | null;
     end_date: string | null;
@@ -38,7 +38,7 @@ type EventHistoryItem = {
 };
 
 type ProfilePayload = {
-    id: number;
+    id: string;
     username: string | null;
     profile_emoji: string | null;
     short_bio: string | null;

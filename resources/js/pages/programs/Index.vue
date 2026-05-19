@@ -45,7 +45,7 @@ interface PaginatedPrograms {
 const props = defineProps<{
     programs: PaginatedPrograms;
     filters: DataTableFilters;
-    events: { id: number; name: string }[];
+    events: { id: string; name: string }[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

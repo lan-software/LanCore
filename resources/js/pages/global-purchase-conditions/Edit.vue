@@ -12,7 +12,7 @@ import { index as conditionsIndex } from '@/routes/global-purchase-conditions';
 import type { BreadcrumbItem } from '@/types';
 
 type Condition = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     content: string | null;

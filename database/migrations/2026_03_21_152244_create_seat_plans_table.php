@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('seat_plans', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name');
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('event_id')->constrained()->cascadeOnDelete();
             $table->jsonb('data')->default('{"blocks": []}');
             $table->timestamps();
         });

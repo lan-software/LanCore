@@ -23,7 +23,7 @@ class GenerateTicketPdf implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(
-        private readonly int $ticketId,
+        private readonly string $ticketId,
         private readonly string $qrPayload,
     ) {}
 

@@ -11,7 +11,7 @@ import { edit as editEmailSettings } from '@/routes/email-settings';
 import type { BreadcrumbItem } from '@/types';
 
 type EmailListRow = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     tags: string[];
@@ -37,7 +37,7 @@ const form = useForm<{ subscribed_list_ids: number[] }>({
     subscribed_list_ids: [...initialIds.value],
 });
 
-function toggle(listId: number, enabled: boolean) {
+function toggle(listId: string, enabled: boolean) {
     if (enabled) {
         if (!form.subscribed_list_ids.includes(listId)) {
             form.subscribed_list_ids.push(listId);
@@ -49,7 +49,7 @@ function toggle(listId: number, enabled: boolean) {
     }
 }
 
-function isSubscribed(listId: number): boolean {
+function isSubscribed(listId: string): boolean {
     return form.subscribed_list_ids.includes(listId);
 }
 

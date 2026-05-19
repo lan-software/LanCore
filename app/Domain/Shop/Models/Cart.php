@@ -7,6 +7,7 @@ use App\Domain\Shop\Contracts\Purchasable;
 use App\Domain\Shop\Contracts\PurchasableDependency;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['user_id', 'event_id', 'voucher_code'])]
 class Cart extends Model
 {
+    use HasUlids;
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -56,7 +59,7 @@ class Cart extends Model
      *
      * @param  class-string<Purchasable>  $purchasableClass
      */
-    public function containsPurchasableOfType(string $purchasableClass, ?int $eventId = null): bool
+    public function containsPurchasableOfType(string $purchasableClass, ?string $eventId = null): bool
     {
         return $this->items()->where('purchasable_type', $purchasableClass)->when(
             $eventId !== null,

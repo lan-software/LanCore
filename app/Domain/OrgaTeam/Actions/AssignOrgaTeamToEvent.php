@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
  */
 class AssignOrgaTeamToEvent
 {
-    public function execute(Event $event, ?int $orgaTeamId): void
+    public function execute(Event $event, ?string $orgaTeamId): void
     {
         DB::transaction(static function () use ($event, $orgaTeamId): void {
             $event->forceFill(['orga_team_id' => $orgaTeamId])->save();

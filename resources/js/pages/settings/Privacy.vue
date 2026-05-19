@@ -25,7 +25,7 @@ import type { BreadcrumbItem } from '@/types';
 type ProfileVisibility = 'public' | 'logged_in' | 'private';
 
 interface ConsentAcceptance {
-    id: number;
+    id: string;
     policy: { key: string; name: string };
     version: { version_number: number; locale: string };
     accepted_at: string | null;

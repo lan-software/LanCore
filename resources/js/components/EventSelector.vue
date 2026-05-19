@@ -53,8 +53,8 @@ const isCollapsed = computed(
 const context = computed(() => {
     if (props.variant === 'my') {
         const c = page.props.myEventContext as {
-            selectedEventId: number | null;
-            events: { id: number; name: string }[];
+            selectedEventId: string | null;
+            events: { id: string; name: string }[];
         } | null;
 
         return c;
@@ -98,7 +98,7 @@ function onSelect(value: string) {
     } else {
         router.post(
             endpoint.value,
-            { event_id: Number(value) },
+            { event_id: value },
             { preserveScroll: true, preserveState: true },
         );
     }

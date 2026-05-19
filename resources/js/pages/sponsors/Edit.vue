@@ -37,8 +37,8 @@ import type { Sponsor, SponsorLevel } from '@/types/domain';
 const props = defineProps<{
     sponsor: Sponsor;
     sponsorLevels: SponsorLevel[];
-    events: { id: number; name: string }[];
-    users: { id: number; name: string; email: string }[];
+    events: { id: string; name: string }[];
+    users: { id: string; name: string; email: string }[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -50,11 +50,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 const showDeleteDialog = ref(false);
 const removeLogo = ref(false);
 
-function hasEvent(eventId: number): boolean {
+function hasEvent(eventId: string): boolean {
     return props.sponsor.events?.some((e) => e.id === eventId) ?? false;
 }
 
-function hasManager(userId: number): boolean {
+function hasManager(userId: string): boolean {
     return props.sponsor.managers?.some((m) => m.id === userId) ?? false;
 }
 

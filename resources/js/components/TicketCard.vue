@@ -73,7 +73,7 @@ const isSeatable = computed<boolean>(
             ?.is_seatable ?? true,
 );
 
-const seatableAssignees = computed<{ id: number; name: string }[]>(() => {
+const seatableAssignees = computed<{ id: string; name: string }[]>(() => {
     const users = props.ticket.users ?? [];
 
     if (users.length > 0) {
@@ -87,11 +87,11 @@ const seatableAssignees = computed<{ id: number; name: string }[]>(() => {
     return [];
 });
 
-function seatAssignmentFor(userId: number): SeatAssignment | undefined {
+function seatAssignmentFor(userId: string): SeatAssignment | undefined {
     return props.ticket.seat_assignments?.find((a) => a.user_id === userId);
 }
 
-function pickerUrl(userId: number): string {
+function pickerUrl(userId: string): string {
     if (!props.ticket.event_id) {
         return '#';
     }

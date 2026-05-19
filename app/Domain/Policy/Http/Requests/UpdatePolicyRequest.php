@@ -20,7 +20,7 @@ class UpdatePolicyRequest extends FormRequest
         $policyId = $this->route('policy')?->id;
 
         return [
-            'policy_type_id' => ['sometimes', 'integer', 'exists:policy_types,id'],
+            'policy_type_id' => ['sometimes', 'string', 'ulid', 'exists:policy_types,id'],
             'key' => ['sometimes', 'string', 'max:64', 'regex:/^[a-z0-9_-]+$/', Rule::unique('policies', 'key')->ignore($policyId)],
             'name' => ['sometimes', 'string', 'max:128'],
             'description' => ['nullable', 'string'],

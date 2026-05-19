@@ -21,7 +21,7 @@ class NewsCommentIndexRequest extends FormRequest
             'search' => ['sometimes', 'nullable', 'string', 'max:255'],
             'sort' => ['sometimes', 'nullable', 'string', Rule::in(['created_at', 'is_approved'])],
             'direction' => ['sometimes', 'nullable', 'string', Rule::in(['asc', 'desc'])],
-            'article_id' => ['sometimes', 'nullable', 'integer', 'exists:news_articles,id'],
+            'article_id' => ['sometimes', 'nullable', 'string', 'ulid', 'exists:news_articles,id'],
             'is_approved' => ['sometimes', 'nullable', 'string', Rule::in(['0', '1'])],
             'visibility' => ['sometimes', 'nullable', 'string', Rule::in(['draft', 'internal', 'public'])],
             'tag' => ['sometimes', 'nullable', 'string', 'max:50'],

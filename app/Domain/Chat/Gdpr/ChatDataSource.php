@@ -37,7 +37,7 @@ class ChatDataSource implements GdprDataSource
                 $row['room_title'] = $message->room->title ?? null;
                 // Mentions are user ids — obfuscate any that are not the subject.
                 $row['mentions_json'] = collect($message->mentions_json ?? [])
-                    ->map(fn (int $id) => $id === $user->id
+                    ->map(fn (string $id) => $id === $user->id
                         ? 'subject'
                         : $context->obfuscateUser($id, 'mentioned'))
                     ->all();

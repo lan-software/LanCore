@@ -39,7 +39,7 @@ import type { InvalidationRow } from './partials/InvalidationConfirmDialog.vue';
 
 const props = defineProps<{
     seatPlan: SeatPlan;
-    events: { id: number; name: string }[];
+    events: { id: string; name: string }[];
     ticketCategories: Pick<TicketCategory, 'id' | 'name'>[];
 }>();
 

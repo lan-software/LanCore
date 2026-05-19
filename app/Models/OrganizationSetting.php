@@ -4,10 +4,13 @@ namespace App\Models;
 
 use App\Support\StorageRole;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 class OrganizationSetting extends Model
 {
+    use HasUlids;
+
     protected $fillable = ['key', 'value'];
 
     protected function casts(): array

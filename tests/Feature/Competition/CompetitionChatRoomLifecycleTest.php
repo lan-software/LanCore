@@ -81,6 +81,28 @@ it('auto-joins existing team members when the competition is published', functio
     expect($memberships)->toContain($captain->id)->toContain($member->id);
 });
 
+it('re-publishing with existing team members preserves ULID user_ids (regression: int-cast FK violation)', function (): void {
+    $competition = Competition::factory()->create(['status' => CompetitionStatus::Draft]);
+    $captain = User::factory()->create();
+    $team = CompetitionTeam::factory()->create([
+        'competition_id' => $competition->id,
+        'captain_user_id' => $captain->id,
+    ]);
+    CompetitionTeamMember::create([
+        'team_id' => $team->id,
+        'user_id' => $captain->id,
+        'joined_at' => now(),
+    ]);
+
+    $competition->update(['status' => CompetitionStatus::RegistrationOpen]);
+    $competition->update(['status' => CompetitionStatus::RegistrationClosed]);
+    $competition->update(['status' => CompetitionStatus::RegistrationOpen]);
+
+    $room = ChatRoom::where('key', "competition:{$competition->id}")->first();
+    $memberships = ChatRoomMembership::where('room_id', $room->id)->pluck('user_id')->all();
+    expect($memberships)->toContain($captain->id);
+});
+
 it('auto-joins users who join a team AFTER the competition is published', function (): void {
     $competition = Competition::factory()->create(['status' => CompetitionStatus::Draft]);
     $competition->update(['status' => CompetitionStatus::RegistrationOpen]);

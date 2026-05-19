@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('integration_tokens', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('integration_app_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('integration_app_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('token', 64)->unique();
             $table->string('plain_text_prefix', 8);

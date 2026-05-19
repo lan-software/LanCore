@@ -2,14 +2,14 @@
 import PersonCard from '@/components/orga-team/PersonCard.vue';
 
 type Person = {
-    id: number;
+    id: string;
     username: string | null;
     profile_emoji: string | null;
     avatar_url: string;
 };
 
 type SubTeam = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     emoji: string | null;

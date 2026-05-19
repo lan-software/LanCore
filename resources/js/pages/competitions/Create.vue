@@ -24,8 +24,8 @@ const { t } = useI18n();
 
 const props = defineProps<{
     games: Game[];
-    events: { id: number; name: string; start_date: string }[];
-    selectedEventId?: number | null;
+    events: { id: string; name: string; start_date: string }[];
+    selectedEventId?: string | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

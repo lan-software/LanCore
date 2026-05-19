@@ -6,22 +6,22 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { show as orgaTeamShow } from '@/routes/events/orga-team';
 
 type Person = {
-    id: number;
+    id: string;
     username: string | null;
     profile_emoji: string | null;
     avatar_url: string;
 };
 
 type OrgaTeam = {
-    id: number;
+    id: string;
     name: string;
     organizer: Person | null;
     deputies: Person[];
-    sub_teams: { id: number }[];
+    sub_teams: { id: string }[];
 };
 
 const props = defineProps<{
-    eventId: number;
+    eventId: string;
     orgaTeam: OrgaTeam;
     title?: string;
     organizerLabel?: string;

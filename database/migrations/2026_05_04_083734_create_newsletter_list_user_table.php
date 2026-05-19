@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('newsletter_list_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('newsletter_list_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('newsletter_list_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->unsignedBigInteger('listmonk_subscriber_id')->nullable();
             $table->string('status')->default('enabled');
             $table->timestamp('subscribed_at')->nullable();

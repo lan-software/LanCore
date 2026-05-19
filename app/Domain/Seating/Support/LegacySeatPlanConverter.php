@@ -77,7 +77,7 @@ class LegacySeatPlanConverter
             $categoryIds = array_values(array_filter(array_map(
                 fn (mixed $id): ?int => is_numeric($id) ? (int) $id : null,
                 (array) ($blockPayload['allowed_ticket_category_ids'] ?? []),
-            ), fn (?int $id): bool => $id !== null && in_array($id, $validCategoryIds, true)));
+            ), fn (?string $id): bool => $id !== null && in_array($id, $validCategoryIds, true)));
 
             if ($categoryIds !== []) {
                 $block->categoryRestrictions()->sync($categoryIds);

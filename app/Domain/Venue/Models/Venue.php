@@ -5,6 +5,7 @@ namespace App\Domain\Venue\Models;
 use App\Concerns\HasModelCache;
 use Database\Factories\VenueFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,8 @@ class Venue extends Model
 {
     /** @use HasFactory<VenueFactory> */
     use HasFactory, HasModelCache;
+
+    use HasUlids;
 
     protected static function newFactory(): VenueFactory
     {

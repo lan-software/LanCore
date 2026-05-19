@@ -16,7 +16,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { index as orgaTeamsRoute, store } from '@/routes/orga-teams';
 import type { BreadcrumbItem } from '@/types';
 
-type UserOption = { id: number; username: string | null; name: string };
+type UserOption = { id: string; username: string | null; name: string };
 
 defineProps<{
     users: UserOption[];
@@ -105,7 +105,7 @@ function slugify(value: string): string {
                                 : String(form.organizer_user_id)
                         "
                         @update:model-value="
-                            (v) => (form.organizer_user_id = v ? Number(v) : '')
+                            (v) => (form.organizer_user_id = v ? String(v) : '')
                         "
                     >
                         <SelectTrigger id="organizer">

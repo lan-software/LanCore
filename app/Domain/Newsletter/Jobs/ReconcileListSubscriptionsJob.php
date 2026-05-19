@@ -27,7 +27,7 @@ class ReconcileListSubscriptionsJob implements ShouldQueue
 
     public int $timeout = 300;
 
-    public function __construct(public readonly int $newsletterListId) {}
+    public function __construct(public readonly string $newsletterListId) {}
 
     public function handle(ReconcileSubscriptionsForList $action): void
     {

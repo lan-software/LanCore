@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('orders', function (Blueprint $table) {
             $table->string('invoice_number')->unique()->nullable()->after('status');
-            $table->foreignId('confirmed_by')->nullable()->after('paid_at')->constrained('users')->nullOnDelete();
+            $table->foreignUlid('confirmed_by')->nullable()->after('paid_at')->constrained('users')->nullOnDelete();
         });
     }
 

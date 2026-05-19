@@ -19,7 +19,7 @@ import type { EditorStore } from './useEditorStore';
 
 const props = defineProps<{
     store: EditorStore;
-    seatPlanId: number;
+    seatPlanId: string;
 }>();
 
 defineEmits<{
@@ -74,7 +74,7 @@ function updatePlanBackground(url: string | null): void {
 
 function updateBlockField<
     K extends 'title' | 'color' | 'seat_title_prefix' | 'background_image_url',
->(blockId: number | string, field: K, value: string | null): void {
+>(blockId: string | string, field: K, value: string | null): void {
     props.store.applyMutation(`block-${field}`, (draft) => {
         const block = draft.blocks.find(
             (b) => String(b.id) === String(blockId),
@@ -89,8 +89,8 @@ function updateBlockField<
 }
 
 function updateSeatField(
-    blockId: number | string,
-    seatId: number | string,
+    blockId: string | string,
+    seatId: string | string,
     field: 'title' | 'note' | 'color' | 'salable',
     value: unknown,
 ): void {
@@ -114,8 +114,8 @@ function updateSeatField(
 }
 
 function updateLabelField(
-    blockId: number | string | null | undefined,
-    labelId: number | string,
+    blockId: string | string | null | undefined,
+    labelId: string | string,
     field: 'title' | 'x' | 'y',
     value: string | number,
 ): void {
@@ -326,7 +326,7 @@ const blockList = computed(() =>
  * seat refs make `EditorCanvas` render each seat with its selection outline
  * so the admin sees which seats belong to the block they're editing.
  */
-function selectBlock(blockId: number | string): void {
+function selectBlock(blockId: string | string): void {
     const block = props.store.findBlock(blockId);
 
     if (!block) {
@@ -377,14 +377,14 @@ const activeBlockId = computed<number | string | null>(() => {
     return blockId;
 });
 
-function isBlockSelected(blockId: number | string): boolean {
+function isBlockSelected(blockId: string | string): boolean {
     return (
         activeBlockId.value !== null &&
         String(activeBlockId.value) === String(blockId)
     );
 }
 
-function deleteBlock(blockId: number | string): void {
+function deleteBlock(blockId: string | string): void {
     props.store.applyMutation('delete-block', (draft) => {
         draft.blocks = draft.blocks.filter(
             (b) => String(b.id) !== String(blockId),

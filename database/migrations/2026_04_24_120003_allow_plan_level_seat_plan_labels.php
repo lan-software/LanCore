@@ -20,7 +20,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('seat_plan_labels', function (Blueprint $table): void {
-            $table->foreignId('seat_plan_id')
+            $table->foreignUlid('seat_plan_id')
                 ->nullable()
                 ->after('id')
                 ->constrained()
@@ -34,8 +34,8 @@ return new class extends Migration
         );
 
         Schema::table('seat_plan_labels', function (Blueprint $table): void {
-            $table->foreignId('seat_plan_id')->nullable(false)->change();
-            $table->foreignId('seat_plan_block_id')->nullable()->change();
+            $table->foreignUlid('seat_plan_id')->nullable(false)->change();
+            $table->foreignUlid('seat_plan_block_id')->nullable()->change();
         });
     }
 
@@ -44,7 +44,7 @@ return new class extends Migration
         DB::table('seat_plan_labels')->whereNull('seat_plan_block_id')->delete();
 
         Schema::table('seat_plan_labels', function (Blueprint $table): void {
-            $table->foreignId('seat_plan_block_id')->nullable(false)->change();
+            $table->foreignUlid('seat_plan_block_id')->nullable(false)->change();
             $table->dropConstrainedForeignId('seat_plan_id');
         });
     }

@@ -22,7 +22,7 @@ class SubmitMatchResult
      */
     public function execute(
         Competition $competition,
-        int $lanbracketsMatchId,
+        string $lanbracketsMatchId,
         array $scores,
         UploadedFile $screenshot,
         User $user,

@@ -33,7 +33,7 @@ import type { Event, TicketAddon, TicketType } from '@/types/domain';
 
 type CartItemRef = {
     purchasable_type: string;
-    purchasable_id: number;
+    purchasable_id: string;
     quantity: number;
 };
 
@@ -69,14 +69,14 @@ function formatDate(dateString: string): string {
 }
 
 const { t } = useI18n();
-const addingItem = ref<number | null>(null);
+const addingItem = ref<string | null>(null);
 
 const ticketTypeClass = 'App\\Domain\\Ticketing\\Models\\TicketType';
 const addonClass = 'App\\Domain\\Ticketing\\Models\\Addon';
 
 function getCartQuantity(
     purchasableType: string,
-    purchasableId: number,
+    purchasableId: string,
 ): number {
     const item = props.cartItems.find(
         (i) =>
@@ -109,7 +109,7 @@ const addonCartQuantities = computed(() => {
 
 function addToCart(
     purchasableType: 'ticket_type' | 'addon',
-    purchasableId: number,
+    purchasableId: string,
 ) {
     if (!props.event) {
         return;
@@ -136,7 +136,7 @@ function addToCart(
 
 function updateCartQuantity(
     purchasableType: 'ticket_type' | 'addon',
-    purchasableId: number,
+    purchasableId: string,
     delta: number,
 ) {
     const classType =

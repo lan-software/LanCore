@@ -5,12 +5,12 @@ import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 
 interface RequiredPolicy {
-    id: number;
+    id: string;
     key: string;
     name: string;
     description: string | null;
     required_acceptance_version: {
-        id: number;
+        id: string;
         version_number: number;
         locale: string;
         content: string;
@@ -23,9 +23,9 @@ const props = defineProps<{
     intendedUrl: string | null;
 }>();
 
-const expandedId = ref<number | null>(props.policies[0]?.id ?? null);
+const expandedId = ref<string | null>(props.policies[0]?.id ?? null);
 
-function toggle(id: number): void {
+function toggle(id: string): void {
     expandedId.value = expandedId.value === id ? null : id;
 }
 
@@ -40,7 +40,7 @@ function acceptAll(): void {
     form.post('/policies/required/accept');
 }
 
-function acceptOne(versionId: number): void {
+function acceptOne(versionId: string): void {
     form.policy_version_ids = [versionId];
     form.post('/policies/required/accept');
 }

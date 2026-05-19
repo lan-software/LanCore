@@ -4,6 +4,7 @@ namespace App\Domain\Shop\Models;
 
 use App\Domain\Shop\Contracts\Purchasable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 #[Fillable(['cart_id', 'purchasable_type', 'purchasable_id', 'quantity'])]
 class CartItem extends Model
 {
+    use HasUlids;
+
     /**
      * @return array<string, string>
      */

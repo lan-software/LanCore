@@ -5,6 +5,7 @@ use App\Domain\Notification\Notifications\SeatAssignmentInvalidatedNotification;
 use App\Domain\Seating\Events\SeatAssignmentInvalidated;
 use App\Domain\Seating\Models\SeatPlan;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 function makeNotification(): SeatAssignmentInvalidatedNotification
 {
@@ -12,12 +13,12 @@ function makeNotification(): SeatAssignmentInvalidatedNotification
 
     return new SeatAssignmentInvalidatedNotification(
         new SeatAssignmentInvalidated(
-            ticketId: 1,
-            userId: 1,
+            ticketId: (string) Str::ulid(),
+            userId: (string) Str::ulid(),
             seatPlan: $plan,
-            previousSeatId: 42,
+            previousSeatId: (string) Str::ulid(),
             previousSeatTitle: 'A1',
-            previousBlockId: 7,
+            previousBlockId: (string) Str::ulid(),
             reason: 'seat_removed',
         ),
     );

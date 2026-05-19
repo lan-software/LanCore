@@ -40,7 +40,7 @@ class ChatMessageController extends Controller
             throw new AuthorizationException;
         }
 
-        $before = $request->integer('before') ?: null;
+        $before = $request->string('before')->toString() ?: null;
         $limit = min(max((int) $request->integer('limit', 25), 1), 100);
 
         $query = $room->messages()->withTrashed()

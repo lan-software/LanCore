@@ -27,8 +27,8 @@ class SendPolicyPublishedEmailJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(
-        private readonly int $userId,
-        private readonly int $policyId,
+        private readonly string $userId,
+        private readonly string $policyId,
         private readonly int $versionNumber,
     ) {}
 

@@ -2,10 +2,13 @@
 
 namespace App\Domain\Shop\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 class ShopSetting extends Model
 {
+    use HasUlids;
+
     protected $fillable = ['key', 'value'];
 
     protected function casts(): array

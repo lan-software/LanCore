@@ -19,8 +19,8 @@ import { index as ticketCategoriesIndex } from '@/routes/ticket-categories';
 import type { BreadcrumbItem } from '@/types';
 
 defineProps<{
-    events: { id: number; name: string }[];
-    selectedEventId?: number | null;
+    events: { id: string; name: string }[];
+    selectedEventId?: string | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

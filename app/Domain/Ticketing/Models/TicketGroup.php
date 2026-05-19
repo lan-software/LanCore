@@ -6,6 +6,7 @@ use App\Concerns\HasModelCache;
 use App\Domain\Event\Models\Event;
 use Database\Factories\TicketGroupFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,8 @@ class TicketGroup extends Model
 {
     /** @use HasFactory<TicketGroupFactory> */
     use HasFactory, HasModelCache;
+
+    use HasUlids;
 
     /**
      * @return array<int, string>

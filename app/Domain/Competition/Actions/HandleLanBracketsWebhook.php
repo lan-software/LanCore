@@ -11,6 +11,7 @@ use App\Domain\Competition\Events\MatchReadyForOrchestration;
 use App\Domain\Competition\Jobs\GenerateLanBracketsStages;
 use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\MatchResultProof;
+use App\Domain\CompetitionSchedule\Jobs\SyncCompetitionStagesJob;
 use App\Domain\Orchestration\Models\OrchestrationJob;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -81,7 +82,7 @@ class HandleLanBracketsWebhook
             : null;
 
         if ($competition !== null) {
-            MatchCompleted::dispatch($competition, (int) $matchId, $matchData);
+            MatchCompleted::dispatch($competition, (string) $matchId, $matchData);
 
             // Idempotency: Cache::add is atomic and returns false if the key
             // already exists, so a re-emit for the same match never re-fires
@@ -93,7 +94,7 @@ class HandleLanBracketsWebhook
                 $forced = ! empty($matchData['forced_by_admin']);
                 MatchFinalized::dispatch(
                     $competition,
-                    (int) $matchId,
+                    (string) $matchId,
                     $forced
                         ? MatchFinalizationSource::ForcedByAdmin
                         : MatchFinalizationSource::SubmittedByParticipants,
@@ -129,6 +130,8 @@ class HandleLanBracketsWebhook
             return;
         }
 
+        SyncCompetitionStagesJob::dispatch($competition->id);
+
         $this->dispatchReadyMatchesForOrchestration($competition, $stageId);
     }
 
@@ -156,6 +159,8 @@ class HandleLanBracketsWebhook
         if ($competition === null || ! $competition->isSyncedToLanBrackets()) {
             return;
         }
+
+        SyncCompetitionStagesJob::dispatch($competition->id);
 
         try {
             $stages = $this->lanBracketsClient->getStages($competition->lanbrackets_id);
@@ -201,7 +206,7 @@ class HandleLanBracketsWebhook
      * Fetches matches for a stage and dispatches orchestration events
      * for matches where all participants are set.
      */
-    private function dispatchReadyMatchesForOrchestration(Competition $competition, ?int $stageId): void
+    private function dispatchReadyMatchesForOrchestration(Competition $competition, ?string $matchId): void
     {
         if ($stageId === null || ! $competition->isSyncedToLanBrackets()) {
             return;

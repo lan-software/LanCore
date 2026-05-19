@@ -30,7 +30,7 @@ type CartItemSummary = {
 };
 
 type ConditionItem = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     content: string | null;
@@ -40,7 +40,7 @@ type ConditionItem = {
 };
 
 type PurchaseRequirementItem = {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     requirements_content: string | null;
@@ -131,7 +131,7 @@ function isCheckboxDisabled(
 // Save acknowledgement to back-end immediately
 function saveAcknowledgement(
     type: string,
-    id: number,
+    id: string,
     key: string | null = null,
 ) {
     axios.post(cartAcknowledge().url, {
@@ -141,7 +141,7 @@ function saveAcknowledgement(
     });
 }
 
-function onGlobalCheck(condId: number, val: boolean | 'indeterminate') {
+function onGlobalCheck(condId: string, val: boolean | 'indeterminate') {
     globalChecks[condId] = val === true;
 
     if (val === true) {
@@ -149,7 +149,7 @@ function onGlobalCheck(condId: number, val: boolean | 'indeterminate') {
     }
 }
 
-function onProviderCheck(condId: number, val: boolean | 'indeterminate') {
+function onProviderCheck(condId: string, val: boolean | 'indeterminate') {
     providerChecks[condId] = val === true;
 
     if (val === true) {
@@ -158,7 +158,7 @@ function onProviderCheck(condId: number, val: boolean | 'indeterminate') {
 }
 
 function onRequirementCheck(
-    reqId: number,
+    reqId: string,
     idx: number,
     val: boolean | 'indeterminate',
 ) {

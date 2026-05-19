@@ -156,7 +156,7 @@ class SeatPlanTreeSyncer
         $ids = array_values(array_unique(array_filter(array_map(
             fn (mixed $id): ?int => is_numeric($id) ? (int) $id : null,
             $categoryIds,
-        ), fn (?int $id): bool => $id !== null)));
+        ), fn (?string $id): bool => $id !== null)));
 
         $block->categoryRestrictions()->sync($ids);
     }

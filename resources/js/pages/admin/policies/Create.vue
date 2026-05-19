@@ -19,7 +19,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 defineProps<{
-    policyTypes: { id: number; label: string; key: string }[];
+    policyTypes: { id: string; label: string; key: string }[];
 }>();
 
 const { t } = useI18n();

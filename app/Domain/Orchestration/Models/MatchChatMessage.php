@@ -4,6 +4,7 @@ namespace App\Domain\Orchestration\Models;
 
 use Database\Factories\MatchChatMessageFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,8 @@ class MatchChatMessage extends Model
 {
     /** @use HasFactory<MatchChatMessageFactory> */
     use HasFactory;
+
+    use HasUlids;
 
     public $timestamps = false;
 

@@ -48,7 +48,7 @@ import { index as integrationsRoute } from '@/routes/integrations';
 import type { BreadcrumbItem } from '@/types';
 
 export type IntegrationApp = {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     description: string | null;

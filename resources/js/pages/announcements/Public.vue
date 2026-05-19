@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import type { Announcement } from '@/types/domain';
 
 defineProps<{
-    event: { id: number; name: string };
+    event: { id: string; name: string };
     announcements: Announcement[];
     dismissedIds: number[];
 }>();

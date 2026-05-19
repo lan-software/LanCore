@@ -4,11 +4,14 @@ namespace App\Domain\Competition\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TeamInvite extends Model
 {
+    use HasUlids;
+
     protected $fillable = ['team_id', 'invited_by', 'email', 'user_id', 'token', 'accepted_at', 'declined_at', 'expires_at'];
 
     protected function casts(): array

@@ -9,13 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('competitions', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->foreignId('event_id')->nullable()->constrained('events')->nullOnDelete();
-            $table->foreignId('game_id')->nullable()->constrained('games')->nullOnDelete();
-            $table->foreignId('game_mode_id')->nullable()->constrained('game_modes')->nullOnDelete();
+            $table->foreignUlid('event_id')->nullable()->constrained('events')->nullOnDelete();
+            $table->foreignUlid('game_id')->nullable()->constrained('games')->nullOnDelete();
+            $table->foreignUlid('game_mode_id')->nullable()->constrained('game_modes')->nullOnDelete();
             $table->string('type');
             $table->string('stage_type');
             $table->string('status')->default('draft');
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->timestamp('registration_closes_at')->nullable();
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();
-            $table->unsignedBigInteger('lanbrackets_id')->nullable()->index();
+            $table->ulid('lanbrackets_id')->nullable()->index();
             $table->string('lanbrackets_share_token')->nullable();
             $table->json('settings')->nullable();
             $table->json('metadata')->nullable();

@@ -75,13 +75,13 @@ const props = withDefaults(
 
 const emit = defineEmits<{
     'seat-click': [
-        payload: { id: number | string; salable: boolean; rect: DOMRect },
+        payload: { id: string | string; salable: boolean; rect: DOMRect },
     ];
     'seat-pointerdown': [
         event: PointerEvent,
-        payload: { id: number | string; blockId: number | string },
+        payload: { id: string | string; blockId: string | string },
     ];
-    'seat-hover-enter': [payload: { id: number | string; rect: DOMRect }];
+    'seat-hover-enter': [payload: { id: string | string; rect: DOMRect }];
     'seat-hover-leave': [];
     'scene-pointerdown': [event: PointerEvent];
     'view-change': [view: ViewState];
@@ -298,7 +298,7 @@ function startPan(event: PointerEvent): void {
 
     let pendingX = startPanX;
     let pendingY = startPanY;
-    let rafId: number | null = null;
+    let rafId: string | null = null;
 
     function flush(): void {
         rafId = null;
@@ -483,7 +483,7 @@ function startPulseSweep(): void {
 }
 
 function pulseSeat(
-    seatId: number | string,
+    seatId: string | string,
     options: { durationMs?: number } = {},
 ): void {
     const durationMs = options.durationMs ?? 1500;
@@ -499,7 +499,7 @@ function isPulsing(seat: SeatPlanSeat): boolean {
 /* --- Imperative API --- */
 
 function findSeatBlock(
-    seatId: number | string,
+    seatId: string | string,
 ): { block: SeatPlanBlock; seat: SeatPlanSeat } | null {
     const idStr = String(seatId);
 
@@ -542,7 +542,7 @@ function zoomToBoundingBox(
 }
 
 function zoomToBlock(
-    blockId: number | string,
+    blockId: string | string,
     options: { animated?: boolean; padding?: number } = {},
 ): void {
     const idStr = String(blockId);
@@ -564,7 +564,7 @@ function zoomToBlock(
 }
 
 function zoomToSeat(
-    seatId: number | string,
+    seatId: string | string,
     {
         animated = true,
         padding = 80,
@@ -589,7 +589,7 @@ function zoomToSeat(
     );
 }
 
-function getSeatScreenRect(seatId: number | string): DOMRect | null {
+function getSeatScreenRect(seatId: string | string): DOMRect | null {
     const root = svgRef.value;
 
     if (!root) {

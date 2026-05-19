@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('checkout_acknowledgements', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->string('acknowledgeable_type');
-            $table->unsignedBigInteger('acknowledgeable_id');
+            $table->ulid('acknowledgeable_id');
             $table->string('acknowledgement_key')->nullable();
             $table->timestamp('acknowledged_at');
             $table->timestamps();

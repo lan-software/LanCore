@@ -25,9 +25,9 @@ class StorePurchaseRequirementRequest extends FormRequest
             'is_active' => ['sometimes', 'boolean'],
             'requires_scroll' => ['sometimes', 'boolean'],
             'ticket_type_ids' => ['nullable', 'array'],
-            'ticket_type_ids.*' => ['integer', 'exists:ticket_types,id'],
+            'ticket_type_ids.*' => ['string', 'ulid', 'exists:ticket_types,id'],
             'addon_ids' => ['nullable', 'array'],
-            'addon_ids.*' => ['integer', 'exists:ticket_addons,id'],
+            'addon_ids.*' => ['string', 'ulid', 'exists:ticket_addons,id'],
         ];
     }
 

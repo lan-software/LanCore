@@ -21,7 +21,7 @@ class StoreEventRequest extends FormRequest
             'banner_images' => ['nullable', 'array', 'max:10'],
             'banner_images.*' => ['image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
             'seat_capacity' => ['nullable', 'integer', 'min:1'],
-            'venue_id' => ['nullable', 'integer', 'exists:venues,id'],
+            'venue_id' => ['nullable', 'string', 'ulid', 'exists:venues,id'],
         ];
     }
 }

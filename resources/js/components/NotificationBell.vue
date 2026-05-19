@@ -55,7 +55,7 @@ watch(
 );
 
 const initialUserId =
-    (page.props.auth as { user?: { id?: number } } | undefined)?.user?.id ?? 0;
+    (page.props.auth as { user?: { id?: string } } | undefined)?.user?.id ?? '';
 
 interface NotificationReceivedPayload {
     id: string;

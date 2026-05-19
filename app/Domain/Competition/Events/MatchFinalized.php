@@ -22,7 +22,7 @@ class MatchFinalized
 
     public function __construct(
         public readonly Competition $competition,
-        public readonly int $lanbracketsMatchId,
+        public readonly string $matchId,
         public readonly MatchFinalizationSource $source,
     ) {}
 }

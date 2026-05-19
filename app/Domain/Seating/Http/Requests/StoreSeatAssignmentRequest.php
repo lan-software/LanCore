@@ -22,8 +22,8 @@ class StoreSeatAssignmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ticket_id' => ['required', 'integer', 'exists:tickets,id'],
-            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'ticket_id' => ['required', 'string', 'ulid', 'exists:tickets,id'],
+            'user_id' => ['required', 'string', 'ulid', 'exists:users,id'],
             'seat_plan_id' => [
                 'required',
                 'integer',
@@ -42,7 +42,7 @@ class StoreSeatAssignmentRequest extends FormRequest
                     }
                 },
             ],
-            'seat_id' => ['required', 'integer', 'exists:seat_plan_seats,id'],
+            'seat_id' => ['required', 'string', 'ulid', 'exists:seat_plan_seats,id'],
         ];
     }
 }

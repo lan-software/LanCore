@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('seat_assignments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('ticket_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('seat_plan_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('ticket_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('seat_plan_id')->constrained()->cascadeOnDelete();
             $table->string('seat_id', 64);
             $table->timestamps();
 

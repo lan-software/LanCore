@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('news_articles', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('summary')->nullable();
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('og_title')->nullable();
             $table->string('og_description')->nullable();
             $table->string('og_image')->nullable();
-            $table->foreignId('author_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignUlid('author_id')->constrained('users')->cascadeOnDelete();
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });

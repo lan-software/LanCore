@@ -21,7 +21,7 @@ class UpdateEventThemeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'theme_id' => ['nullable', 'integer', 'exists:themes,id'],
+            'theme_id' => ['nullable', 'string', 'ulid', 'exists:themes,id'],
         ];
     }
 }

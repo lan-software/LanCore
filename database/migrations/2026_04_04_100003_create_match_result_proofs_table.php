@@ -9,11 +9,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('match_result_proofs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('competition_id')->constrained('competitions')->cascadeOnDelete();
-            $table->unsignedBigInteger('lanbrackets_match_id')->index();
-            $table->foreignId('submitted_by_user_id')->constrained('users');
-            $table->foreignId('submitted_by_team_id')->nullable()->constrained('competition_teams');
+            $table->ulid('id')->primary();
+            $table->foreignUlid('competition_id')->constrained('competitions')->cascadeOnDelete();
+            $table->ulid('lanbrackets_match_id')->index();
+            $table->foreignUlid('submitted_by_user_id')->constrained('users');
+            $table->foreignUlid('submitted_by_team_id')->nullable()->constrained('competition_teams');
             $table->string('screenshot_path');
             $table->json('scores');
             $table->boolean('is_disputed')->default(false);

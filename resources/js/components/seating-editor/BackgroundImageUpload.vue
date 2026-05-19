@@ -5,8 +5,8 @@ import { ref } from 'vue';
 import { Button } from '@/components/ui/button';
 
 const props = defineProps<{
-    seatPlanId: number;
-    blockId?: number;
+    seatPlanId: string;
+    blockId?: string;
     currentUrl: string | null;
 }>();
 

@@ -172,7 +172,7 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * @return array{selectedEventId: int|null, selectedEvent: array{id: int, name: string}|null, events: Collection}|null
+     * @return array{selectedEventId: string|null, selectedEvent: array{id: string, name: string}|null, events: Collection}|null
      */
     private function eventContext(Request $request): ?array
     {
@@ -207,7 +207,7 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * @return array{selectedEventId: int|null, events: array<int, array{id: int, name: string}>}|null
+     * @return array{selectedEventId: string|null, events: array<int, array{id: string, name: string}>}|null
      */
     private function myEventContext(Request $request): ?array
     {

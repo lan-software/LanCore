@@ -21,7 +21,7 @@ import { index as conditionsIndex } from '@/routes/global-purchase-conditions';
 import type { BreadcrumbItem } from '@/types';
 
 type ConditionRow = {
-    id: number;
+    id: string;
     name: string;
     acknowledgement_label: string;
     is_required: boolean;

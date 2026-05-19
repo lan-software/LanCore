@@ -32,7 +32,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tickets', function (Blueprint $table) {
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUlid('user_id')->nullable()->constrained('users')->nullOnDelete();
         });
 
         // Migrate pivot data back to user_id (take the first user per ticket)

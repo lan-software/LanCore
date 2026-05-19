@@ -4,11 +4,14 @@ namespace App\Domain\Competition\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TeamJoinRequest extends Model
 {
+    use HasUlids;
+
     protected $fillable = ['team_id', 'user_id', 'status', 'message', 'resolved_by', 'resolved_at'];
 
     protected function casts(): array

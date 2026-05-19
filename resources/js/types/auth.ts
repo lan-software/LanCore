@@ -1,11 +1,11 @@
 export type Role = {
-    id: number;
+    id: string;
     name: string;
     label: string;
 };
 
 export type User = {
-    id: number;
+    id: string;
     name: string;
     username: string | null;
     email: string;

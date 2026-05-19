@@ -21,13 +21,13 @@ use Illuminate\Support\Facades\Event;
  * requiring `game_id`) and invoke the chat listener directly. The orchestration
  * pipeline is unrelated to this ticket and tested separately.
  */
-function fireMatchReady(Competition $competition, int $matchId, array $matchData): void
+function fireMatchReady(Competition $competition, string $matchId, array $matchData): void
 {
     $event = new MatchReadyForOrchestration($competition, $matchId, $matchData);
     app(EnsureMatchRoomOnReady::class)->handle($event);
 }
 
-function fireMatchFinalized(Competition $competition, int $matchId, MatchFinalizationSource $source): void
+function fireMatchFinalized(Competition $competition, string $matchId, MatchFinalizationSource $source): void
 {
     $event = new MatchFinalized($competition, $matchId, $source);
     app(WriteLockMatchRoomOnFinalized::class)->handle($event);

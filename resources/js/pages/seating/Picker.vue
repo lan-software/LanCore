@@ -25,40 +25,40 @@ import type { BreadcrumbItem } from '@/types';
 import type { SeatPlanBlock, SeatPlanData, SeatPlanSeat } from '@/types/domain';
 
 interface SeatPlan {
-    id: number;
+    id: string;
     name: string;
     background_image_url?: string | null;
-    labels?: { id?: number; title: string; x: number; y: number }[];
+    labels?: { id?: string; title: string; x: number; y: number }[];
     blocks: SeatPlanBlock[];
 }
 
 interface Assignee {
-    user_id: number;
+    user_id: string;
     name: string;
     can_pick: boolean;
     /** ticket_type.ticket_category_id — drives SET-F-011 block filtering */
-    ticket_category_id: number | null;
+    ticket_category_id: string | null;
     assignment: {
-        id: number;
-        seat_plan_id: number;
-        seat_id: number;
+        id: string;
+        seat_plan_id: string;
+        seat_id: string;
         seat_title: string | null;
     } | null;
 }
 
 interface MyTicket {
-    id: number;
+    id: string;
     ticket_type_name: string | null;
     is_group: boolean;
     assignees: Assignee[];
 }
 
 interface TakenSeat {
-    id: number;
-    seat_plan_id: number;
-    seat_id: number;
-    ticket_id: number;
-    user_id: number;
+    id: string;
+    seat_plan_id: string;
+    seat_id: string;
+    ticket_id: string;
+    user_id: string;
     name: string | null;
     username: string | null;
     profile_emoji: string | null;
@@ -68,11 +68,11 @@ interface TakenSeat {
 }
 
 const props = defineProps<{
-    event: { id: number; name: string; banner_image_urls: string[] };
+    event: { id: string; name: string; banner_image_urls: string[] };
     seatPlans: SeatPlan[];
     taken: TakenSeat[];
     myTickets: MyTicket[];
-    context: { ticket_id: number | null; user_id: number | null };
+    context: { ticket_id: string | null; user_id: string | null };
 }>();
 
 const { t } = useI18n();
@@ -84,11 +84,11 @@ const breadcrumbItems: BreadcrumbItem[] = [
     },
 ];
 
-const activeTicketId = ref<number | null>(props.context.ticket_id);
-const activeUserId = ref<number | null>(props.context.user_id);
+const activeTicketId = ref<string | null>(props.context.ticket_id);
+const activeUserId = ref<string | null>(props.context.user_id);
 const selectedSeat = ref<{
-    planId: number;
-    seatId: number;
+    planId: string;
+    seatId: string;
     title: string;
 } | null>(null);
 const clickHint = ref<string | null>(null);
@@ -98,10 +98,10 @@ const hoveredTaken = ref<TakenSeat | null>(null);
 const hoverAnchor = ref<DOMRect | null>(null);
 
 const form = useForm<{
-    ticket_id: number | null;
-    user_id: number | null;
-    seat_plan_id: number | null;
-    seat_id: number | null;
+    ticket_id: string | null;
+    user_id: string | null;
+    seat_plan_id: string | null;
+    seat_id: string | null;
 }>({
     ticket_id: null,
     user_id: null,
@@ -166,7 +166,7 @@ const takenByPlanAndSeat = computed<Map<string, TakenSeat>>(() => {
  */
 function blockAcceptsCategory(
     block: SeatPlanBlock,
-    categoryId: number | null,
+    categoryId: string | null,
 ): boolean {
     const allowed = (
         block as SeatPlanBlock & {
@@ -191,9 +191,9 @@ function blockAcceptsCategory(
  * "category forbidden" at click time so we surface the right hint.
  */
 function isSeatBlockedByCategory(
-    seatId: number | string,
+    seatId: string | string,
     plan: SeatPlan,
-    categoryId: number | null,
+    categoryId: string | null,
 ): boolean {
     const seatIdStr = String(seatId);
 
@@ -229,8 +229,8 @@ const decoratedPlanData = computed<SeatPlanData | null>(() => {
                 const isOwnAssignment =
                     activeAssignee.value?.assignment?.seat_plan_id ===
                         activePlan.value!.id &&
-                    Number(activeAssignee.value?.assignment?.seat_id) ===
-                        Number(seat.id);
+                    String(activeAssignee.value?.assignment?.seat_id) ===
+                        String(seat.id);
 
                 if (taken && !isOwnAssignment) {
                     return { ...seat, salable: false };
@@ -288,7 +288,7 @@ function flashHint(message: string): void {
     }, 4000);
 }
 
-function findSeatTitle(seatId: number | string): string | null {
+function findSeatTitle(seatId: string | string): string | null {
     if (!activePlan.value) {
         return null;
     }
@@ -307,7 +307,7 @@ function findSeatTitle(seatId: number | string): string | null {
 }
 
 function onSeatHoverEnter(payload: {
-    id: number | string;
+    id: string | string;
     rect: DOMRect;
 }): void {
     if (!activePlan.value) {
@@ -315,7 +315,7 @@ function onSeatHoverEnter(payload: {
     }
 
     const taken = takenByPlanAndSeat.value.get(
-        `${activePlan.value.id}::${Number(payload.id)}`,
+        `${activePlan.value.id}::${payload.id}`,
     );
 
     if (!taken?.username) {
@@ -338,7 +338,7 @@ function clearHighlight(): void {
     selectedSeat.value = null;
 }
 
-function selectContext(ticketId: number, userId: number): void {
+function selectContext(ticketId: string, userId: string): void {
     activeTicketId.value = ticketId;
     activeUserId.value = userId;
     clickHint.value = null;
@@ -346,7 +346,7 @@ function selectContext(ticketId: number, userId: number): void {
 }
 
 function onSeatClick(payload: {
-    id: number | string;
+    id: string | string;
     salable: boolean;
     rect: DOMRect;
 }): void {
@@ -358,7 +358,7 @@ function onSeatClick(payload: {
      * of running the pick flow. Hidden occupants fall through to the
      * salable=false branch and get the "seat taken" hint. */
     const takenAtClick = takenByPlanAndSeat.value.get(
-        `${activePlan.value.id}::${Number(payload.id)}`,
+        `${activePlan.value.id}::${payload.id}`,
     );
 
     if (takenAtClick?.username) {
@@ -401,7 +401,7 @@ function onSeatClick(payload: {
 
     selectedSeat.value = {
         planId: activePlan.value.id,
-        seatId: Number(payload.id),
+        seatId: String(payload.id),
         title: findSeatTitle(payload.id) ?? String(payload.id),
     };
     clickHint.value = null;

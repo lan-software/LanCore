@@ -74,9 +74,9 @@ class UpdateSeatPlan
                     $ticketId,
                     $userId,
                     $seatPlan,
-                    (int) $previousSeatId,
+                    (string) $previousSeatId,
                     is_string($previousSeatTitle) ? $previousSeatTitle : null,
-                    is_numeric($previousBlockId) ? (int) $previousBlockId : null,
+                    $previousBlockId !== null ? (string) $previousBlockId : null,
                     $invalidation['reason'],
                 );
             }
@@ -179,7 +179,7 @@ class UpdateSeatPlan
         return array_values(array_unique(array_filter(array_map(
             fn (mixed $id): ?int => is_numeric($id) ? (int) $id : null,
             $raw,
-        ), fn (?int $id): bool => $id !== null)));
+        ), fn (?string $id): bool => $id !== null)));
     }
 
     /**
