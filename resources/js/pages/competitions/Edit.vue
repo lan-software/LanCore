@@ -541,7 +541,6 @@ function statusColor(status: string): string {
                             <RefereePicker
                                 :users="users"
                                 :initial-selected-ids="competition.referees?.map((r) => r.id) ?? []"
-                                :disabled="!canEditDetails"
                             />
                             <p class="text-xs text-muted-foreground">{{ $t('games.refereesHelp') }}</p>
                             <InputError :message="errors.referee_ids" />
@@ -642,10 +641,7 @@ function statusColor(status: string): string {
                             </div>
                         </div>
 
-                        <div
-                            v-if="canEditDetails"
-                            class="flex items-center gap-4"
-                        >
+                        <div class="flex items-center gap-4">
                             <Button type="submit" :disabled="processing">
                                 {{
                                     processing
