@@ -10,14 +10,19 @@ use App\Domain\Competition\Jobs\SyncTeamsToLanBrackets;
 use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\CompetitionTeam;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Str;
 
 beforeEach(function (): void {
     config()->set('lanbrackets.enabled', true);
 });
 
 it('upserts each team and persists the returned lanbrackets_id before bulk add', function (): void {
+    $competitionLbId = (string) Str::ulid();
+    $teamALbId = (string) Str::ulid();
+    $teamBLbId = (string) Str::ulid();
+
     $competition = Competition::factory()->registrationOpen()->syncedToLanBrackets()->create([
-        'lanbrackets_id' => 100,
+        'lanbrackets_id' => $competitionLbId,
     ]);
 
     $teamA = CompetitionTeam::factory()->create([
@@ -42,7 +47,7 @@ it('upserts each team and persists the returned lanbrackets_id before bulk add',
                 && $payload['external_reference_id'] === (string) $teamA->id
                 && $payload['source_system'] === 'lancore';
         })
-        ->andReturn(['id' => 501, 'name' => 'Alpha']);
+        ->andReturn(['id' => $teamALbId, 'name' => 'Alpha']);
 
     $mock->shouldReceive('upsertTeam')
         ->once()
@@ -50,16 +55,16 @@ it('upserts each team and persists the returned lanbrackets_id before bulk add',
             return $payload['name'] === 'Bravo'
                 && $payload['external_reference_id'] === (string) $teamB->id;
         })
-        ->andReturn(['id' => 502, 'name' => 'Bravo']);
+        ->andReturn(['id' => $teamBLbId, 'name' => 'Bravo']);
 
     $mock->shouldReceive('bulkAddParticipants')
         ->once()
-        ->withArgs(function (string $compId, array $participants): bool {
+        ->withArgs(function (string $compId, array $participants) use ($competitionLbId, $teamALbId, $teamBLbId): bool {
             $ids = collect($participants)->pluck('participant_id')->all();
 
-            return $compId === 100
-                && in_array(501, $ids, true)
-                && in_array(502, $ids, true);
+            return $compId === $competitionLbId
+                && in_array($teamALbId, $ids, true)
+                && in_array($teamBLbId, $ids, true);
         })
         ->andReturn([]);
 
@@ -67,13 +72,16 @@ it('upserts each team and persists the returned lanbrackets_id before bulk add',
 
     (new SyncTeamsToLanBrackets($competition))->handle($mock);
 
-    expect($teamA->fresh()->lanbrackets_id)->toBe(501);
-    expect($teamB->fresh()->lanbrackets_id)->toBe(502);
+    expect($teamA->fresh()->lanbrackets_id)->toBe($teamALbId);
+    expect($teamB->fresh()->lanbrackets_id)->toBe($teamBLbId);
 });
 
 it('skips teams whose upsert returned 4xx and have no prior lanbrackets_id', function (): void {
+    $competitionLbId = (string) Str::ulid();
+    $goodTeamLbId = (string) Str::ulid();
+
     $competition = Competition::factory()->registrationOpen()->syncedToLanBrackets()->create([
-        'lanbrackets_id' => 200,
+        'lanbrackets_id' => $competitionLbId,
     ]);
 
     $badTeam = CompetitionTeam::factory()->create([
@@ -97,15 +105,15 @@ it('skips teams whose upsert returned 4xx and have no prior lanbrackets_id', fun
     $mock->shouldReceive('upsertTeam')
         ->once()
         ->withArgs(fn (array $p): bool => $p['name'] === 'Survives')
-        ->andReturn(['id' => 777]);
+        ->andReturn(['id' => $goodTeamLbId]);
 
     $mock->shouldReceive('bulkAddParticipants')
         ->once()
-        ->withArgs(function (string $compId, array $participants): bool {
+        ->withArgs(function (string $compId, array $participants) use ($competitionLbId, $goodTeamLbId): bool {
             $ids = collect($participants)->pluck('participant_id')->all();
 
-            return $compId === 200
-                && $ids === [777];
+            return $compId === $competitionLbId
+                && $ids === [$goodTeamLbId];
         })
         ->andReturn([]);
 
@@ -114,12 +122,12 @@ it('skips teams whose upsert returned 4xx and have no prior lanbrackets_id', fun
     (new SyncTeamsToLanBrackets($competition))->handle($mock);
 
     expect($badTeam->fresh()->lanbrackets_id)->toBeNull();
-    expect($goodTeam->fresh()->lanbrackets_id)->toBe(777);
+    expect($goodTeam->fresh()->lanbrackets_id)->toBe($goodTeamLbId);
 });
 
 it('re-raises 5xx upsert failures so the queue retries', function (): void {
     $competition = Competition::factory()->registrationOpen()->syncedToLanBrackets()->create([
-        'lanbrackets_id' => 300,
+        'lanbrackets_id' => (string) Str::ulid(),
     ]);
 
     CompetitionTeam::factory()->create([
@@ -141,7 +149,7 @@ it('re-raises 5xx upsert failures so the queue retries', function (): void {
 
 it('treats bulkAddParticipants 4xx as idempotent success', function (): void {
     $competition = Competition::factory()->registrationOpen()->syncedToLanBrackets()->create([
-        'lanbrackets_id' => 400,
+        'lanbrackets_id' => (string) Str::ulid(),
     ]);
 
     CompetitionTeam::factory()->create([
@@ -152,7 +160,7 @@ it('treats bulkAddParticipants 4xx as idempotent success', function (): void {
     $mock = Mockery::mock(LanBracketsClient::class);
     $mock->shouldReceive('upsertTeam')
         ->once()
-        ->andReturn(['id' => 9001]);
+        ->andReturn(['id' => (string) Str::ulid()]);
     $mock->shouldReceive('bulkAddParticipants')
         ->once()
         ->andThrow(new LanBracketsRequestException('already registered', 422));
@@ -188,7 +196,7 @@ it('chains SyncTeams + GenerateLanBracketsStages on RegistrationClosed transitio
     Bus::fake();
 
     $competition = Competition::factory()->registrationOpen()->syncedToLanBrackets()->create([
-        'lanbrackets_id' => 500,
+        'lanbrackets_id' => (string) Str::ulid(),
     ]);
 
     CompetitionTeam::factory()->create([

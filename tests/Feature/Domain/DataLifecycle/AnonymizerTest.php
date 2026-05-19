@@ -20,12 +20,13 @@ it('UserAnonymizer scrubs every PII column but keeps email_hash', function () {
         'short_bio' => 'I love LAN parties.',
     ]);
     $originalHash = $user->email_hash;
+    $expectedSuffix = strtoupper(substr($originalHash, 0, 12));
 
     app(UserAnonymizer::class)->anonymize($user, AnonymizationMode::Anonymize);
 
     $user->refresh();
-    expect($user->email)->toBe("deleted-{$user->id}@anonymized.invalid");
-    expect($user->username)->toBe("deleted_{$user->id}");
+    expect($user->email)->toBe("deleted-{$expectedSuffix}@anonymized.invalid");
+    expect($user->username)->toBe("deleted_{$expectedSuffix}");
     expect($user->name)->toStartWith('Deleted User #');
     expect($user->phone)->toBeNull();
     expect($user->street)->toBeNull();

@@ -7,6 +7,7 @@ use App\Domain\Ticketing\Http\Requests\AdminTicketIndexRequest;
 use App\Domain\Ticketing\Models\Ticket;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,8 +27,8 @@ class AdminTicketController extends Controller
                 $q->whereHas('owner', fn ($q) => $q->whereLike('name', "%{$search}%")->orWhereLike('email', "%{$search}%"))
                     ->orWhereHas('ticketType', fn ($q) => $q->whereLike('name', "%{$search}%"));
 
-                if (ctype_digit((string) $search)) {
-                    $q->orWhere('id', (int) $search);
+                if (Str::isUlid((string) $search)) {
+                    $q->orWhere('id', (string) $search);
                 }
             });
         }

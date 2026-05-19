@@ -7,6 +7,7 @@ use App\Domain\Competition\Enums\CompetitionType;
 use App\Domain\Competition\Enums\StageType;
 use App\Domain\Competition\Models\Competition;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Competition>
@@ -70,7 +71,7 @@ class CompetitionFactory extends Factory
     public function syncedToLanBrackets(): static
     {
         return $this->state([
-            'lanbrackets_id' => fake()->numberBetween(1, 1000),
+            'lanbrackets_id' => (string) Str::ulid(),
             'lanbrackets_share_token' => fake()->regexify('[a-zA-Z0-9]{32}'),
         ]);
     }

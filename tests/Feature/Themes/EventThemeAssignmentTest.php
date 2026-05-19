@@ -5,6 +5,7 @@ use App\Domain\Theme\Models\Theme;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     Role::updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
@@ -40,7 +41,7 @@ it('rejects assignment of a non-existent theme', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/backstage/events/{$event->id}/theme", ['theme_id' => 999_999])
+        ->patch("/backstage/events/{$event->id}/theme", ['theme_id' => (string) Str::ulid()])
         ->assertSessionHasErrors(['theme_id']);
 });
 

@@ -39,7 +39,7 @@ class ResyncCompetitionToLanBracketsCommand extends Command
         $query = Competition::query();
 
         if ($id = $this->argument('id')) {
-            $query->where('id', (int) $id);
+            $query->where('id', (string) $id);
         }
 
         if ($this->option('unsynced')) {

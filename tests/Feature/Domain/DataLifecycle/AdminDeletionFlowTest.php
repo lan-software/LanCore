@@ -73,7 +73,10 @@ it('force-delete removes the user row entirely and creates an audited request re
     );
 
     expect(User::withTrashed()->find($subjectId))->toBeNull();
-    $req = DeletionRequest::query()->where('user_id', $subjectId)->first();
+    // After force-delete the user row is removed; the deletion_requests.user_id FK is
+    // null-on-delete so the audit record survives but the user link is severed.
+    $req = DeletionRequest::query()->where('status', DeletionRequestStatus::ForceDeleted)->latest('id')->first();
+    expect($req)->not->toBeNull();
     expect($req->status)->toBe(DeletionRequestStatus::ForceDeleted);
     expect($req->reason)->toContain('Court order');
 });

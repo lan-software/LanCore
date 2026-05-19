@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function (): void {
-    Role::query()->updateOrCreate(['name' => RoleName::User->value]);
+    Role::query()->updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
 });
 
 it('records a withdrawal and dispatches ConsentWithdrawn', function (): void {

@@ -7,6 +7,7 @@ use App\Domain\Competition\Models\CompetitionTeamMember;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 beforeEach(function (): void {
     config()->set('lanbrackets.enabled', true);
@@ -17,31 +18,34 @@ beforeEach(function (): void {
 
 it('resolves team_id and team_name from the enriched payload via external_reference_id', function (): void {
     $user = User::factory()->withRole(RoleName::User)->create();
-    $competition = Competition::factory()->syncedToLanBrackets()->create(['lanbrackets_id' => 700]);
+    $competitionLbId = (string) Str::ulid();
+    $teamALbId = (string) Str::ulid();
+    $teamBLbId = (string) Str::ulid();
+    $competition = Competition::factory()->syncedToLanBrackets()->create(['lanbrackets_id' => $competitionLbId]);
 
     $teamA = CompetitionTeam::factory()->create([
         'competition_id' => $competition->id,
         'name' => 'Alpha',
-        'lanbrackets_id' => 9001,
+        'lanbrackets_id' => $teamALbId,
     ]);
     $teamB = CompetitionTeam::factory()->create([
         'competition_id' => $competition->id,
         'name' => 'Bravo',
-        'lanbrackets_id' => 9002,
+        'lanbrackets_id' => $teamBLbId,
     ]);
     CompetitionTeamMember::factory()->create(['team_id' => $teamA->id, 'user_id' => $user->id]);
 
     $mock = Mockery::mock(LanBracketsClient::class);
     $mock->shouldReceive('getStages')
-        ->with(700)
+        ->with($competitionLbId)
         ->andReturn([
             ['id' => 1, 'name' => 'Main', 'stage_type' => 'single_elimination', 'status' => 'running'],
         ]);
     $mock->shouldReceive('getMatches')
-        ->with(700, 1)
+        ->with($competitionLbId, 1)
         ->andReturn([
             [
-                'id' => 5050,
+                'id' => (string) Str::ulid(),
                 'round_number' => 1,
                 'sequence' => 1,
                 'status' => 'pending',
@@ -49,7 +53,7 @@ it('resolves team_id and team_name from the enriched payload via external_refere
                     [
                         'competition_participant_id' => 111,
                         'participant_type' => 'team',
-                        'participant_id' => 9001,
+                        'participant_id' => $teamALbId,
                         'participant_name' => 'Alpha (from LB)',
                         'external_reference_id' => (string) $teamA->id,
                         'source_system' => 'lancore',
@@ -59,7 +63,7 @@ it('resolves team_id and team_name from the enriched payload via external_refere
                     [
                         'competition_participant_id' => 112,
                         'participant_type' => 'team',
-                        'participant_id' => 9002,
+                        'participant_id' => $teamBLbId,
                         'participant_name' => 'Bravo (from LB)',
                         'external_reference_id' => (string) $teamB->id,
                         'source_system' => 'lancore',
@@ -88,7 +92,8 @@ it('resolves team_id and team_name from the enriched payload via external_refere
 
 it('falls back to participant_name when the enriched fields are absent (legacy payload)', function (): void {
     $user = User::factory()->withRole(RoleName::User)->create();
-    $competition = Competition::factory()->syncedToLanBrackets()->create(['lanbrackets_id' => 701]);
+    $competitionLbId = (string) Str::ulid();
+    $competition = Competition::factory()->syncedToLanBrackets()->create(['lanbrackets_id' => $competitionLbId]);
 
     $team = CompetitionTeam::factory()->create([
         'competition_id' => $competition->id,
@@ -99,15 +104,15 @@ it('falls back to participant_name when the enriched fields are absent (legacy p
 
     $mock = Mockery::mock(LanBracketsClient::class);
     $mock->shouldReceive('getStages')
-        ->with(701)
+        ->with($competitionLbId)
         ->andReturn([
             ['id' => 1, 'name' => 'Main', 'status' => 'running'],
         ]);
     $mock->shouldReceive('getMatches')
-        ->with(701, 1)
+        ->with($competitionLbId, 1)
         ->andReturn([
             [
-                'id' => 6060,
+                'id' => (string) Str::ulid(),
                 'round_number' => 1,
                 'sequence' => 1,
                 'status' => 'pending',
@@ -147,32 +152,36 @@ it('marks user_is_participant true when the user is a member of a resolved team'
     $user = User::factory()->withRole(RoleName::User)->create();
     $other = User::factory()->withRole(RoleName::User)->create();
 
-    $competition = Competition::factory()->syncedToLanBrackets()->create(['lanbrackets_id' => 702]);
+    $competitionLbId = (string) Str::ulid();
+    $myTeamLbId = (string) Str::ulid();
+    $otherTeamLbId = (string) Str::ulid();
+
+    $competition = Competition::factory()->syncedToLanBrackets()->create(['lanbrackets_id' => $competitionLbId]);
 
     $myTeam = CompetitionTeam::factory()->create([
         'competition_id' => $competition->id,
         'name' => 'Mine',
-        'lanbrackets_id' => 8001,
+        'lanbrackets_id' => $myTeamLbId,
     ]);
     $otherTeam = CompetitionTeam::factory()->create([
         'competition_id' => $competition->id,
         'name' => 'Theirs',
-        'lanbrackets_id' => 8002,
+        'lanbrackets_id' => $otherTeamLbId,
     ]);
     CompetitionTeamMember::factory()->create(['team_id' => $myTeam->id, 'user_id' => $user->id]);
     CompetitionTeamMember::factory()->create(['team_id' => $otherTeam->id, 'user_id' => $other->id]);
 
     $mock = Mockery::mock(LanBracketsClient::class);
     $mock->shouldReceive('getStages')
-        ->with(702)
+        ->with($competitionLbId)
         ->andReturn([
             ['id' => 1, 'name' => 'Main', 'status' => 'running'],
         ]);
     $mock->shouldReceive('getMatches')
-        ->with(702, 1)
+        ->with($competitionLbId, 1)
         ->andReturn([
             [
-                'id' => 7070,
+                'id' => (string) Str::ulid(),
                 'status' => 'pending',
                 'match_participants' => [
                     [

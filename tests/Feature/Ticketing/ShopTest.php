@@ -4,6 +4,7 @@ use App\Domain\Event\Models\Event;
 use App\Domain\Ticketing\Models\TicketType;
 use App\Enums\RoleName;
 use App\Models\Role;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     Role::updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
@@ -43,8 +44,8 @@ it('shows empty state when no events are published', function () {
 it('requires authentication for cart operations', function () {
     $this->post('/cart/items', [
         'purchasable_type' => 'ticket_type',
-        'purchasable_id' => 1,
-        'event_id' => 1,
+        'purchasable_id' => (string) Str::ulid(),
+        'event_id' => (string) Str::ulid(),
     ])->assertRedirect('/login');
 });
 

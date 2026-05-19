@@ -4,6 +4,7 @@ use App\Domain\Api\Clients\LanBracketsClient;
 use App\Domain\Competition\Exceptions\LanBracketsDisabledException;
 use App\Domain\Competition\Exceptions\LanBracketsRequestException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     config(['lanbrackets.enabled' => true]);
@@ -20,9 +21,10 @@ it('throws LanBracketsDisabledException when disabled', function () {
 })->throws(LanBracketsDisabledException::class);
 
 it('creates a competition via API', function () {
+    $createdId = (string) Str::ulid();
     Http::fake([
         'lanbrackets.test/api/v1/competitions' => Http::response([
-            'data' => ['id' => 42, 'name' => 'Test Competition'],
+            'data' => ['id' => $createdId, 'name' => 'Test Competition'],
         ], 201),
     ]);
 
@@ -31,11 +33,11 @@ it('creates a competition via API', function () {
         'name' => 'Test Competition',
         'type' => 'tournament',
         'stage_type' => 'single_elimination',
-        'external_reference_id' => '1',
+        'external_reference_id' => (string) Str::ulid(),
         'source_system' => 'lancore',
     ]);
 
-    expect($result['id'])->toBe(42);
+    expect($result['id'])->toBe($createdId);
     expect($result['name'])->toBe('Test Competition');
 
     Http::assertSent(function ($request) {
@@ -57,29 +59,32 @@ it('throws LanBracketsRequestException on API error', function () {
 })->throws(LanBracketsRequestException::class, 'Validation failed');
 
 it('regenerates a share token', function () {
+    $competitionId = (string) Str::ulid();
     Http::fake([
-        'lanbrackets.test/api/v1/competitions/42/share-token' => Http::response([
+        "lanbrackets.test/api/v1/competitions/{$competitionId}/share-token" => Http::response([
             'share_token' => 'abc123token',
         ]),
     ]);
 
     $client = new LanBracketsClient;
-    $token = $client->regenerateShareToken(42);
+    $token = $client->regenerateShareToken($competitionId);
 
     expect($token)->toBe('abc123token');
 });
 
 it('reports a match result', function () {
+    $competitionId = (string) Str::ulid();
+    $matchId = (string) Str::ulid();
     Http::fake([
-        'lanbrackets.test/api/v1/competitions/42/matches/7/result' => Http::response([
-            'data' => ['id' => 7, 'status' => 'finished'],
+        "lanbrackets.test/api/v1/competitions/{$competitionId}/matches/{$matchId}/result" => Http::response([
+            'data' => ['id' => $matchId, 'status' => 'finished'],
         ]),
     ]);
 
     $client = new LanBracketsClient;
-    $result = $client->reportMatchResult(42, 7, [
-        ['participant_id' => 1, 'score' => 16],
-        ['participant_id' => 2, 'score' => 10],
+    $result = $client->reportMatchResult($competitionId, $matchId, [
+        ['participant_id' => (string) Str::ulid(), 'score' => 16],
+        ['participant_id' => (string) Str::ulid(), 'score' => 10],
     ]);
 
     expect($result['status'])->toBe('finished');

@@ -6,6 +6,7 @@ use App\Models\OrganizationSetting;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     Role::updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
@@ -40,7 +41,7 @@ it('rejects setting the default to a non-existent theme', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->patch('/backstage/themes/default', ['theme_id' => 999_999])
+        ->patch('/backstage/themes/default', ['theme_id' => (string) Str::ulid()])
         ->assertSessionHasErrors(['theme_id']);
 });
 

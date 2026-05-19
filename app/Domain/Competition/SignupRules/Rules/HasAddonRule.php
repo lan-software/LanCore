@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class HasAddonRule implements SignupRule
 {
-    /** @var list<int> */
+    /** @var list<string> */
     private readonly array $addonIds;
 
     /**
@@ -21,7 +21,7 @@ class HasAddonRule implements SignupRule
     {
         $ids = $config['addon_ids'] ?? [];
         $this->addonIds = is_array($ids)
-            ? array_values(array_filter(array_map(fn ($v) => is_numeric($v) ? (int) $v : null, $ids), fn ($v) => $v !== null))
+            ? array_values(array_filter(array_map(fn ($v) => $v === null || $v === '' ? null : (string) $v, $ids), fn ($v) => $v !== null))
             : [];
     }
 

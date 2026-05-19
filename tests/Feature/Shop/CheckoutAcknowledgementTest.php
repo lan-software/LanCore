@@ -7,6 +7,7 @@ use App\Domain\Shop\Models\PurchaseRequirement;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     Role::updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
@@ -102,7 +103,7 @@ it('rejects invalid acknowledgeable type', function () {
     $this->actingAs($user)
         ->postJson('/cart/acknowledge', [
             'acknowledgeable_type' => 'invalid_type',
-            'acknowledgeable_id' => 1,
+            'acknowledgeable_id' => (string) Str::ulid(),
         ])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('acknowledgeable_type');
@@ -114,7 +115,7 @@ it('returns 404 for non-existent acknowledgeable', function () {
     $this->actingAs($user)
         ->postJson('/cart/acknowledge', [
             'acknowledgeable_type' => 'global_purchase_condition',
-            'acknowledgeable_id' => 9999,
+            'acknowledgeable_id' => (string) Str::ulid(),
         ])
         ->assertNotFound();
 });

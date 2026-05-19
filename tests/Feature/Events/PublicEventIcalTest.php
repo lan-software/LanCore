@@ -6,6 +6,7 @@ use App\Domain\Event\Enums\EventStatus;
 use App\Domain\Event\Models\Event;
 use App\Domain\Venue\Models\Address;
 use App\Domain\Venue\Models\Venue;
+use Illuminate\Support\Str;
 
 it('returns an RFC 5545 calendar for a published event', function () {
     $address = Address::factory()->create([
@@ -62,7 +63,7 @@ it('returns 404 for a draft event', function () {
 });
 
 it('returns 404 for an unknown event id', function () {
-    $this->get('/events/999999/calendar.ics')
+    $this->get('/events/'.(string) Str::ulid().'/calendar.ics')
         ->assertNotFound();
 });
 

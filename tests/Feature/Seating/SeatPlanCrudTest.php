@@ -5,6 +5,7 @@ use App\Domain\Seating\Models\SeatPlan;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     Role::updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
@@ -59,7 +60,7 @@ it('validates event exists when storing a seat plan', function () {
     $this->actingAs($admin)
         ->post('/backstage/seat-plans', [
             'name' => 'Test Plan',
-            'event_id' => 99999,
+            'event_id' => (string) Str::ulid(),
         ])
         ->assertSessionHasErrors(['event_id']);
 });

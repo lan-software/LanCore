@@ -5,6 +5,7 @@ use App\Domain\OrgaTeam\Models\OrgaTeam;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     Role::updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
@@ -52,7 +53,7 @@ it('rejects assignment of non-existent orga-team id', function () {
     $event = Event::factory()->create();
 
     $this->actingAs($admin)
-        ->patch("/backstage/events/{$event->id}/orga-team", ['orga_team_id' => 999999])
+        ->patch("/backstage/events/{$event->id}/orga-team", ['orga_team_id' => (string) Str::ulid()])
         ->assertSessionHasErrors('orga_team_id');
 });
 

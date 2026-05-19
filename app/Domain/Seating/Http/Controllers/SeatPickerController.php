@@ -145,7 +145,7 @@ class SeatPickerController extends Controller
 
         Gate::authorize('pickSeat', [$ticket, $assignee]);
 
-        $this->assignSeat->execute($ticket, $assignee, $seatPlan, (int) $validated['seat_id']);
+        $this->assignSeat->execute($ticket, $assignee, $seatPlan, (string) $validated['seat_id']);
 
         return back()->with('status', 'seat-assigned');
     }

@@ -182,7 +182,7 @@ class UserMatchController extends Controller
         $chatRoomsByMatchId,
         $user,
     ): array {
-        $matchId = (int) ($match['id'] ?? 0);
+        $matchId = (string) ($match['id'] ?? '');
         $participants = collect($match['match_participants'] ?? $match['participants'] ?? []);
 
         $userOnMatch = $participants->contains(function ($p) use ($teamsByLocalId, $teamIdsByUserId) {
@@ -195,7 +195,7 @@ class UserMatchController extends Controller
                 return false;
             }
 
-            $team = $teamsByLocalId->get((int) $externalRef);
+            $team = $teamsByLocalId->get((string) $externalRef);
 
             return $team !== null && in_array($team->id, $teamIdsByUserId, true);
         });

@@ -205,8 +205,8 @@ class SteamAuthController
             return;
         }
 
-        $requiredIds = array_map(fn ($v) => $v->id, $required);
-        $accepted = array_map('intval', (array) ($input['accepted_policy_version_ids'] ?? []));
+        $requiredIds = array_map(fn ($v) => (string) $v->id, $required);
+        $accepted = array_map('strval', (array) ($input['accepted_policy_version_ids'] ?? []));
         $missing = array_diff($requiredIds, $accepted);
 
         if ($missing !== []) {

@@ -2,6 +2,7 @@
 
 use App\Domain\Announcement\Enums\Permission as AnnouncementPermission;
 use App\Domain\Chat\Enums\Permission as ChatPermission;
+use App\Domain\DataLifecycle\Enums\Permission as DataLifecyclePermission;
 use App\Domain\News\Enums\Permission as NewsPermission;
 use App\Domain\Sponsoring\Enums\Permission as SponsoringPermission;
 use App\Enums\Permission;
@@ -23,7 +24,7 @@ it('excludes SyncUserRoles and DeleteUsers from admin', function () {
 
 it('gives admin all other permissions except superadmin-only and sponsor-manager-only', function () {
     $adminPerms = RolePermissionMap::forRole(RoleName::Admin);
-    $excluded = [Permission::SyncUserRoles, Permission::DeleteUsers, SponsoringPermission::ManageAssignedSponsors];
+    $excluded = [Permission::SyncUserRoles, Permission::DeleteUsers, DataLifecyclePermission::ForceDeleteUserData, SponsoringPermission::ManageAssignedSponsors];
 
     $expected = array_filter(
         RolePermissionMap::all(),

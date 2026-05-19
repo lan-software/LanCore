@@ -15,16 +15,16 @@ class SyncOrgaSubTeamMemberships
      * Replace the sub-team's memberships with the given (user_id, role) tuples.
      * The team's organizer is automatically excluded; sort_order follows input order.
      *
-     * @param  array<int, array{user_id: int, role: string|SubTeamRole}>  $memberships
+     * @param  array<int, array{user_id: string, role: string|SubTeamRole}>  $memberships
      */
     public function execute(OrgaSubTeam $orgaSubTeam, array $memberships): void
     {
-        $organizerId = (int) $orgaSubTeam->orgaTeam()->value('organizer_user_id');
+        $organizerId = (string) $orgaSubTeam->orgaTeam()->value('organizer_user_id');
 
         $sync = [];
         $position = 0;
         foreach ($memberships as $membership) {
-            $userId = (int) $membership['user_id'];
+            $userId = (string) $membership['user_id'];
             if ($userId === $organizerId) {
                 continue;
             }

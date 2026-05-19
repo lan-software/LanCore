@@ -36,7 +36,7 @@ class ResolveEventTheme
     }
 
     /**
-     * @return array{id: int, name: string, lightConfig: array<string, string>, darkConfig: array<string, string>, source: 'event'|'organization'}|null
+     * @return array{id: string, name: string, lightConfig: array<string, string>, darkConfig: array<string, string>, source: 'event'|'organization'}|null
      */
     private function resolve(Request $request): ?array
     {
@@ -60,13 +60,13 @@ class ResolveEventTheme
             return null;
         }
 
-        $theme = Theme::find((int) $defaultId);
+        $theme = Theme::find((string) $defaultId);
 
         return $theme === null ? null : $this->payload($theme, 'organization');
     }
 
     /**
-     * @return array{id: int, name: string, lightConfig: array<string, string>, darkConfig: array<string, string>, source: 'event'|'organization'}
+     * @return array{id: string, name: string, lightConfig: array<string, string>, darkConfig: array<string, string>, source: 'event'|'organization'}
      */
     private function payload(Theme $theme, string $source): array
     {

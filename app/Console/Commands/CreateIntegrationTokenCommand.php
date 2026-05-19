@@ -7,6 +7,7 @@ use App\Domain\Integration\Models\IntegrationApp;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 #[Signature('integration:token {app : The slug or ID of the integration app} {name : A label for this token} {--expires= : Expiration date (e.g. "+30 days", "2026-12-31")}')]
 #[Description('Generate an API token for an integration application')]
@@ -16,8 +17,8 @@ class CreateIntegrationTokenCommand extends Command
     {
         $identifier = $this->argument('app');
 
-        $app = is_numeric($identifier)
-            ? IntegrationApp::find((int) $identifier)
+        $app = Str::isUlid($identifier)
+            ? IntegrationApp::find($identifier)
             : IntegrationApp::where('slug', $identifier)->first();
 
         if (! $app) {

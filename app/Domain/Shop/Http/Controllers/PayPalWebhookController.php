@@ -12,6 +12,7 @@ use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 use Throwable;
 
@@ -130,8 +131,8 @@ class PayPalWebhookController extends Controller
         $customId = (string) ($resource['custom_id'] ?? '');
         $supplementaryOrderId = (string) ($resource['supplementary_data']['related_ids']['order_id'] ?? '');
 
-        if ($customId !== '' && ctype_digit($customId)) {
-            $order = Order::query()->find((int) $customId);
+        if ($customId !== '' && Str::isUlid($customId)) {
+            $order = Order::query()->find($customId);
 
             if ($order && $order->payment_method === PaymentMethod::PayPal) {
                 return $order;

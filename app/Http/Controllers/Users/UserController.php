@@ -118,7 +118,7 @@ class UserController extends Controller
             ? collect()
             : User::with('roles')->whereIn('id', $pageIds)->get()->keyBy('id');
         $orderedUsers = collect($pageIds)
-            ->map(fn (string $usersById) => $usersById->get($id))
+            ->map(fn (string $id) => $usersById->get($id))
             ->filter()
             ->values();
 

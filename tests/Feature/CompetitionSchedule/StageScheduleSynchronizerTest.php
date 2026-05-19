@@ -8,13 +8,14 @@ use App\Domain\CompetitionSchedule\Services\DurationEstimator;
 use App\Domain\CompetitionSchedule\Services\RoundDurationDefaults;
 use App\Domain\CompetitionSchedule\Services\StageScheduleSynchronizer;
 use App\Domain\Games\Models\Game;
+use Illuminate\Support\Str;
 
 beforeEach(function (): void {
     config()->set('lanbrackets.enabled', true);
     $this->game = Game::factory()->create(['avg_match_minutes' => 25]);
     $this->competition = Competition::factory()->create([
         'game_id' => $this->game->id,
-        'lanbrackets_id' => 7,
+        'lanbrackets_id' => (string) Str::ulid(),
         'max_teams' => 8,
     ]);
 });

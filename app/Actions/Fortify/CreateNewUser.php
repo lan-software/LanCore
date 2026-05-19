@@ -85,8 +85,8 @@ class CreateNewUser implements CreatesNewUsers
             return;
         }
 
-        $required = array_map(fn (PolicyVersion $v) => $v->id, $requiredVersions);
-        $accepted = array_map('intval', (array) ($input['accepted_policy_version_ids'] ?? []));
+        $required = array_map(fn (PolicyVersion $v) => (string) $v->id, $requiredVersions);
+        $accepted = array_map('strval', (array) ($input['accepted_policy_version_ids'] ?? []));
         $missing = array_diff($required, $accepted);
 
         if (! empty($missing)) {

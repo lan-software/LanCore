@@ -38,7 +38,7 @@ it('emits the normalized wire shape with integer ids', function (): void {
     $seat = $block['seats'][0];
     expect($seat)
         ->toHaveKeys(['id', 'title', 'x', 'y', 'salable', 'color', 'note', 'custom_data'])
-        ->and($seat['id'])->toBeInt()
+        ->and($seat['id'])->toBeString()
         ->and($seat['salable'])->toBeTrue()
         ->and($seat['note'])->toBe('aisle');
 

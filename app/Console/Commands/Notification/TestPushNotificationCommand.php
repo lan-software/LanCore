@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
 
@@ -77,8 +78,8 @@ class TestPushNotificationCommand extends Command
         $userOption = $this->option('user');
 
         if ($userOption) {
-            $user = is_numeric($userOption)
-                ? User::find((int) $userOption)
+            $user = Str::isUlid($userOption)
+                ? User::find($userOption)
                 : User::where('email', $userOption)->first();
 
             if (! $user) {

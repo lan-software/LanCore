@@ -39,8 +39,9 @@ it('walks request → email → confirm → grace → anonymize end to end', fun
     app(AnonymizeUser::class)->execute($confirmed);
 
     $user->refresh();
+    $expectedSuffix = strtoupper(substr($user->email_hash, 0, 12));
     expect($user->isAnonymized())->toBeTrue();
-    expect($user->email)->toBe("deleted-{$user->id}@anonymized.invalid");
+    expect($user->email)->toBe("deleted-{$expectedSuffix}@anonymized.invalid");
     expect($user->name)->toStartWith('Deleted User #');
     expect($user->phone)->toBeNull();
     expect($user->street)->toBeNull();

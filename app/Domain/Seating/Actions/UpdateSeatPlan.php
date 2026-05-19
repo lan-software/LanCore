@@ -159,11 +159,11 @@ class UpdateSeatPlan
             foreach ((array) ($block['seats'] ?? []) as $seat) {
                 $rawId = $seat['id'] ?? null;
 
-                if (! is_numeric($rawId)) {
+                if ($rawId === null || $rawId === '') {
                     continue;
                 }
 
-                $index[(int) $rawId] = ['allowed_category_ids' => $allowed];
+                $index[(string) $rawId] = ['allowed_category_ids' => $allowed];
             }
         }
 
@@ -172,12 +172,12 @@ class UpdateSeatPlan
 
     /**
      * @param  array<int, mixed>  $raw
-     * @return array<int, int>
+     * @return array<int, string>
      */
     private function normaliseCategoryIds(array $raw): array
     {
         return array_values(array_unique(array_filter(array_map(
-            fn (mixed $id): ?int => is_numeric($id) ? (int) $id : null,
+            fn (mixed $id): ?string => $id === null || $id === '' ? null : (string) $id,
             $raw,
         ), fn (?string $id): bool => $id !== null)));
     }

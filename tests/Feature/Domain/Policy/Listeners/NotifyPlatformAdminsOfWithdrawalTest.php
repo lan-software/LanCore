@@ -11,8 +11,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(function (): void {
-    Role::query()->updateOrCreate(['name' => RoleName::Admin->value]);
-    Role::query()->updateOrCreate(['name' => RoleName::User->value]);
+    Role::query()->updateOrCreate(['name' => RoleName::Admin->value], ['label' => 'Admin']);
+    Role::query()->updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
 });
 
 it('notifies all users holding ManagePolicies but excludes the withdrawing user', function (): void {

@@ -8,6 +8,7 @@ use App\Domain\Competition\Models\CompetitionTeam;
 use App\Domain\Competition\Models\CompetitionTeamMember;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -33,7 +34,7 @@ class CreateTeamCommand extends Command
 
     public function handle(CreateTeam $createTeam): int
     {
-        $competition = Competition::find((int) $this->argument('competition'));
+        $competition = Competition::find((string) $this->argument('competition'));
         if ($competition === null) {
             $this->error("Competition #{$this->argument('competition')} not found.");
 
@@ -92,8 +93,8 @@ class CreateTeamCommand extends Command
 
     private function resolveUser(string $identifier): ?User
     {
-        if (ctype_digit($identifier)) {
-            $user = User::find((int) $identifier);
+        if (Str::isUlid($identifier)) {
+            $user = User::find($identifier);
             if ($user !== null) {
                 return $user;
             }

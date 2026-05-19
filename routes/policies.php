@@ -23,7 +23,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::post('/policies/required/accept', [RequiredPoliciesController::class, 'accept'])
         ->name('policies.required.accept');
 
-    Route::post('/settings/consent/{policy}/withdraw', [ConsentWithdrawalController::class, 'store'])
+    Route::post('/settings/consent/{policy:key}/withdraw', [ConsentWithdrawalController::class, 'store'])
         ->name('settings.consent.withdraw');
 });
 

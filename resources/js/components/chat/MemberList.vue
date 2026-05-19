@@ -249,11 +249,13 @@ function unmuteFor(member: ChatMemberDto): void {
                     v-if="member.is_admin"
                     class="size-4 shrink-0 text-primary"
                     :aria-label="t('chat.member.adminTitle')"
+                    :title="t('chat.member.adminTitle')"
                 />
                 <ShieldCheck
                     v-else-if="member.is_referee"
                     class="size-4 shrink-0 text-amber-600 dark:text-amber-400"
-                    :aria-label="t('chat.message.refereeBadge')"
+                    :aria-label="t('chat.message.refereeBadgeTitle')"
+                    :title="t('chat.message.refereeBadgeTitle')"
                 />
                 <span
                     v-if="member.team_tag"

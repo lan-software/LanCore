@@ -8,6 +8,7 @@
 use App\Domain\Notification\Models\ProgramNotificationSubscription;
 use App\Domain\Program\Models\Program;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 it('creates a subscription record with correct user and program', function () {
     $user = User::factory()->create();
@@ -87,7 +88,7 @@ it('returns 404 for a non-existent program', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->post('/programs/99999/subscribe')
+        ->post('/programs/'.(string) Str::ulid().'/subscribe')
         ->assertNotFound();
 });
 

@@ -49,15 +49,15 @@ final class GdprExportContext
      * Passing the subject (by id) returns "subject" — the export subject
      * is never pseudonymised.
      */
-    public function obfuscateUser(User|int|null $other, ?string $hint = null): string
+    public function obfuscateUser(User|string|null $other, ?string $hint = null): string
     {
         if ($other === null) {
             return 'unknown_user';
         }
 
-        $id = $other instanceof User ? $other->id : $other;
+        $id = $other instanceof User ? (string) $other->id : (string) $other;
 
-        if ($id === $this->subject->id) {
+        if ($id === (string) $this->subject->id) {
             return 'subject';
         }
 

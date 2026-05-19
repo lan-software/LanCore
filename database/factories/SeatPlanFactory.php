@@ -130,9 +130,9 @@ class SeatPlanFactory extends Factory
                 ]);
 
                 $categoryIds = array_values(array_filter(array_map(
-                    fn (mixed $id): ?int => is_numeric($id) ? (int) $id : null,
+                    fn (mixed $id): ?string => $id === null || $id === '' ? null : (string) $id,
                     (array) ($blockPayload['allowed_ticket_category_ids'] ?? []),
-                ), fn (?int $id): bool => $id !== null));
+                ), fn (?string $id): bool => $id !== null));
 
                 if ($categoryIds !== []) {
                     $block->categoryRestrictions()->sync($categoryIds);

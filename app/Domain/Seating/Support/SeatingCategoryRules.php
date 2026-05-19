@@ -37,7 +37,7 @@ class SeatingCategoryRules
     }
 
     /**
-     * @return array<int, int>
+     * @return array<int, string>
      */
     public static function allowedCategoryIds(SeatPlanBlock $block): array
     {
@@ -46,6 +46,6 @@ class SeatingCategoryRules
             ? $block->getRelation('categoryRestrictions')
             : $block->categoryRestrictions()->get();
 
-        return $restrictions->pluck('id')->map(fn ($id): int => (int) $id)->values()->all();
+        return $restrictions->pluck('id')->map(fn ($id): string => (string) $id)->values()->all();
     }
 }

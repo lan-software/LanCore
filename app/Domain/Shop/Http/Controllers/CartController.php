@@ -115,7 +115,7 @@ class CartController extends Controller
         $cart = Cart::forUser($user);
 
         // Ensure the cart is scoped to one event
-        if ($cart->event_id && $cart->event_id !== (int) $request->input('event_id')) {
+        if ($cart->event_id && $cart->event_id !== (string) $request->input('event_id')) {
             $cart->items()->delete();
             $cart->update(['voucher_code' => null]);
         }

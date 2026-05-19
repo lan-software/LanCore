@@ -7,6 +7,7 @@ use App\Domain\Seating\Models\SeatPlanBlock;
 use App\Domain\Seating\Models\SeatPlanLabel;
 use App\Domain\Seating\Models\SeatPlanRow;
 use App\Domain\Seating\Models\SeatPlanSeat;
+use Illuminate\Support\Str;
 
 /**
  * Full-state replace for the normalized seat-plan tree. Consumes the payload
@@ -98,11 +99,11 @@ class SeatPlanTreeSyncer
             $id = $labelPayload['id'] ?? null;
             $label = null;
 
-            if (is_numeric($id)) {
+            if ($this->isExistingId($id)) {
                 $label = SeatPlanLabel::query()
                     ->where('seat_plan_id', $plan->id)
                     ->whereNull('seat_plan_block_id')
-                    ->whereKey((int) $id)
+                    ->whereKey((string) $id)
                     ->first();
 
                 if ($label !== null) {
@@ -132,10 +133,10 @@ class SeatPlanTreeSyncer
      */
     private function upsertBlock(SeatPlan $plan, mixed $id, array $attributes): SeatPlanBlock
     {
-        if (is_numeric($id)) {
+        if ($this->isExistingId($id)) {
             $block = SeatPlanBlock::query()
                 ->where('seat_plan_id', $plan->id)
-                ->whereKey((int) $id)
+                ->whereKey((string) $id)
                 ->first();
 
             if ($block !== null) {
@@ -154,7 +155,7 @@ class SeatPlanTreeSyncer
     private function syncRestrictions(SeatPlanBlock $block, array $categoryIds): void
     {
         $ids = array_values(array_unique(array_filter(array_map(
-            fn (mixed $id): ?int => is_numeric($id) ? (int) $id : null,
+            fn (mixed $id): ?string => $id === null || $id === '' ? null : (string) $id,
             $categoryIds,
         ), fn (?string $id): bool => $id !== null)));
 
@@ -207,10 +208,10 @@ class SeatPlanTreeSyncer
      */
     private function upsertRow(SeatPlanBlock $block, mixed $id, array $attributes): SeatPlanRow
     {
-        if (is_numeric($id)) {
+        if ($this->isExistingId($id)) {
             $row = SeatPlanRow::query()
                 ->where('seat_plan_block_id', $block->id)
-                ->whereKey((int) $id)
+                ->whereKey((string) $id)
                 ->first();
 
             if ($row !== null) {
@@ -284,10 +285,10 @@ class SeatPlanTreeSyncer
      */
     private function upsertSeat(SeatPlanBlock $block, mixed $id, array $attributes): SeatPlanSeat
     {
-        if (is_numeric($id)) {
+        if ($this->isExistingId($id)) {
             $seat = SeatPlanSeat::query()
                 ->where('seat_plan_block_id', $block->id)
-                ->whereKey((int) $id)
+                ->whereKey((string) $id)
                 ->first();
 
             if ($seat !== null) {
@@ -339,10 +340,10 @@ class SeatPlanTreeSyncer
      */
     private function upsertLabel(SeatPlanBlock $block, mixed $id, array $attributes): SeatPlanLabel
     {
-        if (is_numeric($id)) {
+        if ($this->isExistingId($id)) {
             $label = SeatPlanLabel::query()
                 ->where('seat_plan_block_id', $block->id)
-                ->whereKey((int) $id)
+                ->whereKey((string) $id)
                 ->first();
 
             if ($label !== null) {
@@ -355,13 +356,23 @@ class SeatPlanTreeSyncer
         return SeatPlanLabel::query()->create($attributes);
     }
 
+    /**
+     * The editor passes both existing entity IDs (persisted ULIDs) and `new-*`
+     * client placeholders through the same `id` field; distinguish them so the
+     * upsert path only tries to look up real records.
+     */
+    private function isExistingId(mixed $id): bool
+    {
+        return is_string($id) && Str::isUlid($id);
+    }
+
     private function clientId(mixed $id): ?string
     {
         if ($id === null) {
             return null;
         }
 
-        if (is_string($id) && ! is_numeric($id)) {
+        if (is_string($id) && ! $this->isExistingId($id)) {
             return $id;
         }
 

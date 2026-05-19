@@ -4,6 +4,7 @@ use App\Domain\Sponsoring\Models\SponsorLevel;
 use App\Domain\Venue\Models\Venue;
 use App\Models\Role;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 it('returns cached dropdown options for a model', function (): void {
     $level = SponsorLevel::factory()->create(['name' => 'Gold', 'color' => '#FFD700', 'sort_order' => 1]);
@@ -23,6 +24,7 @@ it('serves subsequent calls from cache without re-querying', function (): void {
 
     // Insert directly via DB to bypass Eloquent events (no cache flush)
     DB::table('sponsor_levels')->insert([
+        'id' => (string) Str::ulid(),
         'name' => 'Sneaky',
         'color' => '#000000',
         'sort_order' => 2,

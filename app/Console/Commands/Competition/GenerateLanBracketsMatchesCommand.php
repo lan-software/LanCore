@@ -37,7 +37,7 @@ class GenerateLanBracketsMatchesCommand extends Command
             return self::FAILURE;
         }
 
-        $competition = Competition::find((int) $this->argument('id'));
+        $competition = Competition::find((string) $this->argument('id'));
 
         if ($competition === null) {
             $this->error("Competition #{$this->argument('id')} not found.");

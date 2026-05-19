@@ -19,7 +19,7 @@ return new class extends Migration
     {
         Schema::create('deletion_requests', function (Blueprint $table): void {
             $table->ulid('id')->primary();
-            $table->foreignUlid('user_id')->constrained('users')->restrictOnDelete();
+            $table->foreignUlid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('initiator', 16);
             $table->foreignUlid('requested_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUlid('requested_by_admin_id')->nullable()->constrained('users')->nullOnDelete();

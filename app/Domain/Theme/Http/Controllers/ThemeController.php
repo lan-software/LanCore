@@ -39,7 +39,7 @@ class ThemeController extends Controller
 
         return Inertia::render('themes/Index', [
             'themes' => Theme::query()->orderBy('name')->get(['id', 'name', 'description']),
-            'defaultThemeId' => $defaultThemeId === null ? null : (int) $defaultThemeId,
+            'defaultThemeId' => $defaultThemeId === null ? null : (string) $defaultThemeId,
         ]);
     }
 

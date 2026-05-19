@@ -10,7 +10,7 @@ use App\Models\User;
 
 class HasTicketOfTypeRule implements SignupRule
 {
-    /** @var list<int> */
+    /** @var list<string> */
     private readonly array $ticketTypeIds;
 
     /**
@@ -20,7 +20,7 @@ class HasTicketOfTypeRule implements SignupRule
     {
         $ids = $config['ticket_type_ids'] ?? [];
         $this->ticketTypeIds = is_array($ids)
-            ? array_values(array_filter(array_map(fn ($v) => is_numeric($v) ? (int) $v : null, $ids), fn ($v) => $v !== null))
+            ? array_values(array_filter(array_map(fn ($v) => $v === null || $v === '' ? null : (string) $v, $ids), fn ($v) => $v !== null))
             : [];
     }
 

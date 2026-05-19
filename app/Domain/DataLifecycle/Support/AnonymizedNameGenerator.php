@@ -18,18 +18,21 @@ final class AnonymizedNameGenerator
 
     public function username(User $user): string
     {
-        return 'deleted_'.$user->getKey();
+        // Keep the username under the column's 32-char limit. `deleted_` (8)
+        // + 12-char hex suffix = 20 chars, well under. The full ULID would
+        // produce a 34-char value and overflow the column.
+        return 'deleted_'.$this->suffix($user);
     }
 
     public function placeholderEmail(User $user): string
     {
-        return sprintf('deleted-%d@anonymized.invalid', $user->getKey());
+        return sprintf('deleted-%s@anonymized.invalid', $this->suffix($user));
     }
 
     private function suffix(User $user): string
     {
         $hash = $user->email_hash ?? hash('sha256', (string) $user->getKey());
 
-        return strtoupper(substr($hash, 0, 6));
+        return strtoupper(substr($hash, 0, 12));
     }
 }

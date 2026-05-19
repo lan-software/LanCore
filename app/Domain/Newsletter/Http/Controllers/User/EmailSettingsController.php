@@ -62,7 +62,7 @@ class EmailSettingsController extends Controller
     ): RedirectResponse {
         $user = $request->user();
         $desiredIds = collect($request->validated('subscribed_list_ids', []))
-            ->map(fn ($id): int => (int) $id)
+            ->map(fn ($id): string => (string) $id)
             ->unique()
             ->all();
 

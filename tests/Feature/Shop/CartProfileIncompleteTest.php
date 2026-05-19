@@ -3,6 +3,7 @@
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 beforeEach(function (): void {
     Role::updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
@@ -16,8 +17,8 @@ it('redirects to profile settings with a flash alert when adding to cart without
     $this->actingAs($user)
         ->post(route('cart.add-item'), [
             'purchasable_type' => 'ticket_type',
-            'purchasable_id' => 1,
-            'event_id' => 1,
+            'purchasable_id' => (string) Str::ulid(),
+            'event_id' => (string) Str::ulid(),
         ])
         ->assertRedirect(route('profile.edit'))
         ->assertSessionHas('profileAlert', __('shop.cart.profile_incomplete'));
@@ -44,8 +45,8 @@ it('does not redirect users with a complete profile away from cart.add-item', fu
     $response = $this->actingAs($user)
         ->post(route('cart.add-item'), [
             'purchasable_type' => 'ticket_type',
-            'purchasable_id' => 1,
-            'event_id' => 1,
+            'purchasable_id' => (string) Str::ulid(),
+            'event_id' => (string) Str::ulid(),
         ]);
 
     $response->assertSessionMissing('profileAlert');

@@ -26,11 +26,12 @@ class StoreSeatAssignmentRequest extends FormRequest
             'user_id' => ['required', 'string', 'ulid', 'exists:users,id'],
             'seat_plan_id' => [
                 'required',
-                'integer',
+                'string',
+                'ulid',
                 'exists:seat_plans,id',
                 function (string $attribute, mixed $value, Closure $fail): void {
                     $event = $this->route('event');
-                    $eventId = is_object($event) ? $event->id : (int) $event;
+                    $eventId = is_object($event) ? $event->id : (string) $event;
 
                     $belongs = SeatPlan::query()
                         ->whereKey($value)

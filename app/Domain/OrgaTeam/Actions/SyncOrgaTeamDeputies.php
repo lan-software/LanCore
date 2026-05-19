@@ -14,17 +14,19 @@ class SyncOrgaTeamDeputies
      * Replace the team's deputies with the given user IDs, preserving the input order via `sort_order`.
      * The team's organizer is automatically excluded.
      *
-     * @param  array<int>  $userIds
+     * @param  array<int, string>  $userIds
      */
     public function execute(OrgaTeam $orgaTeam, array $userIds): void
     {
         $sync = [];
         $position = 0;
+        $organizerId = (string) $orgaTeam->organizer_user_id;
         foreach ($userIds as $userId) {
-            if ((int) $userId === (int) $orgaTeam->organizer_user_id) {
+            $userId = (string) $userId;
+            if ($userId === $organizerId) {
                 continue;
             }
-            $sync[(int) $userId] = ['sort_order' => $position++];
+            $sync[$userId] = ['sort_order' => $position++];
         }
 
         DB::transaction(static function () use ($orgaTeam, $sync): void {

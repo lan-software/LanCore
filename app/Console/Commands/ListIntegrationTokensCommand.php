@@ -7,6 +7,7 @@ use App\Domain\Integration\Models\IntegrationToken;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 #[Signature('integration:tokens {app : The slug or ID of the integration app}')]
 #[Description('List all tokens for an integration application')]
@@ -16,8 +17,8 @@ class ListIntegrationTokensCommand extends Command
     {
         $identifier = $this->argument('app');
 
-        $app = is_numeric($identifier)
-            ? IntegrationApp::find((int) $identifier)
+        $app = Str::isUlid($identifier)
+            ? IntegrationApp::find($identifier)
             : IntegrationApp::where('slug', $identifier)->first();
 
         if (! $app) {

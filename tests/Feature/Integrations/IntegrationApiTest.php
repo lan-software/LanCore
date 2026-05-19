@@ -222,7 +222,7 @@ it('returns 404 when user is not found', function () {
     $data = createAppWithToken(['allowed_scopes' => ['user:read']]);
 
     $this->postJson('/api/integration/user/resolve', [
-        'user_id' => 99999,
+        'user_id' => (string) Str::ulid(),
     ], [
         'Authorization' => "Bearer {$data['plain_text']}",
     ])

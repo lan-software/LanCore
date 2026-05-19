@@ -73,11 +73,11 @@ class ChatMentionSearchController extends Controller
      * team members of the competition, since auto-join may lag behind team
      * roster changes.
      *
-     * @return array<int, int>
+     * @return array<int, string>
      */
     private function candidateUserIds(ChatRoom $room): array
     {
-        $ids = $room->memberships()->pluck('user_id')->map(fn ($id) => (int) $id)->all();
+        $ids = $room->memberships()->pluck('user_id')->map(fn ($id) => (string) $id)->all();
 
         $competitionId = $this->competitionIdFromKey($room->key);
 
@@ -89,7 +89,7 @@ class ChatMentionSearchController extends Controller
                     ->whereNull('left_at')
                     ->whereHas('team', fn ($q) => $q->where('competition_id', $competitionId))
                     ->pluck('user_id')
-                    ->map(fn ($id) => (int) $id)
+                    ->map(fn ($id) => (string) $id)
                     ->all();
 
                 $ids = array_unique(array_merge($ids, $teamMemberIds));

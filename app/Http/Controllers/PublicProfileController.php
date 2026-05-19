@@ -167,7 +167,7 @@ class PublicProfileController extends Controller
             )
             ->with(['seat.block', 'seatPlan:id,event_id'])
             ->get()
-            ->keyBy(fn (SeatAssignment $a): int => (int) $a->seatPlan->event_id);
+            ->keyBy(fn (SeatAssignment $a): string => (string) $a->seatPlan->event_id);
 
         return $events->map(function (Event $event) use ($user, $viewer, $assignmentsByEvent): array {
             $item = $this->eventListItem($event);

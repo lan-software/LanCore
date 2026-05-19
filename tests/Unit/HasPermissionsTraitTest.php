@@ -2,6 +2,7 @@
 
 use App\Contracts\PermissionEnum;
 use App\Domain\Announcement\Enums\Permission as AnnouncementPermission;
+use App\Domain\Chat\Enums\Permission as ChatPermission;
 use App\Domain\News\Enums\Permission as NewsPermission;
 use App\Domain\Sponsoring\Enums\Permission as SponsoringPermission;
 use App\Domain\Venue\Enums\Permission as VenuePermission;
@@ -47,8 +48,9 @@ it('collects all permissions from multiple roles', function () {
 
     expect($allPerms)->toContain(NewsPermission::ModerateNewsComments)
         ->and($allPerms)->toContain(AnnouncementPermission::ManageAnnouncements)
+        ->and($allPerms)->toContain(ChatPermission::ModerateChat)
         ->and($allPerms)->toContain(SponsoringPermission::ManageAssignedSponsors)
-        ->and($allPerms)->toHaveCount(3);
+        ->and($allPerms)->toHaveCount(4);
 });
 
 it('deduplicates permissions from overlapping roles', function () {

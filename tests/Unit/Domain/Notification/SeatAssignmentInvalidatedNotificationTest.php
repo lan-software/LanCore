@@ -57,14 +57,18 @@ it('includes push when push_on_seating is true', function (): void {
 
 it('toArray produces the documented shape', function (): void {
     $plan = SeatPlan::factory()->create();
+    $ticketId = (string) Str::ulid();
+    $userId = (string) Str::ulid();
+    $seatId = (string) Str::ulid();
+    $blockId = (string) Str::ulid();
     $notification = new SeatAssignmentInvalidatedNotification(
         new SeatAssignmentInvalidated(
-            ticketId: 42,
-            userId: 7,
+            ticketId: $ticketId,
+            userId: $userId,
             seatPlan: $plan,
-            previousSeatId: 13,
+            previousSeatId: $seatId,
             previousSeatTitle: 'B-12',
-            previousBlockId: 4,
+            previousBlockId: $blockId,
             reason: 'category_mismatch',
         ),
     );
@@ -73,13 +77,13 @@ it('toArray produces the documented shape', function (): void {
     $payload = $notification->toArray($user);
 
     expect($payload)->toMatchArray([
-        'ticket_id' => 42,
-        'user_id' => 7,
+        'ticket_id' => $ticketId,
+        'user_id' => $userId,
         'event_id' => $plan->event_id,
         'seat_plan_id' => $plan->id,
-        'previous_seat_id' => 13,
+        'previous_seat_id' => $seatId,
         'previous_seat_title' => 'B-12',
-        'previous_block_id' => 4,
+        'previous_block_id' => $blockId,
         'reason' => 'category_mismatch',
     ]);
 });

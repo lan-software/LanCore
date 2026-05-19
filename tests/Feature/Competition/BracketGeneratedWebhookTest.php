@@ -7,22 +7,25 @@ use App\Domain\Competition\Models\Competition;
 use App\Domain\Games\Models\Game;
 use App\Domain\Orchestration\Models\OrchestrationJob;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 
 it('dispatches MatchReadyForOrchestration for matches with all participants set', function () {
     Event::fake([MatchReadyForOrchestration::class]);
 
+    $competitionLbId = (string) Str::ulid();
+    $matchLbId = (string) Str::ulid();
     $game = Game::factory()->create();
     $competition = Competition::factory()->create([
         'game_id' => $game->id,
-        'lanbrackets_id' => 42,
+        'lanbrackets_id' => $competitionLbId,
     ]);
 
     $mockClient = Mockery::mock(LanBracketsClient::class);
     $mockClient->shouldReceive('getMatches')
-        ->with(42, 1)
+        ->with($competitionLbId, 1)
         ->andReturn([
             [
-                'id' => 101,
+                'id' => $matchLbId,
                 'status' => 'pending',
                 'participants' => [
                     ['competition_participant_id' => 1, 'slot' => 1],
@@ -30,7 +33,7 @@ it('dispatches MatchReadyForOrchestration for matches with all participants set'
                 ],
             ],
             [
-                'id' => 102,
+                'id' => (string) Str::ulid(),
                 'status' => 'pending',
                 'participants' => [
                     ['competition_participant_id' => null, 'slot' => 1],
@@ -48,9 +51,9 @@ it('dispatches MatchReadyForOrchestration for matches with all participants set'
         ],
     ]);
 
-    Event::assertDispatched(MatchReadyForOrchestration::class, function ($event) use ($competition) {
+    Event::assertDispatched(MatchReadyForOrchestration::class, function ($event) use ($competition, $matchLbId) {
         return $event->competition->id === $competition->id
-            && $event->lanbracketsMatchId === '101';
+            && $event->lanbracketsMatchId === $matchLbId;
     });
 
     Event::assertDispatchedTimes(MatchReadyForOrchestration::class, 1);
@@ -62,14 +65,14 @@ it('skips matches that are not in pending status', function () {
     $game = Game::factory()->create();
     $competition = Competition::factory()->create([
         'game_id' => $game->id,
-        'lanbrackets_id' => 42,
+        'lanbrackets_id' => (string) Str::ulid(),
     ]);
 
     $mockClient = Mockery::mock(LanBracketsClient::class);
     $mockClient->shouldReceive('getMatches')
         ->andReturn([
             [
-                'id' => 101,
+                'id' => (string) Str::ulid(),
                 'status' => 'finished',
                 'participants' => [
                     ['competition_participant_id' => 1, 'slot' => 1],
@@ -92,15 +95,16 @@ it('skips matches that are not in pending status', function () {
 it('does not create duplicate orchestration jobs', function () {
     Event::fake([MatchReadyForOrchestration::class]);
 
+    $matchLbId = (string) Str::ulid();
     $game = Game::factory()->create();
     $competition = Competition::factory()->create([
         'game_id' => $game->id,
-        'lanbrackets_id' => 42,
+        'lanbrackets_id' => (string) Str::ulid(),
     ]);
 
     OrchestrationJob::factory()->create([
         'competition_id' => $competition->id,
-        'lanbrackets_match_id' => 101,
+        'lanbrackets_match_id' => $matchLbId,
         'game_id' => $game->id,
     ]);
 
@@ -108,7 +112,7 @@ it('does not create duplicate orchestration jobs', function () {
     $mockClient->shouldReceive('getMatches')
         ->andReturn([
             [
-                'id' => 101,
+                'id' => $matchLbId,
                 'status' => 'pending',
                 'participants' => [
                     ['competition_participant_id' => 1, 'slot' => 1],

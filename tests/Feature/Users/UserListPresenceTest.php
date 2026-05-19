@@ -59,7 +59,7 @@ it('sorts users by presence status ascending (active → idle → offline)', fun
     $tracker = Mockery::mock(PresenceTracker::class);
     $tracker->shouldReceive('bulkStatusFor')->andReturnUsing(
         fn (iterable $ids) => collect($ids)
-            ->mapWithKeys(fn ($id) => [(int) $id => $statuses[(int) $id] ?? PresenceStatus::Offline])
+            ->mapWithKeys(fn ($id) => [(string) $id => $statuses[(string) $id] ?? PresenceStatus::Offline])
             ->all()
     );
     $tracker->shouldReceive('statusFor')->andReturn(PresenceStatus::Active);
@@ -92,7 +92,7 @@ it('sorts users by presence status descending (offline → idle → active)', fu
     $tracker = Mockery::mock(PresenceTracker::class);
     $tracker->shouldReceive('bulkStatusFor')->andReturnUsing(
         fn (iterable $ids) => collect($ids)
-            ->mapWithKeys(fn ($id) => [(int) $id => $statuses[(int) $id] ?? PresenceStatus::Offline])
+            ->mapWithKeys(fn ($id) => [(string) $id => $statuses[(string) $id] ?? PresenceStatus::Offline])
             ->all()
     );
     $tracker->shouldReceive('statusFor')->andReturn(PresenceStatus::Active);

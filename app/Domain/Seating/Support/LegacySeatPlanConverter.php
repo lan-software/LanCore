@@ -63,7 +63,7 @@ class LegacySeatPlanConverter
         $blocks = $this->normaliseBlocks($data);
 
         $seatIdMap = [];
-        $validCategoryIds = TicketCategory::query()->pluck('id')->map(fn ($id): int => (int) $id)->all();
+        $validCategoryIds = TicketCategory::query()->pluck('id')->map(fn ($id): string => (string) $id)->all();
 
         foreach ($blocks as $blockIndex => $blockPayload) {
             $block = SeatPlanBlock::query()->create([
@@ -75,7 +75,7 @@ class LegacySeatPlanConverter
             ]);
 
             $categoryIds = array_values(array_filter(array_map(
-                fn (mixed $id): ?int => is_numeric($id) ? (int) $id : null,
+                fn (mixed $id): ?string => $id === null || $id === '' ? null : (string) $id,
                 (array) ($blockPayload['allowed_ticket_category_ids'] ?? []),
             ), fn (?string $id): bool => $id !== null && in_array($id, $validCategoryIds, true)));
 

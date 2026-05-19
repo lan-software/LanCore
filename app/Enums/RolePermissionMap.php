@@ -84,6 +84,7 @@ final class RolePermissionMap
                 PolicyPermission::ManagePolicies,
                 AuditPermission::ViewAuditLogs,
                 EmailLogPermission::ViewEmailLog,
+                EmailLogPermission::ResendEmail,
                 DataLifecyclePermission::RequestUserDeletion,
                 DataLifecyclePermission::ManageRetentionPolicies,
                 DataLifecyclePermission::ViewDeletionRequests,

@@ -7,6 +7,7 @@ use App\Domain\Ticketing\Models\Ticket;
 use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     Role::updateOrCreate(['name' => RoleName::User->value], ['label' => 'User']);
@@ -39,7 +40,7 @@ it('validates event_id exists when storing event context', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->post('/event-context', ['event_id' => 99999])
+        ->post('/event-context', ['event_id' => (string) Str::ulid()])
         ->assertSessionHasErrors(['event_id']);
 });
 
@@ -56,7 +57,7 @@ it('allows admins to clear event context', function () {
 });
 
 it('requires authentication for event context routes', function () {
-    $this->post('/event-context', ['event_id' => 1])->assertRedirect('/login');
+    $this->post('/event-context', ['event_id' => (string) Str::ulid()])->assertRedirect('/login');
     $this->delete('/event-context')->assertRedirect('/login');
 });
 
@@ -108,7 +109,7 @@ it('clears invalid event from session when event no longer exists', function () 
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
     $this->actingAs($admin)
-        ->withSession(['selected_event_id' => 99999])
+        ->withSession(['selected_event_id' => (string) Str::ulid()])
         ->get('/dashboard')
         ->assertSuccessful()
         ->assertInertia(
@@ -328,16 +329,17 @@ it('rejects my-event-context store for events the user has no participation in',
 it('clears my event context independently from admin selector', function () {
     $admin = User::factory()->withRole(RoleName::Admin)->create();
 
+    $selectedId = (string) Str::ulid();
     $this->actingAs($admin)
         ->withSession([
-            'selected_event_id' => 1,
-            'my_selected_event_id' => 2,
+            'selected_event_id' => $selectedId,
+            'my_selected_event_id' => (string) Str::ulid(),
         ])
         ->delete('/my-event-context')
         ->assertRedirect();
 
     expect(session('my_selected_event_id'))->toBeNull();
-    expect(session('selected_event_id'))->toBe(1);
+    expect(session('selected_event_id'))->toBe($selectedId);
 });
 
 it('stores my event context for a participating user', function () {
@@ -364,12 +366,12 @@ it('validates event_id exists when storing my event context', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->post('/my-event-context', ['event_id' => 99999])
+        ->post('/my-event-context', ['event_id' => (string) Str::ulid()])
         ->assertSessionHasErrors(['event_id']);
 });
 
 it('requires authentication for my-event-context routes', function () {
-    $this->post('/my-event-context', ['event_id' => 1])->assertRedirect('/login');
+    $this->post('/my-event-context', ['event_id' => (string) Str::ulid()])->assertRedirect('/login');
     $this->delete('/my-event-context')->assertRedirect('/login');
 });
 
@@ -377,7 +379,7 @@ it('allows a regular user to clear their my-event-context', function () {
     $user = User::factory()->withRole(RoleName::User)->create();
 
     $this->actingAs($user)
-        ->withSession(['my_selected_event_id' => 42])
+        ->withSession(['my_selected_event_id' => (string) Str::ulid()])
         ->delete('/my-event-context')
         ->assertRedirect();
 

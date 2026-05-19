@@ -187,9 +187,9 @@ it('computes headline metrics correctly for individual and group tickets', funct
             ->where('stats.headline.notCheckedIn', (2 + 3) - (1 + 2))
     );
 
-    // Use variables to avoid unused warnings
-    expect($indivActive->id)->toBeInt();
-    expect($indivCheckedIn->id)->toBeInt();
+    // Use variables to avoid unused warnings — IDs are ULIDs since the migration.
+    expect($indivActive->id)->toBeString();
+    expect($indivCheckedIn->id)->toBeString();
 });
 
 it('counts seated users distinctly via seat assignments', function () {

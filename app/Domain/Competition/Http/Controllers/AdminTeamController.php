@@ -29,7 +29,7 @@ class AdminTeamController extends Controller
         }
 
         if ($competitionId = $request->input('competition_id')) {
-            $query->where('competition_id', (int) $competitionId);
+            $query->where('competition_id', (string) $competitionId);
         }
 
         $teams = $query->orderByDesc('created_at')

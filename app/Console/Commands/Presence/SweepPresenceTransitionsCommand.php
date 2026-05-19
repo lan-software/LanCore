@@ -28,7 +28,7 @@ class SweepPresenceTransitionsCommand extends Command
         $userIds = ChatRoomMembership::query()
             ->distinct()
             ->pluck('user_id')
-            ->map(fn ($id) => (int) $id)
+            ->map(fn ($id) => (string) $id)
             ->all();
 
         if ($userIds === []) {
@@ -38,7 +38,7 @@ class SweepPresenceTransitionsCommand extends Command
         $statuses = $tracker->bulkStatusFor($userIds);
 
         foreach ($statuses as $userId => $status) {
-            $tracker->broadcastChange((int) $userId, $status);
+            $tracker->broadcastChange((string) $userId, $status);
         }
 
         return self::SUCCESS;

@@ -49,7 +49,7 @@ class PruneArchivedChatsCommand extends Command
 
         $archivedCompetitionIds = Competition::query()
             ->where('status', CompetitionStatus::Archived)
-            ->when($competitionId !== null, fn ($q) => $q->where('id', (int) $competitionId))
+            ->when($competitionId !== null, fn ($q) => $q->where('id', (string) $competitionId))
             ->pluck('id');
 
         if ($archivedCompetitionIds->isEmpty()) {

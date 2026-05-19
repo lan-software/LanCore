@@ -7,6 +7,7 @@ use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\MatchResultProof;
 use App\Models\User;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 
 function dispatchMatchResultWebhook(Competition $competition, string $matchId, bool $forcedByAdmin = false): void
 {
@@ -33,11 +34,12 @@ function dispatchMatchResultWebhook(Competition $competition, string $matchId, b
 }
 
 it('dispatches MatchFinalized with SubmittedByParticipants source on participant-driven completion', function () {
+    $matchLbId = (string) Str::ulid();
     $competition = Competition::factory()->running()->syncedToLanBrackets()->create();
     $user = User::factory()->create();
     MatchResultProof::create([
         'competition_id' => $competition->id,
-        'lanbrackets_match_id' => 9001,
+        'lanbrackets_match_id' => $matchLbId,
         'submitted_by_user_id' => $user->id,
         'submitted_by_team_id' => null,
         'screenshot_path' => 'proofs/x.png',
@@ -46,51 +48,54 @@ it('dispatches MatchFinalized with SubmittedByParticipants source on participant
 
     Event::fake([MatchFinalized::class]);
 
-    dispatchMatchResultWebhook($competition, 9001, forcedByAdmin: false);
+    dispatchMatchResultWebhook($competition, $matchLbId, forcedByAdmin: false);
 
     Event::assertDispatched(
         MatchFinalized::class,
-        fn (MatchFinalized $e) => $e->lanbracketsMatchId === 9001
+        fn (MatchFinalized $e) => $e->lanbracketsMatchId === $matchLbId
             && $e->source === MatchFinalizationSource::SubmittedByParticipants
             && $e->competition->is($competition),
     );
 });
 
 it('dispatches MatchFinalized with ForcedByAdmin source when the webhook flag is set', function () {
+    $matchLbId = (string) Str::ulid();
     $competition = Competition::factory()->running()->syncedToLanBrackets()->create();
 
     Event::fake([MatchFinalized::class]);
 
-    dispatchMatchResultWebhook($competition, 9002, forcedByAdmin: true);
+    dispatchMatchResultWebhook($competition, $matchLbId, forcedByAdmin: true);
 
     Event::assertDispatched(
         MatchFinalized::class,
-        fn (MatchFinalized $e) => $e->lanbracketsMatchId === 9002
+        fn (MatchFinalized $e) => $e->lanbracketsMatchId === $matchLbId
             && $e->source === MatchFinalizationSource::ForcedByAdmin,
     );
 });
 
 it('does not dispatch MatchFinalized twice for re-emits of the same match', function () {
+    $matchLbId = (string) Str::ulid();
     $competition = Competition::factory()->running()->syncedToLanBrackets()->create();
 
     Event::fake([MatchFinalized::class]);
 
-    dispatchMatchResultWebhook($competition, 9003);
-    dispatchMatchResultWebhook($competition, 9003);
-    dispatchMatchResultWebhook($competition, 9003);
+    dispatchMatchResultWebhook($competition, $matchLbId);
+    dispatchMatchResultWebhook($competition, $matchLbId);
+    dispatchMatchResultWebhook($competition, $matchLbId);
 
     Event::assertDispatchedTimes(MatchFinalized::class, 1);
 });
 
 it('still dispatches the existing MatchCompleted event on the same path (regression)', function () {
+    $matchLbId = (string) Str::ulid();
     $competition = Competition::factory()->running()->syncedToLanBrackets()->create();
 
     Event::fake([MatchCompleted::class]);
 
-    dispatchMatchResultWebhook($competition, 9004);
+    dispatchMatchResultWebhook($competition, $matchLbId);
 
     Event::assertDispatched(
         MatchCompleted::class,
-        fn (MatchCompleted $e) => $e->lanbracketsMatchId === 9004,
+        fn (MatchCompleted $e) => $e->lanbracketsMatchId === $matchLbId,
     );
 });

@@ -154,7 +154,7 @@ class HandleLanBracketsWebhook
             return;
         }
 
-        $competition = Competition::find((int) $externalReferenceId);
+        $competition = Competition::find((string) $externalReferenceId);
 
         if ($competition === null || ! $competition->isSyncedToLanBrackets()) {
             return;
