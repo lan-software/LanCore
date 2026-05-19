@@ -59,8 +59,8 @@ class UserMatchController extends Controller
             }
 
             foreach ($stages as $stage) {
-                $stageId = (int) ($stage['id'] ?? 0);
-                if ($stageId === 0) {
+                $stageId = isset($stage['id']) ? (string) $stage['id'] : '';
+                if ($stageId === '') {
                     continue;
                 }
 
@@ -88,15 +88,15 @@ class UserMatchController extends Controller
             ->where('key', 'like', "competition:{$competition->id}:match:%")
             ->get(['id', 'key', 'status'])
             ->mapWithKeys(function (ChatRoom $room) {
-                preg_match('/:match:(\d+)$/', $room->key, $m);
+                preg_match('/:match:([^:]+)$/', $room->key, $m);
 
-                return [(int) ($m[1] ?? 0) => $room];
+                return [($m[1] ?? '') => $room];
             })
-            ->filter(fn ($_, $k) => $k > 0);
+            ->filter(fn ($_, $k) => $k !== '');
 
         $serializedStages = [];
         foreach ($stages as $stage) {
-            $stageId = (int) ($stage['id'] ?? 0);
+            $stageId = isset($stage['id']) ? (string) $stage['id'] : '';
             $matches = $matchesByStage[$stageId] ?? [];
 
             $serializedStages[] = [
@@ -209,13 +209,13 @@ class UserMatchController extends Controller
             'status' => $match['status'] ?? null,
             'participants' => $participants
                 ->map(function ($p) use ($teamsByLocalId) {
-                    $participantId = (int) ($p['competition_participant_id'] ?? 0);
+                    $participantId = $p['competition_participant_id'] ?? null;
 
                     $team = null;
                     if (($p['participant_type'] ?? null) === 'team') {
                         $externalRef = $p['external_reference_id'] ?? null;
                         if (! empty($externalRef)) {
-                            $team = $teamsByLocalId->get((int) $externalRef);
+                            $team = $teamsByLocalId->get($externalRef);
                         }
                     }
 
@@ -235,7 +235,7 @@ class UserMatchController extends Controller
     }
 
     /**
-     * @return array<int, int>
+     * @return array<int, string>
      */
     private function teamIdsForUser(string $competitionId, string $userId): array
     {
@@ -244,7 +244,7 @@ class UserMatchController extends Controller
             ->where('user_id', $userId)
             ->whereNull('left_at')
             ->pluck('team_id')
-            ->map(fn ($id) => (int) $id)
+            ->map(fn ($id) => (string) $id)
             ->all();
     }
 }

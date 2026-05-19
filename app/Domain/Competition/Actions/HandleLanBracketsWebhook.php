@@ -226,7 +226,10 @@ class HandleLanBracketsWebhook
                 continue;
             }
 
-            $matchId = (int) $match['id'];
+            $matchId = isset($match['id']) ? (string) $match['id'] : '';
+            if ($matchId === '') {
+                continue;
+            }
 
             $alreadyOrchestrated = OrchestrationJob::where('competition_id', $competition->id)
                 ->where('lanbrackets_match_id', $matchId)

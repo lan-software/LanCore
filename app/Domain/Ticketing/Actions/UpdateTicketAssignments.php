@@ -27,7 +27,7 @@ class UpdateTicketAssignments
         private readonly ReleaseSeat $releaseSeat,
     ) {}
 
-    public function updateManager(Ticket $ticket, ?User $manager, int $performedBy): Ticket
+    public function updateManager(Ticket $ticket, ?User $manager, string $performedBy): Ticket
     {
         $this->ensureNotCheckedIn($ticket);
 
@@ -47,7 +47,7 @@ class UpdateTicketAssignments
         return $result;
     }
 
-    public function addUser(Ticket $ticket, User $user, int $performedBy): Ticket
+    public function addUser(Ticket $ticket, User $user, string $performedBy): Ticket
     {
         $this->ensureNotCheckedIn($ticket);
 
@@ -71,7 +71,7 @@ class UpdateTicketAssignments
         return $result;
     }
 
-    public function removeUser(Ticket $ticket, User $user, int $performedBy): Ticket
+    public function removeUser(Ticket $ticket, User $user, string $performedBy): Ticket
     {
         $this->ensureNotCheckedIn($ticket);
 
@@ -105,7 +105,7 @@ class UpdateTicketAssignments
         return $ticket->rotateSignedToken($this->tokenService);
     }
 
-    public function checkIn(Ticket $ticket, int $performedBy, ?string $userId = null): Ticket
+    public function checkIn(Ticket $ticket, string $performedBy, ?string $userId = null): Ticket
     {
         $this->ensureNotCheckedIn($ticket);
 

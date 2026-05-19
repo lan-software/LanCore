@@ -97,9 +97,9 @@ class SetupDevIntegrationCommand extends Command
         $this->newLine();
 
         $envLines = [
-            "LANCORE_ENABLED=true",
-            "LANCORE_BASE_URL=http://localhost",
-            "LANCORE_INTERNAL_URL=http://lancore.test",
+            'LANCORE_ENABLED=true',
+            'LANCORE_BASE_URL=http://localhost',
+            'LANCORE_INTERNAL_URL=http://lancore.test',
             "LANCORE_TOKEN={$plainToken}",
             "LANCORE_APP_SLUG={$slug}",
             "LANCORE_CALLBACK_URL={$baseUrl}/auth/callback",

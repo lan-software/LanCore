@@ -8,6 +8,10 @@ export type Game = {
     avg_match_minutes: number | null;
     avg_stage_minutes: number | null;
     match_length_minutes: number | null;
+    logo_path: string | null;
+    banner_path: string | null;
+    logo_url: string | null;
+    banner_url: string | null;
     game_modes_count?: number;
     game_modes?: GameMode[];
     created_at: string;
@@ -68,6 +72,12 @@ export type Competition = {
     metadata: Record<string, unknown> | null;
     signup_rules?: Record<string, unknown> | null;
     match_length_minutes: number | null;
+    logo_path: string | null;
+    banner_path: string | null;
+    logo_url: string | null;
+    banner_url: string | null;
+    rules_markdown: string | null;
+    referees?: Array<{ id: string; name: string; email?: string | null }>;
     created_at: string;
     updated_at: string;
 };

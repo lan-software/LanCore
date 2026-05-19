@@ -18,7 +18,7 @@ class SubmitMatchResult
     public function __construct(private readonly LanBracketsClient $client) {}
 
     /**
-     * @param  array<int, array{participant_id: int, score: int}>  $scores
+     * @param  array<int, array{participant_id: string, score: int}>  $scores
      */
     public function execute(
         Competition $competition,

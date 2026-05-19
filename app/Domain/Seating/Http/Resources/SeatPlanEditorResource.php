@@ -74,7 +74,7 @@ class SeatPlanEditorResource extends JsonResource
                 ])->values()->all(),
                 'allowed_ticket_category_ids' => $block->categoryRestrictions
                     ->pluck('id')
-                    ->map(fn ($id): int => (int) $id)
+                    ->map(fn ($id): string => (string) $id)
                     ->values()
                     ->all(),
             ])->values()->all(),

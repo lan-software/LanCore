@@ -10,6 +10,7 @@ use App\Domain\Games\Http\Requests\StoreGameRequest;
 use App\Domain\Games\Http\Requests\UpdateGameRequest;
 use App\Domain\Games\Models\Game;
 use App\Http\Controllers\Controller;
+use App\Support\StorageRole;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -62,7 +63,16 @@ class GameController extends Controller
     {
         $this->authorize('create', Game::class);
 
-        $this->createGame->execute($request->validated());
+        $data = $request->safe()->except(['logo', 'banner']);
+
+        if ($request->hasFile('logo')) {
+            $data['logo_path'] = $request->file('logo')->store('games/logos', StorageRole::publicDiskName());
+        }
+        if ($request->hasFile('banner')) {
+            $data['banner_path'] = $request->file('banner')->store('games/banners', StorageRole::publicDiskName());
+        }
+
+        $this->createGame->execute($data);
 
         return redirect()->route('games.index');
     }
@@ -73,8 +83,12 @@ class GameController extends Controller
 
         $game->load('gameModes');
 
+        $gameData = $game->toArray();
+        $gameData['logo_url'] = $game->logo_url;
+        $gameData['banner_url'] = $game->banner_url;
+
         return Inertia::render('games/Edit', [
-            'game' => $game,
+            'game' => $gameData,
         ]);
     }
 
@@ -82,7 +96,29 @@ class GameController extends Controller
     {
         $this->authorize('update', $game);
 
-        $this->updateGame->execute($game, $request->validated());
+        $data = $request->safe()->except(['logo', 'banner', 'remove_logo', 'remove_banner']);
+
+        if ($request->hasFile('logo')) {
+            if ($game->logo_path) {
+                StorageRole::public()->delete($game->logo_path);
+            }
+            $data['logo_path'] = $request->file('logo')->store('games/logos', StorageRole::publicDiskName());
+        } elseif ($request->boolean('remove_logo') && $game->logo_path) {
+            StorageRole::public()->delete($game->logo_path);
+            $data['logo_path'] = null;
+        }
+
+        if ($request->hasFile('banner')) {
+            if ($game->banner_path) {
+                StorageRole::public()->delete($game->banner_path);
+            }
+            $data['banner_path'] = $request->file('banner')->store('games/banners', StorageRole::publicDiskName());
+        } elseif ($request->boolean('remove_banner') && $game->banner_path) {
+            StorageRole::public()->delete($game->banner_path);
+            $data['banner_path'] = null;
+        }
+
+        $this->updateGame->execute($game, $data);
 
         return back();
     }

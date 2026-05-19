@@ -15,7 +15,7 @@ interface Purchasable
     /**
      * Get the unique identifier for this purchasable.
      */
-    public function getPurchasableId(): int;
+    public function getPurchasableId(): string;
 
     /**
      * Get the display title for this purchasable.

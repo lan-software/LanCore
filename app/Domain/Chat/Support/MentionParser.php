@@ -19,7 +19,7 @@ class MentionParser
     private const PATTERN = '/(?<=^|\s)@([A-Za-z0-9_]{3,32})/u';
 
     /**
-     * @return array<int, int>
+     * @return array<int, string>
      */
     public function parse(string $body): array
     {
@@ -40,7 +40,7 @@ class MentionParser
         return User::query()
             ->whereIn(\DB::raw('LOWER(username)'), $usernames)
             ->pluck('id')
-            ->map(fn ($id) => (int) $id)
+            ->map(fn ($id): string => (string) $id)
             ->all();
     }
 }

@@ -15,6 +15,6 @@ class GenerateInvoiceNumber
         $counter = (int) ShopSetting::get($counterKey, 0) + 1;
         ShopSetting::set($counterKey, $counter);
 
-        return $prefix . $year . '-' . str_pad((string) $counter, 5, '0', STR_PAD_LEFT);
+        return $prefix.$year.'-'.str_pad((string) $counter, 5, '0', STR_PAD_LEFT);
     }
 }

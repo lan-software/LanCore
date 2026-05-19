@@ -154,6 +154,40 @@ function executeDelete() {
                         <InputError :message="errors.match_length_minutes" />
                     </div>
 
+                    <div class="grid gap-2">
+                        <Label for="logo">{{ $t('games.logo') }}</Label>
+                        <img
+                            v-if="game.logo_url"
+                            :src="game.logo_url"
+                            :alt="$t('games.currentLogo')"
+                            class="h-16 w-16 rounded border object-contain"
+                        />
+                        <Input id="logo" name="logo" type="file" accept="image/*" />
+                        <p class="text-xs text-muted-foreground">{{ $t('games.logoHelp') }}</p>
+                        <div v-if="game.logo_path" class="flex items-center gap-2">
+                            <Checkbox id="remove_logo" name="remove_logo" :value="true" />
+                            <Label for="remove_logo">{{ $t('games.removeLogo') }}</Label>
+                        </div>
+                        <InputError :message="errors.logo" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="banner">{{ $t('games.banner') }}</Label>
+                        <img
+                            v-if="game.banner_url"
+                            :src="game.banner_url"
+                            :alt="$t('games.currentBanner')"
+                            class="h-24 w-full rounded border object-cover"
+                        />
+                        <Input id="banner" name="banner" type="file" accept="image/*" />
+                        <p class="text-xs text-muted-foreground">{{ $t('games.bannerHelp') }}</p>
+                        <div v-if="game.banner_path" class="flex items-center gap-2">
+                            <Checkbox id="remove_banner" name="remove_banner" :value="true" />
+                            <Label for="remove_banner">{{ $t('games.removeBanner') }}</Label>
+                        </div>
+                        <InputError :message="errors.banner" />
+                    </div>
+
                     <div class="flex items-center gap-2">
                         <Checkbox
                             id="is_active"

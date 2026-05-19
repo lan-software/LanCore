@@ -176,7 +176,7 @@ class LanBracketsClient
     }
 
     /**
-     * @param  array{participant_type: string, participant_id: int, seed?: int|null}  $data
+     * @param  array{participant_type: string, participant_id: string, seed?: int|null}  $data
      * @return array<string, mixed>
      *
      * @throws LanBracketsDisabledException
@@ -201,7 +201,7 @@ class LanBracketsClient
     }
 
     /**
-     * @param  array<int, array{participant_type: string, participant_id: int, seed?: int|null}>  $participants
+     * @param  array<int, array{participant_type: string, participant_id: string, seed?: int|null}>  $participants
      * @return array<string, mixed>
      *
      * @throws LanBracketsDisabledException
@@ -248,7 +248,7 @@ class LanBracketsClient
     }
 
     /**
-     * @param  array<int, array{participant_id: int, score: int}>  $scores
+     * @param  array<int, array{participant_id: string, score: int}>  $scores
      * @return array<string, mixed>
      *
      * @throws LanBracketsDisabledException

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-// @see docs/mil-std-498/SRS.md CHT-F-024, CHT-F-027
+// @see docs/mil-std-498/SRS.md CHT-F-024, CHT-F-027, COMP-REF-001
+import { ShieldCheck } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ const props = defineProps<{
     message: ChatMessageDto;
     canModerate: boolean;
     currentUserId: string | null;
+    isReferee?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -49,6 +51,14 @@ function onDelete(): void {
     >
         <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
             <span class="font-semibold text-zinc-700 dark:text-zinc-200">{{ displayName }}</span>
+            <span
+                v-if="isReferee"
+                class="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                :title="t('chat.message.refereeBadgeTitle')"
+            >
+                <ShieldCheck class="size-3" />
+                {{ t('chat.message.refereeBadge') }}
+            </span>
             <time v-if="message.created_at" :datetime="message.created_at">
                 {{ new Date(message.created_at).toLocaleTimeString() }}
             </time>

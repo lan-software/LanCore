@@ -28,6 +28,11 @@ export interface ChatMemberDto {
     muted_until: string | null;
     /** Set by `CompetitionMemberAnnotator` when the room is a competition room. */
     is_admin?: boolean;
+    /**
+     * True when this user is a designated referee for the competition the
+     * chat room belongs to. Surfaced as a small badge in MessageItem.
+     */
+    is_referee?: boolean;
     team_id?: string | null;
     team_name?: string | null;
     team_tag?: string | null;

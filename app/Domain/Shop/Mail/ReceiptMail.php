@@ -23,7 +23,7 @@ class ReceiptMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Payment Receipt — Order {$this->order->invoice_number} — " . config('app.name'),
+            subject: "Payment Receipt — Order {$this->order->invoice_number} — ".config('app.name'),
         );
     }
 

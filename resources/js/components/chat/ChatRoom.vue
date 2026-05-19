@@ -54,6 +54,13 @@ const hasMore = ref(props.messages.length >= 50);
 const loadingHistory = ref(false);
 const memberSheetOpen = ref(false);
 
+// Derive referee user IDs from the annotated member list so MessageItem can
+// show the referee badge next to messages authored by them.
+// @see docs/mil-std-498/SRS.md COMP-REF-001
+const refereeUserIds = computed<string[]>(() =>
+    props.members.filter((m) => m.is_referee).map((m) => m.user_id),
+);
+
 interface BroadcastPayload {
     id: string;
     room_id: string;
@@ -347,6 +354,7 @@ return t('chat.room.writeLocked');
                     :current-user-id="currentUserId"
                     :has-more="hasMore"
                     :loading="loadingHistory"
+                    :referee-user-ids="refereeUserIds"
                     @load-more="onLoadMore"
                     @delete-message="onDeleteMessage"
                 />

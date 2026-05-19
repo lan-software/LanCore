@@ -2,6 +2,7 @@
 
 namespace App\Domain\Competition\Actions;
 
+use App\Domain\Competition\Models\Competition;
 use App\Domain\Competition\Models\TeamInvite;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
@@ -48,7 +49,7 @@ class AcceptTeamInvite
         ]);
     }
 
-    private function hasValidTicketForEvent(User $user, \App\Domain\Competition\Models\Competition $competition): bool
+    private function hasValidTicketForEvent(User $user, Competition $competition): bool
     {
         if (! $competition->event_id) {
             return true;

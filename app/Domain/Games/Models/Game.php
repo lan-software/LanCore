@@ -2,14 +2,16 @@
 
 namespace App\Domain\Games\Models;
 
+use App\Support\StorageRole;
 use Database\Factories\GameFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'slug', 'publisher', 'description', 'is_active', 'signup_rules', 'avg_match_minutes', 'avg_stage_minutes', 'match_length_minutes'])]
+#[Fillable(['name', 'slug', 'publisher', 'description', 'is_active', 'signup_rules', 'avg_match_minutes', 'avg_stage_minutes', 'match_length_minutes', 'logo_path', 'banner_path'])]
 class Game extends Model
 {
     /** @use HasFactory<GameFactory> */
@@ -39,5 +41,15 @@ class Game extends Model
     public function gameModes(): HasMany
     {
         return $this->hasMany(GameMode::class);
+    }
+
+    protected function logoUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->logo_path ? StorageRole::publicUrl($this->logo_path) : null);
+    }
+
+    protected function bannerUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->banner_path ? StorageRole::publicUrl($this->banner_path) : null);
     }
 }

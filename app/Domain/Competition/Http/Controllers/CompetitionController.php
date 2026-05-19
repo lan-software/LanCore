@@ -22,6 +22,8 @@ use App\Domain\Presence\Services\PresenceTracker;
 use App\Domain\Ticketing\Models\Addon;
 use App\Domain\Ticketing\Models\TicketType;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Support\StorageRole;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -89,7 +91,20 @@ class CompetitionController extends Controller
     {
         $this->authorize('create', Competition::class);
 
-        $this->createCompetition->execute($request->validated());
+        $data = $request->safe()->except(['logo', 'banner', 'referee_ids']);
+
+        if ($request->hasFile('logo')) {
+            $data['logo_path'] = $request->file('logo')->store('competitions/logos', StorageRole::publicDiskName());
+        }
+        if ($request->hasFile('banner')) {
+            $data['banner_path'] = $request->file('banner')->store('competitions/banners', StorageRole::publicDiskName());
+        }
+
+        $competition = $this->createCompetition->execute($data);
+
+        if ($refereeIds = $request->validated('referee_ids')) {
+            $competition->referees()->sync($refereeIds);
+        }
 
         return redirect()->route('competitions.index');
     }
@@ -98,7 +113,7 @@ class CompetitionController extends Controller
     {
         $this->authorize('update', $competition);
 
-        $competition->load(['teams.captain', 'teams.activeMembers.user', 'game', 'gameMode', 'event']);
+        $competition->load(['teams.captain', 'teams.activeMembers.user', 'game', 'gameMode', 'event', 'referees:id,name,email']);
 
         $chatRoom = ChatRoom::query()
             ->where('key', "competition:{$competition->id}")
@@ -108,10 +123,20 @@ class CompetitionController extends Controller
             ? $this->buildChatPayload($chatRoom, request()->user())
             : null;
 
+        $competitionData = $competition->toArray();
+        $competitionData['logo_url'] = $competition->logo_url;
+        $competitionData['banner_url'] = $competition->banner_url;
+        $competitionData['referees'] = $competition->referees->map(fn (User $u): array => [
+            'id' => $u->id,
+            'name' => $u->name,
+            'email' => $u->email,
+        ])->all();
+
         return Inertia::render('competitions/Edit', [
-            'competition' => $competition,
+            'competition' => $competitionData,
             'games' => Game::where('is_active', true)->with('gameModes')->get(),
             'events' => Event::orderByDesc('start_date')->get(['id', 'name', 'start_date']),
+            'users' => User::orderBy('name')->get(['id', 'name', 'email']),
             'lanbracketsEnabled' => config('lanbrackets.enabled'),
             'lanbracketsBaseUrl' => config('lanbrackets.base_url'),
             'chat' => $chatPayload,
@@ -217,7 +242,39 @@ class CompetitionController extends Controller
     {
         $this->authorize('update', $competition);
 
-        $this->updateCompetition->execute($competition, $request->validated());
+        $data = $request->safe()->except(['logo', 'banner', 'remove_logo', 'remove_banner', 'referee_ids']);
+
+        if ($request->hasFile('logo')) {
+            if ($competition->logo_path) {
+                StorageRole::public()->delete($competition->logo_path);
+            }
+            $data['logo_path'] = $request->file('logo')->store('competitions/logos', StorageRole::publicDiskName());
+        } elseif ($request->boolean('remove_logo') && $competition->logo_path) {
+            StorageRole::public()->delete($competition->logo_path);
+            $data['logo_path'] = null;
+        }
+
+        if ($request->hasFile('banner')) {
+            if ($competition->banner_path) {
+                StorageRole::public()->delete($competition->banner_path);
+            }
+            $data['banner_path'] = $request->file('banner')->store('competitions/banners', StorageRole::publicDiskName());
+        } elseif ($request->boolean('remove_banner') && $competition->banner_path) {
+            StorageRole::public()->delete($competition->banner_path);
+            $data['banner_path'] = null;
+        }
+
+        $this->updateCompetition->execute($competition, $data);
+
+        if ($request->has('referee_ids')) {
+            // RefereePicker emits a sentinel empty-string entry so this field
+            // is always present; strip it before syncing the pivot.
+            $refereeIds = array_values(array_filter(
+                $request->validated('referee_ids', []),
+                fn ($id) => is_string($id) && $id !== '',
+            ));
+            $competition->referees()->sync($refereeIds);
+        }
 
         return back();
     }

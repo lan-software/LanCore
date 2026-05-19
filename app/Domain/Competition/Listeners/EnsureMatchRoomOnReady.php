@@ -49,14 +49,14 @@ class EnsureMatchRoomOnReady
      * `CompetitionTeam` (or solo) → team members.
      *
      * @param  array<string, mixed>  $matchData
-     * @return array<int, int>
+     * @return array<int, string>
      */
     private function extractParticipantUserIds(array $matchData, string $competitionId): array
     {
         $participantIds = collect($matchData['participants'] ?? [])
             ->pluck('competition_participant_id')
             ->filter()
-            ->map(fn ($v) => (int) $v)
+            ->map(fn ($v): string => (string) $v)
             ->all();
 
         if ($participantIds === []) {
@@ -67,7 +67,7 @@ class EnsureMatchRoomOnReady
             ->whereHas('team', fn ($q) => $q->where('competition_id', $competitionId)
                 ->whereIn('id', $participantIds))
             ->pluck('user_id')
-            ->map(fn ($id) => (int) $id)
+            ->map(fn ($id): string => (string) $id)
             ->unique()
             ->values()
             ->all();

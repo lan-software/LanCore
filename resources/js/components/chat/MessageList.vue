@@ -13,6 +13,7 @@ const props = defineProps<{
     currentUserId: string | null;
     hasMore: boolean;
     loading?: boolean;
+    refereeUserIds?: string[];
 }>();
 
 const emit = defineEmits<{
@@ -71,6 +72,7 @@ watch(
             :message="message"
             :can-moderate="canModerate"
             :current-user-id="currentUserId"
+            :is-referee="message.user_id !== null && (refereeUserIds ?? []).includes(message.user_id)"
             @delete="emit('delete-message', $event)"
         />
     </div>

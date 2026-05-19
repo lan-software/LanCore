@@ -23,11 +23,11 @@ class CompetitionChatLinkResolver
 {
     public function resolve(ChatRoom $room): ?string
     {
-        if (preg_match('/^competition:(\d+):match:(\d+)$/', $room->key, $matches)) {
+        if (preg_match('/^competition:([^:]+):match:([^:]+)$/', $room->key, $matches)) {
             return "/portal/competitions/{$matches[1]}/matches";
         }
 
-        if (preg_match('/^competition:(\d+)$/', $room->key, $matches)) {
+        if (preg_match('/^competition:([^:]+)$/', $room->key, $matches)) {
             return "/portal/competitions/{$matches[1]}";
         }
 

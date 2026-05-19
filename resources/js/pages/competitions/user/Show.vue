@@ -172,6 +172,17 @@ function requestJoin(teamId: string) {
                 >
                     {{ competition.description }}
                 </p>
+                <!-- Rules rendered from markdown server-side. v-html is safe here
+                     because Str::markdown() uses commonmark's default sanitizer. -->
+                <section
+                    v-if="competition.rules_html"
+                    class="mt-4 rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
+                >
+                    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                        {{ $t('games.rulesMarkdown') }}
+                    </h2>
+                    <div class="prose prose-sm dark:prose-invert max-w-none" v-html="competition.rules_html" />
+                </section>
             </div>
 
             <div class="grid gap-6 lg:grid-cols-3">

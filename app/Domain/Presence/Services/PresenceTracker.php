@@ -84,7 +84,7 @@ class PresenceTracker
             $roomIds = ChatRoomMembership::query()
                 ->where('user_id', $userId)
                 ->pluck('room_id')
-                ->map(fn ($id) => (int) $id)
+                ->map(fn ($id): string => (string) $id)
                 ->unique()
                 ->values()
                 ->all();
@@ -125,14 +125,14 @@ class PresenceTracker
      * cost is O(1) round-trips regardless of input size — required for the
      * admin users index (PRS-004).
      *
-     * @param  iterable<int>  $userIds
-     * @return array<int, PresenceStatus>
+     * @param  iterable<string>  $userIds
+     * @return array<string, PresenceStatus>
      */
     public function bulkStatusFor(iterable $userIds): array
     {
         $ids = [];
         foreach ($userIds as $id) {
-            $ids[] = (int) $id;
+            $ids[] = (string) $id;
         }
         $ids = array_values(array_unique($ids));
 
@@ -140,7 +140,7 @@ class PresenceTracker
             return [];
         }
 
-        $keys = array_map(fn (string $keys): string => $this->keyFor($id), $ids);
+        $keys = array_map(fn (string $id): string => $this->keyFor($id), $ids);
         $values = [];
 
         try {

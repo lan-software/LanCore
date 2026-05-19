@@ -27,7 +27,7 @@ function postValidate(array $headers, string $token): TestResponse
 {
     return test()->postJson('/api/entrance/validate', [
         'token' => $token,
-        'operator_id' => 1,
+        'operator_id' => (string) Str::ulid(),
     ], $headers);
 }
 

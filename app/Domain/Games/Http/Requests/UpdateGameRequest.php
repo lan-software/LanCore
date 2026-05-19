@@ -24,6 +24,10 @@ class UpdateGameRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
             'match_length_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp,svg', 'max:2048'],
+            'banner' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
+            'remove_logo' => ['sometimes', 'boolean'],
+            'remove_banner' => ['sometimes', 'boolean'],
         ];
     }
 }

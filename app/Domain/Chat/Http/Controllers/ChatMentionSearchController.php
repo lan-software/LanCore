@@ -99,10 +99,10 @@ class ChatMentionSearchController extends Controller
         return array_values(array_unique($ids));
     }
 
-    private function competitionIdFromKey(string $key): ?int
+    private function competitionIdFromKey(string $key): ?string
     {
-        if (preg_match('/^competition:(\d+)(?::|$)/', $key, $matches)) {
-            return (int) $matches[1];
+        if (preg_match('/^competition:([^:]+)(?::|$)/', $key, $matches)) {
+            return $matches[1];
         }
 
         return null;

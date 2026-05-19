@@ -16,6 +16,23 @@ class StoreCompetitionRequest extends FormRequest
     }
 
     /**
+     * @see UpdateCompetitionRequest::prepareForValidation
+     */
+    protected function prepareForValidation(): void
+    {
+        if (! is_array($this->input('referee_ids'))) {
+            return;
+        }
+
+        $this->merge([
+            'referee_ids' => array_values(array_filter(
+                $this->input('referee_ids'),
+                fn ($id): bool => is_string($id) && $id !== '',
+            )),
+        ]);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function rules(): array
@@ -38,6 +55,11 @@ class StoreCompetitionRequest extends FormRequest
             'settings' => ['nullable', 'array'],
             'settings.result_submission_mode' => ['nullable', Rule::enum(ResultSubmissionMode::class)],
             'match_length_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp,svg', 'max:2048'],
+            'banner' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
+            'rules_markdown' => ['nullable', 'string', 'max:20000'],
+            'referee_ids' => ['nullable', 'array'],
+            'referee_ids.*' => ['string', 'ulid', 'exists:users,id'],
         ];
     }
 }

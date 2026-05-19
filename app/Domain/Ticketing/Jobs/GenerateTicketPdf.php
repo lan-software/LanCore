@@ -175,7 +175,10 @@ class GenerateTicketPdf implements ShouldQueue
 
         $text = "{$owner} · {$event} · {$location} · {$orgName} · {$ticketTypeName} · #{$ticket->id}";
 
-        mt_srand($ticket->id);
+        // Seed mt_srand from the ticket ULID by hashing it to a stable int —
+        // mt_srand only accepts int|null, and ticket IDs are ULIDs since the
+        // ULID migration.
+        mt_srand(crc32((string) $ticket->id));
         $angle = 45.0 + (mt_rand(0, 10) - 5);
         $offsetX = mt_rand(0, 180);
         $offsetY = mt_rand(0, 180);

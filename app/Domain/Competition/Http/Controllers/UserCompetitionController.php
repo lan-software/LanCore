@@ -10,6 +10,7 @@ use App\Domain\Competition\SignupRules\Support\SignupRuleEnforcer;
 use App\Domain\Presence\Services\PresenceTracker;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -72,8 +73,15 @@ class UserCompetitionController extends Controller
 
         $signupGate = $this->buildSignupGate($competition, $request->user());
 
+        $competitionData = $competition->toArray();
+        $competitionData['logo_url'] = $competition->logo_url;
+        $competitionData['banner_url'] = $competition->banner_url;
+        $competitionData['rules_html'] = $competition->rules_markdown
+            ? Str::markdown($competition->rules_markdown)
+            : null;
+
         return Inertia::render('competitions/user/Show', [
-            'competition' => $competition,
+            'competition' => $competitionData,
             'userTeam' => $userTeam,
             'bracketUrl' => $competition->lanBracketsViewUrl(),
             'chat' => $chatPayload,

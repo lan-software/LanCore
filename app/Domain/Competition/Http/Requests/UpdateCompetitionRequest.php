@@ -17,6 +17,25 @@ class UpdateCompetitionRequest extends FormRequest
     }
 
     /**
+     * RefereePicker emits a leading empty-string sentinel so the controller
+     * can detect "user explicitly cleared the list". Strip those before
+     * validation so the `ulid` rule on each element doesn't reject them.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (! is_array($this->input('referee_ids'))) {
+            return;
+        }
+
+        $this->merge([
+            'referee_ids' => array_values(array_filter(
+                $this->input('referee_ids'),
+                fn ($id): bool => is_string($id) && $id !== '',
+            )),
+        ]);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function rules(): array
@@ -41,6 +60,13 @@ class UpdateCompetitionRequest extends FormRequest
             'settings.result_submission_mode' => ['nullable', Rule::enum(ResultSubmissionMode::class)],
             'signup_rules' => ['nullable', 'array'],
             'match_length_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp,svg', 'max:2048'],
+            'banner' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
+            'remove_logo' => ['sometimes', 'boolean'],
+            'remove_banner' => ['sometimes', 'boolean'],
+            'rules_markdown' => ['nullable', 'string', 'max:20000'],
+            'referee_ids' => ['nullable', 'array'],
+            'referee_ids.*' => ['string', 'ulid', 'exists:users,id'],
         ];
     }
 }

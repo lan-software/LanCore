@@ -62,10 +62,10 @@ export interface MatchProposalDto {
     competition_name: string;
     stage_id: string;
     stage_name: string;
-    match_id: number | string;
+    match_id: string;
     score: number;
     blocked: boolean;
-    participants: Array<{ participant_id: number | string | null; name: string | null }>;
+    participants: Array<{ participant_id: string | null; name: string | null }>;
     reason_keys: string[];
 }
 

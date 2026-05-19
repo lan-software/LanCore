@@ -10,12 +10,16 @@ use App\Domain\CompetitionSchedule\Models\CompetitionStageSchedule;
 use App\Domain\Event\Models\Event;
 use App\Domain\Games\Models\Game;
 use App\Domain\Games\Models\GameMode;
+use App\Models\User;
+use App\Support\StorageRole;
 use Database\Factories\CompetitionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -27,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'registration_opens_at', 'registration_closes_at', 'starts_at', 'ends_at',
     'lanbrackets_id', 'lanbrackets_share_token', 'settings', 'metadata',
     'signup_rules', 'match_length_minutes',
+    'logo_path', 'banner_path', 'rules_markdown',
 ])]
 class Competition extends Model
 {
@@ -149,6 +154,49 @@ class Competition extends Model
     {
         return $this->hasMany(CompetitionStageSchedule::class)
             ->orderBy('sequence');
+    }
+
+    /**
+     * Referees designated for this competition. Used by the chat renderer to
+     * show a special icon next to referee messages, and by match-result
+     * arbitration flows where appropriate.
+     *
+     * @return BelongsToMany<User, $this>
+     *
+     * @see docs/mil-std-498/SRS.md COMP-REF-001
+     */
+    public function referees(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'competition_referees')
+            ->withTimestamps();
+    }
+
+    /**
+     * Effective logo URL: competition override, then game fallback, else null.
+     */
+    protected function logoUrl(): Attribute
+    {
+        return Attribute::get(function (): ?string {
+            if ($this->logo_path) {
+                return StorageRole::publicUrl($this->logo_path);
+            }
+
+            return $this->game?->logo_url;
+        });
+    }
+
+    /**
+     * Effective banner URL: competition override, then game fallback, else null.
+     */
+    protected function bannerUrl(): Attribute
+    {
+        return Attribute::get(function (): ?string {
+            if ($this->banner_path) {
+                return StorageRole::publicUrl($this->banner_path);
+            }
+
+            return $this->game?->banner_url;
+        });
     }
 
     public function isRegistrationOpen(): bool

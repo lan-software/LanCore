@@ -27,7 +27,7 @@ it('flips a valid active ticket to CheckedIn and accepts missing validation_id',
 
     $response = test()->postJson('/api/entrance/checkin', [
         'token' => $payload,
-        'operator_id' => 1,
+        'operator_id' => (string) Str::ulid(),
     ], $this->authHeader);
 
     $response->assertOk()->assertJsonPath('decision', 'valid');
@@ -42,7 +42,7 @@ it('accepts an explicit validation_id in the payload', function (): void {
     test()->postJson('/api/entrance/checkin', [
         'token' => $payload,
         'validation_id' => 'aud_deadbeef',
-        'operator_id' => 1,
+        'operator_id' => (string) Str::ulid(),
     ], $this->authHeader)->assertOk()->assertJsonPath('decision', 'valid');
 
     expect($ticket->fresh()->status)->toBe(TicketStatus::CheckedIn);
@@ -54,12 +54,12 @@ it('returns already_checked_in when called on a CheckedIn ticket', function (): 
 
     test()->postJson('/api/entrance/checkin', [
         'token' => $payload,
-        'operator_id' => 1,
+        'operator_id' => (string) Str::ulid(),
     ], $this->authHeader)->assertOk();
 
     test()->postJson('/api/entrance/checkin', [
         'token' => $payload,
-        'operator_id' => 1,
+        'operator_id' => (string) Str::ulid(),
     ], $this->authHeader)
         ->assertOk()
         ->assertJsonPath('decision', 'already_checked_in');
@@ -71,7 +71,7 @@ it('returns validation_id alongside audit_id in responses', function (): void {
 
     $response = test()->postJson('/api/entrance/validate', [
         'token' => $payload,
-        'operator_id' => 1,
+        'operator_id' => (string) Str::ulid(),
     ], $this->authHeader)->assertOk();
 
     $response->assertJsonStructure(['audit_id', 'validation_id']);

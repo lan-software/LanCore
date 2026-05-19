@@ -11,6 +11,7 @@ use App\Models\User;
  * Enriches a chat member list with competition-specific indicators:
  *
  *   - `is_admin`   — true when the user holds `ManageCompetitions` globally.
+ *   - `is_referee` — true when the user is listed as a referee for this competition.
  *   - `team_name`  — the team the user belongs to in this competition.
  *   - `team_tag`   — short tag for compact rendering.
  *
@@ -22,6 +23,7 @@ use App\Models\User;
  * annotators if they need similar context.
  *
  * @see docs/mil-std-498/SRS.md CHT-F-034
+ * @see docs/mil-std-498/SRS.md COMP-REF-001
  */
 class CompetitionMemberAnnotator
 {
@@ -43,13 +45,18 @@ class CompetitionMemberAnnotator
             return $members;
         }
 
-        $userIds = collect($members)->pluck('user_id')->filter()->all();
+        $userIds = collect($members)
+            ->pluck('user_id')
+            ->filter(fn ($id): bool => is_string($id) && $id !== '')
+            ->map(fn ($id): string => (string) $id)
+            ->all();
 
         if ($userIds === []) {
             return $members;
         }
 
         $adminUserIds = $this->resolveAdminUserIds($userIds);
+        $refereeUserIds = $this->resolveRefereeUserIds($competition->id, $userIds);
 
         $teamByUserId = [];
         $showTeam = ($competition->team_size ?? 1) > 1;
@@ -70,10 +77,11 @@ class CompetitionMemberAnnotator
                 ->all();
         }
 
-        return array_map(function (array $member) use ($adminUserIds, $teamByUserId, $showTeam): array {
-            $userId = (int) ($member['user_id'] ?? 0);
+        return array_map(function (array $member) use ($adminUserIds, $refereeUserIds, $teamByUserId, $showTeam): array {
+            $userId = isset($member['user_id']) ? (string) $member['user_id'] : '';
 
             $member['is_admin'] = in_array($userId, $adminUserIds, true);
+            $member['is_referee'] = in_array($userId, $refereeUserIds, true);
 
             if ($showTeam) {
                 $team = $teamByUserId[$userId] ?? null;
@@ -86,18 +94,42 @@ class CompetitionMemberAnnotator
         }, $members);
     }
 
-    private function competitionIdFromKey(string $key): ?int
+    /**
+     * Returns the referee user IDs for the given competition, filtered to the
+     * members we're annotating.
+     *
+     * @param  array<int, string>  $userIds
+     * @return array<int, string>
+     */
+    public function resolveRefereeUserIds(string $competitionId, array $userIds): array
     {
-        if (preg_match('/^competition:(\d+)(?::|$)/', $key, $matches)) {
-            return (int) $matches[1];
+        return Competition::query()
+            ->whereKey($competitionId)
+            ->first()
+            ?->referees()
+            ->whereIn('users.id', $userIds)
+            ->pluck('users.id')
+            ->map(fn ($id): string => (string) $id)
+            ->all() ?? [];
+    }
+
+    /**
+     * `competition:{ulid}` — accepts ULID (26 chars) or any non-`:` prefix to
+     * stay tolerant of future key formats. The legacy regex only matched
+     * digits, which broke after the int-to-ULID migration.
+     */
+    private function competitionIdFromKey(string $key): ?string
+    {
+        if (preg_match('/^competition:([^:]+)(?::|$)/', $key, $matches)) {
+            return $matches[1];
         }
 
         return null;
     }
 
     /**
-     * @param  array<int, int>  $userIds
-     * @return array<int, int>
+     * @param  array<int, string>  $userIds
+     * @return array<int, string>
      */
     private function resolveAdminUserIds(array $userIds): array
     {
@@ -106,7 +138,7 @@ class CompetitionMemberAnnotator
             ->get(['id'])
             ->filter(fn (User $u) => $u->hasPermission(CompetitionPermission::ManageCompetitions))
             ->pluck('id')
-            ->map(fn ($id) => (int) $id)
+            ->map(fn ($id): string => (string) $id)
             ->all();
     }
 }

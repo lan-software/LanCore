@@ -32,8 +32,8 @@ class EntranceController extends Controller
     {
         $request->validate([
             'token' => ['required', 'string', 'max:512'],
-            'operator_id' => ['required', 'integer'],
-            'event_id' => ['sometimes', 'integer'],
+            'operator_id' => ['required', 'string', 'ulid'],
+            'event_id' => ['sometimes', 'string', 'ulid'],
         ]);
 
         $token = $request->input('token');
@@ -73,8 +73,8 @@ class EntranceController extends Controller
         $request->validate([
             'token' => ['required', 'string', 'max:512'],
             'validation_id' => ['sometimes', 'string', 'max:64'],
-            'operator_id' => ['required', 'integer'],
-            'event_id' => ['sometimes', 'integer'],
+            'operator_id' => ['required', 'string', 'ulid'],
+            'event_id' => ['sometimes', 'string', 'ulid'],
         ]);
 
         $resolved = $this->resolveTicketForAction($request);
@@ -82,7 +82,7 @@ class EntranceController extends Controller
             return $resolved;
         }
 
-        $this->ticketAssignments->checkIn($resolved, (int) $request->input('operator_id'));
+        $this->ticketAssignments->checkIn($resolved, (string) $request->input('operator_id'));
         $resolved->refresh();
 
         $auditId = $this->audit($request, 'checkin', $resolved, 'valid');
@@ -97,8 +97,8 @@ class EntranceController extends Controller
         $request->validate([
             'token' => ['required', 'string', 'max:512'],
             'validation_id' => ['sometimes', 'string', 'max:64'],
-            'operator_id' => ['required', 'integer'],
-            'event_id' => ['sometimes', 'integer'],
+            'operator_id' => ['required', 'string', 'ulid'],
+            'event_id' => ['sometimes', 'string', 'ulid'],
         ]);
 
         $resolved = $this->resolveTicketForAction($request);
@@ -106,7 +106,7 @@ class EntranceController extends Controller
             return $resolved;
         }
 
-        $this->ticketAssignments->checkIn($resolved, (int) $request->input('operator_id'));
+        $this->ticketAssignments->checkIn($resolved, (string) $request->input('operator_id'));
         $resolved->refresh();
 
         $auditId = $this->audit($request, 'verify_checkin', $resolved, 'valid');
@@ -123,8 +123,8 @@ class EntranceController extends Controller
             'validation_id' => ['sometimes', 'string', 'max:64'],
             'payment_method' => ['required', 'string'],
             'amount' => ['required', 'string'],
-            'operator_id' => ['required', 'integer'],
-            'event_id' => ['sometimes', 'integer'],
+            'operator_id' => ['required', 'string', 'ulid'],
+            'event_id' => ['sometimes', 'string', 'ulid'],
         ]);
 
         $token = $request->input('token');
@@ -167,7 +167,7 @@ class EntranceController extends Controller
 
         GenerateReceiptPdf::dispatch($order->id);
 
-        $this->ticketAssignments->checkIn($ticket, (int) $request->input('operator_id'));
+        $this->ticketAssignments->checkIn($ticket, (string) $request->input('operator_id'));
         $ticket->refresh();
 
         $auditId = $this->audit($request, 'confirm_payment', $ticket, 'valid');
@@ -185,8 +185,8 @@ class EntranceController extends Controller
             'token' => ['required', 'string', 'max:512'],
             'validation_id' => ['sometimes', 'string', 'max:64'],
             'reason' => ['required', 'string', 'min:10', 'max:500'],
-            'operator_id' => ['required', 'integer'],
-            'event_id' => ['sometimes', 'integer'],
+            'operator_id' => ['required', 'string', 'ulid'],
+            'event_id' => ['sometimes', 'string', 'ulid'],
         ]);
 
         $resolved = $this->resolveTicketForAction($request);
@@ -194,7 +194,7 @@ class EntranceController extends Controller
             return $resolved;
         }
 
-        $this->ticketAssignments->checkIn($resolved, (int) $request->input('operator_id'));
+        $this->ticketAssignments->checkIn($resolved, (string) $request->input('operator_id'));
         $resolved->refresh();
 
         $auditId = $this->audit($request, 'override', $resolved, 'valid', $request->input('reason'));
@@ -209,8 +209,8 @@ class EntranceController extends Controller
     {
         $request->validate([
             'q' => ['required', 'string', 'min:2', 'max:100'],
-            'operator_id' => ['required', 'integer'],
-            'event_id' => ['sometimes', 'integer'],
+            'operator_id' => ['required', 'string', 'ulid'],
+            'event_id' => ['sometimes', 'string', 'ulid'],
         ]);
 
         $query = $request->input('q');
@@ -219,7 +219,7 @@ class EntranceController extends Controller
         $tickets = Ticket::query()
             ->whereHas('owner', fn ($q) => $q->where('name', 'ilike', "%{$query}%")->orWhere('email', 'ilike', "%{$query}%"))
             ->orWhereHas('users', fn ($q) => $q->where('name', 'ilike', "%{$query}%")->orWhere('email', 'ilike', "%{$query}%"))
-            ->when($eventId, fn ($q) => $q->where('event_id', (int) $eventId))
+            ->when($eventId, fn ($q) => $q->where('event_id', $eventId))
             ->with(['owner:id,name,email', 'ticketType:id,name', 'addons:id,name'])
             ->limit(20)
             ->get();
@@ -369,7 +369,7 @@ class EntranceController extends Controller
     {
         $eventId = $request->input('event_id');
 
-        if ($eventId && $ticket->event_id !== (int) $eventId) {
+        if ($eventId && $ticket->event_id !== (string) $eventId) {
             $aid = $auditId ?? $this->audit($request, 'validate', $ticket, 'invalid');
 
             return $this->decision('invalid', 'This ticket is not for the selected event.', $token, $ticket, auditId: $aid);

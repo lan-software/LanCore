@@ -197,7 +197,7 @@ class ConflictDetector
             ->whereNull('left_at')
             ->get(['team_id', 'user_id'])
             ->groupBy('team_id')
-            ->map(fn ($members) => $members->pluck('user_id')->map(fn ($id) => (int) $id)->all())
+            ->map(fn ($members) => $members->pluck('user_id')->map(fn ($id): string => (string) $id)->all())
             ->all();
 
         $result = [];

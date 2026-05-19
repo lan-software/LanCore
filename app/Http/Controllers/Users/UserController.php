@@ -104,7 +104,7 @@ class UserController extends Controller
         $presenceMap = $tracker->bulkStatusFor($allIds);
 
         $multiplier = $direction === 'desc' ? -1 : 1;
-        usort($allIds, function (int $a, int $b) use ($presenceMap, $multiplier): int {
+        usort($allIds, function (string $a, string $b) use ($presenceMap, $multiplier): int {
             $pa = $presenceMap[$a]->priority();
             $pb = $presenceMap[$b]->priority();
 

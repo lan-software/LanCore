@@ -14,6 +14,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/CompetitionController';
 import ChatRoom from '@/components/chat/ChatRoom.vue';
+import RefereePicker from '@/components/competitions/RefereePicker.vue';
 import SignupRuleEditor, {
     type RuleGroup,
 } from '@/components/competitions/SignupRuleEditor.vue';
@@ -41,6 +42,7 @@ const props = defineProps<{
     competition: Competition & { signup_rules?: RuleGroup | null };
     games: Game[];
     events: { id: string; name: string; start_date: string }[];
+    users: Array<{ id: string; name: string; email: string | null }>;
     lanbracketsEnabled: boolean;
     lanbracketsBaseUrl: string;
     chat: {
@@ -483,6 +485,66 @@ function statusColor(status: string): string {
                                 />
                                 <InputError :message="errors.max_teams" />
                             </div>
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="logo">{{ $t('games.logo') }}</Label>
+                            <img
+                                v-if="competition.logo_url"
+                                :src="competition.logo_url"
+                                :alt="$t('games.currentLogo')"
+                                class="h-16 w-16 rounded border object-contain"
+                            />
+                            <Input id="logo" name="logo" type="file" accept="image/*" />
+                            <p class="text-xs text-muted-foreground">{{ $t('games.competitionLogoHelp') }}</p>
+                            <div v-if="competition.logo_path" class="flex items-center gap-2">
+                                <Checkbox id="remove_logo" name="remove_logo" :value="true" />
+                                <Label for="remove_logo">{{ $t('games.removeLogo') }}</Label>
+                            </div>
+                            <InputError :message="errors.logo" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="banner">{{ $t('games.banner') }}</Label>
+                            <img
+                                v-if="competition.banner_url"
+                                :src="competition.banner_url"
+                                :alt="$t('games.currentBanner')"
+                                class="h-24 w-full rounded border object-cover"
+                            />
+                            <Input id="banner" name="banner" type="file" accept="image/*" />
+                            <p class="text-xs text-muted-foreground">{{ $t('games.competitionBannerHelp') }}</p>
+                            <div v-if="competition.banner_path" class="flex items-center gap-2">
+                                <Checkbox id="remove_banner" name="remove_banner" :value="true" />
+                                <Label for="remove_banner">{{ $t('games.removeBanner') }}</Label>
+                            </div>
+                            <InputError :message="errors.banner" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="rules_markdown">{{ $t('games.rulesMarkdown') }}</Label>
+                            <Textarea
+                                id="rules_markdown"
+                                name="rules_markdown"
+                                rows="10"
+                                class="font-mono text-sm"
+                                :default-value="competition.rules_markdown ?? ''"
+                                :placeholder="$t('games.rulesMarkdownPlaceholder')"
+                                :disabled="!canEditDetails"
+                            />
+                            <p class="text-xs text-muted-foreground">{{ $t('games.rulesMarkdownHelp') }}</p>
+                            <InputError :message="errors.rules_markdown" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label>{{ $t('games.referees') }}</Label>
+                            <RefereePicker
+                                :users="users"
+                                :initial-selected-ids="competition.referees?.map((r) => r.id) ?? []"
+                                :disabled="!canEditDetails"
+                            />
+                            <p class="text-xs text-muted-foreground">{{ $t('games.refereesHelp') }}</p>
+                            <InputError :message="errors.referee_ids" />
                         </div>
 
                         <div class="grid gap-2">

@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 class CreateNewsArticle
 {
     /**
-     * @param  array{title: string, summary?: string|null, content?: string|null, tags?: array<string>|null, visibility: string, is_archived?: bool, comments_enabled?: bool, comments_require_approval?: bool, notify_users?: bool, meta_title?: string|null, meta_description?: string|null, og_title?: string|null, og_description?: string|null, author_id: int, published_at?: string|null}  $attributes
+     * @param  array{title: string, summary?: string|null, content?: string|null, tags?: array<string>|null, visibility: string, is_archived?: bool, comments_enabled?: bool, comments_require_approval?: bool, notify_users?: bool, meta_title?: string|null, meta_description?: string|null, og_title?: string|null, og_description?: string|null, author_id: string, published_at?: string|null}  $attributes
      */
     public function execute(array $attributes, ?UploadedFile $image = null, ?UploadedFile $ogImage = null): NewsArticle
     {

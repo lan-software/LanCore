@@ -106,6 +106,20 @@ const breadcrumbs: BreadcrumbItem[] = [
                         </p>
                         <InputError :message="errors.match_length_minutes" />
                     </div>
+
+                    <div class="grid gap-2">
+                        <Label for="logo">{{ $t('games.logo') }}</Label>
+                        <Input id="logo" name="logo" type="file" accept="image/*" />
+                        <p class="text-xs text-muted-foreground">{{ $t('games.logoHelp') }}</p>
+                        <InputError :message="errors.logo" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="banner">{{ $t('games.banner') }}</Label>
+                        <Input id="banner" name="banner" type="file" accept="image/*" />
+                        <p class="text-xs text-muted-foreground">{{ $t('games.bannerHelp') }}</p>
+                        <InputError :message="errors.banner" />
+                    </div>
                 </div>
 
                 <!-- Submit -->

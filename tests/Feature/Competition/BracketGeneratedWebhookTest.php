@@ -50,7 +50,7 @@ it('dispatches MatchReadyForOrchestration for matches with all participants set'
 
     Event::assertDispatched(MatchReadyForOrchestration::class, function ($event) use ($competition) {
         return $event->competition->id === $competition->id
-            && $event->lanbracketsMatchId === 101;
+            && $event->lanbracketsMatchId === '101';
     });
 
     Event::assertDispatchedTimes(MatchReadyForOrchestration::class, 1);

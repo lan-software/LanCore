@@ -37,7 +37,16 @@ class CompetitionChatLifecycleObserver
 
         $newStatus = $competition->status;
 
-        if ($newStatus === CompetitionStatus::RegistrationOpen) {
+        // Ensure the room exists once the competition leaves Draft. Earlier the
+        // observer only fired on `RegistrationOpen`, which meant any path that
+        // jumped straight to a later status (seeders, factories, bulk admin
+        // status edits) silently skipped room creation. ensureRoom is idempotent.
+        if (in_array($newStatus, [
+            CompetitionStatus::Published,
+            CompetitionStatus::RegistrationOpen,
+            CompetitionStatus::RegistrationClosed,
+            CompetitionStatus::Running,
+        ], true)) {
             $this->onPublish($competition);
 
             return;

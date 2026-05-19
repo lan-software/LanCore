@@ -17,9 +17,9 @@ class SubmitMatchResultRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'lanbrackets_match_id' => ['required', 'integer'],
+            'lanbrackets_match_id' => ['required', 'string', 'ulid'],
             'scores' => ['required', 'array', 'min:2'],
-            'scores.*.participant_id' => ['required', 'integer'],
+            'scores.*.participant_id' => ['required', 'string', 'ulid'],
             'scores.*.score' => ['required', 'integer', 'min:0'],
             'screenshot' => ['required', 'file', 'image', 'max:5120'],
         ];

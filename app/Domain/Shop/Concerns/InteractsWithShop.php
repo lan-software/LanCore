@@ -17,9 +17,9 @@ trait InteractsWithShop
         return static::class;
     }
 
-    public function getPurchasableId(): int
+    public function getPurchasableId(): string
     {
-        return $this->getKey();
+        return (string) $this->getKey();
     }
 
     public function getTitle(): string

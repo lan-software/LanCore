@@ -75,6 +75,43 @@ function isInChat(userId: string): boolean {
     return props.presentUserIds.has(userId);
 }
 
+/**
+ * Member sort order:
+ *   1. Admin/Referee first, regular users after.
+ *   2. Within each group: online (Active or Idle) above offline.
+ *   3. Within each subgroup: grouped by team, team name ascending. Members
+ *      with no team are bucketed at the bottom.
+ *   4. Within a team: ordered by username (case-insensitive).
+ *
+ * Online here means "non-offline" — Active and Idle are both treated as
+ * present so an idle admin doesn't disappear below an offline admin.
+ *
+ * @see docs/mil-std-498/SRS.md CHT-F-026
+ */
+const sortedMembers = computed<ChatMemberDto[]>(() => {
+    const rankPrivilege = (m: ChatMemberDto): number =>
+        m.is_admin || m.is_referee ? 0 : 1;
+
+    const rankPresence = (m: ChatMemberDto): number =>
+        statusFor(m.user_id) === 'offline' ? 1 : 0;
+
+    const teamSortKey = (m: ChatMemberDto): string =>
+        m.team_name ? m.team_name.toLowerCase() : '~~no-team~~';
+
+    const userSortKey = (m: ChatMemberDto): string =>
+        (m.username ?? m.name ?? '').toLowerCase();
+
+    return [...props.members].sort((a, b) => {
+        const p = rankPrivilege(a) - rankPrivilege(b);
+        if (p !== 0) return p;
+        const pres = rankPresence(a) - rankPresence(b);
+        if (pres !== 0) return pres;
+        const team = teamSortKey(a).localeCompare(teamSortKey(b));
+        if (team !== 0) return team;
+        return userSortKey(a).localeCompare(userSortKey(b));
+    });
+});
+
 // Ticking "now" — re-renders the remaining-mute label every 30s so the
 // countdown stays close to real-time without burning a high-rate timer.
 const now = ref<number>(Date.now());
@@ -166,7 +203,7 @@ function unmuteFor(member: ChatMemberDto): void {
         </h2>
         <ul class="flex flex-col gap-0.5 overflow-y-auto">
             <li
-                v-for="member in members"
+                v-for="member in sortedMembers"
                 :key="member.user_id"
                 class="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-zinc-50 dark:hover:bg-zinc-900"
             >
@@ -212,6 +249,11 @@ function unmuteFor(member: ChatMemberDto): void {
                     v-if="member.is_admin"
                     class="size-4 shrink-0 text-primary"
                     :aria-label="t('chat.member.adminTitle')"
+                />
+                <ShieldCheck
+                    v-else-if="member.is_referee"
+                    class="size-4 shrink-0 text-amber-600 dark:text-amber-400"
+                    :aria-label="t('chat.message.refereeBadge')"
                 />
                 <span
                     v-if="member.team_tag"
