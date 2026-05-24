@@ -87,7 +87,7 @@
             "title": "Log in to your account",
             "description": "Enter your email and password below to log in",
             "email": "Email address",
-            "emailPlaceholder": "email@example.com",
+            "emailPlaceholder": "email{'@'}example.com",
             "password": "Password",
             "passwordPlaceholder": "Password",
             "rememberMe": "Remember me",
@@ -105,7 +105,7 @@
             "usernamePlaceholder": "yourhandle",
             "usernameHint": "3-32 characters; letters, digits, _ and - only. Shown publicly. You can change it later.",
             "email": "Email address",
-            "emailPlaceholder": "email@example.com",
+            "emailPlaceholder": "email{'@'}example.com",
             "password": "Password",
             "passwordPlaceholder": "Password",
             "confirmPassword": "Confirm Password",
@@ -117,7 +117,7 @@
             "title": "Forgot your password?",
             "description": "Enter your email address and we'll send you a password reset link.",
             "email": "Email address",
-            "emailPlaceholder": "email@example.com",
+            "emailPlaceholder": "email{'@'}example.com",
             "button": "Send reset link",
             "backToLogin": "Back to log in"
         },
@@ -778,7 +778,7 @@
             "sendInvite": "Send Invite",
             "sendingInvite": "Sending...",
             "expiresOn": "expires {date}",
-            "playerEmailPlaceholder": "player@example.com",
+            "playerEmailPlaceholder": "player{'@'}example.com",
             "joinedDateShort": "Joined {date}",
             "details": "Details",
             "captainBadge": "Captain",
@@ -1390,7 +1390,7 @@
         "composer": {
             "placeholder": "Write a message…",
             "send": "Send",
-            "hint": "Use @ to mention someone in the room."
+            "hint": "Use {'@'} to mention someone in the room."
         },
         "message": {
             "deletedPlaceholder": "(message removed by a moderator)",
