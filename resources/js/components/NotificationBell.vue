@@ -35,7 +35,9 @@ const page = usePage();
 // Server-rendered snapshot, kept in a ref so Echo events can push new
 // notifications into the list without a page reload. Re-syncs whenever
 // Inertia replaces the page props (e.g. after navigation or partial reload).
-const liveUnread = ref<number>((page.props.unreadNotificationsCount as number) ?? 0);
+const liveUnread = ref<number>(
+    (page.props.unreadNotificationsCount as number) ?? 0,
+);
 const liveNotifications = ref<AppNotification[]>(
     (page.props.recentNotifications as AppNotification[]) ?? [],
 );
@@ -69,13 +71,12 @@ interface NotificationReceivedPayload {
 // rejects and Echo no-ops. Calling useEcho inside a conditional has been
 // flaky in practice (the composable's internal scheduling assumes a stable
 // setup-time call site), so we always call it.
- 
+
 console.info('[NotificationBell] subscribing for user', initialUserId);
 useEcho<NotificationReceivedPayload>(
     `App.Models.User.${initialUserId}`,
     '.notification.received',
     (payload) => {
-         
         console.info('[NotificationBell] received', payload);
 
         if (
@@ -209,7 +210,8 @@ function notificationLabel(notification: AppNotification): string {
     if (type === 'ChatMentionNotification') {
         const who = data.author_username
             ? `@${data.author_username}`
-            : (data.author_name ?? t('notifications.types.chatMentionFallbackAuthor'));
+            : (data.author_name ??
+              t('notifications.types.chatMentionFallbackAuthor'));
 
         return t('notifications.types.chatMention', { who });
     }
@@ -218,7 +220,9 @@ function notificationLabel(notification: AppNotification): string {
 }
 
 function handleMarkAsRead(notification: AppNotification) {
-    const target = liveNotifications.value.find((n) => n.id === notification.id);
+    const target = liveNotifications.value.find(
+        (n) => n.id === notification.id,
+    );
 
     if (target && !target.read_at) {
         target.read_at = new Date().toISOString();

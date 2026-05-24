@@ -296,7 +296,7 @@ function updateCartQuantity(
                                         >
                                             <CardTitle>{{ tt.name }}</CardTitle>
                                             <span
-                                                class="shrink-0 whitespace-nowrap text-lg font-bold"
+                                                class="shrink-0 text-lg font-bold whitespace-nowrap"
                                                 >{{
                                                     formatPrice(tt.price)
                                                 }}</span
@@ -466,7 +466,7 @@ function updateCartQuantity(
                                                 </TooltipProvider>
                                             </div>
                                             <span
-                                                class="shrink-0 whitespace-nowrap font-bold"
+                                                class="shrink-0 font-bold whitespace-nowrap"
                                                 >{{
                                                     formatPrice(addon.price)
                                                 }}</span

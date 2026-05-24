@@ -27,7 +27,7 @@ const percentageFormatted = computed(() =>
     <div
         class="mt-4 rounded-lg border border-sidebar-border/70 bg-card/40 p-3 text-xs dark:border-sidebar-border"
     >
-        <p class="font-semibold uppercase tracking-wide text-muted-foreground">
+        <p class="font-semibold tracking-wide text-muted-foreground uppercase">
             Provider fee
         </p>
         <p class="mt-1 font-mono text-sm">

@@ -19,7 +19,10 @@ const query = ref('');
 
 const filtered = computed(() => {
     const q = query.value.trim().toLowerCase();
-    if (q === '') return props.options;
+
+    if (q === '') {
+        return props.options;
+    }
 
     return props.options.filter((opt) => {
         return (
@@ -36,9 +39,7 @@ function toggle(value: string) {
     const idx = current.indexOf(value);
     emit(
         'update:modelValue',
-        idx === -1
-            ? [...current, value]
-            : current.filter((v) => v !== value),
+        idx === -1 ? [...current, value] : current.filter((v) => v !== value),
     );
 }
 
@@ -55,7 +56,7 @@ function clearSelection() {
     <div class="space-y-2">
         <div class="relative">
             <Search
-                class="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                class="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden="true"
             />
             <Input

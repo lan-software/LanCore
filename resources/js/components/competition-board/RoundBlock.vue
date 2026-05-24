@@ -20,39 +20,71 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'open', roundId: string): void;
     (e: 'drag-end', payload: { roundId: string; newStartIso: string }): void;
-    (e: 'resize-duration-end', payload: { roundId: string; minutes: number }): void;
-    (e: 'resize-reserve-end', payload: { roundId: string; minutes: number }): void;
+    (
+        e: 'resize-duration-end',
+        payload: { roundId: string; minutes: number },
+    ): void;
+    (
+        e: 'resize-reserve-end',
+        payload: { roundId: string; minutes: number },
+    ): void;
     (e: 'drag-active-change', active: boolean): void;
 }>();
 
 const hasStart = computed(() => !!props.round.starts_at);
 
-const leftPx = computed(() => (hasStart.value ? props.xForTime(props.round.starts_at!) : 0));
+const leftPx = computed(() =>
+    hasStart.value ? props.xForTime(props.round.starts_at!) : 0,
+);
 
 const widthSolid = computed(() => {
-    if (!hasStart.value) return 0;
+    if (!hasStart.value) {
+        return 0;
+    }
+
     const start = new Date(props.round.starts_at!).getTime();
     const end = start + props.round.estimated_duration_minutes * 60_000;
+
     return props.xForTime(new Date(end).toISOString()) - leftPx.value;
 });
 
 const widthReserve = computed(() => {
-    if (!hasStart.value) return 0;
+    if (!hasStart.value) {
+        return 0;
+    }
+
     const start = new Date(props.round.starts_at!).getTime();
-    const end = start + (props.round.estimated_duration_minutes + props.round.reserve_buffer_minutes) * 60_000;
+    const end =
+        start +
+        (props.round.estimated_duration_minutes +
+            props.round.reserve_buffer_minutes) *
+            60_000;
     const solidEnd = start + props.round.estimated_duration_minutes * 60_000;
-    return props.xForTime(new Date(end).toISOString()) - props.xForTime(new Date(solidEnd).toISOString());
+
+    return (
+        props.xForTime(new Date(end).toISOString()) -
+        props.xForTime(new Date(solidEnd).toISOString())
+    );
 });
 
-const displayLabel = computed(() => props.round.label ?? `R${props.round.lanbrackets_round_number}`);
+const displayLabel = computed(
+    () => props.round.label ?? `R${props.round.lanbrackets_round_number}`,
+);
 
 function formatHm(ms: number): string {
     const d = new Date(ms);
+
     return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
-function startDrag(ev: PointerEvent, mode: 'move' | 'resize-duration' | 'resize-reserve') {
-    if (!hasStart.value) return;
+function startDrag(
+    ev: PointerEvent,
+    mode: 'move' | 'resize-duration' | 'resize-reserve',
+) {
+    if (!hasStart.value) {
+        return;
+    }
+
     ev.preventDefault();
     (ev.target as HTMLElement).setPointerCapture(ev.pointerId);
     const startX = ev.clientX;
@@ -77,14 +109,17 @@ function startDrag(ev: PointerEvent, mode: 'move' | 'resize-duration' | 'resize-
     function updateFeedback(e: PointerEvent) {
         if (mode === 'move') {
             const newStartMs = startStartIsoMs + lastDeltaMinutes * 60_000;
-            const newEndMs = newStartMs + (startDuration + startReserve) * 60_000;
+            const newEndMs =
+                newStartMs + (startDuration + startReserve) * 60_000;
             const sign = lastDeltaMinutes >= 0 ? '+' : '';
             dragState.tooltip.value = {
                 x: e.clientX,
                 y: e.clientY,
                 text: `${formatHm(newStartMs)} → ${formatHm(newEndMs)}  (${sign}${lastDeltaMinutes}m)`,
             };
-            const newLeftPx = props.xForTime(new Date(newStartMs).toISOString());
+            const newLeftPx = props.xForTime(
+                new Date(newStartMs).toISOString(),
+            );
             dragState.ghost.value = {
                 x: newLeftPx,
                 widthSolid: originalWidthSolid,
@@ -127,15 +162,27 @@ function startDrag(ev: PointerEvent, mode: 'move' | 'resize-duration' | 'resize-
         dragState.active.value = false;
         dragState.tooltip.value = null;
         dragState.ghost.value = null;
+
         if (mode === 'move') {
-            const newStart = new Date(startStartIsoMs + lastDeltaMinutes * 60_000).toISOString();
-            emit('drag-end', { roundId: props.round.id, newStartIso: newStart });
+            const newStart = new Date(
+                startStartIsoMs + lastDeltaMinutes * 60_000,
+            ).toISOString();
+            emit('drag-end', {
+                roundId: props.round.id,
+                newStartIso: newStart,
+            });
         } else if (mode === 'resize-duration') {
             const newMinutes = Math.max(5, startDuration + lastDeltaMinutes);
-            emit('resize-duration-end', { roundId: props.round.id, minutes: newMinutes });
+            emit('resize-duration-end', {
+                roundId: props.round.id,
+                minutes: newMinutes,
+            });
         } else {
             const newMinutes = Math.max(0, startReserve + lastDeltaMinutes);
-            emit('resize-reserve-end', { roundId: props.round.id, minutes: newMinutes });
+            emit('resize-reserve-end', {
+                roundId: props.round.id,
+                minutes: newMinutes,
+            });
         }
     }
 
@@ -154,7 +201,13 @@ function startDrag(ev: PointerEvent, mode: 'move' | 'resize-duration' | 'resize-
     <div
         v-if="hasStart"
         class="group absolute top-1 flex h-8 select-none"
-        :style="{ left: leftPx + 'px', opacity: dragState.ghost.value && dragState.ghost.value.x !== leftPx ? 0.3 : 1 }"
+        :style="{
+            left: leftPx + 'px',
+            opacity:
+                dragState.ghost.value && dragState.ghost.value.x !== leftPx
+                    ? 0.3
+                    : 1,
+        }"
     >
         <button
             type="button"

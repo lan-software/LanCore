@@ -99,7 +99,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                             type="number"
                             min="1"
                             max="1440"
-                            :placeholder="$t('games.matchLengthMinutesPlaceholder')"
+                            :placeholder="
+                                $t('games.matchLengthMinutesPlaceholder')
+                            "
                         />
                         <p class="text-xs text-muted-foreground">
                             {{ $t('games.matchLengthMinutesHelp') }}
@@ -109,15 +111,29 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                     <div class="grid gap-2">
                         <Label for="logo">{{ $t('games.logo') }}</Label>
-                        <Input id="logo" name="logo" type="file" accept="image/*" />
-                        <p class="text-xs text-muted-foreground">{{ $t('games.logoHelp') }}</p>
+                        <Input
+                            id="logo"
+                            name="logo"
+                            type="file"
+                            accept="image/*"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            {{ $t('games.logoHelp') }}
+                        </p>
                         <InputError :message="errors.logo" />
                     </div>
 
                     <div class="grid gap-2">
                         <Label for="banner">{{ $t('games.banner') }}</Label>
-                        <Input id="banner" name="banner" type="file" accept="image/*" />
-                        <p class="text-xs text-muted-foreground">{{ $t('games.bannerHelp') }}</p>
+                        <Input
+                            id="banner"
+                            name="banner"
+                            type="file"
+                            accept="image/*"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            {{ $t('games.bannerHelp') }}
+                        </p>
                         <InputError :message="errors.banner" />
                     </div>
                 </div>

@@ -103,11 +103,23 @@ const sortedMembers = computed<ChatMemberDto[]>(() => {
 
     return [...props.members].sort((a, b) => {
         const p = rankPrivilege(a) - rankPrivilege(b);
-        if (p !== 0) return p;
+
+        if (p !== 0) {
+            return p;
+        }
+
         const pres = rankPresence(a) - rankPresence(b);
-        if (pres !== 0) return pres;
+
+        if (pres !== 0) {
+            return pres;
+        }
+
         const team = teamSortKey(a).localeCompare(teamSortKey(b));
-        if (team !== 0) return team;
+
+        if (team !== 0) {
+            return team;
+        }
+
         return userSortKey(a).localeCompare(userSortKey(b));
     });
 });
@@ -122,22 +134,39 @@ onMounted(() => {
     }, 30_000);
 });
 onBeforeUnmount(() => {
-    if (nowInterval) clearInterval(nowInterval);
+    if (nowInterval) {
+        clearInterval(nowInterval);
+    }
 });
 
 function isMuted(member: ChatMemberDto): boolean {
-    if (!member.muted_until) return false;
+    if (!member.muted_until) {
+        return false;
+    }
+
     return new Date(member.muted_until).getTime() > now.value;
 }
 
 function muteRemainingLabel(member: ChatMemberDto): string {
-    if (!member.muted_until) return '';
+    if (!member.muted_until) {
+        return '';
+    }
+
     const ms = new Date(member.muted_until).getTime() - now.value;
-    if (ms <= 0) return '';
+
+    if (ms <= 0) {
+        return '';
+    }
+
     const totalMinutes = Math.ceil(ms / 60_000);
-    if (totalMinutes < 60) return `${totalMinutes}m`;
+
+    if (totalMinutes < 60) {
+        return `${totalMinutes}m`;
+    }
+
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
+
     return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
 }
 
@@ -152,6 +181,7 @@ const muteTitle = computed(() => {
     const handle = muteTarget.value?.username
         ? `@${muteTarget.value.username}`
         : (muteTarget.value?.name ?? '');
+
     return t('chat.moderation.muteModal.title', { user: handle });
 });
 
@@ -163,7 +193,10 @@ function openMuteDialog(member: ChatMemberDto): void {
 }
 
 function submitMute(): void {
-    if (!muteTarget.value) return;
+    if (!muteTarget.value) {
+        return;
+    }
+
     const minutes = Math.max(1, Math.min(1440, Number(muteMinutes.value) || 0));
     muteSubmitting.value = true;
     router.post(
@@ -199,7 +232,9 @@ function unmuteFor(member: ChatMemberDto): void {
     <aside class="flex h-full flex-col gap-2 p-3">
         <h2 class="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
             {{ t('chat.room.members') }}
-            <span class="ml-1 text-xs text-zinc-500">({{ members.length }})</span>
+            <span class="ml-1 text-xs text-zinc-500"
+                >({{ members.length }})</span
+            >
         </h2>
         <ul class="flex flex-col gap-0.5 overflow-y-auto">
             <li
@@ -240,7 +275,7 @@ function unmuteFor(member: ChatMemberDto): void {
                 </component>
                 <span
                     v-if="isMuted(member)"
-                    class="shrink-0 rounded-sm bg-red-100 px-1 text-[10px] font-semibold uppercase tracking-wide text-red-700 dark:bg-red-950/60 dark:text-red-300"
+                    class="shrink-0 rounded-sm bg-red-100 px-1 text-[10px] font-semibold tracking-wide text-red-700 uppercase dark:bg-red-950/60 dark:text-red-300"
                     :title="t('chat.moderation.mutedRemaining')"
                 >
                     {{ muteRemainingLabel(member) }}
@@ -259,7 +294,7 @@ function unmuteFor(member: ChatMemberDto): void {
                 />
                 <span
                     v-if="member.team_tag"
-                    class="shrink-0 rounded-sm bg-zinc-100 px-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                    class="shrink-0 rounded-sm bg-zinc-100 px-1 text-[10px] font-semibold tracking-wide text-zinc-600 uppercase dark:bg-zinc-800 dark:text-zinc-300"
                     :title="member.team_name ?? undefined"
                 >
                     {{ member.team_tag }}
@@ -331,7 +366,9 @@ function unmuteFor(member: ChatMemberDto): void {
                             id="mute-reason"
                             v-model="muteReason"
                             rows="3"
-                            :placeholder="t('chat.moderation.muteModal.reasonPlaceholder')"
+                            :placeholder="
+                                t('chat.moderation.muteModal.reasonPlaceholder')
+                            "
                         />
                         <p class="text-xs text-muted-foreground">
                             {{ t('chat.moderation.muteModal.reasonHint') }}

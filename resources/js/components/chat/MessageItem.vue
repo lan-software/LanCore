@@ -26,10 +26,7 @@ const isMentioned = computed(
         props.message.mentions.includes(props.currentUserId),
 );
 const displayName = computed(
-    () =>
-        props.message.user?.name ??
-        props.message.user?.username ??
-        'Unknown',
+    () => props.message.user?.name ?? props.message.user?.username ?? 'Unknown',
 );
 
 function onDelete(): void {
@@ -49,11 +46,15 @@ function onDelete(): void {
         ]"
         :data-deleted="isDeleted ? 'true' : 'false'"
     >
-        <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-            <span class="font-semibold text-zinc-700 dark:text-zinc-200">{{ displayName }}</span>
+        <div
+            class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400"
+        >
+            <span class="font-semibold text-zinc-700 dark:text-zinc-200">{{
+                displayName
+            }}</span>
             <span
                 v-if="isReferee"
-                class="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                class="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-amber-800 uppercase dark:bg-amber-900/40 dark:text-amber-300"
                 :title="t('chat.message.refereeBadgeTitle')"
             >
                 <ShieldCheck class="size-3" />
@@ -65,23 +66,21 @@ function onDelete(): void {
         </div>
         <p
             v-if="isDeleted"
-            class="text-sm italic text-zinc-500 dark:text-zinc-400"
+            class="text-sm text-zinc-500 italic dark:text-zinc-400"
         >
             {{ t('chat.message.deletedPlaceholder') }}
         </p>
-        <p v-else class="whitespace-pre-wrap text-sm text-zinc-900 dark:text-zinc-100">
+        <p
+            v-else
+            class="text-sm whitespace-pre-wrap text-zinc-900 dark:text-zinc-100"
+        >
             {{ message.body }}
         </p>
         <div
             v-if="canModerate && !isDeleted"
             class="flex justify-end opacity-0 transition-opacity group-hover:opacity-100"
         >
-            <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                @click="onDelete"
-            >
+            <Button type="button" variant="ghost" size="sm" @click="onDelete">
                 {{ t('chat.message.delete') }}
             </Button>
         </div>

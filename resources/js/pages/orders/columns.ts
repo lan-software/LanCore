@@ -162,6 +162,7 @@ export const columns: ColumnDef<Order>[] = [
         header: () => h('span', 'Fee'),
         cell: ({ row }) => {
             const order = row.original;
+
             if (order.fee_amount === null || order.fee_amount === undefined) {
                 return h(
                     'span',

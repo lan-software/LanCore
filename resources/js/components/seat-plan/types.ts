@@ -39,7 +39,9 @@ export const DEFAULT_PALETTE: SeatPalette = {
     blockFallback: '#2c3e50',
 };
 
-export type ColoringStrategy = 'block-color' | ((seat: SeatPlanSeat, block: SeatPlanBlock) => string);
+export type ColoringStrategy =
+    | 'block-color'
+    | ((seat: SeatPlanSeat, block: SeatPlanBlock) => string);
 
 export type SeatPlanScenePlan = SeatPlanData & {
     background_image_url?: string | null;
@@ -70,10 +72,7 @@ export type SeatPlanImperativeHandle = {
         bbox: BoundingBox,
         options?: { animated?: boolean; padding?: number },
     ): void;
-    pulseSeat(
-        seatId: string | string,
-        options?: { durationMs?: number },
-    ): void;
+    pulseSeat(seatId: string | string, options?: { durationMs?: number }): void;
     getSeatScreenRect(seatId: string | string): DOMRect | null;
     getView(): ViewState;
     setView(view: Partial<ViewState>, options?: { animated?: boolean }): void;

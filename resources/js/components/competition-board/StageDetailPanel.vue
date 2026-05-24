@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import SlackBadge from './SlackBadge.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import SlackBadge from './SlackBadge.vue';
 import type { StageScheduleDto } from './types';
 
 const props = defineProps<{
@@ -47,27 +47,43 @@ watch(
 );
 
 function save() {
-    if (!props.stage) return;
+    if (!props.stage) {
+        return;
+    }
+
     emit('save', {
         stageId: props.stage.id,
         estimated_duration_minutes: duration.value,
         reserve_buffer_minutes: reserve.value,
-        starts_at: startsAt.value ? new Date(startsAt.value).toISOString() : null,
+        starts_at: startsAt.value
+            ? new Date(startsAt.value).toISOString()
+            : null,
         notes: notes.value || null,
     });
 }
 
 function resetComputed() {
-    if (!props.stage) return;
+    if (!props.stage) {
+        return;
+    }
+
     emit('save', { stageId: props.stage.id, reset_to_computed: true });
 }
 </script>
 
 <template>
-    <div v-if="open && stage" class="fixed inset-y-0 right-0 z-40 w-80 border-l border-zinc-200 bg-white p-4 shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
+    <div
+        v-if="open && stage"
+        class="fixed inset-y-0 right-0 z-40 w-80 border-l border-zinc-200 bg-white p-4 shadow-xl dark:border-zinc-800 dark:bg-zinc-950"
+    >
         <div class="mb-3 flex items-center justify-between">
             <div class="font-semibold">{{ stage.stage_name }}</div>
-            <button class="text-zinc-400 hover:text-zinc-200" @click="emit('close')">×</button>
+            <button
+                class="text-zinc-400 hover:text-zinc-200"
+                @click="emit('close')"
+            >
+                ×
+            </button>
         </div>
         <div class="space-y-3">
             <label class="block text-xs">
@@ -76,17 +92,35 @@ function resetComputed() {
             </label>
             <label class="block text-xs">
                 {{ t('competition_board.stage.duration_minutes') }}
-                <Input v-model.number="duration" type="number" min="5" class="mt-1" />
-                <span v-if="stage.duration_overridden" class="mt-1 inline-block text-[10px] text-amber-600">
+                <Input
+                    v-model.number="duration"
+                    type="number"
+                    min="5"
+                    class="mt-1"
+                />
+                <span
+                    v-if="stage.duration_overridden"
+                    class="mt-1 inline-block text-[10px] text-amber-600"
+                >
                     {{ t('competition_board.stage.overridden') }}
                 </span>
             </label>
             <label class="block text-xs">
                 {{ t('competition_board.stage.reserve_minutes') }}
-                <Input v-model.number="reserve" type="number" min="0" class="mt-1" />
+                <Input
+                    v-model.number="reserve"
+                    type="number"
+                    min="0"
+                    class="mt-1"
+                />
             </label>
-            <div v-if="stage.slack_minutes !== null" class="flex justify-between text-xs">
-                <span class="text-zinc-500">{{ t('competition_board.stage.slack') }}</span>
+            <div
+                v-if="stage.slack_minutes !== null"
+                class="flex justify-between text-xs"
+            >
+                <span class="text-zinc-500">{{
+                    t('competition_board.stage.slack')
+                }}</span>
                 <SlackBadge :minutes="stage.slack_minutes" />
             </div>
             <label class="block text-xs">

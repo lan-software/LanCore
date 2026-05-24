@@ -28,7 +28,9 @@ const styleWidth = computed(() => `${props.width}px`);
                 "
                 :style="{
                     left: seg.pxOffset + 'px',
-                    width: ((seg.end - seg.start) / 60_000) * seg.pxPerMinute + 'px',
+                    width:
+                        ((seg.end - seg.start) / 60_000) * seg.pxPerMinute +
+                        'px',
                 }"
             />
             <div
@@ -38,7 +40,9 @@ const styleWidth = computed(() => `${props.width}px`);
                 :style="{ left: tick.x + 'px', transform: 'translateX(-1px)' }"
             >
                 <div class="h-2 w-px bg-zinc-400 dark:bg-zinc-500" />
-                <div class="ml-1 text-[10px] leading-none text-zinc-600 dark:text-zinc-400">
+                <div
+                    class="ml-1 text-[10px] leading-none text-zinc-600 dark:text-zinc-400"
+                >
                     {{ tick.label }}
                 </div>
             </div>

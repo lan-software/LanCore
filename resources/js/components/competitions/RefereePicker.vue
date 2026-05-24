@@ -35,16 +35,24 @@ const selectedIds = ref<Set<string>>(new Set(props.initialSelectedIds));
 
 const byId = computed(() => {
     const m = new Map<string, UserRef>();
-    for (const u of props.users) m.set(u.id, u);
+
+    for (const u of props.users) {
+        m.set(u.id, u);
+    }
+
     return m;
 });
 
 const filteredCandidates = computed(() => {
     const q = search.value.trim().toLowerCase();
+
     return props.users
         .filter((u) => !selectedIds.value.has(u.id))
         .filter((u) => {
-            if (q === '') return true;
+            if (q === '') {
+                return true;
+            }
+
             return (
                 u.name.toLowerCase().includes(q) ||
                 (u.username ?? '').toLowerCase().includes(q) ||
@@ -104,7 +112,9 @@ function remove(id: string) {
 
         <!-- Search-and-add box. -->
         <div class="relative">
-            <Search class="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search
+                class="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground"
+            />
             <Input
                 v-model="search"
                 type="search"
@@ -118,7 +128,7 @@ function remove(id: string) {
              so the form stays compact even on competitions with many users. -->
         <ul
             v-if="filteredCandidates.length > 0"
-            class="max-h-48 overflow-y-auto rounded border divide-y divide-zinc-100 dark:divide-zinc-800"
+            class="max-h-48 divide-y divide-zinc-100 overflow-y-auto rounded border dark:divide-zinc-800"
         >
             <li
                 v-for="user in filteredCandidates"
@@ -127,7 +137,11 @@ function remove(id: string) {
             >
                 <span class="truncate">
                     {{ user.name }}
-                    <span v-if="user.email" class="text-xs text-muted-foreground">&lt;{{ user.email }}&gt;</span>
+                    <span
+                        v-if="user.email"
+                        class="text-xs text-muted-foreground"
+                        >&lt;{{ user.email }}&gt;</span
+                    >
                 </span>
                 <Button
                     v-if="!disabled"
@@ -141,10 +155,7 @@ function remove(id: string) {
                 </Button>
             </li>
         </ul>
-        <p
-            v-else-if="search !== ''"
-            class="text-xs text-muted-foreground"
-        >
+        <p v-else-if="search !== ''" class="text-xs text-muted-foreground">
             {{ t('common.no_results') }}
         </p>
     </div>

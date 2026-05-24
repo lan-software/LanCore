@@ -118,7 +118,11 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <p class="text-xs text-muted-foreground">
                             {{ $t('games.matchLengthMinutesHelp') }}
                             <span v-if="game.match_length_minutes !== null">
-                                ({{ $t('common.inherits_from_game', { value: game.match_length_minutes }) }})
+                                ({{
+                                    $t('common.inherits_from_game', {
+                                        value: game.match_length_minutes,
+                                    })
+                                }})
                             </span>
                         </p>
                         <InputError :message="errors.match_length_minutes" />

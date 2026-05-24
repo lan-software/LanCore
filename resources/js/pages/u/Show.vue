@@ -287,9 +287,13 @@ function rarityClass(percentage: number): string {
                                     <span class="truncate">
                                         {{
                                             event.seat.seat_title
-                                                ? $t('publicProfile.seatLabel', {
-                                                      seat: event.seat.seat_title,
-                                                  })
+                                                ? $t(
+                                                      'publicProfile.seatLabel',
+                                                      {
+                                                          seat: event.seat
+                                                              .seat_title,
+                                                      },
+                                                  )
                                                 : $t('publicProfile.seatFind')
                                         }}
                                     </span>

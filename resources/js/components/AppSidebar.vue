@@ -71,7 +71,6 @@ import { index as adminTeamsIndex } from '@/routes/admin/teams';
 import { index as adminTicketsIndex } from '@/routes/admin-tickets';
 import { index as announcementsIndex } from '@/routes/announcements';
 import { index as competitionsIndex } from '@/routes/competitions';
-import competitionBoardRoutes from '@/routes/events/competition-board';
 import {
     dashboard as eventsDashboard,
     index as eventsIndex,
@@ -162,126 +161,402 @@ const mainNavItems = computed<NavItem[]>(() => [
 
 const allPinnableItems = computed<NavItem[]>(() => {
     const items: NavItem[] = [
-        { id: 'dashboard', title: t('navigation.dashboard'), href: dashboard(), icon: LayoutGrid },
-        { id: 'my-tickets', title: t('navigation.myTickets'), href: ticketsIndex(), icon: Ticket },
-        { id: 'my-orders', title: t('navigation.myOrders'), href: myOrdersIndex(), icon: ShoppingCart },
-        { id: 'my-competitions', title: t('navigation.myCompetitions'), href: myCompetitionsIndex(), icon: Swords },
+        {
+            id: 'dashboard',
+            title: t('navigation.dashboard'),
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        {
+            id: 'my-tickets',
+            title: t('navigation.myTickets'),
+            href: ticketsIndex(),
+            icon: Ticket,
+        },
+        {
+            id: 'my-orders',
+            title: t('navigation.myOrders'),
+            href: myOrdersIndex(),
+            icon: ShoppingCart,
+        },
+        {
+            id: 'my-competitions',
+            title: t('navigation.myCompetitions'),
+            href: myCompetitionsIndex(),
+            icon: Swords,
+        },
     ];
 
     if (can(Permission.ManageUsers)) {
-        items.push({ id: 'organization', title: t('navigation.organization'), href: organizationSettingsIndex(), icon: Cog });
-        items.push({ id: 'users', title: t('navigation.users'), href: usersIndex(), icon: Users });
+        items.push({
+            id: 'organization',
+            title: t('navigation.organization'),
+            href: organizationSettingsIndex(),
+            icon: Cog,
+        });
+        items.push({
+            id: 'users',
+            title: t('navigation.users'),
+            href: usersIndex(),
+            icon: Users,
+        });
     }
+
     if (can(Permission.ManagePolicies)) {
-        items.push({ id: 'policies', title: t('navigation.policies'), href: { url: '/backstage/policies', method: 'get' as const }, icon: FileText });
+        items.push({
+            id: 'policies',
+            title: t('navigation.policies'),
+            href: { url: '/backstage/policies', method: 'get' as const },
+            icon: FileText,
+        });
     }
+
     if (can(Permission.ViewEmailLog)) {
-        items.push({ id: 'emails', title: 'Emails', href: adminEmailsIndex(), icon: Mail });
+        items.push({
+            id: 'emails',
+            title: 'Emails',
+            href: adminEmailsIndex(),
+            icon: Mail,
+        });
     }
+
     if (can(Permission.ManageNewsletterLists)) {
-        items.push({ id: 'newsletter-lists', title: 'Newsletter Lists', href: newsletterListsIndex(), icon: MailPlus });
+        items.push({
+            id: 'newsletter-lists',
+            title: 'Newsletter Lists',
+            href: newsletterListsIndex(),
+            icon: MailPlus,
+        });
     }
+
     if (can(Permission.ManageThemes)) {
-        items.push({ id: 'themes', title: 'Themes', href: themesIndex(), icon: PaintBucket });
+        items.push({
+            id: 'themes',
+            title: 'Themes',
+            href: themesIndex(),
+            icon: PaintBucket,
+        });
     }
+
     if (canAny(Permission.ManageGameServers, Permission.ViewOrchestration)) {
-        items.push({ id: 'external-apis', title: t('navigation.externalApis'), href: externalApisIndex(), icon: PlugZap });
+        items.push({
+            id: 'external-apis',
+            title: t('navigation.externalApis'),
+            href: externalApisIndex(),
+            icon: PlugZap,
+        });
     }
-    if (canAny(Permission.ManageNewsArticles, Permission.ModerateNewsComments)) {
+
+    if (
+        canAny(Permission.ManageNewsArticles, Permission.ModerateNewsComments)
+    ) {
         items.push(
-            { id: 'news-articles', title: t('navigation.articles'), href: newsIndex(), icon: Newspaper },
-            { id: 'news-comments', title: t('navigation.comments'), href: newsCommentsIndex(), icon: MessageSquare },
+            {
+                id: 'news-articles',
+                title: t('navigation.articles'),
+                href: newsIndex(),
+                icon: Newspaper,
+            },
+            {
+                id: 'news-comments',
+                title: t('navigation.comments'),
+                href: newsCommentsIndex(),
+                icon: MessageSquare,
+            },
         );
     }
+
     if (can(Permission.ManageAchievements)) {
-        items.push({ id: 'achievements', title: t('navigation.achievements'), href: achievementsIndex(), icon: Trophy });
+        items.push({
+            id: 'achievements',
+            title: t('navigation.achievements'),
+            href: achievementsIndex(),
+            icon: Trophy,
+        });
     }
+
     if (can(Permission.ManageAnnouncements)) {
-        items.push({ id: 'announcements', title: t('navigation.announcements'), href: announcementsIndex(), icon: Megaphone });
+        items.push({
+            id: 'announcements',
+            title: t('navigation.announcements'),
+            href: announcementsIndex(),
+            icon: Megaphone,
+        });
     }
+
     if (can(Permission.ManageEvents)) {
-        items.push({ id: 'events', title: t('navigation.events'), href: eventsIndex(), icon: Calendar });
-        items.push({ id: 'event-dashboard', title: t('navigation.eventDashboard'), href: eventsDashboard(), icon: Gauge });
+        items.push({
+            id: 'events',
+            title: t('navigation.events'),
+            href: eventsIndex(),
+            icon: Calendar,
+        });
+        items.push({
+            id: 'event-dashboard',
+            title: t('navigation.eventDashboard'),
+            href: eventsDashboard(),
+            icon: Gauge,
+        });
     }
+
     if (can(Permission.ManagePrograms)) {
-        items.push({ id: 'programs', title: t('navigation.programs'), href: programsIndex(), icon: ClipboardList });
+        items.push({
+            id: 'programs',
+            title: t('navigation.programs'),
+            href: programsIndex(),
+            icon: ClipboardList,
+        });
     }
+
     if (can(Permission.ManageVenues)) {
-        items.push({ id: 'venues', title: t('navigation.venues'), href: venuesIndex(), icon: MapPin });
+        items.push({
+            id: 'venues',
+            title: t('navigation.venues'),
+            href: venuesIndex(),
+            icon: MapPin,
+        });
     }
+
     if (can(Permission.ManageCompetitions)) {
         items.push(
-            { id: 'competitions', title: t('navigation.competitions'), href: competitionsIndex(), icon: Swords },
-            { id: 'admin-teams', title: t('navigation.teams'), href: adminTeamsIndex(), icon: Users },
+            {
+                id: 'competitions',
+                title: t('navigation.competitions'),
+                href: competitionsIndex(),
+                icon: Swords,
+            },
+            {
+                id: 'admin-teams',
+                title: t('navigation.teams'),
+                href: adminTeamsIndex(),
+                icon: Users,
+            },
             // Session-scoped via Event Selector (selected_event_id), per spec.
-            { id: 'competition-board', title: t('navigation.competitionBoard'), href: '/backstage/competition-board', icon: ChartGantt },
+            {
+                id: 'competition-board',
+                title: t('navigation.competitionBoard'),
+                href: '/backstage/competition-board',
+                icon: ChartGantt,
+            },
         );
     }
+
     if (can(Permission.ManageGames)) {
-        items.push({ id: 'games', title: t('navigation.games'), href: gamesIndex(), icon: Gamepad2 });
+        items.push({
+            id: 'games',
+            title: t('navigation.games'),
+            href: gamesIndex(),
+            icon: Gamepad2,
+        });
     }
+
     if (can(Permission.ManageSponsors)) {
         items.push(
-            { id: 'sponsors', title: t('navigation.sponsors'), href: sponsorsIndex(), icon: Handshake },
-            { id: 'sponsor-levels', title: t('navigation.sponsorLevels'), href: sponsorLevelsIndex(), icon: Palette },
+            {
+                id: 'sponsors',
+                title: t('navigation.sponsors'),
+                href: sponsorsIndex(),
+                icon: Handshake,
+            },
+            {
+                id: 'sponsor-levels',
+                title: t('navigation.sponsorLevels'),
+                href: sponsorLevelsIndex(),
+                icon: Palette,
+            },
         );
     }
+
     if (can(Permission.ManageOrgaTeams)) {
-        items.push({ id: 'orga-teams', title: 'Orga-Teams', href: orgaTeamsIndex(), icon: UsersRound });
+        items.push({
+            id: 'orga-teams',
+            title: 'Orga-Teams',
+            href: orgaTeamsIndex(),
+            icon: UsersRound,
+        });
     }
-    if (!can(Permission.ManageSponsors) && can(Permission.ManageAssignedSponsors)) {
-        items.push({ id: 'my-sponsors', title: t('navigation.mySponsors'), href: sponsorsIndex(), icon: Handshake });
+
+    if (
+        !can(Permission.ManageSponsors) &&
+        can(Permission.ManageAssignedSponsors)
+    ) {
+        items.push({
+            id: 'my-sponsors',
+            title: t('navigation.mySponsors'),
+            href: sponsorsIndex(),
+            icon: Handshake,
+        });
     }
-    if (can(Permission.ManageSponsorLevels) && !can(Permission.ManageSponsors)) {
-        items.push({ id: 'sponsor-levels-only', title: t('navigation.sponsorLevels'), href: sponsorLevelsIndex(), icon: Palette });
+
+    if (
+        can(Permission.ManageSponsorLevels) &&
+        !can(Permission.ManageSponsors)
+    ) {
+        items.push({
+            id: 'sponsor-levels-only',
+            title: t('navigation.sponsorLevels'),
+            href: sponsorLevelsIndex(),
+            icon: Palette,
+        });
     }
+
     if (can(Permission.ManageTicketing)) {
         items.push(
-            { id: 'ticket-types', title: t('navigation.ticketTypes'), href: ticketTypesIndex(), icon: Rows3 },
-            { id: 'ticket-categories', title: t('navigation.ticketCategories'), href: ticketCategoriesIndex(), icon: Tag },
-            { id: 'ticket-addons', title: t('navigation.ticketAddons'), href: ticketAddonsIndex(), icon: Puzzle },
-            { id: 'vouchers', title: t('navigation.vouchers'), href: vouchersIndex(), icon: Gift },
+            {
+                id: 'ticket-types',
+                title: t('navigation.ticketTypes'),
+                href: ticketTypesIndex(),
+                icon: Rows3,
+            },
+            {
+                id: 'ticket-categories',
+                title: t('navigation.ticketCategories'),
+                href: ticketCategoriesIndex(),
+                icon: Tag,
+            },
+            {
+                id: 'ticket-addons',
+                title: t('navigation.ticketAddons'),
+                href: ticketAddonsIndex(),
+                icon: Puzzle,
+            },
+            {
+                id: 'vouchers',
+                title: t('navigation.vouchers'),
+                href: vouchersIndex(),
+                icon: Gift,
+            },
         );
     }
+
     if (can(Permission.ManageSeatPlans)) {
-        items.push({ id: 'seat-plans', title: t('navigation.seatPlans'), href: seatPlansIndex(), icon: Grid2x2 });
+        items.push({
+            id: 'seat-plans',
+            title: t('navigation.seatPlans'),
+            href: seatPlansIndex(),
+            icon: Grid2x2,
+        });
     }
+
     if (can(Permission.ManageWebhooks)) {
-        items.push({ id: 'webhooks', title: t('navigation.webhooks'), href: webhooksIndex(), icon: Webhook });
+        items.push({
+            id: 'webhooks',
+            title: t('navigation.webhooks'),
+            href: webhooksIndex(),
+            icon: Webhook,
+        });
     }
+
     if (can(Permission.ManageIntegrations)) {
-        items.push({ id: 'integrations', title: t('navigation.integrations'), href: integrationsIndex(), icon: Cog });
+        items.push({
+            id: 'integrations',
+            title: t('navigation.integrations'),
+            href: integrationsIndex(),
+            icon: Cog,
+        });
     }
+
     if (canAny(Permission.ViewOrders, Permission.ManageOrders)) {
         items.push(
-            { id: 'shop-settings', title: t('navigation.settings'), href: shopSettingsIndex(), icon: Cog },
-            { id: 'orders', title: t('navigation.orders'), href: ordersIndex(), icon: ShoppingCart },
-            { id: 'admin-tickets', title: t('navigation.ticketsAdmin'), href: adminTicketsIndex(), icon: TicketCheck },
+            {
+                id: 'shop-settings',
+                title: t('navigation.settings'),
+                href: shopSettingsIndex(),
+                icon: Cog,
+            },
+            {
+                id: 'orders',
+                title: t('navigation.orders'),
+                href: ordersIndex(),
+                icon: ShoppingCart,
+            },
+            {
+                id: 'admin-tickets',
+                title: t('navigation.ticketsAdmin'),
+                href: adminTicketsIndex(),
+                icon: TicketCheck,
+            },
         );
     }
+
     if (can(Permission.ManageShopConditions)) {
         items.push(
-            { id: 'purchase-requirements', title: t('navigation.purchaseRequirements'), href: purchaseRequirementsIndex(), icon: ShieldCheck },
-            { id: 'purchase-conditions', title: t('navigation.purchaseConditions'), href: globalPurchaseConditionsIndex(), icon: FileCheck },
-            { id: 'payment-conditions', title: t('navigation.paymentConditions'), href: paymentProviderConditionsIndex(), icon: CreditCard },
+            {
+                id: 'purchase-requirements',
+                title: t('navigation.purchaseRequirements'),
+                href: purchaseRequirementsIndex(),
+                icon: ShieldCheck,
+            },
+            {
+                id: 'purchase-conditions',
+                title: t('navigation.purchaseConditions'),
+                href: globalPurchaseConditionsIndex(),
+                icon: FileCheck,
+            },
+            {
+                id: 'payment-conditions',
+                title: t('navigation.paymentConditions'),
+                href: paymentProviderConditionsIndex(),
+                icon: CreditCard,
+            },
         );
     }
+
     if (can(Permission.ManageGameServers)) {
-        items.push({ id: 'game-servers', title: t('navigation.gameServers'), href: gameServersIndex(), icon: Server });
+        items.push({
+            id: 'game-servers',
+            title: t('navigation.gameServers'),
+            href: gameServersIndex(),
+            icon: Server,
+        });
     }
+
     if (canAny(Permission.ViewOrchestration, Permission.ManageGameServers)) {
-        items.push({ id: 'orchestration-jobs', title: t('navigation.orchestration'), href: orchestrationJobsIndex(), icon: Radio });
+        items.push({
+            id: 'orchestration-jobs',
+            title: t('navigation.orchestration'),
+            href: orchestrationJobsIndex(),
+            icon: Radio,
+        });
     }
+
     if (can('view_deletion_requests')) {
-        items.push({ id: 'deletion-requests', title: 'Deletion requests', href: dataLifecycleRoutes.deletionRequests.index(), icon: Trash2 });
-        items.push({ id: 'anonymization-log', title: 'Anonymization log', href: dataLifecycleRoutes.anonymizationLog.index(), icon: History });
+        items.push({
+            id: 'deletion-requests',
+            title: 'Deletion requests',
+            href: dataLifecycleRoutes.deletionRequests.index(),
+            icon: Trash2,
+        });
+        items.push({
+            id: 'anonymization-log',
+            title: 'Anonymization log',
+            href: dataLifecycleRoutes.anonymizationLog.index(),
+            icon: History,
+        });
     }
+
     if (can('manage_retention_policies')) {
-        items.push({ id: 'retention-policies', title: 'Retention policies', href: dataLifecycleRoutes.retentionPolicies.index(), icon: Timer });
+        items.push({
+            id: 'retention-policies',
+            title: 'Retention policies',
+            href: dataLifecycleRoutes.retentionPolicies.index(),
+            icon: Timer,
+        });
     }
+
     if (isSuperadmin.value) {
-        items.push({ id: 'horizon', title: 'Queue Monitor', href: { url: '/horizon', method: 'get' as const }, icon: GaugeCircle });
-        items.push({ id: 'pulse', title: 'Pulse', href: { url: '/pulse', method: 'get' as const }, icon: Activity });
+        items.push({
+            id: 'horizon',
+            title: 'Queue Monitor',
+            href: { url: '/horizon', method: 'get' as const },
+            icon: GaugeCircle,
+        });
+        items.push({
+            id: 'pulse',
+            title: 'Pulse',
+            href: { url: '/pulse', method: 'get' as const },
+            icon: Activity,
+        });
     }
 
     return items;
@@ -347,58 +622,111 @@ const showShop = computed(() =>
 const labels = {
     platform: computed(() => {
         const out: string[] = [];
-        if (can(Permission.ManageUsers)) out.push(t('navigation.organization'));
-        if (can(Permission.ManagePolicies)) out.push(t('navigation.policies'));
-        if (can(Permission.ViewEmailLog)) out.push('Emails');
-        if (can(Permission.ManageNewsletterLists)) out.push('Newsletter Lists');
-        if (can(Permission.ManageThemes)) out.push('Themes');
-        if (canAny(Permission.ManageGameServers, Permission.ViewOrchestration))
+
+        if (can(Permission.ManageUsers)) {
+            out.push(t('navigation.organization'));
+        }
+
+        if (can(Permission.ManagePolicies)) {
+            out.push(t('navigation.policies'));
+        }
+
+        if (can(Permission.ViewEmailLog)) {
+            out.push('Emails');
+        }
+
+        if (can(Permission.ManageNewsletterLists)) {
+            out.push('Newsletter Lists');
+        }
+
+        if (can(Permission.ManageThemes)) {
+            out.push('Themes');
+        }
+
+        if (
+            canAny(Permission.ManageGameServers, Permission.ViewOrchestration)
+        ) {
             out.push(t('navigation.externalApis'));
+        }
+
         if (isSuperadmin.value) {
             out.push('Queue Monitor', 'Pulse');
         }
+
         return out;
     }),
     administration: computed(() => {
         const out: string[] = [];
-        if (can(Permission.ManageUsers)) out.push(t('navigation.users'));
-        if (can(Permission.ManageAchievements))
+
+        if (can(Permission.ManageUsers)) {
+            out.push(t('navigation.users'));
+        }
+
+        if (can(Permission.ManageAchievements)) {
             out.push(t('navigation.achievements'));
+        }
+
         return out;
     }),
     dataLifecycle: computed(() => {
         const out: string[] = [];
-        if (can('view_deletion_requests'))
+
+        if (can('view_deletion_requests')) {
             out.push('Deletion requests', 'Anonymization log');
-        if (can('manage_retention_policies')) out.push('Retention policies');
+        }
+
+        if (can('manage_retention_policies')) {
+            out.push('Retention policies');
+        }
+
         return out;
     }),
-    news: computed(() => [
-        t('navigation.articles'),
-        t('navigation.comments'),
-    ]),
+    news: computed(() => [t('navigation.articles'), t('navigation.comments')]),
     announcements: computed(() => [t('navigation.announcements')]),
     events: computed(() => {
         const out: string[] = [];
-        if (can(Permission.ManageEvents))
+
+        if (can(Permission.ManageEvents)) {
             out.push(t('navigation.events'), t('navigation.eventDashboard'));
-        if (can(Permission.ManagePrograms)) out.push(t('navigation.programs'));
-        if (can(Permission.ManageVenues)) out.push(t('navigation.venues'));
-        if (can(Permission.ManageSeatPlans)) out.push(t('navigation.seatPlans'));
-        if (can(Permission.ManageOrgaTeams)) out.push('Orga-Teams');
+        }
+
+        if (can(Permission.ManagePrograms)) {
+            out.push(t('navigation.programs'));
+        }
+
+        if (can(Permission.ManageVenues)) {
+            out.push(t('navigation.venues'));
+        }
+
+        if (can(Permission.ManageSeatPlans)) {
+            out.push(t('navigation.seatPlans'));
+        }
+
+        if (can(Permission.ManageOrgaTeams)) {
+            out.push('Orga-Teams');
+        }
+
         return out;
     }),
     games: computed(() => [t('navigation.games')]),
     sponsoring: computed(() => {
         const out: string[] = [];
-        if (can(Permission.ManageSponsors)) out.push(t('navigation.sponsors'));
+
+        if (can(Permission.ManageSponsors)) {
+            out.push(t('navigation.sponsors'));
+        }
+
         if (
             !can(Permission.ManageSponsors) &&
             can(Permission.ManageAssignedSponsors)
-        )
+        ) {
             out.push(t('navigation.mySponsors'));
-        if (can(Permission.ManageSponsorLevels))
+        }
+
+        if (can(Permission.ManageSponsorLevels)) {
             out.push(t('navigation.sponsorLevels'));
+        }
+
         return out;
     }),
     ticketing: computed(() => [
@@ -414,15 +742,26 @@ const labels = {
     ]),
     orchestration: computed(() => {
         const out: string[] = [];
-        if (can(Permission.ManageGameServers))
+
+        if (can(Permission.ManageGameServers)) {
             out.push(t('navigation.gameServers'));
+        }
+
         out.push(t('navigation.orchestration'));
+
         return out;
     }),
     integrations: computed(() => {
         const out: string[] = [];
-        if (can(Permission.ManageIntegrations)) out.push(t('navigation.lanApps'));
-        if (can(Permission.ManageWebhooks)) out.push(t('navigation.webhooks'));
+
+        if (can(Permission.ManageIntegrations)) {
+            out.push(t('navigation.lanApps'));
+        }
+
+        if (can(Permission.ManageWebhooks)) {
+            out.push(t('navigation.webhooks'));
+        }
+
         return out;
     }),
     shop: computed(() => [
@@ -586,7 +925,9 @@ const labels = {
                         favorite-id="retention-policies"
                         label="Retention policies"
                         :icon="Timer"
-                        :href="dataLifecycleRoutes.retentionPolicies.index().url"
+                        :href="
+                            dataLifecycleRoutes.retentionPolicies.index().url
+                        "
                         :search-query="search"
                     />
                     <SidebarLink

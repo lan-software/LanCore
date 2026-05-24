@@ -153,7 +153,10 @@ function formatDateTime(dateString: string): string {
     });
 }
 
-function onSeatHoverEnter(payload: { id: string | number; rect: DOMRect }): void {
+function onSeatHoverEnter(payload: {
+    id: string | number;
+    rect: DOMRect;
+}): void {
     const taken = takenLookup.value.get(String(payload.id));
 
     if (!taken?.username) {

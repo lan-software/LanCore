@@ -1,5 +1,5 @@
-import { onUnmounted  } from 'vue';
-import type {Ref} from 'vue';
+import { onUnmounted } from 'vue';
+import type { Ref } from 'vue';
 import type { SeatPlanImperativeHandle } from './types';
 
 type ViewerInstance = SeatPlanImperativeHandle & {
@@ -9,7 +9,10 @@ type ViewerInstance = SeatPlanImperativeHandle & {
 type ReadyCallback = () => void;
 
 type Pending =
-    | { kind: 'fitToVenue'; args: Parameters<SeatPlanImperativeHandle['fitToVenue']> }
+    | {
+          kind: 'fitToVenue';
+          args: Parameters<SeatPlanImperativeHandle['fitToVenue']>;
+      }
     | {
           kind: 'zoomToBlock';
           args: Parameters<SeatPlanImperativeHandle['zoomToBlock']>;
@@ -22,8 +25,14 @@ type Pending =
           kind: 'zoomToBoundingBox';
           args: Parameters<SeatPlanImperativeHandle['zoomToBoundingBox']>;
       }
-    | { kind: 'pulseSeat'; args: Parameters<SeatPlanImperativeHandle['pulseSeat']> }
-    | { kind: 'setView'; args: Parameters<SeatPlanImperativeHandle['setView']> };
+    | {
+          kind: 'pulseSeat';
+          args: Parameters<SeatPlanImperativeHandle['pulseSeat']>;
+      }
+    | {
+          kind: 'setView';
+          args: Parameters<SeatPlanImperativeHandle['setView']>;
+      };
 
 export type SeatPlanViewerHandle = SeatPlanImperativeHandle & {
     /**
@@ -113,8 +122,10 @@ export function useSeatPlanViewer(
             try {
                 cb();
             } catch (err) {
-                 
-                console.error('[useSeatPlanViewer] onReady callback threw', err);
+                console.error(
+                    '[useSeatPlanViewer] onReady callback threw',
+                    err,
+                );
             }
         }
     }
@@ -141,13 +152,19 @@ export function useSeatPlanViewer(
         if (inst && everReady) {
             switch (kind) {
                 case 'fitToVenue':
-                    inst.fitToVenue(...(args as Parameters<typeof inst.fitToVenue>));
+                    inst.fitToVenue(
+                        ...(args as Parameters<typeof inst.fitToVenue>),
+                    );
                     break;
                 case 'zoomToBlock':
-                    inst.zoomToBlock(...(args as Parameters<typeof inst.zoomToBlock>));
+                    inst.zoomToBlock(
+                        ...(args as Parameters<typeof inst.zoomToBlock>),
+                    );
                     break;
                 case 'zoomToSeat':
-                    inst.zoomToSeat(...(args as Parameters<typeof inst.zoomToSeat>));
+                    inst.zoomToSeat(
+                        ...(args as Parameters<typeof inst.zoomToSeat>),
+                    );
                     break;
                 case 'zoomToBoundingBox':
                     inst.zoomToBoundingBox(
@@ -155,7 +172,9 @@ export function useSeatPlanViewer(
                     );
                     break;
                 case 'pulseSeat':
-                    inst.pulseSeat(...(args as Parameters<typeof inst.pulseSeat>));
+                    inst.pulseSeat(
+                        ...(args as Parameters<typeof inst.pulseSeat>),
+                    );
                     break;
                 case 'setView':
                     inst.setView(...(args as Parameters<typeof inst.setView>));
@@ -198,8 +217,10 @@ export function useSeatPlanViewer(
                 try {
                     cb();
                 } catch (err) {
-                     
-                    console.error('[useSeatPlanViewer] onReady callback threw', err);
+                    console.error(
+                        '[useSeatPlanViewer] onReady callback threw',
+                        err,
+                    );
                 }
             }
         },
@@ -220,8 +241,9 @@ export function useSeatPlanViewer(
  *   <SeatPlanViewer @ready="notifyReady(viewer)" />
  */
 export function notifyReady(handle: SeatPlanViewerHandle): void {
-    const fn = (handle as SeatPlanViewerHandle & { notifyReady?: ReadyCallback })
-        .notifyReady;
+    const fn = (
+        handle as SeatPlanViewerHandle & { notifyReady?: ReadyCallback }
+    ).notifyReady;
 
     if (typeof fn === 'function') {
         fn();

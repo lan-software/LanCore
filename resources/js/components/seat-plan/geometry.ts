@@ -118,7 +118,10 @@ export function fitViewToBbox(
     const centerY = (bbox.minY + bbox.maxY) / 2;
     const width = Math.max(bbox.maxX - bbox.minX, 200);
     const height = Math.max(bbox.maxY - bbox.minY, 200);
-    const zoomFit = Math.min(1600 / (width * padding), 1000 / (height * padding));
+    const zoomFit = Math.min(
+        1600 / (width * padding),
+        1000 / (height * padding),
+    );
 
     return {
         panX: centerX,

@@ -23,12 +23,30 @@ const dragState = useDragState();
 const emit = defineEmits<{
     (e: 'open-stage', stageId: string): void;
     (e: 'open-round', roundId: string): void;
-    (e: 'stage-drag-end', payload: { stageId: string; newStartIso: string }): void;
-    (e: 'stage-resize-duration-end', payload: { stageId: string; minutes: number }): void;
-    (e: 'stage-resize-reserve-end', payload: { stageId: string; minutes: number }): void;
-    (e: 'round-drag-end', payload: { roundId: string; newStartIso: string }): void;
-    (e: 'round-resize-duration-end', payload: { roundId: string; minutes: number }): void;
-    (e: 'round-resize-reserve-end', payload: { roundId: string; minutes: number }): void;
+    (
+        e: 'stage-drag-end',
+        payload: { stageId: string; newStartIso: string },
+    ): void;
+    (
+        e: 'stage-resize-duration-end',
+        payload: { stageId: string; minutes: number },
+    ): void;
+    (
+        e: 'stage-resize-reserve-end',
+        payload: { stageId: string; minutes: number },
+    ): void;
+    (
+        e: 'round-drag-end',
+        payload: { roundId: string; newStartIso: string },
+    ): void;
+    (
+        e: 'round-resize-duration-end',
+        payload: { roundId: string; minutes: number },
+    ): void;
+    (
+        e: 'round-resize-reserve-end',
+        payload: { roundId: string; minutes: number },
+    ): void;
     (e: 'drag-active-change', active: boolean): void;
 }>();
 
@@ -45,7 +63,10 @@ const STAGE_PALETTE = [
 ] as const;
 
 function colorForStage(stage: StageScheduleDto): string {
-    const idx = props.competition.stage_schedules.findIndex((s) => s.id === stage.id);
+    const idx = props.competition.stage_schedules.findIndex(
+        (s) => s.id === stage.id,
+    );
+
     return STAGE_PALETTE[Math.max(0, idx) % STAGE_PALETTE.length];
 }
 
@@ -56,19 +77,28 @@ function stageHasRounds(stage: StageScheduleDto): boolean {
 
 <template>
     <div class="flex border-b border-zinc-200 dark:border-zinc-800">
-        <div class="sticky left-0 z-10 flex w-48 flex-col justify-center bg-white px-3 py-2 dark:bg-zinc-950">
+        <div
+            class="sticky left-0 z-10 flex w-48 flex-col justify-center bg-white px-3 py-2 dark:bg-zinc-950"
+        >
             <Link
                 :href="competitionEdit({ competition: competition.id }).url"
                 class="truncate text-sm font-medium hover:text-emerald-600 hover:underline dark:hover:text-emerald-400"
             >
                 {{ competition.name }}
             </Link>
-            <div class="truncate text-[11px] text-zinc-500">{{ competition.game_name || '—' }}</div>
+            <div class="truncate text-[11px] text-zinc-500">
+                {{ competition.game_name || '—' }}
+            </div>
         </div>
-        <div class="sticky left-48 z-10 flex w-20 items-center justify-center border-l border-zinc-200 bg-white px-2 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+        <div
+            class="sticky left-48 z-10 flex w-20 items-center justify-center border-l border-zinc-200 bg-white px-2 py-2 dark:border-zinc-800 dark:bg-zinc-950"
+        >
             <SlackBadge :minutes="competition.current_slack_minutes" />
         </div>
-        <div class="relative h-10 flex-1 border-l border-zinc-200 dark:border-zinc-800" :style="{ width: width + 'px' }">
+        <div
+            class="relative h-10 flex-1 border-l border-zinc-200 dark:border-zinc-800"
+            :style="{ width: width + 'px' }"
+        >
             <SnapGrid
                 :active="dragState.active.value"
                 :width="width"
@@ -76,7 +106,10 @@ function stageHasRounds(stage: StageScheduleDto): boolean {
                 :range-end-ms="rangeEndMs"
                 :x-for-time="xForTime"
             />
-            <template v-for="stage in competition.stage_schedules" :key="stage.id">
+            <template
+                v-for="stage in competition.stage_schedules"
+                :key="stage.id"
+            >
                 <!--
                     Stage with rounds: render each round as a draggable box and put a small
                     stage label band above its first round. Stage without rounds (bracket
@@ -95,9 +128,15 @@ function stageHasRounds(stage: StageScheduleDto): boolean {
                         :conflicted="conflictedScheduleIds.has(round.id)"
                         @open="(id) => emit('open-round', id)"
                         @drag-end="(p) => emit('round-drag-end', p)"
-                        @resize-duration-end="(p) => emit('round-resize-duration-end', p)"
-                        @resize-reserve-end="(p) => emit('round-resize-reserve-end', p)"
-                        @drag-active-change="(a) => emit('drag-active-change', a)"
+                        @resize-duration-end="
+                            (p) => emit('round-resize-duration-end', p)
+                        "
+                        @resize-reserve-end="
+                            (p) => emit('round-resize-reserve-end', p)
+                        "
+                        @drag-active-change="
+                            (a) => emit('drag-active-change', a)
+                        "
                     />
                 </template>
                 <StageBlock
@@ -109,8 +148,12 @@ function stageHasRounds(stage: StageScheduleDto): boolean {
                     :conflicted="conflictedScheduleIds.has(stage.id)"
                     @open="(id) => emit('open-stage', id)"
                     @drag-end="(p) => emit('stage-drag-end', p)"
-                    @resize-duration-end="(p) => emit('stage-resize-duration-end', p)"
-                    @resize-reserve-end="(p) => emit('stage-resize-reserve-end', p)"
+                    @resize-duration-end="
+                        (p) => emit('stage-resize-duration-end', p)
+                    "
+                    @resize-reserve-end="
+                        (p) => emit('stage-resize-reserve-end', p)
+                    "
                 />
             </template>
         </div>

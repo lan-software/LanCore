@@ -14,16 +14,15 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CompetitionController from '@/actions/App/Domain/Competition/Http/Controllers/CompetitionController';
 import ChatRoom from '@/components/chat/ChatRoom.vue';
-import RefereePicker from '@/components/competitions/RefereePicker.vue';
-import SignupRuleEditor, {
-    type RuleGroup,
-} from '@/components/competitions/SignupRuleEditor.vue';
 import type {
     ChatMemberDto,
     ChatMessageDto,
     ChatRoomDto,
     MemberPresenceMap,
 } from '@/components/chat/types';
+import RefereePicker from '@/components/competitions/RefereePicker.vue';
+import SignupRuleEditor from '@/components/competitions/SignupRuleEditor.vue';
+import type { RuleGroup } from '@/components/competitions/SignupRuleEditor.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
@@ -495,11 +494,27 @@ function statusColor(status: string): string {
                                 :alt="$t('games.currentLogo')"
                                 class="h-16 w-16 rounded border object-contain"
                             />
-                            <Input id="logo" name="logo" type="file" accept="image/*" />
-                            <p class="text-xs text-muted-foreground">{{ $t('games.competitionLogoHelp') }}</p>
-                            <div v-if="competition.logo_path" class="flex items-center gap-2">
-                                <Checkbox id="remove_logo" name="remove_logo" :value="true" />
-                                <Label for="remove_logo">{{ $t('games.removeLogo') }}</Label>
+                            <Input
+                                id="logo"
+                                name="logo"
+                                type="file"
+                                accept="image/*"
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                {{ $t('games.competitionLogoHelp') }}
+                            </p>
+                            <div
+                                v-if="competition.logo_path"
+                                class="flex items-center gap-2"
+                            >
+                                <Checkbox
+                                    id="remove_logo"
+                                    name="remove_logo"
+                                    :value="true"
+                                />
+                                <Label for="remove_logo">{{
+                                    $t('games.removeLogo')
+                                }}</Label>
                             </div>
                             <InputError :message="errors.logo" />
                         </div>
@@ -512,27 +527,51 @@ function statusColor(status: string): string {
                                 :alt="$t('games.currentBanner')"
                                 class="h-24 w-full rounded border object-cover"
                             />
-                            <Input id="banner" name="banner" type="file" accept="image/*" />
-                            <p class="text-xs text-muted-foreground">{{ $t('games.competitionBannerHelp') }}</p>
-                            <div v-if="competition.banner_path" class="flex items-center gap-2">
-                                <Checkbox id="remove_banner" name="remove_banner" :value="true" />
-                                <Label for="remove_banner">{{ $t('games.removeBanner') }}</Label>
+                            <Input
+                                id="banner"
+                                name="banner"
+                                type="file"
+                                accept="image/*"
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                {{ $t('games.competitionBannerHelp') }}
+                            </p>
+                            <div
+                                v-if="competition.banner_path"
+                                class="flex items-center gap-2"
+                            >
+                                <Checkbox
+                                    id="remove_banner"
+                                    name="remove_banner"
+                                    :value="true"
+                                />
+                                <Label for="remove_banner">{{
+                                    $t('games.removeBanner')
+                                }}</Label>
                             </div>
                             <InputError :message="errors.banner" />
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="rules_markdown">{{ $t('games.rulesMarkdown') }}</Label>
+                            <Label for="rules_markdown">{{
+                                $t('games.rulesMarkdown')
+                            }}</Label>
                             <Textarea
                                 id="rules_markdown"
                                 name="rules_markdown"
                                 rows="10"
                                 class="font-mono text-sm"
-                                :default-value="competition.rules_markdown ?? ''"
-                                :placeholder="$t('games.rulesMarkdownPlaceholder')"
+                                :default-value="
+                                    competition.rules_markdown ?? ''
+                                "
+                                :placeholder="
+                                    $t('games.rulesMarkdownPlaceholder')
+                                "
                                 :disabled="!canEditDetails"
                             />
-                            <p class="text-xs text-muted-foreground">{{ $t('games.rulesMarkdownHelp') }}</p>
+                            <p class="text-xs text-muted-foreground">
+                                {{ $t('games.rulesMarkdownHelp') }}
+                            </p>
                             <InputError :message="errors.rules_markdown" />
                         </div>
 
@@ -540,9 +579,13 @@ function statusColor(status: string): string {
                             <Label>{{ $t('games.referees') }}</Label>
                             <RefereePicker
                                 :users="users"
-                                :initial-selected-ids="competition.referees?.map((r) => r.id) ?? []"
+                                :initial-selected-ids="
+                                    competition.referees?.map((r) => r.id) ?? []
+                                "
                             />
-                            <p class="text-xs text-muted-foreground">{{ $t('games.refereesHelp') }}</p>
+                            <p class="text-xs text-muted-foreground">
+                                {{ $t('games.refereesHelp') }}
+                            </p>
                             <InputError :message="errors.referee_ids" />
                         </div>
 
@@ -560,16 +603,19 @@ function statusColor(status: string): string {
                                     competition.match_length_minutes ?? ''
                                 "
                                 :placeholder="
-                                    (competition.game_mode?.match_length_minutes
-                                        ?? competition.game?.match_length_minutes)
-                                        !== null
+                                    (competition.game_mode
+                                        ?.match_length_minutes ??
+                                        competition.game
+                                            ?.match_length_minutes) !== null
                                         ? String(
                                               competition.game_mode
-                                                  ?.match_length_minutes
-                                                  ?? competition.game
+                                                  ?.match_length_minutes ??
+                                                  competition.game
                                                       ?.match_length_minutes,
                                           )
-                                        : $t('games.matchLengthMinutesPlaceholder')
+                                        : $t(
+                                              'games.matchLengthMinutesPlaceholder',
+                                          )
                                 "
                                 :disabled="!canEditDetails"
                             />
@@ -590,8 +636,8 @@ function statusColor(status: string): string {
                                 </span>
                                 <span
                                     v-else-if="
-                                        competition.game?.match_length_minutes
-                                            !== null
+                                        competition.game
+                                            ?.match_length_minutes !== null
                                     "
                                 >
                                     ({{
@@ -660,9 +706,7 @@ function statusColor(status: string): string {
                             variant="small"
                             :title="$t('competitions.signupRules.adminHeading')"
                             :description="
-                                $t(
-                                    'competitions.signupRules.adminDescription',
-                                )
+                                $t('competitions.signupRules.adminDescription')
                             "
                         />
 

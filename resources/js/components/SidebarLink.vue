@@ -27,9 +27,7 @@ const props = defineProps<{
 
 const page = usePage();
 
-const favorites = computed<string[]>(
-    () => page.props.sidebarFavorites ?? [],
-);
+const favorites = computed<string[]>(() => page.props.sidebarFavorites ?? []);
 
 const isFavorited = computed<boolean>(() =>
     props.favoriteId ? favorites.value.includes(props.favoriteId) : false,
@@ -37,12 +35,19 @@ const isFavorited = computed<boolean>(() =>
 
 const matchesSearch = computed<boolean>(() => {
     const q = (props.searchQuery ?? '').trim().toLowerCase();
-    if (q === '') return true;
+
+    if (q === '') {
+        return true;
+    }
+
     return props.label.toLowerCase().includes(q);
 });
 
 function toggleFavorite(): void {
-    if (!props.favoriteId) return;
+    if (!props.favoriteId) {
+        return;
+    }
+
     router.post(
         toggleFavoriteAction().url,
         { item_id: props.favoriteId },

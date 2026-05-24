@@ -11,13 +11,18 @@ const props = defineProps<{
 }>();
 
 const ticks = computed(() => {
-    if (!props.active) return [] as number[];
+    if (!props.active) {
+        return [] as number[];
+    }
+
     const stepMs = SNAP_MINUTES * 60_000;
     const start = Math.ceil(props.rangeStartMs / stepMs) * stepMs;
     const out: number[] = [];
+
     for (let t = start; t < props.rangeEndMs; t += stepMs) {
         out.push(props.xForTime(new Date(t).toISOString()));
     }
+
     return out;
 });
 </script>

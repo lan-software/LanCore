@@ -108,8 +108,7 @@ function applyMention(user: ChatUserRef): void {
     }
 
     const value = form.body;
-    const caret =
-        textareaEl.value.selectionStart ?? value.length;
+    const caret = textareaEl.value.selectionStart ?? value.length;
     const replacement = `@${username} `;
     const next =
         value.slice(0, mentionTokenStart.value) +
@@ -119,8 +118,8 @@ function applyMention(user: ChatUserRef): void {
     mentionOpen.value = false;
     nextTick(() => {
         if (!textareaEl.value) {
-return;
-}
+            return;
+        }
 
         const pos = mentionTokenStart.value + replacement.length;
         textareaEl.value.focus();
@@ -133,22 +132,15 @@ function onSubmit(): void {
         return;
     }
 
-    form.post(
-        ChatMessageController.store({ room: props.roomId }).url,
-        {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => form.reset('body'),
-        },
-    );
+    form.post(ChatMessageController.store({ room: props.roomId }).url, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => form.reset('body'),
+    });
 }
 
 function onKeydown(event: KeyboardEvent): void {
-    if (
-        event.key === 'Enter' &&
-        !event.shiftKey &&
-        !mentionOpen.value
-    ) {
+    if (event.key === 'Enter' && !event.shiftKey && !mentionOpen.value) {
         event.preventDefault();
         onSubmit();
     }
@@ -158,12 +150,14 @@ function onKeydown(event: KeyboardEvent): void {
 <template>
     <form
         class="relative border-t border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950"
-        :style="{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }"
+        :style="{
+            paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
+        }"
         @submit.prevent="onSubmit"
     >
         <div
             v-if="mentionOpen"
-            class="absolute bottom-full left-3 right-3 mb-2 max-h-48 overflow-y-auto rounded-md border border-zinc-200 bg-white shadow-md dark:border-zinc-800 dark:bg-zinc-900"
+            class="absolute right-3 bottom-full left-3 mb-2 max-h-48 overflow-y-auto rounded-md border border-zinc-200 bg-white shadow-md dark:border-zinc-800 dark:bg-zinc-900"
             role="listbox"
             :aria-label="t('chat.mentionSearch.label')"
         >
@@ -191,14 +185,16 @@ function onKeydown(event: KeyboardEvent): void {
                 :placeholder="placeholder"
                 :disabled="disabled"
                 rows="2"
-                class="placeholder:text-muted-foreground dark:bg-input/30 border-input flex-1 min-w-0 resize-none rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                class="min-w-0 flex-1 resize-none rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30"
                 :aria-label="t('chat.composer.placeholder')"
                 @input="onInput"
                 @keydown="onKeydown"
             />
             <Button
                 type="submit"
-                :disabled="disabled || form.processing || form.body.trim() === ''"
+                :disabled="
+                    disabled || form.processing || form.body.trim() === ''
+                "
             >
                 {{ t('chat.composer.send') }}
             </Button>
@@ -209,10 +205,7 @@ function onKeydown(event: KeyboardEvent): void {
         >
             {{ form.errors.body }}
         </p>
-        <p
-            v-else
-            class="mt-1 text-xs text-zinc-500 dark:text-zinc-400"
-        >
+        <p v-else class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
             {{ t('chat.composer.hint') }}
         </p>
     </form>

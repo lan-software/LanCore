@@ -38,7 +38,10 @@ const normalizedQuery = computed<string>(() =>
 );
 
 const matchesSearch = computed<boolean>(() => {
-    if (normalizedQuery.value === '') return true;
+    if (normalizedQuery.value === '') {
+        return true;
+    }
+
     return props.itemLabels.some((label) =>
         label.toLowerCase().includes(normalizedQuery.value),
     );

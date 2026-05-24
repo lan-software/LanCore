@@ -103,9 +103,7 @@ function toggleAddon(leaf: RuleLeaf, id: string) {
     update();
 }
 
-function isGroup(
-    node: RuleGroup | RuleLeaf,
-): node is RuleGroup {
+function isGroup(node: RuleGroup | RuleLeaf): node is RuleGroup {
     return node.type === 'all' || node.type === 'any';
 }
 
@@ -119,11 +117,13 @@ function asGroup(node: RuleGroup | RuleLeaf): RuleGroup {
 </script>
 
 <template>
-    <div class="rounded-md border border-sidebar-border/70 p-3 dark:border-sidebar-border">
+    <div
+        class="rounded-md border border-sidebar-border/70 p-3 dark:border-sidebar-border"
+    >
         <div class="mb-2 flex items-center justify-between gap-2">
             <button
                 type="button"
-                class="inline-flex items-center gap-1 rounded border border-input bg-background px-2 py-0.5 text-xs font-semibold uppercase tracking-wide hover:bg-accent disabled:opacity-50"
+                class="inline-flex items-center gap-1 rounded border border-input bg-background px-2 py-0.5 text-xs font-semibold tracking-wide uppercase hover:bg-accent disabled:opacity-50"
                 :disabled="disabled"
                 @click="toggleRoot"
             >
@@ -155,7 +155,7 @@ function asGroup(node: RuleGroup | RuleLeaf): RuleGroup {
 
         <p
             v-if="tree.rules.length === 0"
-            class="text-xs italic text-muted-foreground"
+            class="text-xs text-muted-foreground italic"
         >
             {{ t('competitions.signupRules.noRules') }}
         </p>
@@ -171,7 +171,7 @@ function asGroup(node: RuleGroup | RuleLeaf): RuleGroup {
                     <div class="flex items-center justify-between gap-2">
                         <button
                             type="button"
-                            class="inline-flex items-center gap-1 rounded border border-input bg-background px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide hover:bg-accent disabled:opacity-50"
+                            class="inline-flex items-center gap-1 rounded border border-input bg-background px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase hover:bg-accent disabled:opacity-50"
                             :disabled="disabled"
                             @click="toggleSubgroupType(asGroup(node))"
                         >
@@ -202,7 +202,7 @@ function asGroup(node: RuleGroup | RuleLeaf): RuleGroup {
                     </div>
                     <div
                         v-if="asGroup(node).rules.length === 0"
-                        class="ml-2 text-[11px] italic text-muted-foreground"
+                        class="ml-2 text-[11px] text-muted-foreground italic"
                     >
                         —
                     </div>
@@ -216,9 +216,7 @@ function asGroup(node: RuleGroup | RuleLeaf): RuleGroup {
                             <select
                                 class="w-full rounded border border-input bg-background px-2 py-1 text-xs disabled:opacity-50"
                                 :disabled="disabled || isGroup(inner)"
-                                :value="
-                                    isGroup(inner) ? '' : asLeaf(inner).key
-                                "
+                                :value="isGroup(inner) ? '' : asLeaf(inner).key"
                                 @change="
                                     setRuleKey(
                                         asLeaf(inner),
@@ -262,7 +260,10 @@ function asGroup(node: RuleGroup | RuleLeaf): RuleGroup {
                                         type="checkbox"
                                         class="hidden"
                                         :checked="
-                                            isTicketSelected(asLeaf(inner), tt.id)
+                                            isTicketSelected(
+                                                asLeaf(inner),
+                                                tt.id,
+                                            )
                                         "
                                         @change="
                                             toggleTicket(asLeaf(inner), tt.id)

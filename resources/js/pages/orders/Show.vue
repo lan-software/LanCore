@@ -243,10 +243,7 @@ const statusVariant: Record<
                                 }}
                             </dd>
                         </div>
-                        <div
-                            v-if="order.fees_fetched_at"
-                            class="sm:col-span-3"
-                        >
+                        <div v-if="order.fees_fetched_at" class="sm:col-span-3">
                             <dt
                                 class="text-sm font-medium text-muted-foreground"
                             >

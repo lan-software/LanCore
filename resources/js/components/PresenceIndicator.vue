@@ -99,7 +99,10 @@ const colorClass = computed(() => {
                             aria-hidden="true"
                         />
                     </span>
-                    <span v-if="withLabel" class="text-sm text-muted-foreground">
+                    <span
+                        v-if="withLabel"
+                        class="text-sm text-muted-foreground"
+                    >
                         {{ label }}
                     </span>
                 </span>

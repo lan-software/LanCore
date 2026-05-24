@@ -22,7 +22,10 @@ const props = withDefaults(
 const trimmed = computed<string>(() => (props.name ?? '').trim());
 
 const pascalName = computed<string>(() => {
-    if (trimmed.value === '') return '';
+    if (trimmed.value === '') {
+        return '';
+    }
+
     // Accept inputs in any of: trophy, Trophy, trophy-icon, trophy_icon, trophyIcon
     return trimmed.value
         .split(/[-_\s]+/)
@@ -35,14 +38,24 @@ const pascalName = computed<string>(() => {
 });
 
 const resolved = computed<Component | null>(() => {
-    if (pascalName.value === '') return null;
+    if (pascalName.value === '') {
+        return null;
+    }
+
     const lookup = lucideIcons as unknown as Record<string, Component>;
+
     return lookup[pascalName.value] ?? null;
 });
 
 const tooltip = computed<string | undefined>(() => {
-    if (!props.withTooltip) return undefined;
-    if (trimmed.value === '') return 'No icon';
+    if (!props.withTooltip) {
+        return undefined;
+    }
+
+    if (trimmed.value === '') {
+        return 'No icon';
+    }
+
     return resolved.value ? trimmed.value : `Unknown icon: ${trimmed.value}`;
 });
 </script>

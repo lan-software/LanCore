@@ -71,9 +71,7 @@ defineExpose<SeatPlanImperativeHandle>({
         return sceneRef.value?.getSeatScreenRect(seatId) ?? null;
     },
     getView(): ViewState {
-        return (
-            sceneRef.value?.getView() ?? { panX: 0, panY: 0, zoom: 1 }
-        );
+        return sceneRef.value?.getView() ?? { panX: 0, panY: 0, zoom: 1 };
     },
     setView(view, options): void {
         sceneRef.value?.setView(view, options);

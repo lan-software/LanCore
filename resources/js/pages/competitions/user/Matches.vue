@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { MessageCircle, Swords } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -83,7 +83,8 @@ function openChat(match: Match): void {
             <header class="flex items-center gap-2">
                 <Swords class="size-5 text-primary" />
                 <h1 class="text-xl font-semibold">
-                    {{ competition.name }} — {{ t('competitions.user.matchesTitle') }}
+                    {{ competition.name }} —
+                    {{ t('competitions.user.matchesTitle') }}
                 </h1>
             </header>
 
@@ -94,18 +95,12 @@ function openChat(match: Match): void {
                 {{ t('competitions.user.matchesEmpty') }}
             </p>
 
-            <section
-                v-for="stage in stages"
-                :key="stage.id"
-                class="space-y-3"
-            >
-                <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            <section v-for="stage in stages" :key="stage.id" class="space-y-3">
+                <h2
+                    class="text-sm font-semibold tracking-wide text-muted-foreground uppercase"
+                >
                     {{ stage.name ?? `Stage ${stage.id}` }}
-                    <Badge
-                        v-if="stage.status"
-                        variant="outline"
-                        class="ml-2"
-                    >
+                    <Badge v-if="stage.status" variant="outline" class="ml-2">
                         {{ stage.status }}
                     </Badge>
                 </h2>
@@ -115,16 +110,27 @@ function openChat(match: Match): void {
                         v-for="match in stage.matches"
                         :key="match.id"
                         class="flex flex-col gap-3 rounded-lg border border-sidebar-border/70 p-3 md:flex-row md:items-center md:justify-between"
-                        :class="match.user_is_participant ? 'border-primary/50 bg-primary/5' : ''"
+                        :class="
+                            match.user_is_participant
+                                ? 'border-primary/50 bg-primary/5'
+                                : ''
+                        "
                     >
                         <div class="flex-1">
-                            <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                            <div
+                                class="flex items-center gap-2 text-xs text-muted-foreground"
+                            >
                                 <span>
                                     {{ t('competitions.user.round') }}
                                     {{ match.round_number ?? '?' }}
                                 </span>
                                 <span v-if="match.sequence !== null">
-                                    · {{ t('competitions.user.matchNumber', { n: match.sequence }) }}
+                                    ·
+                                    {{
+                                        t('competitions.user.matchNumber', {
+                                            n: match.sequence,
+                                        })
+                                    }}
                                 </span>
                                 <Badge
                                     v-if="match.status"
@@ -134,13 +140,18 @@ function openChat(match: Match): void {
                                     {{ match.status }}
                                 </Badge>
                             </div>
-                            <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                            <div
+                                class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
+                            >
                                 <template
                                     v-for="(p, idx) in match.participants"
                                     :key="`${match.id}-${idx}`"
                                 >
                                     <span class="font-medium">
-                                        {{ p.team_name ?? t('competitions.user.tbd') }}
+                                        {{
+                                            p.team_name ??
+                                            t('competitions.user.tbd')
+                                        }}
                                     </span>
                                     <span
                                         v-if="p.score !== null"
@@ -149,7 +160,9 @@ function openChat(match: Match): void {
                                         ({{ p.score }})
                                     </span>
                                     <span
-                                        v-if="idx < match.participants.length - 1"
+                                        v-if="
+                                            idx < match.participants.length - 1
+                                        "
                                         class="text-muted-foreground"
                                     >
                                         vs

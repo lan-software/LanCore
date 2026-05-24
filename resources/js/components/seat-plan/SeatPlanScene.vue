@@ -390,7 +390,11 @@ function onSeatPointerDown(
     emit('seat-pointerdown', event, { id: seat.id, blockId: block.id });
 }
 
-function onSeatClick(event: PointerEvent, block: SeatPlanBlock, seat: SeatPlanSeat): void {
+function onSeatClick(
+    event: PointerEvent,
+    block: SeatPlanBlock,
+    seat: SeatPlanSeat,
+): void {
     /* Only swallow the event if the consumer is genuinely picking — emit
      * regardless. The consumer decides what to do based on seat.salable. */
     event.stopPropagation();
@@ -449,7 +453,9 @@ const tooltipStyle = computed<Record<string, string>>(() => {
 
 /* --- Pulse animation --- */
 
-const pulses = reactive<Map<string, { id: string; expiresAt: number }>>(new Map());
+const pulses = reactive<Map<string, { id: string; expiresAt: number }>>(
+    new Map(),
+);
 let pulseSweepHandle: number | null = null;
 
 function startPulseSweep(): void {
@@ -546,9 +552,7 @@ function zoomToBlock(
     options: { animated?: boolean; padding?: number } = {},
 ): void {
     const idStr = String(blockId);
-    const block = (props.plan.blocks ?? []).find(
-        (b) => String(b.id) === idStr,
-    );
+    const block = (props.plan.blocks ?? []).find((b) => String(b.id) === idStr);
 
     if (!block) {
         return;

@@ -86,9 +86,7 @@ const { channel: getPresenceChannel } = useEchoPresence<BroadcastPayload>(
             return;
         }
 
-        const member = props.members.find(
-            (m) => m.user_id === payload.user_id,
-        );
+        const member = props.members.find((m) => m.user_id === payload.user_id);
         liveMessages.value.push({
             id: payload.id,
             room_id: payload.room_id,
@@ -116,19 +114,16 @@ const { channel: getPresenceChannel } = useEchoPresence<BroadcastPayload>(
 const presenceChannel = getPresenceChannel();
 presenceChannel
     .here((members: PresenceMember[]) => {
-         
         console.info('[ChatRoom] presence here', members);
         presentUserIds.value = new Set(members.map((m) => m.id));
     })
     .joining((member: PresenceMember) => {
-         
         console.info('[ChatRoom] presence joining', member);
         const next = new Set(presentUserIds.value);
         next.add(member.id);
         presentUserIds.value = next;
     })
     .leaving((member: PresenceMember) => {
-         
         console.info('[ChatRoom] presence leaving', member);
         const next = new Set(presentUserIds.value);
         next.delete(member.id);
@@ -141,8 +136,8 @@ function observerJoinUrl(): string {
 
 function leaveObserverViaBeacon(): void {
     if (!props.observerMode) {
-return;
-}
+        return;
+    }
 
     // DELETE via fetch with keepalive so the request still completes during
     // page unload. sendBeacon only does POST, so we fall back to fetch.
@@ -155,7 +150,9 @@ return;
                 Accept: 'application/json',
                 'X-CSRF-TOKEN':
                     document
-                        .querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+                        .querySelector<HTMLMetaElement>(
+                            'meta[name="csrf-token"]',
+                        )
                         ?.getAttribute('content') ?? '',
             },
         });
@@ -168,8 +165,8 @@ return;
 
 onMounted(async () => {
     if (!props.observerMode) {
-return;
-}
+        return;
+    }
 
     try {
         await fetch(observerJoinUrl(), {
@@ -179,7 +176,9 @@ return;
                 Accept: 'application/json',
                 'X-CSRF-TOKEN':
                     document
-                        .querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+                        .querySelector<HTMLMetaElement>(
+                            'meta[name="csrf-token"]',
+                        )
                         ?.getAttribute('content') ?? '',
             },
         });
@@ -202,8 +201,8 @@ async function onLoadMore(): Promise<void> {
     const oldest = liveMessages.value[0];
 
     if (!oldest || loadingHistory.value) {
-return;
-}
+        return;
+    }
 
     loadingHistory.value = true;
 
@@ -255,8 +254,8 @@ function onDeleteMessage(messageId: string): void {
 
 function closeRoom(): void {
     if (!window.confirm(t('chat.moderation.close'))) {
-return;
-}
+        return;
+    }
 
     router.post(
         ChatModerationController.close({ room: props.room.id }).url,
@@ -267,8 +266,8 @@ return;
 
 function reopenRoom(): void {
     if (!window.confirm(t('chat.moderation.reopen'))) {
-return;
-}
+        return;
+    }
 
     router.post(
         ChatModerationController.reopen({ room: props.room.id }).url,
@@ -279,16 +278,16 @@ return;
 
 const disabledReason = computed<string | null>(() => {
     if (props.room.is_archived) {
-return t('chat.room.archived');
-}
+        return t('chat.room.archived');
+    }
 
     if (props.room.is_write_locked) {
-return t('chat.room.writeLocked');
-}
+        return t('chat.room.writeLocked');
+    }
 
     if (!props.room.can_post) {
-return t('chat.room.writeLocked');
-}
+        return t('chat.room.writeLocked');
+    }
 
     return null;
 });
@@ -335,7 +334,9 @@ return t('chat.room.writeLocked');
                         </SheetTrigger>
                         <SheetContent side="right" class="w-72 p-0">
                             <SheetHeader>
-                                <SheetTitle>{{ t('chat.room.members') }}</SheetTitle>
+                                <SheetTitle>{{
+                                    t('chat.room.members')
+                                }}</SheetTitle>
                             </SheetHeader>
                             <MemberList
                                 :room-id="room.id"
@@ -366,7 +367,7 @@ return t('chat.room.writeLocked');
             />
         </section>
         <aside
-            class="hidden w-64 border-l border-zinc-200 dark:border-zinc-800 md:block"
+            class="hidden w-64 border-l border-zinc-200 md:block dark:border-zinc-800"
         >
             <MemberList
                 :room-id="room.id"

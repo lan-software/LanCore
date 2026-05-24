@@ -201,7 +201,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                             type="number"
                             min="1"
                             max="1440"
-                            :placeholder="$t('games.matchLengthMinutesPlaceholder')"
+                            :placeholder="
+                                $t('games.matchLengthMinutesPlaceholder')
+                            "
                         />
                         <p class="text-xs text-muted-foreground">
                             {{ $t('games.matchLengthMinutesHelp') }}

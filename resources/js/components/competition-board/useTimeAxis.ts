@@ -1,4 +1,5 @@
-import { computed, type ComputedRef } from 'vue';
+import { computed } from 'vue';
+import type { ComputedRef } from 'vue';
 import type { CompetitionDto, EventDto, TimeSegment } from './types';
 
 const BUSY_PX_PER_MIN = 2; // ~120 px per hour
@@ -18,7 +19,9 @@ interface UseTimeAxisResult {
     rangeEnd: ComputedRef<number>;
     xForTime: (iso: string | Date | number) => number;
     minuteForX: (x: number) => number;
-    ticks: ComputedRef<Array<{ x: number; label: string; segment: 'busy' | 'idle' }>>;
+    ticks: ComputedRef<
+        Array<{ x: number; label: string; segment: 'busy' | 'idle' }>
+    >;
 }
 
 export function useTimeAxis(
@@ -30,9 +33,15 @@ export function useTimeAxis(
         const starts = competitions().flatMap((c) =>
             c.stage_schedules.flatMap((s) => {
                 const roundStarts = s.round_schedules
-                    .map((r) => (r.starts_at ? new Date(r.starts_at).getTime() : null))
+                    .map((r) =>
+                        r.starts_at ? new Date(r.starts_at).getTime() : null,
+                    )
                     .filter((v): v is number => v !== null);
-                if (roundStarts.length > 0) return roundStarts;
+
+                if (roundStarts.length > 0) {
+                    return roundStarts;
+                }
+
                 return s.starts_at ? [new Date(s.starts_at).getTime()] : [];
             }),
         );
@@ -40,9 +49,11 @@ export function useTimeAxis(
             e.start_date ? new Date(e.start_date).getTime() : null,
             ...starts,
         ].filter((v): v is number => v !== null);
+
         if (candidates.length === 0) {
             return Date.now();
         }
+
         return Math.min(...candidates);
     });
 
@@ -51,9 +62,15 @@ export function useTimeAxis(
         const ends = competitions().flatMap((c) =>
             c.stage_schedules.flatMap((s) => {
                 const roundEnds = s.round_schedules
-                    .map((r) => (r.ends_at ? new Date(r.ends_at).getTime() : null))
+                    .map((r) =>
+                        r.ends_at ? new Date(r.ends_at).getTime() : null,
+                    )
                     .filter((v): v is number => v !== null);
-                if (roundEnds.length > 0) return roundEnds;
+
+                if (roundEnds.length > 0) {
+                    return roundEnds;
+                }
+
                 return s.ends_at ? [new Date(s.ends_at).getTime()] : [];
             }),
         );
@@ -61,9 +78,11 @@ export function useTimeAxis(
             e.end_date ? new Date(e.end_date).getTime() : null,
             ...ends,
         ].filter((v): v is number => v !== null);
+
         if (candidates.length === 0) {
             return rangeStart.value + 24 * 60 * 60 * 1000;
         }
+
         return Math.max(...candidates);
     });
 
@@ -72,28 +91,40 @@ export function useTimeAxis(
             .flatMap((c) =>
                 c.stage_schedules.flatMap((s) =>
                     s.round_schedules.length > 0
-                        ? s.round_schedules.filter((r) => r.starts_at && r.ends_at).map((r) => ({
-                              starts_at: r.starts_at!,
-                              ends_at: r.ends_at!,
-                          }))
+                        ? s.round_schedules
+                              .filter((r) => r.starts_at && r.ends_at)
+                              .map((r) => ({
+                                  starts_at: r.starts_at!,
+                                  ends_at: r.ends_at!,
+                              }))
                         : s.starts_at && s.ends_at
                           ? [{ starts_at: s.starts_at, ends_at: s.ends_at }]
                           : [],
                 ),
             )
             .map((iv) => ({
-                start: new Date(iv.starts_at).getTime() - BUSY_PADDING_MIN * 60_000,
+                start:
+                    new Date(iv.starts_at).getTime() -
+                    BUSY_PADDING_MIN * 60_000,
                 end: new Date(iv.ends_at).getTime() + BUSY_PADDING_MIN * 60_000,
             }))
             .sort((a, b) => a.start - b.start);
         const merged: Array<{ start: number; end: number }> = [];
+
         for (const iv of raw) {
-            if (merged.length > 0 && iv.start <= merged[merged.length - 1].end) {
-                merged[merged.length - 1].end = Math.max(merged[merged.length - 1].end, iv.end);
+            if (
+                merged.length > 0 &&
+                iv.start <= merged[merged.length - 1].end
+            ) {
+                merged[merged.length - 1].end = Math.max(
+                    merged[merged.length - 1].end,
+                    iv.end,
+                );
             } else {
                 merged.push({ ...iv });
             }
         }
+
         return merged;
     });
 
@@ -102,9 +133,11 @@ export function useTimeAxis(
         let cursor = rangeStart.value;
         const end = rangeEnd.value;
         let offsetPx = 0;
+
         for (const busy of busyIntervals.value) {
             if (busy.start > cursor) {
                 const minutes = (Math.min(busy.start, end) - cursor) / 60_000;
+
                 if (minutes > 0) {
                     out.push({
                         start: cursor,
@@ -115,10 +148,16 @@ export function useTimeAxis(
                     });
                     offsetPx += minutes * IDLE_PX_PER_MIN;
                 }
+
                 cursor = Math.min(busy.start, end);
             }
-            if (cursor >= end) break;
+
+            if (cursor >= end) {
+                break;
+            }
+
             const busyEnd = Math.min(busy.end, end);
+
             if (busyEnd > cursor) {
                 const minutes = (busyEnd - cursor) / 60_000;
                 out.push({
@@ -132,8 +171,8 @@ export function useTimeAxis(
                 cursor = busyEnd;
             }
         }
+
         if (cursor < end) {
-            const minutes = (end - cursor) / 60_000;
             out.push({
                 start: cursor,
                 end,
@@ -142,61 +181,96 @@ export function useTimeAxis(
                 pxOffset: offsetPx,
             });
         }
+
         return out;
     });
 
     const totalWidth = computed(() => {
         const segs = segments.value;
-        if (segs.length === 0) return 0;
+
+        if (segs.length === 0) {
+            return 0;
+        }
+
         const last = segs[segs.length - 1];
-        return last.pxOffset + ((last.end - last.start) / 60_000) * last.pxPerMinute;
+
+        return (
+            last.pxOffset +
+            ((last.end - last.start) / 60_000) * last.pxPerMinute
+        );
     });
 
     function xForTime(value: string | Date | number): number {
         const t = typeof value === 'number' ? value : new Date(value).getTime();
+
         for (const seg of segments.value) {
             if (t < seg.start) {
                 return seg.pxOffset;
             }
+
             if (t <= seg.end) {
-                return seg.pxOffset + ((t - seg.start) / 60_000) * seg.pxPerMinute;
+                return (
+                    seg.pxOffset + ((t - seg.start) / 60_000) * seg.pxPerMinute
+                );
             }
         }
+
         return totalWidth.value;
     }
 
     function minuteForX(x: number): number {
         let absoluteMinutes = 0;
+
         for (const seg of segments.value) {
             const segWidth = ((seg.end - seg.start) / 60_000) * seg.pxPerMinute;
+
             if (x <= seg.pxOffset + segWidth) {
                 const localPx = Math.max(0, x - seg.pxOffset);
                 const localMinutes = localPx / seg.pxPerMinute;
+
                 return (seg.start - rangeStart.value) / 60_000 + localMinutes;
             }
+
             absoluteMinutes += (seg.end - seg.start) / 60_000;
         }
+
         return absoluteMinutes;
     }
 
     const ticks = computed(() => {
-        const out: Array<{ x: number; label: string; segment: 'busy' | 'idle' }> = [];
+        const out: Array<{
+            x: number;
+            label: string;
+            segment: 'busy' | 'idle';
+        }> = [];
+
         for (const seg of segments.value) {
             const stepHours = seg.classification === 'busy' ? 1 : 4;
             const stepMs = stepHours * 3_600_000;
             let t = Math.ceil(seg.start / stepMs) * stepMs;
+
             while (t < seg.end) {
-                const x = seg.pxOffset + ((t - seg.start) / 60_000) * seg.pxPerMinute;
+                const x =
+                    seg.pxOffset + ((t - seg.start) / 60_000) * seg.pxPerMinute;
                 const d = new Date(t);
                 const label = `${d.toLocaleDateString(undefined, { weekday: 'short' })} ${String(d.getHours()).padStart(2, '0')}:00`;
                 out.push({ x, label, segment: seg.classification });
                 t += stepMs;
             }
         }
+
         return out;
     });
 
-    return { segments, totalWidth, rangeStart, rangeEnd, xForTime, minuteForX, ticks };
+    return {
+        segments,
+        totalWidth,
+        rangeStart,
+        rangeEnd,
+        xForTime,
+        minuteForX,
+        ticks,
+    };
 }
 
 export const TIME_AXIS_INJECTION = Symbol('competition-board:time-axis');

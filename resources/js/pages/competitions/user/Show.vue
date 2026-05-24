@@ -178,10 +178,15 @@ function requestJoin(teamId: string) {
                     v-if="competition.rules_html"
                     class="mt-4 rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                 >
-                    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    <h2
+                        class="mb-2 text-sm font-semibold tracking-wide text-muted-foreground uppercase"
+                    >
                         {{ $t('games.rulesMarkdown') }}
                     </h2>
-                    <div class="prose prose-sm dark:prose-invert max-w-none" v-html="competition.rules_html" />
+                    <div
+                        class="prose prose-sm dark:prose-invert max-w-none"
+                        v-html="competition.rules_html"
+                    />
                 </section>
             </div>
 

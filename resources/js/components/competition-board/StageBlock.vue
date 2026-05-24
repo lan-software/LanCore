@@ -13,35 +13,64 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'open', stageId: string): void;
     (e: 'drag-end', payload: { stageId: string; newStartIso: string }): void;
-    (e: 'resize-duration-end', payload: { stageId: string; minutes: number }): void;
-    (e: 'resize-reserve-end', payload: { stageId: string; minutes: number }): void;
+    (
+        e: 'resize-duration-end',
+        payload: { stageId: string; minutes: number },
+    ): void;
+    (
+        e: 'resize-reserve-end',
+        payload: { stageId: string; minutes: number },
+    ): void;
 }>();
 
 const hasStart = computed(() => !!props.stage.starts_at);
 
-const leftPx = computed(() => (hasStart.value ? props.xForTime(props.stage.starts_at!) : 0));
+const leftPx = computed(() =>
+    hasStart.value ? props.xForTime(props.stage.starts_at!) : 0,
+);
 
 const widthSolid = computed(() => {
-    if (!hasStart.value) return 0;
+    if (!hasStart.value) {
+        return 0;
+    }
+
     const start = new Date(props.stage.starts_at!).getTime();
     const end = start + props.stage.estimated_duration_minutes * 60_000;
+
     return props.xForTime(new Date(end).toISOString()) - leftPx.value;
 });
 
 const widthReserve = computed(() => {
-    if (!hasStart.value) return 0;
+    if (!hasStart.value) {
+        return 0;
+    }
+
     const start = new Date(props.stage.starts_at!).getTime();
-    const end = start + (props.stage.estimated_duration_minutes + props.stage.reserve_buffer_minutes) * 60_000;
+    const end =
+        start +
+        (props.stage.estimated_duration_minutes +
+            props.stage.reserve_buffer_minutes) *
+            60_000;
     const solidEnd = start + props.stage.estimated_duration_minutes * 60_000;
-    return props.xForTime(new Date(end).toISOString()) - props.xForTime(new Date(solidEnd).toISOString());
+
+    return (
+        props.xForTime(new Date(end).toISOString()) -
+        props.xForTime(new Date(solidEnd).toISOString())
+    );
 });
 
 function snapMinutes(mins: number): number {
     return Math.round(mins / 15) * 15;
 }
 
-function startDrag(ev: PointerEvent, mode: 'move' | 'resize-duration' | 'resize-reserve') {
-    if (!hasStart.value) return;
+function startDrag(
+    ev: PointerEvent,
+    mode: 'move' | 'resize-duration' | 'resize-reserve',
+) {
+    if (!hasStart.value) {
+        return;
+    }
+
     ev.preventDefault();
     (ev.target as HTMLElement).setPointerCapture(ev.pointerId);
     const startX = ev.clientX;
@@ -62,15 +91,27 @@ function startDrag(ev: PointerEvent, mode: 'move' | 'resize-duration' | 'resize-
     function onUp() {
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', onUp);
+
         if (mode === 'move') {
-            const newStart = new Date(startStartIsoMs + lastDeltaMinutes * 60_000).toISOString();
-            emit('drag-end', { stageId: props.stage.id, newStartIso: newStart });
+            const newStart = new Date(
+                startStartIsoMs + lastDeltaMinutes * 60_000,
+            ).toISOString();
+            emit('drag-end', {
+                stageId: props.stage.id,
+                newStartIso: newStart,
+            });
         } else if (mode === 'resize-duration') {
             const newMinutes = Math.max(5, startDuration + lastDeltaMinutes);
-            emit('resize-duration-end', { stageId: props.stage.id, minutes: newMinutes });
+            emit('resize-duration-end', {
+                stageId: props.stage.id,
+                minutes: newMinutes,
+            });
         } else {
             const newMinutes = Math.max(0, startReserve + lastDeltaMinutes);
-            emit('resize-reserve-end', { stageId: props.stage.id, minutes: newMinutes });
+            emit('resize-reserve-end', {
+                stageId: props.stage.id,
+                minutes: newMinutes,
+            });
         }
     }
 

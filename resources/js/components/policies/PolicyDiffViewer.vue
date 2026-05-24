@@ -39,7 +39,10 @@ const expanded = ref(false);
 // Indexes of any non-`eq` (changed) row in the input.
 const changedIndices = computed<number[]>(() =>
     props.rows.reduce<number[]>((acc, row, index) => {
-        if (row.op !== 'eq') acc.push(index);
+        if (row.op !== 'eq') {
+            acc.push(index);
+        }
+
         return acc;
     }, []),
 );
@@ -52,30 +55,40 @@ const hasChanges = computed(() => changedIndices.value.length > 0);
 const visibleIndexSet = computed<Set<number>>(() => {
     const set = new Set<number>();
     const ctx = Math.max(0, props.context);
+
     for (const idx of changedIndices.value) {
         for (let k = idx - ctx; k <= idx + ctx; k++) {
-            if (k >= 0 && k < props.rows.length) set.add(k);
+            if (k >= 0 && k < props.rows.length) {
+                set.add(k);
+            }
         }
     }
+
     return set;
 });
 
 const compactView = computed<Array<VisibleEntry | SkipEntry>>(() => {
     const out: Array<VisibleEntry | SkipEntry> = [];
     let skipping = 0;
+
     for (let i = 0; i < props.rows.length; i++) {
         if (visibleIndexSet.value.has(i)) {
             if (skipping > 0) {
                 out.push({ kind: 'skip', count: skipping });
                 skipping = 0;
             }
+
             const row = props.rows[i];
             out.push({ kind: 'row', op: row.op, line: row.line });
         } else {
             skipping += 1;
         }
     }
-    if (skipping > 0) out.push({ kind: 'skip', count: skipping });
+
+    if (skipping > 0) {
+        out.push({ kind: 'skip', count: skipping });
+    }
+
     return out;
 });
 
@@ -83,15 +96,23 @@ function rowClass(op: 'eq' | 'add' | 'del'): string {
     if (op === 'add') {
         return 'bg-green-50 px-2 py-0.5 text-green-900 dark:bg-green-950/30 dark:text-green-200';
     }
+
     if (op === 'del') {
         return 'bg-red-50 px-2 py-0.5 text-red-900 line-through dark:bg-red-950/30 dark:text-red-200';
     }
+
     return 'px-2 py-0.5 text-muted-foreground';
 }
 
 function rowPrefix(op: 'eq' | 'add' | 'del'): string {
-    if (op === 'add') return '+ ';
-    if (op === 'del') return '- ';
+    if (op === 'add') {
+        return '+ ';
+    }
+
+    if (op === 'del') {
+        return '- ';
+    }
+
     return '  ';
 }
 </script>
@@ -127,9 +148,8 @@ function rowPrefix(op: 'eq' | 'add' | 'del'): string {
                     :key="`full-${idx}`"
                     :class="rowClass(row.op)"
                 >
-                    <span aria-hidden="true">{{ rowPrefix(row.op) }}</span>{{
-                        row.line
-                    }}<span v-if="row.line === ''">&nbsp;</span>
+                    <span aria-hidden="true">{{ rowPrefix(row.op) }}</span
+                    >{{ row.line }}<span v-if="row.line === ''">&nbsp;</span>
                 </div>
             </template>
             <!-- Compact diff: changed lines + minimal context, skipped runs collapsed -->
@@ -142,8 +162,8 @@ function rowPrefix(op: 'eq' | 'add' | 'del'): string {
                         v-if="entry.kind === 'row'"
                         :class="rowClass(entry.op)"
                     >
-                        <span aria-hidden="true">{{ rowPrefix(entry.op) }}</span>{{
-                            entry.line
+                        <span aria-hidden="true">{{ rowPrefix(entry.op) }}</span
+                        >{{ entry.line
                         }}<span v-if="entry.line === ''">&nbsp;</span>
                     </div>
                     <button
