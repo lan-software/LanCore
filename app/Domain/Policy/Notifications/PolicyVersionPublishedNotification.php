@@ -36,6 +36,14 @@ class PolicyVersionPublishedNotification extends Notification implements ShouldQ
 
     public function toMail(object $notifiable): MailMessage
     {
+        $recipientLocale = is_string($notifiable->locale ?? null) && $notifiable->locale !== ''
+            ? $notifiable->locale
+            : null;
+
+        if ($recipientLocale !== null) {
+            $this->locale = $recipientLocale;
+        }
+
         $version = $this->version->loadMissing('policy');
         $policy = $version->policy;
 
@@ -64,8 +72,8 @@ class PolicyVersionPublishedNotification extends Notification implements ShouldQ
                 url(route('policies.show', ['policy' => $policy->key], false)),
             );
 
-        if (property_exists($notifiable, 'locale') && $notifiable->locale) {
-            $message->locale($notifiable->locale);
+        if ($recipientLocale !== null) {
+            $message->locale = $recipientLocale;
         }
 
         if ($version->pdf_path) {

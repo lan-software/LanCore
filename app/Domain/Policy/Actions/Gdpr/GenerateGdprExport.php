@@ -100,7 +100,7 @@ class GenerateGdprExport
         file_put_contents($tmpDir.'/README.txt', $this->readme());
 
         $zipPath = sprintf(
-            '%s/%d-%s.zip',
+            '%s/%s-%s.zip',
             rtrim($baseDir, '/'),
             $user->id,
             $generatedAt->format('Y-m-d_His'),

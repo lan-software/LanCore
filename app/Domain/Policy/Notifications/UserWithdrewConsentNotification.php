@@ -56,8 +56,13 @@ class UserWithdrewConsentNotification extends Notification implements ShouldQueu
 
         $message->line(__('policies.notifications.consent_withdrawn.outro'));
 
-        if (property_exists($notifiable, 'locale') && $notifiable->locale) {
-            $message->locale($notifiable->locale);
+        $recipientLocale = is_string($notifiable->locale ?? null) && $notifiable->locale !== ''
+            ? $notifiable->locale
+            : null;
+
+        if ($recipientLocale !== null) {
+            $this->locale = $recipientLocale;
+            $message->locale = $recipientLocale;
         }
 
         return $message;

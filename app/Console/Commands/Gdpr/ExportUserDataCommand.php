@@ -58,7 +58,7 @@ class ExportUserDataCommand extends Command
             );
         }
 
-        info(sprintf('Found user #%d: %s <%s>', $user->id, $user->name ?? '(unnamed)', $user->email));
+        info(sprintf('Found user #%s: %s <%s>', $user->id, $user->name ?? '(unnamed)', $user->email));
         $outputDir = $this->option('output-dir') ?: null;
 
         $password = $this->option('password');
@@ -76,7 +76,7 @@ class ExportUserDataCommand extends Command
             }
         }
 
-        if (! confirm(label: 'Proceed with export?', default: true)) {
+        if (! $this->option('no-interaction') && ! confirm(label: 'Proceed with export?', default: true)) {
             note('Aborted by operator.');
 
             return self::SUCCESS;

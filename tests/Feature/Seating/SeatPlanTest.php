@@ -91,11 +91,15 @@ it('an event can have multiple seat plans', function () {
     expect($event->seatPlans)->toHaveCount(3);
 });
 
-it('cascades deletion when event is deleted', function () {
+it('cascades deletion when event is force deleted', function () {
+    // Event uses SoftDeletes (see SSDD §Event soft-delete), so a plain delete()
+    // only stamps deleted_at and the DB-level FK cascade never fires. The
+    // cascadeOnDelete() constraint on seat_plans.event_id is exercised by a
+    // permanent (force) delete.
     $event = Event::factory()->create();
     SeatPlan::factory()->count(2)->create(['event_id' => $event->id]);
 
-    $event->delete();
+    $event->forceDelete();
 
     expect(SeatPlan::where('event_id', $event->id)->count())->toBe(0);
 });

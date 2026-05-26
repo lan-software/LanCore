@@ -64,7 +64,12 @@ test('user can delete their account', function () {
         ->assertRedirect(route('home'));
 
     $this->assertGuest();
-    expect($user->fresh())->toBeNull();
+
+    // User uses SoftDeletes (data-lifecycle), so the account is soft-deleted:
+    // it no longer resolves through the default scope but the row is retained
+    // for the grace/anonymization pipeline.
+    expect(User::find($user->id))->toBeNull();
+    expect(User::withTrashed()->find($user->id)->trashed())->toBeTrue();
 });
 
 test('correct password must be provided to delete account', function () {
