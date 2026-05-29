@@ -40,9 +40,25 @@ export default defineConfig({
     // since TS path mapping covers that path — but JSDOM tests of SFCs that
     // pull `@/...` imports failed at transform time).
     resolve: {
-        alias: {
-            '@': path.resolve(projectRoot, 'resources/js'),
-        },
+        alias: [
+            // Under Vitest, the Wayfinder-generated `@/actions|routes|wayfinder`
+            // modules don't exist (gitignored build artifacts, never generated
+            // in the Node-only CI job). Redirect them to a stub so tests that
+            // transitively import route/action helpers still resolve. Must come
+            // before the generic `@` alias so it wins.
+            ...(isVitest
+                ? [
+                      {
+                          find: /^@\/(?:actions|routes|wayfinder)(?:\/.*)?$/,
+                          replacement: path.resolve(
+                              projectRoot,
+                              'resources/js/test/wayfinder-stub.js',
+                          ),
+                      },
+                  ]
+                : []),
+            { find: '@', replacement: path.resolve(projectRoot, 'resources/js') },
+        ],
     },
     test: {
         globals: true,
@@ -68,6 +84,8 @@ export default defineConfig({
                 // Bootstrap entrypoints — not unit-testable in isolation.
                 'resources/js/app.ts',
                 'resources/js/ssr.ts',
+                // Test scaffolding (e.g. the Wayfinder stub), not app code.
+                'resources/js/test/**',
             ],
         },
     },
