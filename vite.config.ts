@@ -53,7 +53,22 @@ export default defineConfig({
             provider: 'v8',
             reporter: ['text', 'lcov'],
             include: ['resources/js/**/*.{ts,vue}'],
-            exclude: ['resources/js/wayfinder/**', 'resources/js/actions/**', 'resources/js/routes/**'],
+            exclude: [
+                // Wayfinder-generated route/action bindings (verified upstream).
+                'resources/js/wayfinder/**',
+                'resources/js/actions/**',
+                'resources/js/routes/**',
+                // Inertia page components are exercised by Playwright e2e and
+                // backend feature tests, not Vitest. Their `.ts` siblings
+                // (e.g. `columns.ts`) stay in scope and ARE unit-tested.
+                'resources/js/pages/**/*.vue',
+                // Type-only declarations contribute no executable lines.
+                'resources/js/types/**',
+                'resources/js/**/*.d.ts',
+                // Bootstrap entrypoints — not unit-testable in isolation.
+                'resources/js/app.ts',
+                'resources/js/ssr.ts',
+            ],
         },
     },
 });
