@@ -16,7 +16,7 @@ class OptInAllUsersCommand extends Command
 {
     public function handle(OptInAllUsersToList $action): int
     {
-        $listId = (int) $this->argument('list');
+        $listId = (string) $this->argument('list');
         $list = NewsletterList::find($listId);
 
         if ($list === null) {
