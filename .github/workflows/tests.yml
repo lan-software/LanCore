@@ -36,6 +36,16 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
       DB_CONNECTION: pgsql
       DB_HOST: 127.0.0.1
@@ -43,6 +53,16 @@ jobs:
       DB_DATABASE: lancore
       DB_USERNAME: lancore
       DB_PASSWORD: password
+      # The shared default .env.example points REDIS_HOST at the Docker-network
+      # hostname `infrastructure-redis`, which does not resolve on CI runners.
+      # PresenceTracker opens a direct Redis connection on every authenticated
+      # Inertia render (the `presence` shared prop), so an unresolvable host
+      # makes each render block ~10s on DNS/connect before the failure is
+      # swallowed — ballooning the suite from ~10min to over an hour. Point at
+      # the loopback redis service container instead so the connection is real
+      # and fast.
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
 
     steps:
       - name: Checkout code
@@ -53,6 +73,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           tools: composer:v2
+          extensions: redis
           coverage: xdebug
 
       - name: Setup Node
