@@ -149,6 +149,18 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | banner_images | jsonb (nullable) | Array of banner image data |
 | primary_program_id | bigint FK (nullable) | References programs.id |
 | orga_team_id | bigint FK (nullable) | References orga_teams.id; ON DELETE SET NULL — at most one Orga-Team per event (OT-F-005) |
+| attendance_mode | unsignedTinyInteger default 1 | Cast to `AttendanceMode` enum; added by `2026_05_31_093100_add_lpps_fields_to_events_table.php` (CAP-PUB-005, EVT-F-013) |
+| syndication_status | varchar default 'scheduled' | Cast to `EventSyndicationStatus` enum; controls LPPS inclusion |
+| previous_start_date | datetime nullable | Optional; records a date change for LPPS consumers |
+| has_showers | boolean nullable | Facility flag for the LPPS document |
+| sleeping_policy | unsignedTinyInteger default 0 | Bitset; encoded via `InteractsWithBitset` concern + `SleepingOption` enum |
+| alcohol_policy | unsignedTinyInteger default 0 | Bitset; `AlcoholPolicy` enum |
+| smoking_policy | unsignedTinyInteger default 0 | Bitset; `SmokingPolicy` enum |
+| age_policy | unsignedTinyInteger default 0 | Bitset; `AgePolicy` enum |
+| food_policy | unsignedTinyInteger default 0 | Bitset; `FoodPolicy` enum |
+| network_connection_mbps | unsignedInteger nullable | LAN network speed |
+| internet_connection_mbps | unsignedInteger nullable | WAN internet speed |
+| wifi_connection_mbps | unsignedInteger nullable | Wi-Fi speed (nullable = no Wi-Fi) |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 
@@ -174,6 +186,9 @@ All schema changes managed via Laravel migrations in `database/migrations/`. Mig
 | state | varchar (nullable) | State/province |
 | country | varchar | Country |
 | postal_code | varchar (nullable) | Postal/zip code |
+| latitude | decimal(10,7) nullable | Geographic latitude — added by `2026_05_31_093000_add_geo_to_addresses_table.php`; used by LPPS (CAP-PUB-004, PUB-F-005) |
+| longitude | decimal(10,7) nullable | Geographic longitude — same migration |
+| country_code | char(2) nullable | ISO 3166-1 alpha-2 country code — same migration; distinct from the legacy `country` varchar |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 
@@ -1209,6 +1224,25 @@ All four tables are owned by the Chat CSCI. Every model implements `OwenIt\Audit
 | created_at, updated_at | timestamp | |
 
 **Indexes:** INDEX `(room_id, created_at)`.
+
+### 4.21 LPPS Publishing Domain (CSCI-PUB)
+
+The LPPS Publishing domain introduces no new tables. It adds columns to existing tables via two migrations and uses four new `organization_settings` keys.
+
+**addresses (extended columns)** — migration `2026_05_31_093000_add_geo_to_addresses_table.php`: columns `latitude`, `longitude`, `country_code` documented in §4.2.3 above.
+
+**events (extended columns)** — migration `2026_05_31_093100_add_lpps_fields_to_events_table.php`: all LPPS event columns documented in §4.2.1 above.
+
+**organization_settings (new LPPS keys)** — persisted as key/value rows in the existing `organization_settings` table (schema: `(id, key VARCHAR UNIQUE, value TEXT, timestamps)`):
+
+| Key | Value type | Purpose |
+|-----|-----------|---------|
+| `lpps_description` | text | Public description of the organisation for the LPPS document |
+| `lpps_steam_group_url` | URL string | Steam group URL for community cross-promotion |
+| `lpps_discord_invite_url` | URL string | Discord invite URL |
+| `lpps_publisher_unique_id` | string | Globally unique identifier for LPPS federation / external directory matching |
+
+Note: A `booted()` static hook on `App\Models\OrganizationSetting` flushes the `lpps` cache group whenever any setting row is saved, ensuring the LPPS document reflects changes immediately on the next request.
 
 ---
 

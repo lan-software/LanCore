@@ -847,6 +847,7 @@ Output path: `<output-dir>/{user-id}-{Y-m-d_His}.zip`. The path is printed to st
 | SET-F-015 (Background images) | Section 3.17 |
 | SET-F-016 (Wire-shape preservation via SeatPlanResource) | Section 3.14.1 |
 | DL-F-007, DL-F-013, DL-F-015, DL-F-017 (Data Lifecycle artisan commands) | Section 3.20 |
+| PUB-F-001..008, CAP-PUB-001..006 (LPPS well-known endpoint) | Section 3.21 |
 
 ---
 
@@ -870,6 +871,94 @@ Internal interfaces:
 | IF-DL-003 | `RetentionEvaluator::dataClass(): RetentionDataClass; evaluate(User): RetentionVerdict` | `app/Domain/DataLifecycle/RetentionEvaluators/Contracts/RetentionEvaluator.php` |
 
 The GDPR Article 15 export command (`gdpr:export-user`) gains a salted-email-hash fallback (CAP-DL-007 / GDPR-F-009) so post-deletion subject access requests resolve via `email_hash` with `withTrashed()`.
+
+---
+
+### 3.21 LPPS Well-Known Endpoint
+
+Traces to: PUB-F-001..008, CAP-PUB-001..006.
+
+**Endpoint:** `GET /.well-known/lan-party.json`
+**Route name:** `lpps.document`
+**Authentication:** None (public)
+**Content-Type:** `application/json`
+**Cache:** Served from `lpps` cache group via `App\Services\ModelCacheService`; invalidated on mutation of `Event`, `Venue`, `Address`, `TicketType`, or any `OrganizationSetting` row
+
+**Response schema (top-level):**
+
+```json
+{
+  "schema_version": "1.0",
+  "organisation": {
+    "name": "string",
+    "logo_url": "string|null",
+    "description": "string|null",
+    "steam_group_url": "string|null",
+    "discord_invite_url": "string|null",
+    "publisher_unique_id": "string|null"
+  },
+  "events": [ /* LppsEventResource array */ ],
+  "generated_at": "ISO-8601 UTC timestamp"
+}
+```
+
+**Event object (LppsEventResource):**
+
+```json
+{
+  "id": "integer",
+  "name": "string",
+  "start_date": "ISO-8601",
+  "end_date": "ISO-8601",
+  "syndication_status": "string (EventSyndicationStatus)",
+  "attendance_mode": "integer (AttendanceMode)",
+  "previous_start_date": "ISO-8601|null",
+  "has_showers": "boolean|null",
+  "sleeping_policy": "integer (bitset)",
+  "alcohol_policy": "integer (bitset)",
+  "smoking_policy": "integer (bitset)",
+  "age_policy": "integer (bitset)",
+  "food_policy": "integer (bitset)",
+  "network_connection_mbps": "integer|null",
+  "internet_connection_mbps": "integer|null",
+  "wifi_connection_mbps": "integer|null",
+  "venue": { /* LppsVenueResource */ },
+  "tickets": [ /* LppsTicketResource array */ ]
+}
+```
+
+**Venue object (LppsVenueResource):**
+
+```json
+{
+  "id": "integer",
+  "name": "string",
+  "street": "string|null",
+  "city": "string|null",
+  "postal_code": "string|null",
+  "country_code": "char(2)|null",
+  "latitude": "decimal|null",
+  "longitude": "decimal|null"
+}
+```
+
+**Ticket object (LppsTicketResource):**
+
+```json
+{
+  "id": "integer",
+  "name": "string",
+  "price": "decimal",
+  "is_available": "boolean",
+  "quota_remaining": "integer|null"
+}
+```
+
+**Filtering rule:** Only events with `syndication_status` matching `EventSyndicationStatus::Scheduled` (or equivalent active case) are included in the `events` array.
+
+**Discoverability:** `resources/views/app.blade.php` emits `<link rel="alternate" type="application/json" href="/.well-known/lan-party.json">` on every page; `resources/js/pages/events/Public.vue` renders a visible "LPPS Feed" link in the event page footer.
+
+**Cache invalidation:** `HasModelCache::relatedCacheGroups()` on `Event`, `Venue`, `Address`, `TicketType` returns `['lpps']`. `App\Models\OrganizationSetting::booted()` registers a `static::saved()` flush hook. Both paths call `ModelCacheService::flush('lpps')`.
 
 ---
 

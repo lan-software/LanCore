@@ -63,23 +63,26 @@ What started as a three-day tech demo quickly evolved into a comprehensive event
 | Integration API | REST API with SSO, webhooks, and third-party app connectivity | Done |
 | Responsive UI | Mobile and desktop-friendly interface with dark mode | Done |
 | Tournament Management | Brackets and match management | In Testing |
+| Chat | Matches/Tournaments have Chat Rooms for users to communicate in | Done |
+| Policy | Advanced policy engine that supports changelog/diff/history for policies. | Done |
+| Theming | Per-event theme library with light/dark palette overrides and live preview | Done |
+| Newsletter | Listmonk-backed subscriber lists with opt-in reconciliation | Done |
+| Presence | Real-time online presence broadcasting via Reverb | Done |
 | Fully GDPR Compliant | Respects the rights of all users by following the GDPR Laws (Articles 15 & 17 — export and right to erasure) | Done |
-| Game Server Management | Pelican Panel integration | Planned |
+| Game Server Orchestration | On-demand game server provisioning, MatchHandler, and TMT2 integration | In Progress |
+| LAN Party Publishing Standard | Public, cached `/.well-known/lan-party.json` feed (org → venues → events → tickets) per [jamesread/lan-party-publishing-standard](https://github.com/jamesread/lan-party-publishing-standard) v2 | Done |
 
 ---
 
 ## Architecture
 
-LanCore follows a **domain-driven design** with 22 bounded contexts organized under `app/Domain/`. Each domain encapsulates its own models, actions, controllers, events, listeners, and policies.
+LanCore follows a **domain-driven design** with 29 bounded contexts organized under `app/Domain/`. Each domain encapsulates its own models, actions, controllers, events, listeners, and policies.
 
 ```
 app/Domain/
-  Achievements/   Announcement/     Api/            Auth/
-  Competition/    DataLifecycle/    Event/          Games/
-  Integration/    News/             Notification/   Orchestration/
-  OrgaTeam/       Policy/           Profile/        Program/
-  Seating/        Shop/             Sponsoring/     Ticketing/
-  Venue/          Webhook/
+Achievements  Auth         CompetitionSchedule  Event        News          Orchestration  Presence  Publishing  Sponsoring  Venue
+Announcement  Chat         DataLifecycle        Games        Newsletter    OrgaTeam       Profile   Seating     Theme       Webhook
+Api           Competition  EmailLog             Integration  Notification  Policy         Program   Shop        Ticketing
 ```
 
 Key architectural decisions:

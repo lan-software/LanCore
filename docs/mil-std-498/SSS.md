@@ -349,6 +349,17 @@ This document specifies the system-level requirements for LanCore, organized by 
 | CAP-NLT-003 | The system shall maintain bidirectional sync between LanCore and Listmonk: LanCore pushes subscription changes to Listmonk immediately on user toggle or anonymous signup; Listmonk state is pulled into LanCore on background-on-access refresh (non-blocking job dispatched when a user opens the E-Mail Settings page) and via a nightly reconciliation job (`newsletter:reconcile-subscriptions` scheduled at 03:45, `withoutOverlapping()->onOneServer()`) |
 | CAP-NLT-004 | The system shall provide an admin "Opt-In All Users" action per newsletter list that subscribes every registered user to the specified list in Listmonk and updates the local pivot accordingly |
 
+#### 3.2.26 LAN Party Publishing Standard (CAP-PUB)
+
+| Req ID | Requirement |
+|--------|------------|
+| CAP-PUB-001 | The system shall expose a public, unauthenticated endpoint at `GET /.well-known/lan-party.json` (route name `lpps.document`) that returns a JSON document conforming to the LAN Party Publishing Standard, describing the organisation, its upcoming and recent events, venues, and facilities |
+| CAP-PUB-002 | The LPPS document shall be assembled by `App\Domain\Publishing\Actions\BuildLanPartyDocument` and served by `App\Domain\Publishing\Http\Controllers\LanPartyPublishingController`; the response shall carry `Content-Type: application/json` and be served from the `lpps` cache group managed by `App\Services\ModelCacheService` |
+| CAP-PUB-003 | The `lpps` cache group shall be invalidated automatically whenever an `Event`, `Venue`, `Address`, or `TicketType` model is mutated (via `App\Concerns\HasModelCache::relatedCacheGroups()`) and whenever an `App\Models\OrganizationSetting` row is saved (via a `booted()` flush hook) |
+| CAP-PUB-004 | The system shall extend the `addresses` table with nullable `latitude` (`DECIMAL(10,7)`), `longitude` (`DECIMAL(10,7)`), and `country_code` (`CHAR(2)`) columns; the admin venue Create and Edit pages shall expose form fields for these values |
+| CAP-PUB-005 | The system shall extend the `events` table with: `attendance_mode` (unsignedTinyInteger, default 1, cast to `App\Domain\Event\Enums\AttendanceMode`), `syndication_status` (string, default `'scheduled'`, cast to `App\Domain\Event\Enums\EventSyndicationStatus`), `previous_start_date` (datetime, nullable), `has_showers` (boolean, nullable), `sleeping_policy` / `alcohol_policy` / `smoking_policy` / `age_policy` / `food_policy` (unsignedTinyInteger, default 0, bitset fields using `App\Concerns\InteractsWithBitset`), `network_connection_mbps` / `internet_connection_mbps` / `wifi_connection_mbps` (unsignedInteger, nullable); the admin event Create and Edit pages shall expose form fields for all new columns |
+| CAP-PUB-006 | The system shall extend `organization_settings` with four LPPS-specific keys: `lpps_description` (text description of the organisation), `lpps_steam_group_url`, `lpps_discord_invite_url`, and `lpps_publisher_unique_id`; the Organization settings admin page shall expose form fields for these keys; the admin organization settings page shall expose form fields for these values |
+
 #### 3.2.23 Event Theme Library (CAP-THM)
 
 | Req ID | Requirement |
@@ -529,6 +540,12 @@ Requirements in this document trace to:
 | CAP-NLT-002 | OCD §5.2.11 (per-user E-Mail Settings), OCD §7.1 glossary "Subscription" | NLT-F-003 |
 | CAP-NLT-003 | OCD §5.2.11 (sync), OCD §7.1 glossary "Listmonk" | NLT-F-004, NLT-F-007 |
 | CAP-NLT-004 | OCD §5.2.11 (Opt-In All Users), OCD §5.1.4 (admin action) | NLT-F-005 |
+| CAP-PUB-001 | OCD §5.1.1 (anonymous visitor discovers events via well-known), OCD §5.2.14 (Event Data Syndication via LPPS) | PUB-F-001 |
+| CAP-PUB-002 | OCD §5.2.14 steps 2–3 (document assembly and caching) | PUB-F-002, PUB-F-003 |
+| CAP-PUB-003 | OCD §5.2.14 step 3 (cache invalidation on model change) | PUB-F-004 |
+| CAP-PUB-004 | OCD §5.1.4 (admin configures LPPS fields on venues), OCD §5.2.14 step 2 (venue geo-coordinates in document) | VEN-F-001 (extended), PUB-F-005 |
+| CAP-PUB-005 | OCD §5.1.4 (admin configures LPPS fields on events), OCD §5.2.14 steps 2, 6 (event columns in document, syndication_status control) | EVT-F-013, PUB-F-006, PUB-F-007 |
+| CAP-PUB-006 | OCD §5.1.4 (admin configures LPPS fields on organisation), OCD §5.2.14 step 2 (organisation root in document) | ORG-F-006, PUB-F-008 |
 
 ---
 
@@ -558,3 +575,5 @@ Requirements in this document trace to:
 | BCP 47 | IETF standard for language tags (e.g., `en`, `de`, `fr`, `es`) |
 | NLT | Newsletter — capability prefix for Listmonk newsletter integration requirements |
 | CTD | Countdown — capability prefix for the public countdown page requirements |
+| PUB | Publishing — capability prefix for the LAN Party Publishing Standard domain requirements |
+| LPPS | LAN Party Publishing Standard — community JSON schema served at `/.well-known/lan-party.json` |

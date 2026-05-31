@@ -39,6 +39,11 @@ const form = reactive({
     legal_notice: props.settings.legal_notice ?? '',
     impressum_responsible: props.settings.impressum_responsible ?? '',
     impressum_content: props.settings.impressum_content ?? '',
+    // LAN Party Publishing Standard organisation fields.
+    description: props.settings.description ?? '',
+    steam_group_url: props.settings.steam_group_url ?? '',
+    discord_invite_url: props.settings.discord_invite_url ?? '',
+    publisher_unique_id: props.settings.publisher_unique_id ?? '',
 });
 
 const saving = ref(false);
@@ -220,6 +225,59 @@ function removeLogo() {
                                 v-model="form.website"
                                 type="url"
                                 placeholder="https://example.com"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="text-sm font-semibold">
+                        Event Syndication (LAN Party Publishing Standard)
+                    </div>
+                    <p class="text-xs text-muted-foreground">
+                        These fields are published in the public
+                        <code>/.well-known/lan-party.json</code> feed so
+                        aggregators can discover your events.
+                    </p>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="grid gap-2 sm:col-span-2">
+                            <Label for="description">Description</Label>
+                            <Textarea
+                                id="description"
+                                v-model="form.description"
+                                rows="3"
+                                placeholder="A short description of your organisation."
+                            />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="steam_group_url">Steam group URL</Label>
+                            <Input
+                                id="steam_group_url"
+                                v-model="form.steam_group_url"
+                                type="url"
+                                placeholder="https://steamcommunity.com/groups/…"
+                            />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="discord_invite_url"
+                                >Discord invite URL</Label
+                            >
+                            <Input
+                                id="discord_invite_url"
+                                v-model="form.discord_invite_url"
+                                type="url"
+                                placeholder="https://discord.gg/…"
+                            />
+                        </div>
+                        <div class="grid gap-2 sm:col-span-2">
+                            <Label for="publisher_unique_id"
+                                >Publisher unique ID</Label
+                            >
+                            <Input
+                                id="publisher_unique_id"
+                                v-model="form.publisher_unique_id"
+                                placeholder="e.g. my-lan-org (defaults to a slug of the name)"
                             />
                         </div>
                     </div>

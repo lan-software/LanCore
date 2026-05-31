@@ -1300,6 +1300,7 @@ unrendered.
 | SEC-022 | `app/Domain/Profile/Actions/NormalizeAvatar.php`, `app/Domain/Profile/Actions/NormalizeBanner.php`, `app/Http/Requests/UpdateProfileMediaRequest.php` (size + mime + bomb-protection validation) |
 | EVT-F-008, THM-F-001..006 | app/Domain/Theme/, app/Domain/Theme/Support/PaletteVariables.php, app/Domain/Theme/Http/Requests/ThemeConfigKeysRule.php, app/Http/Middleware/ResolveEventTheme.php, app/Http/Middleware/HandleInertiaRequests.php (activeTheme shared prop), bootstrap/app.php (middleware registration), resources/views/app.blade.php (SSR light/dark style blocks), resources/js/components/theme/ThemeProvider.vue, resources/js/components/theme/{ColorPickerInput,ThemePalettePicker,ThemePreview}.vue, OrganizationSetting (default_theme_id key); see §5.11 |
 | CTD-F-001..002, NLT-F-001..007, EXT-F-001..005 | app/Domain/Newsletter/, config/listmonk.php, app/Http/Controllers/CountdownController.php, app/Console/Commands/ExternalApi/, app/Console/Commands/Newsletter/, resources/js/pages/Countdown.vue, resources/js/pages/newsletter-lists/{Index,Create,Edit}.vue, resources/js/pages/settings/EmailSettings.vue, resources/js/components/countdown/{CountdownTimer,NewsletterSignupForm}.vue, resources/js/pages/orchestration/apis/Index.vue (Steam + Listmonk cards); see §5.12 |
+| PUB-F-001..008, EVT-F-013, VEN-F-001 (extended), ORG-F-006, CAP-PUB-001..006 | app/Domain/Publishing/ (Actions/BuildLanPartyDocument.php, Http/Controllers/LanPartyPublishingController.php, Http/Resources/{LppsVenueResource,LppsEventResource,LppsTicketResource}.php), app/Concerns/HasModelCache.php (relatedCacheGroups returning lpps), app/Models/OrganizationSetting.php (booted flush hook), app/Services/ModelCacheService.php, app/Domain/Event/Enums/{AttendanceMode,EventSyndicationStatus,SleepingOption,AlcoholPolicy,SmokingPolicy,AgePolicy,FoodPolicy}.php, app/Concerns/InteractsWithBitset.php, database/migrations/2026_05_31_093000_add_geo_to_addresses_table.php, database/migrations/2026_05_31_093100_add_lpps_fields_to_events_table.php, routes/web.php (lpps.document route), resources/views/app.blade.php (link rel=alternate), resources/js/pages/events/Public.vue (feed link), resources/js/pages/venues/{Create,Edit}.vue (geo fields), resources/js/pages/events/{Create,Edit}.vue (LPPS panels), resources/js/pages/settings/Organization.vue (LPPS identity section); see §5.14 |
 
 ---
 
@@ -1424,6 +1425,31 @@ Implementation domain: `app/Domain/Ticketing/` + `app/Domain/Notification/`. Tra
 **Suppression rule (NTF-F-012).** The Release fan-out job filters out users who already hold a ticket of this exact `TicketType` (`whereDoesntHave('tickets', ...)`). The End fan-out job does NOT suppress, because opted-in users may want a "last chance to grab another ticket for a friend / for an upgrade" reminder.
 
 **Race protection (NTF-F-013).** Between the dispatcher's `SELECT` and the fan-out job's actual `Notification::send`, the TicketType could be sold out, hidden, or have its `purchase_until` shortened. Each job re-checks `TicketType::isAvailableForPurchase()` immediately before fan-out and short-circuits silently otherwise. `release_notified_at` is still set on the row even on short-circuit, to prevent retry loops.
+
+---
+
+### 5.14 LPPS Publishing Implementation
+
+Implementation root: `app/Domain/Publishing/`. Traces to PUB-F-001..008, CAP-PUB-001..006.
+
+| Component | Path | Notes |
+|-----------|------|-------|
+| Controller | `app/Domain/Publishing/Http/Controllers/LanPartyPublishingController.php` | Single-action invokable; delegates to `BuildLanPartyDocument`; wraps result in `JsonResponse`; no authentication middleware |
+| Action | `app/Domain/Publishing/Actions/BuildLanPartyDocument.php` | Reads `OrganizationSetting` keys, queries `Event::published()->with(['venue.address','ticketTypes'])`, maps through resources, assembles top-level document array; organisation root assembled directly (no separate LppsOrganisationResource) |
+| LppsEventResource | `app/Domain/Publishing/Http/Resources/LppsEventResource.php` | Serializes all EVT-F-013 LPPS fields + nested LppsVenueResource + LppsTicketResource collection |
+| LppsVenueResource | `app/Domain/Publishing/Http/Resources/LppsVenueResource.php` | Serializes venue name + address (street, city, zip_code, country_code, latitude, longitude) |
+| LppsTicketResource | `app/Domain/Publishing/Http/Resources/LppsTicketResource.php` | Serializes id, name, price, is_available (from `isAvailableForPurchase()`), quota_remaining |
+| Route | `routes/web.php` | `Route::get('/.well-known/lan-party.json', LanPartyPublishingController::class)->name('lpps.document')` in the public (unauthenticated) route group |
+| Cache invalidation — models | `app/Concerns/HasModelCache.php::relatedCacheGroups()` | `Event`, `Venue`, `Address`, `TicketType` each return `['lpps']` in `relatedCacheGroups()`; the trait's model observer calls `ModelCacheService::flush('lpps')` on every `saved` / `deleted` event |
+| Cache invalidation — settings | `app/Models/OrganizationSetting.php` | `booted()` registers a `static::saved(fn() => ModelCacheService::flush('lpps'))` hook; any org-setting write (including non-LPPS keys) triggers a flush to avoid stale LPPS descriptions |
+| Migrations | `database/migrations/2026_05_31_093000_add_geo_to_addresses_table.php` | Adds `latitude DECIMAL(10,7) nullable`, `longitude DECIMAL(10,7) nullable`, `country_code CHAR(2) nullable` to `addresses` |
+| | `database/migrations/2026_05_31_093100_add_lpps_fields_to_events_table.php` | Adds all LPPS event columns listed in EVT-F-013 |
+| Admin UI — venues | `resources/js/pages/venues/{Create,Edit}.vue` | New "Location & LPPS" panel with latitude, longitude, country_code inputs |
+| Admin UI — events | `resources/js/pages/events/{Create,Edit}.vue` | New "Syndication" panel with attendance_mode selector, syndication_status selector, previous_start_date picker, facility toggles (has_showers), policy bitset multi-selects (sleeping/alcohol/smoking/age/food), network speed inputs |
+| Admin UI — org | `resources/js/pages/settings/Organization.vue` | New "LPPS Identity" section with description textarea, Steam group URL, Discord invite URL, publisher unique ID inputs |
+| Public discoverability | `resources/views/app.blade.php` | `<link rel="alternate" type="application/json" href="/.well-known/lan-party.json">` in `<head>` |
+| Public discoverability | `resources/js/pages/events/Public.vue` | "LPPS Feed" link in page footer pointing to `/.well-known/lan-party.json` |
+| Enums | `app/Domain/Event/Enums/{AttendanceMode,EventSyndicationStatus,SleepingOption,AlcoholPolicy,SmokingPolicy,AgePolicy,FoodPolicy}.php` | Backed enums; bitset enums implement `InteractsWithBitset` concern |
 
 ---
 

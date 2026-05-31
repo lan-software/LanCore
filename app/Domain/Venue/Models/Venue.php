@@ -3,6 +3,7 @@
 namespace App\Domain\Venue\Models;
 
 use App\Concerns\HasModelCache;
+use App\Domain\Event\Models\Event;
 use Database\Factories\VenueFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -28,9 +29,25 @@ class Venue extends Model
         return VenueFactory::new();
     }
 
+    /**
+     * A venue is part of the published LAN Party Publishing Standard
+     * document, so flush that cache when it changes.
+     *
+     * @return array<int, string>
+     */
+    public static function relatedCacheGroups(): array
+    {
+        return ['lpps'];
+    }
+
     public function address(): BelongsTo
     {
         return $this->belongsTo(Address::class);
+    }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(Event::class);
     }
 
     public function images(): HasMany

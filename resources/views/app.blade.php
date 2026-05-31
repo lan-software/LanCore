@@ -67,6 +67,9 @@
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
+        {{-- Discoverable LAN Party Publishing Standard v2 syndication feed. --}}
+        <link rel="alternate" type="application/json" title="LAN Party Publishing Standard" href="/.well-known/lan-party.json">
+
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 

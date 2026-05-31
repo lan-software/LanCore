@@ -70,7 +70,7 @@ class VenueController extends Controller
         }
 
         $this->createVenue->execute(
-            $request->safe()->only(['name', 'description', 'street', 'city', 'zip_code', 'state', 'country']),
+            $request->safe()->only(['name', 'description', 'street', 'city', 'zip_code', 'state', 'country', 'latitude', 'longitude', 'country_code']),
             $images,
         );
 
@@ -110,7 +110,7 @@ class VenueController extends Controller
 
         $this->updateVenue->execute(
             $venue,
-            $request->safe()->only(['name', 'description', 'street', 'city', 'zip_code', 'state', 'country']),
+            $request->safe()->only(['name', 'description', 'street', 'city', 'zip_code', 'state', 'country', 'latitude', 'longitude', 'country_code']),
             $existingImages,
             $newImages,
         );

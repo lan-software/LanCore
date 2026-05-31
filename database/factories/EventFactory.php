@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Domain\Event\Enums\AttendanceMode;
 use App\Domain\Event\Enums\EventStatus;
+use App\Domain\Event\Enums\EventSyndicationStatus;
 use App\Domain\Event\Models\Event;
 use App\Domain\Venue\Models\Venue;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -29,6 +31,18 @@ class EventFactory extends Factory
             'banner_images' => [],
             'status' => EventStatus::Draft,
             'venue_id' => Venue::factory(),
+            'attendance_mode' => AttendanceMode::Offline,
+            'syndication_status' => EventSyndicationStatus::Scheduled,
+            'previous_start_date' => null,
+            'has_showers' => fake()->boolean(),
+            'sleeping' => 0,
+            'alcohol_policy' => 0,
+            'smoking_policy' => 0,
+            'age_policy' => 0,
+            'food_policy' => 0,
+            'network_connection_mbps' => null,
+            'internet_connection_mbps' => null,
+            'wifi_connection_mbps' => null,
         ];
     }
 

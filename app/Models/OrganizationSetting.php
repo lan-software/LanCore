@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\ModelCacheService;
 use App\Support\StorageRole;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -18,6 +19,20 @@ class OrganizationSetting extends Model
         return [
             'value' => 'json',
         ];
+    }
+
+    /**
+     * Organisation-level settings feed the published LAN Party Publishing
+     * Standard document, so flush that cache whenever they change.
+     */
+    protected static function booted(): void
+    {
+        $flush = static function (): void {
+            app(ModelCacheService::class)->flushGroup('lpps');
+        };
+
+        static::saved($flush);
+        static::deleted($flush);
     }
 
     public static function get(string $key, mixed $default = null): mixed

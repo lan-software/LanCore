@@ -75,6 +75,7 @@ The LanCore CSCI shall support the following operational states:
 | EVT-F-010 | The software shall support a primary program assignment per event |
 | EVT-F-011 | The software shall provide per-user event context selection for "My Pages" views via `POST /my-event-context` (store) and `DELETE /my-event-context` (destroy), implemented in `EventContextController::storeMy/destroyMy`. The selected event shall be validated via `Event::scopeForUser` to confirm the user has participation (ticket ownership/management, active team membership, or order) in that event. The selection shall be stored in session key `my_selected_event_id` and applied as a filter on my-competitions, my-teams, my-orders, and my-tickets index views. A stale selection (user loses participation) shall be automatically cleared when the `myEventContext` shared prop is computed. |
 | EVT-F-012 | The software shall expose an iCalendar export endpoint at `GET /events/{event}/calendar.ics` (route name `events.public.ical`) implemented by `PublicEventController::ical`. For events with status `Published` it shall return HTTP 200 with `Content-Type: text/calendar; charset=utf-8` and `Content-Disposition: attachment; filename="<slug>.ics"`. The body shall be a single `VCALENDAR` containing one `VEVENT` whose `SUMMARY` is the event name, `DESCRIPTION` is the event description, `DTSTART` / `DTEND` are the event `start_date` / `end_date` in UTC, and `LOCATION` is the venue name plus formatted address (when a venue is associated). Comma, semicolon, backslash and newline characters shall be escaped per RFC 5545 §3.3.11. Non-published events shall return HTTP 404. Realises CAP-EVT-007. |
+| EVT-F-013 | The software shall extend the `events` table with LPPS-specific columns via migration `2026_05_31_093100_add_lpps_fields_to_events_table.php`: `attendance_mode` (unsignedTinyInteger, default 1, cast to `App\Domain\Event\Enums\AttendanceMode`), `syndication_status` (string, default `'scheduled'`, cast to `App\Domain\Event\Enums\EventSyndicationStatus`), `previous_start_date` (datetime, nullable), `has_showers` (boolean, nullable), `sleeping_policy` / `alcohol_policy` / `smoking_policy` / `age_policy` / `food_policy` (unsignedTinyInteger, default 0, bitset fields using `App\Concerns\InteractsWithBitset` with enums `SleepingOption`, `AlcoholPolicy`, `SmokingPolicy`, `AgePolicy`, `FoodPolicy`), `network_connection_mbps` / `internet_connection_mbps` / `wifi_connection_mbps` (unsignedInteger, nullable). Admin event Create and Edit pages (`resources/js/pages/events/{Create,Edit}.vue`) shall expose form fields for all new columns. Realises CAP-PUB-005. |
 
 #### 3.2.2 Ticketing Domain (CSCI-TKT)
 
@@ -426,7 +427,7 @@ The following spec items are documented here so future work can find them. They 
 
 | Req ID | Requirement |
 |--------|------------|
-| VEN-F-001 | The software shall support venues with: name, description, and associated Address (street, city, state, country) |
+| VEN-F-001 | The software shall support venues with: name, description, and associated Address (street, city, state, country). The `addresses` table shall additionally carry `latitude` (`DECIMAL(10,7)`, nullable), `longitude` (`DECIMAL(10,7)`, nullable), and `country_code` (`CHAR(2)`, nullable); these geo-fields shall be exposed on the admin venue Create and Edit forms and persisted via `CreateVenue` / `UpdateVenue`. Realises CAP-PUB-004. |
 | VEN-F-002 | The software shall support venue images with alt text and sort ordering |
 | VEN-F-003 | The software shall enforce VenuePolicy authorization on all venue operations |
 
@@ -525,6 +526,7 @@ The following spec items are documented here so future work can find them. They 
 | ORG-F-003 | The software shall serve the organization identity as a shared Inertia prop (`organization`) on every page, containing at minimum `{ name, logoUrl }` |
 | ORG-F-004 | The software shall cache the `organization` shared prop under cache key `inertia.organization` with a 1-hour TTL and invalidate this cache whenever `OrganizationSettingsController::update`, `uploadLogo`, or `removeLogo` is called |
 | ORG-F-005 | The software shall support logo upload to the `public` disk and return a signed URL; logo removal shall delete the file and null the setting |
+| ORG-F-006 | The software shall store four LPPS-specific organization setting keys in the `organization_settings` table: `lpps_description` (text, the organisation's public description for the LPPS document), `lpps_steam_group_url` (URL of the organisation's Steam group), `lpps_discord_invite_url` (Discord invite URL), and `lpps_publisher_unique_id` (globally unique identifier for LPPS federation); the Organization admin settings page (`resources/js/pages/settings/Organization.vue`) shall expose form fields for these keys; `OrganizationSettingsController` shall persist them via the existing key/value mechanism. Realises CAP-PUB-006. |
 
 #### 3.2.19 Integration Client Library CSCI (CSCI-ICLIB)
 
@@ -711,6 +713,28 @@ Implementation: `app/Domain/Presence/Services/PresenceTracker.php`, `app/Domain/
 | PRS-F-011 | The software shall not compute or leak presence for a profile whose visibility mode forbids viewing — presence and existence must be hidden together to prevent existence-leak via the indicator |
 | PRS-F-012 | The Presence CSCI shall introduce no database tables, migrations, or schema changes; state is ephemeral in Redis by design |
 
+#### 3.2.FF LAN Party Publishing Domain (CSCI-PUB)
+
+**Models:** Event (extended), Venue, Address (extended), TicketType, OrganizationSetting (extended)
+**Controllers:** `App\Domain\Publishing\Http\Controllers\LanPartyPublishingController`
+**Actions:** `App\Domain\Publishing\Actions\BuildLanPartyDocument`
+**Resources:** `App\Domain\Publishing\Http\Resources\{LppsEventResource, LppsVenueResource, LppsTicketResource}`
+**Services:** `App\Services\ModelCacheService`, `App\Concerns\HasModelCache`
+**Enums:** `App\Domain\Event\Enums\{AttendanceMode, EventSyndicationStatus, SleepingOption, AlcoholPolicy, SmokingPolicy, AgePolicy, FoodPolicy}`
+**Concerns:** `App\Concerns\InteractsWithBitset`
+**Migrations:** `2026_05_31_093000_add_geo_to_addresses_table.php`, `2026_05_31_093100_add_lpps_fields_to_events_table.php`
+
+| Req ID | Requirement |
+|--------|------------|
+| PUB-F-001 | The software shall expose `GET /.well-known/lan-party.json` (route name `lpps.document`, registered in `routes/web.php`) via `LanPartyPublishingController` requiring no authentication; the response shall carry `Content-Type: application/json` and HTTP 200 |
+| PUB-F-002 | `BuildLanPartyDocument` shall assemble the LPPS document from: `OrganizationSetting` keys (name, logo_url, lpps_description, lpps_steam_group_url, lpps_discord_invite_url, lpps_publisher_unique_id — assembled directly without a separate LppsOrganisationResource); published `Event` records with eager-loaded `venue.address` and `ticketTypes` relations; a `schema_version` string; and a `generated_at` ISO-8601 timestamp |
+| PUB-F-003 | Each event entry in the LPPS document shall be serialized via `LppsEventResource`; each event's venue shall be serialized via `LppsVenueResource`; each ticket type shall be serialized via `LppsTicketResource` |
+| PUB-F-004 | The LPPS document shall be cached under the `lpps` group via `ModelCacheService`; the cache shall be invalidated whenever `Event`, `Venue`, `Address`, or `TicketType` is mutated (via `HasModelCache::relatedCacheGroups()` returning `['lpps']` on those models) and whenever an `OrganizationSetting` row is saved (via a `booted()` static flush hook on `App\Models\OrganizationSetting`) |
+| PUB-F-005 | The LPPS document shall include venue geo-coordinates (`latitude`, `longitude`) and `country_code` from the associated `Address` model when populated; null values shall be passed through as JSON `null` |
+| PUB-F-006 | The LPPS document shall include all LPPS-specific event fields from `EVT-F-013`: `attendance_mode`, `has_showers`, the five facility policy bitsets, and the three network connection speed fields |
+| PUB-F-007 | Only events whose `syndication_status` equals `EventSyndicationStatus::Scheduled` (or equivalent active state) shall appear in the LPPS `events` array; events with other `syndication_status` values shall be excluded from the document regardless of their publish status |
+| PUB-F-008 | The LPPS document's `organisation` root shall include the four LPPS-specific `OrganizationSetting` keys defined in `ORG-F-006`; the public event page (`resources/js/pages/events/Public.vue`) shall include a visible link to `/.well-known/lan-party.json`; `resources/views/app.blade.php` shall emit a `<link rel="alternate" type="application/json" href="/.well-known/lan-party.json">` in `<head>` on every page |
+
 ### 3.3 CSCI External Interface Requirements
 
 See [IRS](IRS.md) for detailed external interface requirements.
@@ -869,6 +893,12 @@ Additional CSCI-level requirements:
 | CAP-NLT-002 | NLT-F-003 |
 | CAP-NLT-003 | NLT-F-004, NLT-F-007 |
 | CAP-NLT-004 | NLT-F-005 |
+| CAP-PUB-001 | PUB-F-001 |
+| CAP-PUB-002 | PUB-F-002, PUB-F-003 |
+| CAP-PUB-003 | PUB-F-004 |
+| CAP-PUB-004 | VEN-F-001 (extended), PUB-F-005 |
+| CAP-PUB-005 | EVT-F-013, PUB-F-006, PUB-F-007 |
+| CAP-PUB-006 | ORG-F-006, PUB-F-008 |
 
 ---
 
@@ -886,3 +916,5 @@ Additional CSCI-level requirements:
 | SPA | Single Page Application |
 | SSO | Single Sign-On |
 | XSS | Cross-Site Scripting |
+| PUB | Publishing — requirement prefix for the LAN Party Publishing Standard domain |
+| LPPS | LAN Party Publishing Standard — community JSON schema served at `/.well-known/lan-party.json` |

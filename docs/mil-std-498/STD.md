@@ -1009,6 +1009,7 @@ Parameterised across all eight webhook event types (`user.registered`, `user.rol
 | CAP-NLT-001..004, NLT-F-001..007 | Newsletter test suite (4.33) |
 | CAP-CTD-001..002, CTD-F-001..002 | Public Countdown tests (4.34) |
 | CAP-ORC-011, EXT-F-001..005 | External API connectivity tests (4.35) |
+| CAP-PUB-001..006, PUB-F-001..008, EVT-F-013, ORG-F-006, VEN-F-001 (ext.) | LPPS publishing tests (4.36) |
 
 ---
 
@@ -1112,6 +1113,25 @@ Located under `tests/Feature/ExternalApi/`.
 | TC-EXT-003 | `TestCommandsTest.php` | `external-apis:test:paypal` exits 0 on valid credentials, 1 on auth error, 2 when PayPal env keys absent. Traces to EXT-F-003, CAP-ORC-011 |
 | TC-EXT-004 | `TestSteamTest.php` | `ExternalApiController::testSteam()` UI endpoint returns `{status:'connected', account:'gabelogannewell'}` on success; `external-apis:test:steam` command exits 0 / 1 / 2 accordingly; Steam card renders on the External API admin page. Traces to EXT-F-004, CAP-ORC-011 |
 | TC-EXT-005 | `TestListmonkTest.php` | `ExternalApiController::testListmonk()` UI endpoint returns `{status:'connected', account:<version>}` on success; `external-apis:test:listmonk` command exits 0 / 1 / 2 accordingly. Traces to EXT-F-005, CAP-ORC-011 |
+
+---
+
+### 4.36 LPPS Publishing Tests
+
+Located under `tests/Feature/Publishing/` and `tests/Unit/Publishing/`.
+
+| Test ID | File | Verifies |
+|---------|------|----------|
+| TC-PUB-001 | `LppsEndpointTest.php` | `GET /.well-known/lan-party.json` returns HTTP 200 with `Content-Type: application/json` without authentication; route name is `lpps.document`. Traces to PUB-F-001, CAP-PUB-001 |
+| TC-PUB-002 | `LppsEndpointTest.php` | Response body is valid JSON conforming to the LPPS schema: contains `schema_version`, `organisation`, `events`, `generated_at` keys. Traces to PUB-F-002, CAP-PUB-001 |
+| TC-PUB-003 | `LppsEndpointTest.php` | Only events with `syndication_status = 'scheduled'` (and published status) appear in the `events` array; events with other `syndication_status` values are excluded. Traces to PUB-F-007, CAP-PUB-005 |
+| TC-PUB-004 | `LppsEndpointTest.php` | Each event entry in the document contains `attendance_mode`, `has_showers`, facility policy bitset values, and network connection specs when set on the event. Traces to PUB-F-006, CAP-PUB-005 |
+| TC-PUB-005 | `LppsEndpointTest.php` | Each event's `venue` sub-object contains `latitude`, `longitude`, and `country_code` from the associated `Address` when set; the fields are `null` when not set. Traces to PUB-F-005, CAP-PUB-004 |
+| TC-PUB-006 | `LppsEndpointTest.php` | Each event's `tickets` array is populated from `LppsTicketResource` with `id`, `name`, `price`, `is_available`, and `quota_remaining` for each associated `TicketType`. Traces to PUB-F-003, CAP-PUB-002 |
+| TC-PUB-007 | `LppsEndpointTest.php` | The `organisation` root contains LPPS-specific `OrganizationSetting` keys (`lpps_description`, `lpps_steam_group_url`, `lpps_discord_invite_url`, `lpps_publisher_unique_id`) when configured; null/absent when not configured. Traces to PUB-F-008, CAP-PUB-006 |
+| TC-PUB-008 | `LppsEndpointTest.php` | Mutating an `Event` invalidates the `lpps` cache group; the next request rebuilds the document and reflects the change. Traces to PUB-F-004, CAP-PUB-003 |
+| TC-PUB-009 | `LppsAdminFieldsTest.php` | Admin venue Create and Edit pages accept `latitude`, `longitude`, `country_code` fields and persist them to the `addresses` table; admin event Create and Edit pages accept all LPPS event fields and persist them; Organization settings page accepts the four LPPS org-setting keys and persists them as `OrganizationSetting` rows. Traces to VEN-F-001 (extended), EVT-F-013, ORG-F-006, CAP-PUB-004..006 |
+| TC-PUB-010..025 | `BuildLanPartyDocumentTest.php` | 16 unit tests on `BuildLanPartyDocument`: correct schema_version value; organisation assembled without `LppsOrganisationResource` (inline); events ordered by start_date; LppsEventResource fields match model columns; LppsVenueResource address completeness; LppsTicketResource availability calculation; empty events array when no published events; null geo fields passed through as null; bitset policy encoding round-trip; attendance_mode enum serialization; syndication_status filtering logic; previous_start_date passthrough; network spec nullability; org setting keys absent when not configured; generated_at is a valid ISO-8601 timestamp; document structure matches LPPS schema contract. Traces to PUB-F-001..008, CAP-PUB-001..006 |
 
 ---
 

@@ -95,6 +95,7 @@ LanCore is a ground-up rewrite providing:
 - View public announcements
 - Register an account
 - Save a published event to a personal calendar (Google / Apple / Outlook) by downloading an iCalendar file from the public event page, so the date and venue are not lost between learning about the event and registering
+- Discover organisation and event metadata programmatically via the LPPS well-known endpoint (`GET /.well-known/lan-party.json`), enabling third-party aggregators, calendar apps, and community directories to index LanCore-hosted events without requiring authentication
 
 #### 5.1.2 Registered User (Authenticated)
 
@@ -139,6 +140,7 @@ LanCore is a ground-up rewrite providing:
 - Create and manage named color-palette themes (`name`, `description`, `light_config`, `dark_config`) and assign at most one theme per event — or set a site-wide default — from the Themes admin area
 - Manage the **Newsletter Lists** admin area: mirror Listmonk lists locally, curate which lists are user-selectable, designate a default public list, and trigger bulk "Opt-In All Users" actions
 - Finish and interact with the **Listmonk** card on the External API admin page (test connection, fetch lists, toggle visibility flags); test all configured external APIs (TMT2, Stripe, PayPal, Steam, Listmonk) via UI buttons or `external-apis:test:*` console commands
+- Configure **LAN Party Publishing Standard (LPPS)** metadata fields on venues (geo-coordinates, country code), events (attendance mode, syndication status, network specifications, facility policies), and organization settings (description, Steam group URL, Discord invite URL, publisher unique ID) so that the LPPS well-known document reflects accurate, up-to-date information for external consumers
 
 #### 5.1.5 Superadmin
 
@@ -327,6 +329,15 @@ The Lan\* satellite ecosystem (LanBrackets, LanEntrance, LanShout, LanHelp, LanC
 2. Any notification class can opt into push by appending `'webpush'` to its `via()` array and implementing a `toWebPush()` method returning `{ title, body, url }`
 3. When sending, the channel iterates the notifiable's `pushSubscriptions` relation and posts each one. If a subscription endpoint responds with HTTP 404 or 410 (browser unsubscribed, device retired, etc.) the channel deletes that `PushSubscription` row automatically — preventing the table from accumulating dead endpoints
 
+#### 5.2.14 Event Data Syndication via LPPS
+
+1. An external aggregator, calendar app, or community directory sends an unauthenticated HTTP GET request to `/.well-known/lan-party.json`
+2. LanCore serves a JSON document conforming to the LAN Party Publishing Standard, containing: organisation identity (name, description, Steam group URL, Discord invite URL, publisher unique ID), a list of events (with attendance mode, syndication status, dates, venue geo-coordinates and country code, network/facility specifications, ticket availability, and a link to the public event page), and a schema version tag
+3. The response is served from the `lpps` cache group (invalidated automatically when any Event, Venue, Address, TicketType, or OrganizationSetting row changes)
+4. The external consumer uses the document to populate its directory listing, display upcoming events on a community portal, or feed a notification service — all without requiring API credentials or a LanCore account
+5. The public event page (`/events/{event}`) includes a `<link rel="alternate">` header pointing to the well-known endpoint so browsers and crawlers can discover the machine-readable feed
+6. An admin can suppress a specific event from the feed by setting its `syndication_status` to `draft` or `archived`; only events with `syndication_status = scheduled` (or equivalent published state) appear in the document
+
 ### 5.3 System Context
 
 ```
@@ -459,3 +470,6 @@ Retention windows per data class are configurable from `/backstage/data-lifecycl
 | Listmonk | A self-hostable, open-source newsletter and mailing-list manager. In the LanCore context, Listmonk is the content-side authority — it manages subscriber data, list configuration, campaign delivery, and bounce/blocklist tracking. LanCore acts as the ingress layer (subscriber onboarding, list mirroring) and does not produce newsletter content |
 | Newsletter List | A local mirror of a Listmonk mailing list, persisted in `newsletter_lists`. Carries `listmonk_id`, display metadata, opt-in type (`single` / `double`), a boolean `is_user_selectable` (admin-curated visibility in the E-Mail Settings page), and a boolean `is_default_public` (at most one row — used by the `/countdown` signup form) |
 | Subscription | A user's per-list newsletter status, stored in the `newsletter_list_user` pivot as a `SubscriptionStatus` enum: `enabled`, `unsubscribed`, or `blocklisted` (mirroring Listmonk's per-list states) |
+| LPPS | LAN Party Publishing Standard — a community-developed JSON schema served at `/.well-known/lan-party.json` that describes a LAN party organisation, its events, venues, and facilities in a machine-readable format consumable by aggregators, community directories, and calendar applications without authentication |
+| Syndication | The act of publishing structured event and organisation data via the LPPS well-known endpoint so that third-party consumers can discover and index LanCore-hosted events; controlled per-event by the `syndication_status` column on the `events` table |
+| well-known | An IANA-registered URL path prefix (`/.well-known/`) used to expose machine-readable metadata documents about a web service, per RFC 8615; LanCore uses `/.well-known/lan-party.json` for LPPS syndication |

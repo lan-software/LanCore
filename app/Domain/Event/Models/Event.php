@@ -5,7 +5,9 @@ namespace App\Domain\Event\Models;
 use App\Concerns\HasModelCache;
 use App\Domain\Announcement\Models\Announcement;
 use App\Domain\Competition\Models\Competition;
+use App\Domain\Event\Enums\AttendanceMode;
 use App\Domain\Event\Enums\EventStatus;
+use App\Domain\Event\Enums\EventSyndicationStatus;
 use App\Domain\OrgaTeam\Models\OrgaTeam;
 use App\Domain\Program\Models\Program;
 use App\Domain\Seating\Models\SeatPlan;
@@ -34,7 +36,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @see docs/mil-std-498/SSS.md CAP-EVT-001, CAP-EVT-002, CAP-EVT-005, CAP-EVT-008, CAP-DL-008
  * @see docs/mil-std-498/SRS.md EVT-F-002, EVT-F-004, EVT-F-010, DL-F-018, THM-F-004
  */
-#[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_images', 'status', 'venue_id', 'primary_program_id', 'seat_capacity', 'orga_team_id', 'theme_id'])]
+#[Fillable(['name', 'description', 'start_date', 'end_date', 'banner_images', 'status', 'venue_id', 'primary_program_id', 'seat_capacity', 'orga_team_id', 'theme_id', 'attendance_mode', 'syndication_status', 'previous_start_date', 'has_showers', 'sleeping', 'alcohol_policy', 'smoking_policy', 'age_policy', 'food_policy', 'network_connection_mbps', 'internet_connection_mbps', 'wifi_connection_mbps'])]
 class Event extends Model implements AuditableContract
 {
     use Auditable;
@@ -57,10 +59,33 @@ class Event extends Model implements AuditableContract
         return [
             'start_date' => 'datetime',
             'end_date' => 'datetime',
+            'previous_start_date' => 'datetime',
             'status' => EventStatus::class,
+            'syndication_status' => EventSyndicationStatus::class,
+            'attendance_mode' => AttendanceMode::class,
             'seat_capacity' => 'integer',
             'banner_images' => 'array',
+            'has_showers' => 'boolean',
+            'sleeping' => 'integer',
+            'alcohol_policy' => 'integer',
+            'smoking_policy' => 'integer',
+            'age_policy' => 'integer',
+            'food_policy' => 'integer',
+            'network_connection_mbps' => 'integer',
+            'internet_connection_mbps' => 'integer',
+            'wifi_connection_mbps' => 'integer',
         ];
+    }
+
+    /**
+     * Changes to an event invalidate the cached LAN Party Publishing
+     * Standard document in addition to the event's own cache group.
+     *
+     * @return array<int, string>
+     */
+    public static function relatedCacheGroups(): array
+    {
+        return ['lpps'];
     }
 
     public function venue(): BelongsTo

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ImagePlus, X } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import EventController from '@/actions/App/Domain/Event/Http/Controllers/EventController';
 import Heading from '@/components/Heading.vue';
@@ -26,6 +26,95 @@ const { t } = useI18n();
 defineProps<{
     venues: { id: string; name: string }[];
 }>();
+
+// LAN Party Publishing Standard (LPPS) admin fields. Policy fields are stored
+// as summed bitsets; the checkboxes below toggle individual flags and submit
+// the composed integer through a hidden input.
+const attendanceOptions = [
+    { value: '1', label: 'In person' },
+    { value: '2', label: 'Online' },
+    { value: '4', label: 'Hybrid' },
+];
+
+const statusOptions = [
+    { value: 'scheduled', label: 'Scheduled' },
+    { value: 'cancelled', label: 'Cancelled' },
+    { value: 'postponed', label: 'Postponed' },
+    { value: 'rescheduled', label: 'Rescheduled' },
+    { value: 'moved_online', label: 'Moved online' },
+];
+
+const policyGroups = [
+    {
+        field: 'sleeping',
+        label: 'Sleeping arrangements',
+        flags: [
+            { value: 1, label: 'Not overnight' },
+            { value: 2, label: 'Private rooms' },
+            { value: 4, label: 'Shared rooms' },
+            { value: 8, label: 'Camping' },
+        ],
+    },
+    {
+        field: 'alcohol_policy',
+        label: 'Alcohol policy',
+        flags: [
+            { value: 1, label: 'Prohibited' },
+            { value: 2, label: 'BYOB permitted' },
+            { value: 4, label: 'Sold on site' },
+            { value: 8, label: 'Designated area only' },
+        ],
+    },
+    {
+        field: 'smoking_policy',
+        label: 'Smoking policy',
+        flags: [
+            { value: 1, label: 'Prohibited' },
+            { value: 2, label: 'Designated outdoor area' },
+            { value: 4, label: 'Designated indoor area' },
+            { value: 8, label: 'Vaping allowed' },
+        ],
+    },
+    {
+        field: 'age_policy',
+        label: 'Age policy',
+        flags: [
+            { value: 1, label: 'Guardian required for minors' },
+            { value: 2, label: 'Minimum age 12' },
+            { value: 4, label: 'Minimum age 16' },
+            { value: 8, label: 'Minimum age 18' },
+        ],
+    },
+    {
+        field: 'food_policy',
+        label: 'Food policy',
+        flags: [
+            { value: 1, label: 'No outside food' },
+            { value: 2, label: 'Bring your own permitted' },
+            { value: 4, label: 'Food sold on site' },
+            { value: 8, label: 'Free food provided' },
+        ],
+    },
+] as const;
+
+const lpps = reactive<Record<string, number>>({
+    sleeping: 0,
+    alcohol_policy: 0,
+    smoking_policy: 0,
+    age_policy: 0,
+    food_policy: 0,
+});
+
+const hasShowers = ref(false);
+
+function hasFlag(field: string, value: number): boolean {
+    return (lpps[field] & value) === value;
+}
+
+function toggleFlag(field: string, value: number, event: globalThis.Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    lpps[field] = checked ? lpps[field] | value : lpps[field] & ~value;
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: t('common.administration'), href: eventsRoute().url },
@@ -204,6 +293,154 @@ function removeBannerSlot(index: number) {
                             "
                         />
                         <InputError :message="errors.seat_capacity" />
+                    </div>
+                </div>
+
+                <!-- Publishing (LAN Party Publishing Standard) -->
+                <div class="space-y-4">
+                    <Heading
+                        variant="small"
+                        title="Publishing (LAN Party Publishing Standard)"
+                        description="Optional details syndicated through the public /.well-known/lan-party.json feed."
+                    />
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="attendance_mode">Attendance mode</Label>
+                            <Select name="attendance_mode" default-value="1">
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem
+                                        v-for="option in attendanceOptions"
+                                        :key="option.value"
+                                        :value="option.value"
+                                    >
+                                        {{ option.label }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <InputError :message="errors.attendance_mode" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="syndication_status">Event status</Label>
+                            <Select
+                                name="syndication_status"
+                                default-value="scheduled"
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem
+                                        v-for="option in statusOptions"
+                                        :key="option.value"
+                                        :value="option.value"
+                                    >
+                                        {{ option.label }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <InputError :message="errors.syndication_status" />
+                        </div>
+                    </div>
+
+                    <label class="flex items-center gap-2 text-sm">
+                        <input
+                            type="checkbox"
+                            class="size-4 rounded border-input"
+                            v-model="hasShowers"
+                        />
+                        Showers available on site
+                    </label>
+                    <input
+                        type="hidden"
+                        name="has_showers"
+                        :value="hasShowers ? '1' : '0'"
+                    />
+
+                    <div
+                        v-for="group in policyGroups"
+                        :key="group.field"
+                        class="grid gap-2"
+                    >
+                        <Label>{{ group.label }}</Label>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2">
+                            <label
+                                v-for="flag in group.flags"
+                                :key="flag.value"
+                                class="flex items-center gap-2 text-sm"
+                            >
+                                <input
+                                    type="checkbox"
+                                    class="size-4 rounded border-input"
+                                    :checked="hasFlag(group.field, flag.value)"
+                                    @change="
+                                        toggleFlag(
+                                            group.field,
+                                            flag.value,
+                                            $event,
+                                        )
+                                    "
+                                />
+                                {{ flag.label }}
+                            </label>
+                        </div>
+                        <input
+                            type="hidden"
+                            :name="group.field"
+                            :value="lpps[group.field]"
+                        />
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="network_connection_mbps"
+                                >LAN (Mbps)</Label
+                            >
+                            <Input
+                                id="network_connection_mbps"
+                                type="number"
+                                name="network_connection_mbps"
+                                min="0"
+                                placeholder="e.g. 10000"
+                            />
+                            <InputError
+                                :message="errors.network_connection_mbps"
+                            />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="internet_connection_mbps"
+                                >Internet (Mbps)</Label
+                            >
+                            <Input
+                                id="internet_connection_mbps"
+                                type="number"
+                                name="internet_connection_mbps"
+                                min="0"
+                                placeholder="e.g. 1000"
+                            />
+                            <InputError
+                                :message="errors.internet_connection_mbps"
+                            />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="wifi_connection_mbps"
+                                >Wi-Fi (Mbps)</Label
+                            >
+                            <Input
+                                id="wifi_connection_mbps"
+                                type="number"
+                                name="wifi_connection_mbps"
+                                min="0"
+                                placeholder="e.g. 300"
+                            />
+                            <InputError
+                                :message="errors.wifi_connection_mbps"
+                            />
+                        </div>
                     </div>
                 </div>
 

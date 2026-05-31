@@ -16,6 +16,13 @@ use App\Domain\Competition\Models\CompetitionTeam;
 use App\Domain\Competition\Models\CompetitionTeamMember;
 use App\Domain\Competition\Models\MatchResultProof;
 use App\Domain\CompetitionSchedule\Models\CompetitionStageSchedule;
+use App\Domain\Event\Enums\AgePolicy;
+use App\Domain\Event\Enums\AlcoholPolicy;
+use App\Domain\Event\Enums\AttendanceMode;
+use App\Domain\Event\Enums\EventSyndicationStatus;
+use App\Domain\Event\Enums\FoodPolicy;
+use App\Domain\Event\Enums\SleepingOption;
+use App\Domain\Event\Enums\SmokingPolicy;
 use App\Domain\Event\Models\Event;
 use App\Domain\Games\Models\Game;
 use App\Domain\Games\Models\GameMode;
@@ -200,6 +207,9 @@ class SeedDemoCommand extends Command
      *     city: string,
      *     state: string,
      *     country: string,
+     *     latitude: float,
+     *     longitude: float,
+     *     country_code: string,
      *     image_dir: string,
      *     image_prompts: list<string>
      * }>
@@ -215,6 +225,9 @@ class SeedDemoCommand extends Command
                 'city' => 'Stralsund',
                 'state' => 'Mecklenburg-Vorpommern',
                 'country' => 'Deutschland',
+                'latitude' => 54.3092,
+                'longitude' => 13.0816,
+                'country_code' => 'DE',
                 'image_dir' => 'demo-venu-1',
                 'image_prompts' => [
                     'A realistic architectural photo of a modern industrial event venue at a harbor in northern Germany, large brick building with steel elements, clean forecourt, no people, no event setup, overcast daylight, professional real estate photography',
@@ -230,6 +243,9 @@ class SeedDemoCommand extends Command
                 'city' => 'Greifswald',
                 'state' => 'Mecklenburg-Vorpommern',
                 'country' => 'Deutschland',
+                'latitude' => 54.0924,
+                'longitude' => 13.3874,
+                'country_code' => 'DE',
                 'image_dir' => 'demo-venu-2',
                 'image_prompts' => [
                     'A realistic architectural photo of a contemporary university event building in Germany, modern facade, wide glass entrance, clean surroundings, no people, no banners, no event setup, daylight, professional property photography',
@@ -245,6 +261,9 @@ class SeedDemoCommand extends Command
                 'city' => 'Rostock',
                 'state' => 'Mecklenburg-Vorpommern',
                 'country' => 'Deutschland',
+                'latitude' => 54.0887,
+                'longitude' => 12.1405,
+                'country_code' => 'DE',
                 'image_dir' => 'demo-venu-3',
                 'image_prompts' => [
                     'A realistic architectural photo of a large modern exhibition hall in northern Germany, broad entrance plaza, clean facade, no people, no event branding, no vehicles in focus, cloudy daylight, professional real estate photography',
@@ -272,6 +291,9 @@ class SeedDemoCommand extends Command
                         'zip_code' => $data['zip_code'],
                         'state' => $data['state'],
                         'country' => $data['country'],
+                        'latitude' => $data['latitude'],
+                        'longitude' => $data['longitude'],
+                        'country_code' => $data['country_code'],
                     ])->id,
                 ]);
 
@@ -580,6 +602,18 @@ class SeedDemoCommand extends Command
                 'venue_id' => $venues->first()?->id,
                 'orga_team_id' => $orgaTeam?->id,
                 'theme_id' => $aurora?->id,
+                'seat_capacity' => 200,
+                'attendance_mode' => AttendanceMode::Offline,
+                'syndication_status' => EventSyndicationStatus::Scheduled,
+                'has_showers' => true,
+                'sleeping' => SleepingOption::toBitset([SleepingOption::SharedRooms->value, SleepingOption::Camping->value]),
+                'alcohol_policy' => AlcoholPolicy::toBitset([AlcoholPolicy::ByobPermitted->value]),
+                'smoking_policy' => SmokingPolicy::toBitset([SmokingPolicy::OutdoorArea->value]),
+                'age_policy' => AgePolicy::toBitset([AgePolicy::GuardianRequiredForMinors->value]),
+                'food_policy' => FoodPolicy::toBitset([FoodPolicy::SoldOnSite->value]),
+                'network_connection_mbps' => 10000,
+                'internet_connection_mbps' => 1000,
+                'wifi_connection_mbps' => 300,
             ]);
 
             $events['draft'] = Event::factory()->create([
@@ -599,6 +633,15 @@ class SeedDemoCommand extends Command
                 'venue_id' => $venues->skip(2)->first()?->id,
                 'orga_team_id' => $orgaTeam?->id,
                 'theme_id' => $sunset?->id,
+                'seat_capacity' => 224,
+                'attendance_mode' => AttendanceMode::Offline,
+                'syndication_status' => EventSyndicationStatus::Scheduled,
+                'has_showers' => true,
+                'sleeping' => SleepingOption::toBitset([SleepingOption::SharedRooms->value]),
+                'food_policy' => FoodPolicy::toBitset([FoodPolicy::FreeProvided->value]),
+                'network_connection_mbps' => 1000,
+                'internet_connection_mbps' => 500,
+                'wifi_connection_mbps' => 150,
             ]);
         });
 
@@ -1855,6 +1898,11 @@ class SeedDemoCommand extends Command
                 'tax_id' => 'DE123456789',
                 'registration_id' => 'VR 12345, Amtsgericht Berlin-Charlottenburg',
                 'legal_notice' => 'All prices include applicable taxes. Tickets are non-refundable unless otherwise stated.',
+                // LAN Party Publishing Standard organisation fields.
+                'description' => 'A friendly community running BYOC LAN parties across Mecklenburg-Vorpommern.',
+                'steam_group_url' => 'https://steamcommunity.com/groups/lanparty-ev',
+                'discord_invite_url' => 'https://discord.gg/lanparty-ev',
+                'publisher_unique_id' => 'lan-party-ev',
             ];
 
             foreach ($settings as $key => $value) {

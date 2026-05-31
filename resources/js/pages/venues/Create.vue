@@ -157,6 +157,50 @@ function onFileSelected(index: number, event: globalThis.Event) {
                             <InputError :message="errors.country" />
                         </div>
                     </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="latitude">Latitude</Label>
+                            <Input
+                                id="latitude"
+                                name="latitude"
+                                type="number"
+                                step="any"
+                                placeholder="e.g. 54.0924"
+                            />
+                            <InputError :message="errors.latitude" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="longitude">Longitude</Label>
+                            <Input
+                                id="longitude"
+                                name="longitude"
+                                type="number"
+                                step="any"
+                                placeholder="e.g. 13.3874"
+                            />
+                            <InputError :message="errors.longitude" />
+                        </div>
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="country_code"
+                            >Country code (ISO 3166-1 alpha-2)</Label
+                        >
+                        <Input
+                            id="country_code"
+                            name="country_code"
+                            maxlength="2"
+                            class="uppercase"
+                            placeholder="e.g. DE"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Two-letter country code used by the LAN Party
+                            Publishing Standard feed for map placement.
+                        </p>
+                        <InputError :message="errors.country_code" />
+                    </div>
                 </div>
 
                 <!-- Images -->

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 class CreateVenue
 {
     /**
-     * @param  array{name: string, description?: string|null, street: string, city: string, zip_code: string, state?: string|null, country: string}  $attributes
+     * @param  array{name: string, description?: string|null, street: string, city: string, zip_code: string, state?: string|null, country: string, latitude?: float|string|null, longitude?: float|string|null, country_code?: string|null}  $attributes
      * @param  array<int, array{path: string, alt_text?: string|null}>  $images
      */
     public function execute(array $attributes, array $images = []): Venue
@@ -26,6 +26,9 @@ class CreateVenue
                 'zip_code' => $attributes['zip_code'],
                 'state' => $attributes['state'] ?? null,
                 'country' => $attributes['country'],
+                'latitude' => $attributes['latitude'] ?? null,
+                'longitude' => $attributes['longitude'] ?? null,
+                'country_code' => isset($attributes['country_code']) ? strtoupper((string) $attributes['country_code']) : null,
             ]);
 
             $venue = Venue::create([

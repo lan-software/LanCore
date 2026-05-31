@@ -662,35 +662,6 @@ manifest emits pseudonym → hint label, never pseudonym → real id.
 
 ---
 
-## 6. Requirements Traceability
-
-| SSS Requirement | SSDD Section |
-|----------------|-------------|
-| SSS 3.7 Environment | Section 3 |
-| SSS 3.4 Internal Interfaces | Section 4.1 |
-| SSS 3.9 Quality Factors (Scalability) | Section 4.2 |
-| SSS 3.1 Required States and Modes (Demo) | Section 3.1 — Demo mode uses the same Docker deployment topology as Normal mode; the distinction is data content (seeded via `SeedDemoCommand`) and payment provider configuration (simulated), not infrastructure topology |
-| CAP-TKT-013, CAP-TKT-014 | Section 5a |
-| SEC-014..020 | Section 5a.1 |
-| ENV-DEP-010 (pinned base images) | Section 3.1.1.1, Section 5.3 |
-| ENV-DEP-011 (non-root runtime) | Section 3.1.1, Section 5.3 |
-| ENV-DEP-012 (runtime secrets via env) | Section 3.1.1.1, Section 5.3 |
-| CAP-INT-001..006 (server-side integration registration, API tokens, SSO, webhook subscriptions, navigation hints, access logging) | Section 4.1 (network topology), Section 5.4 (consumer-side client library) |
-| CAP-WHK-001..004 (webhook registration, signing, delivery tracking, event types) | Section 4.1 (outbound delivery path), Section 5.4.2 (consumer-side verification + abstract controllers) |
-| CAP-ICLIB-001..005 (shared Integration Client Library) | Section 3.2 (subsystem inventory), Section 5.4 (architecture) |
-| CAP-USR-010, CAP-I18N-001..007 | Section 5.7 (Internationalization Architecture) |
-| CAP-USR-011, CAP-USR-012, CAP-USR-013, CAP-USR-014 | Section 5.4.2 (DTO typed shapes), Section 5.7.6 (`LanCoreUser` Public-Facing Identity Fields) |
-| CAP-USR-015 | Section 5.4.2 (typed shapes), Section 5.7.6 (username consumption rule) |
-| CAP-ACH-005 | Section 5.7.6 (achievements with rarity surfaced via public profile) |
-| SEC-021 | Section 5.7.6 (privacy carve-out: real name, email, address, locale never on public profile / DTO consumption rules) |
-| SEC-022 | Section 5.4.2 (avatar URL resolution), Section 3.2 (S3 storage role for avatars/banners normalized server-side) |
-| CAP-DL-001..008, SEC-DL-001..002 | Section 5.11 (Deletion & Retention Pipeline) |
-| CAP-EVT-008, CAP-THM-001..004 | Section 5.12 (Event Theme Architecture) |
-| CAP-NLT-001..004, CAP-CTD-001..002 | Section 5.13 (Newsletter / Listmonk Architecture) |
-| CAP-ORC-011 | Section 5.13.4 (External API Connectivity Testing Extension) |
-
----
-
 ### 5.11 Deletion & Retention Pipeline (Data Lifecycle Domain)
 
 The DataLifecycle subsystem (`app/Domain/DataLifecycle/`) sits beside the existing GDPR Export pipeline (§5.10) and shares its open-set composition pattern.
@@ -946,6 +917,96 @@ The first end-to-end consumer of the bridge is the ticket-sale dispatcher (SDD �
 ```
 
 `withoutOverlapping()->onOneServer()` on the schedule entry ensures only one node in a multi-pod Kubernetes deployment ever runs the dispatcher per tick.
+
+---
+
+### 5.15 LPPS Publishing Architecture
+
+Traces to: CAP-PUB-001..006.
+
+The LPPS Publishing subsystem (`app/Domain/Publishing/`) exposes the organisation's event data as a machine-readable JSON document at the IANA well-known path `/.well-known/lan-party.json`. It introduces no new database tables — it reads from existing models and adds columns via two migrations.
+
+**Request pipeline.** The route is registered in `routes/web.php` as a plain `GET` route requiring no authentication middleware beyond the default `web` group. `LanPartyPublishingController` delegates immediately to `BuildLanPartyDocument`, wrapping the result in a `JsonResponse`.
+
+**Document assembly.** `BuildLanPartyDocument` performs a single pass:
+
+```
+BuildLanPartyDocument::execute()
+  │
+  ├── Read OrganizationSetting keys: name, logo_url,
+  │     lpps_description, lpps_steam_group_url,
+  │     lpps_discord_invite_url, lpps_publisher_unique_id
+  │         (organisation root assembled directly — no LppsOrganisationResource)
+  │
+  ├── Event::published()
+  │     ->with(['venue.address', 'ticketTypes'])
+  │     ->get()
+  │     ->map(fn($e) => new LppsEventResource($e))
+  │         └── LppsEventResource includes:
+  │               id, name, dates, syndication_status, attendance_mode,
+  │               previous_start_date, has_showers, facility policies (bitsets),
+  │               network specs, ticket availability summary
+  │               venue (via LppsVenueResource):
+  │                   id, name, address (street, city, zip_code,
+  │                   country_code, latitude, longitude)
+  │               tickets (via LppsTicketResource per TicketType):
+  │                   id, name, price, is_available, quota_remaining
+  │
+  └── Return array { schema_version, organisation, events, generated_at }
+```
+
+**Caching.** The document is cached under the `lpps` group via `App\Services\ModelCacheService`. Cache invalidation is automatic:
+
+| Trigger | Mechanism |
+|---------|-----------|
+| `Event`, `Venue`, `Address`, `TicketType` mutated | `HasModelCache::relatedCacheGroups()` returns `['lpps']`; model observer flushes on save/delete |
+| `OrganizationSetting` saved | `booted()` static hook calls `ModelCacheService::flush('lpps')` |
+
+**Discoverability signals.** Two additional pointers are injected at the frontend level (not inside `BuildLanPartyDocument`):
+- `resources/views/app.blade.php` emits a `<link rel="alternate" type="application/json" href="/.well-known/lan-party.json">` in every page `<head>`.
+- `resources/js/pages/events/Public.vue` renders an "LPPS Feed" link in the event page footer pointing to the same URL.
+
+**Migrations.** Two migrations ship with this domain:
+- `database/migrations/2026_05_31_093000_add_geo_to_addresses_table.php` — adds `latitude`, `longitude`, `country_code` to `addresses`.
+- `database/migrations/2026_05_31_093100_add_lpps_fields_to_events_table.php` — adds all LPPS event columns listed in CAP-PUB-005.
+
+| Subsystem dependency | Direction |
+|----------------------|-----------|
+| `Event` model | Publishing reads published events with eager-loaded relations |
+| `Venue` + `Address` models | Publishing reads geo-coordinates and country_code |
+| `TicketType` model | Publishing reads availability and pricing |
+| `OrganizationSetting` | Publishing reads 4 LPPS-specific setting keys |
+| `ModelCacheService` + `HasModelCache` | Cache storage and invalidation |
+
+---
+
+## 6. Requirements Traceability
+
+| SSS Requirement | SSDD Section |
+|----------------|-------------|
+| SSS 3.7 Environment | Section 3 |
+| SSS 3.4 Internal Interfaces | Section 4.1 |
+| SSS 3.9 Quality Factors (Scalability) | Section 4.2 |
+| SSS 3.1 Required States and Modes (Demo) | Section 3.1 — Demo mode uses the same Docker deployment topology as Normal mode; the distinction is data content (seeded via `SeedDemoCommand`) and payment provider configuration (simulated), not infrastructure topology |
+| CAP-TKT-013, CAP-TKT-014 | Section 5a |
+| SEC-014..020 | Section 5a.1 |
+| ENV-DEP-010 (pinned base images) | Section 3.1.1.1, Section 5.3 |
+| ENV-DEP-011 (non-root runtime) | Section 3.1.1, Section 5.3 |
+| ENV-DEP-012 (runtime secrets via env) | Section 3.1.1.1, Section 5.3 |
+| CAP-INT-001..006 (server-side integration registration, API tokens, SSO, webhook subscriptions, navigation hints, access logging) | Section 4.1 (network topology), Section 5.4 (consumer-side client library) |
+| CAP-WHK-001..004 (webhook registration, signing, delivery tracking, event types) | Section 4.1 (outbound delivery path), Section 5.4.2 (consumer-side verification + abstract controllers) |
+| CAP-ICLIB-001..005 (shared Integration Client Library) | Section 3.2 (subsystem inventory), Section 5.4 (architecture) |
+| CAP-USR-010, CAP-I18N-001..007 | Section 5.7 (Internationalization Architecture) |
+| CAP-USR-011, CAP-USR-012, CAP-USR-013, CAP-USR-014 | Section 5.4.2 (DTO typed shapes), Section 5.7.6 (`LanCoreUser` Public-Facing Identity Fields) |
+| CAP-USR-015 | Section 5.4.2 (typed shapes), Section 5.7.6 (username consumption rule) |
+| CAP-ACH-005 | Section 5.7.6 (achievements with rarity surfaced via public profile) |
+| SEC-021 | Section 5.7.6 (privacy carve-out: real name, email, address, locale never on public profile / DTO consumption rules) |
+| SEC-022 | Section 5.4.2 (avatar URL resolution), Section 3.2 (S3 storage role for avatars/banners normalized server-side) |
+| CAP-DL-001..008, SEC-DL-001..002 | Section 5.11 (Deletion & Retention Pipeline) |
+| CAP-EVT-008, CAP-THM-001..004 | Section 5.12 (Event Theme Architecture) |
+| CAP-NLT-001..004, CAP-CTD-001..002 | Section 5.13 (Newsletter / Listmonk Architecture) |
+| CAP-ORC-011 | Section 5.13.4 (External API Connectivity Testing Extension) |
+| CAP-PUB-001..006 | Section 5.15 (LPPS Publishing Architecture) |
 
 ---
 

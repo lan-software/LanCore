@@ -161,6 +161,15 @@ function formatDate(dateString: string): string {
                     />
                 </template>
             </nav>
+
+            <p class="mt-12 text-center text-xs text-muted-foreground">
+                <a
+                    href="/.well-known/lan-party.json"
+                    class="underline transition-colors hover:text-foreground"
+                >
+                    LAN Party Publishing Standard feed (JSON)
+                </a>
+            </p>
         </main>
     </div>
 </template>

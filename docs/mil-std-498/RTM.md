@@ -24,9 +24,9 @@ This Requirements Traceability Matrix maps every SRS requirement to its implemen
 - **Gap** — No test coverage exists for this requirement
 
 **Statistics:**
-- Total SRS Requirements: 162 (added TKT-F-017..023 +7, SEC-014..020 +7; prior total was 148)
-- Total Test Files: 121 + 2 pending (TicketTokenTest.php, TicketTokenServiceTest.php)
-- Total Test Cases: 834 + 22 pending (new test cases documented in STD §4.20)
+- Total SRS Requirements: 179 (added PUB-F-001..008 +8, EVT-F-013 +1, ORG-F-006 +1, VEN-F-001 extended; prior total was 162; VEN-F-001 extension is an amendment not a new ID; net new IDs: +10)
+- Total Test Files: 123 + 2 pending (added LppsEndpointTest.php, LppsAdminFieldsTest.php, BuildLanPartyDocumentTest.php; TicketTokenTest.php, TicketTokenServiceTest.php still pending)
+- Total Test Cases: 850 + 22 pending (new test cases documented in STD §4.36: 9 feature + 16 unit = 25 new; some overlap in TC-PUB-010..025 single section)
 
 ---
 
@@ -812,4 +812,22 @@ File: tests/Feature/Shop/StripeCustomerTest.php
 | CHT-F-029 | Competition×Chat | CAP-CHT-001 | SDD §5.3e (Competition-Chat coupling) | `app/Domain/Competition/Chat/CompetitionTeamMemberObserver.php`, `app/Domain/Competition/Chat/CompetitionRoomAutoJoin.php` | `tests/Feature/Competition/CompetitionChatRoomLifecycleTest.php` (post-publish join case) |
 | CHT-F-030 | Competition×Chat | CAP-CHT-001 | SDD §5.3e (match-room policy) | `app/Domain/Competition/Chat/MatchRoomPolicy.php` | `tests/Feature/Competition/MatchChatRoomLifecycleTest.php` (canView case) |
 | CHT-F-031 | Competition×Chat | CAP-CHT-001 | SDD §5.3e (match-room lifecycle) | `app/Domain/Competition/Listeners/EnsureMatchRoomOnReady.php`, `app/Providers/AppServiceProvider.php` (event binding) | `tests/Feature/Competition/MatchChatRoomLifecycleTest.php` |
+
+---
+
+## 31. LPPS Publishing Domain (CSCI-PUB)
+
+| Req ID | Domain | Source CAP | Design § | Code path | Test file |
+|--------|--------|------------|----------|-----------|-----------|
+| PUB-F-001 | Publishing | CAP-PUB-001 | SDD §5.14, IDD §3.21 | `app/Domain/Publishing/Http/Controllers/LanPartyPublishingController.php`, `routes/web.php` (lpps.document) | `tests/Feature/Publishing/LppsEndpointTest.php` (TC-PUB-001) |
+| PUB-F-002 | Publishing | CAP-PUB-002 | SDD §5.14 | `app/Domain/Publishing/Actions/BuildLanPartyDocument.php` | `tests/Feature/Publishing/LppsEndpointTest.php` (TC-PUB-002), `tests/Unit/Publishing/BuildLanPartyDocumentTest.php` |
+| PUB-F-003 | Publishing | CAP-PUB-002 | SDD §5.14 | `app/Domain/Publishing/Http/Resources/LppsEventResource.php`, `LppsVenueResource.php`, `LppsTicketResource.php` | `tests/Feature/Publishing/LppsEndpointTest.php` (TC-PUB-006), `tests/Unit/Publishing/BuildLanPartyDocumentTest.php` |
+| PUB-F-004 | Publishing | CAP-PUB-003 | SDD §5.14, SSDD §5.15 | `app/Concerns/HasModelCache.php` (relatedCacheGroups returning lpps), `app/Models/OrganizationSetting.php` (booted flush), `app/Services/ModelCacheService.php` | `tests/Feature/Publishing/LppsEndpointTest.php` (TC-PUB-008) |
+| PUB-F-005 | Publishing | CAP-PUB-004 | SDD §5.14, DBDD §4.2.3 | `app/Domain/Publishing/Http/Resources/LppsVenueResource.php`, `database/migrations/2026_05_31_093000_add_geo_to_addresses_table.php` | `tests/Feature/Publishing/LppsEndpointTest.php` (TC-PUB-005), `tests/Unit/Publishing/BuildLanPartyDocumentTest.php` |
+| PUB-F-006 | Publishing | CAP-PUB-005 | SDD §5.14, DBDD §4.2.1 | `app/Domain/Publishing/Http/Resources/LppsEventResource.php`, `app/Domain/Event/Enums/{AttendanceMode,SleepingOption,AlcoholPolicy,SmokingPolicy,AgePolicy,FoodPolicy}.php`, `app/Concerns/InteractsWithBitset.php` | `tests/Feature/Publishing/LppsEndpointTest.php` (TC-PUB-004), `tests/Unit/Publishing/BuildLanPartyDocumentTest.php` |
+| PUB-F-007 | Publishing | CAP-PUB-005 | SDD §5.14, DBDD §4.2.1 | `app/Domain/Publishing/Actions/BuildLanPartyDocument.php` (syndication_status filter), `app/Domain/Event/Enums/EventSyndicationStatus.php` | `tests/Feature/Publishing/LppsEndpointTest.php` (TC-PUB-003), `tests/Unit/Publishing/BuildLanPartyDocumentTest.php` |
+| PUB-F-008 | Publishing | CAP-PUB-006 | SDD §5.14, IDD §3.21, DBDD §4.21 | `app/Domain/Publishing/Actions/BuildLanPartyDocument.php` (org settings inline), `resources/views/app.blade.php` (link rel=alternate), `resources/js/pages/events/Public.vue` (feed link) | `tests/Feature/Publishing/LppsEndpointTest.php` (TC-PUB-007), `tests/Unit/Publishing/BuildLanPartyDocumentTest.php` |
+| EVT-F-013 | Event (extended) | CAP-PUB-005 | SDD §5.14, DBDD §4.2.1 | `database/migrations/2026_05_31_093100_add_lpps_fields_to_events_table.php`, `app/Domain/Event/Models/Event.php` (new casts), `resources/js/pages/events/{Create,Edit}.vue` (LPPS panels) | `tests/Feature/Publishing/LppsAdminFieldsTest.php` (TC-PUB-009) |
+| ORG-F-006 | Organization | CAP-PUB-006 | SDD §5.14, DBDD §4.21 | `app/Domain/Settings/Http/Controllers/OrganizationSettingsController.php` (lpps keys persisted), `resources/js/pages/settings/Organization.vue` (LPPS identity section) | `tests/Feature/Publishing/LppsAdminFieldsTest.php` (TC-PUB-009) |
+| VEN-F-001 (ext.) | Venue | CAP-PUB-004 | SDD §5.14, DBDD §4.2.3 | `database/migrations/2026_05_31_093000_add_geo_to_addresses_table.php`, `app/Domain/Venue/Actions/{CreateVenue,UpdateVenue}.php` (latitude/longitude/country_code fields), `resources/js/pages/venues/{Create,Edit}.vue` (geo fields) | `tests/Feature/Publishing/LppsAdminFieldsTest.php` (TC-PUB-009) |
 | CHT-F-032 | Competition×Chat | CAP-CHT-001 | SDD §5.3e (match-room lifecycle) | `app/Domain/Competition/Listeners/WriteLockMatchRoomOnFinalized.php`, `app/Providers/AppServiceProvider.php` (event binding) | `tests/Feature/Competition/MatchChatRoomLifecycleTest.php` |

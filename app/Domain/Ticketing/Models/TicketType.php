@@ -2,6 +2,7 @@
 
 namespace App\Domain\Ticketing\Models;
 
+use App\Concerns\HasModelCache;
 use App\Domain\Event\Models\Event;
 use App\Domain\Shop\Concerns\InteractsWithShop;
 use App\Domain\Shop\Contracts\Purchasable;
@@ -34,7 +35,7 @@ class TicketType extends Model implements AuditableContract, Purchasable
     use Auditable;
 
     /** @use HasFactory<TicketTypeFactory> */
-    use HasFactory;
+    use HasFactory, HasModelCache;
 
     use HasUlids;
     use InteractsWithShop;
@@ -42,6 +43,17 @@ class TicketType extends Model implements AuditableContract, Purchasable
     protected static function newFactory(): TicketTypeFactory
     {
         return TicketTypeFactory::new();
+    }
+
+    /**
+     * Ticket types feed the published LAN Party Publishing Standard
+     * document, so flush that cache when they change.
+     *
+     * @return array<int, string>
+     */
+    public static function relatedCacheGroups(): array
+    {
+        return ['lpps'];
     }
 
     /**

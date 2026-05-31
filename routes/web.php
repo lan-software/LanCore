@@ -3,6 +3,7 @@
 use App\Domain\Auth\Steam\Http\Controllers\SteamAuthController;
 use App\Domain\Auth\Steam\Http\Controllers\SteamLinkController;
 use App\Domain\Event\Http\Controllers\PublicEventController;
+use App\Domain\Publishing\Http\Controllers\LanPartyPublishingController;
 use App\Domain\Shop\Http\Controllers\PayPalWebhookController;
 use App\Http\Controllers\CookiePreferenceController;
 use App\Http\Controllers\CountdownController;
@@ -23,6 +24,9 @@ Route::get('upcoming-events', [PublicEventController::class, 'index'])->name('ev
 Route::get('past-events', [PublicEventController::class, 'past'])->name('events.public.past');
 Route::get('events/{event}/public', [PublicEventController::class, 'show'])->name('events.public.show');
 Route::get('events/{event}/calendar.ics', [PublicEventController::class, 'ical'])->name('events.public.ical');
+
+// Public LAN Party Publishing Standard v2 syndication feed (RFC 8615 well-known).
+Route::get('.well-known/lan-party.json', LanPartyPublishingController::class)->name('lpps.document');
 
 Route::get('legal', [LegalController::class, 'index'])->name('legal.index');
 Route::get('impressum', [LegalController::class, 'impressum'])->name('legal.impressum');

@@ -37,6 +37,11 @@ class OrganizationSettingsController extends Controller
             'legal_notice' => ['nullable', 'string', 'max:2000'],
             'impressum_responsible' => ['nullable', 'string', 'max:500'],
             'impressum_content' => ['nullable', 'string', 'max:20000'],
+            // LAN Party Publishing Standard organisation fields.
+            'description' => ['nullable', 'string', 'max:2000'],
+            'steam_group_url' => ['nullable', 'url', 'max:255'],
+            'discord_invite_url' => ['nullable', 'url', 'max:255'],
+            'publisher_unique_id' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9._-]+$/'],
         ]);
 
         foreach ($validated as $key => $value) {

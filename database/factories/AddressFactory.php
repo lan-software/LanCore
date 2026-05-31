@@ -23,6 +23,9 @@ class AddressFactory extends Factory
             'zip_code' => fake()->postcode(),
             'state' => fake()->state(),
             'country' => fake()->country(),
+            'latitude' => fake()->latitude(),
+            'longitude' => fake()->longitude(),
+            'country_code' => fake()->countryCode(),
         ];
     }
 }
