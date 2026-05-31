@@ -120,11 +120,14 @@ return [
     |--------------------------------------------------------------------------
     |
     | This value determines the classes that can be unserialized from cache
-    | storage. By default, no PHP classes will be unserialized from your
-    | cache to prevent gadget chain attacks if your APP_KEY is leaked.
+    | storage. Setting this to `false` allows NO classes to be unserialized,
+    | which breaks packages that cache objects (e.g. Laravel Pulse caches
+    | Illuminate\Support\Collection instances). Use `null` for the framework
+    | default (unrestricted), or provide an array allowlist to keep the
+    | gadget-chain protection while permitting specific classes.
     |
     */
 
-    'serializable_classes' => false,
+    'serializable_classes' => null,
 
 ];
