@@ -117,7 +117,13 @@ return [
         'nova-api*',
         'pulse*',
         '_boost*',
-        '.well-known*',
+        // Suppress automated .well-known probes (Chrome DevTools, ACME cert
+        // renewal) but keep recording the public LAN Party Publishing feed at
+        // /.well-known/lan-party.json. ignore_paths has no negation, so the
+        // noise sources are listed explicitly rather than via a blanket
+        // ".well-known*" glob.
+        '.well-known/appspecific*',
+        '.well-known/acme-challenge*',
     ],
 
     'ignore_commands' => [
