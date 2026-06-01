@@ -28,6 +28,16 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ResolveEventTheme
 {
+    /**
+     * Sentinel cached when no organization default theme is configured.
+     *
+     * Cache::remember() treats a null return as "not cached" and re-runs the
+     * callback (hitting the database) on every request. Storing a non-null
+     * marker lets the "no default" answer be cached like any other, avoiding a
+     * perpetual cache miss + query on routes without an event-scoped theme.
+     */
+    private const NO_DEFAULT = '__none__';
+
     public function handle(Request $request, Closure $next): Response
     {
         View::share('activeTheme', $this->resolve($request));
@@ -53,10 +63,10 @@ class ResolveEventTheme
         $defaultId = Cache::remember(
             'inertia.activeTheme.default_id',
             3600,
-            fn () => OrganizationSetting::get('default_theme_id'),
+            fn () => OrganizationSetting::get('default_theme_id') ?? self::NO_DEFAULT,
         );
 
-        if ($defaultId === null) {
+        if ($defaultId === self::NO_DEFAULT || $defaultId === null) {
             return null;
         }
 
